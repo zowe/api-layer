@@ -53,7 +53,6 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
     @Getter
     private final Set<String> publicKeyCertificatesBase64;
     private final CertificateValidator certificateValidator;
-    private final boolean useCertFromTlsHandshake;
 
     @Setter
     private Predicate<X509Certificate> certificateForClientAuth = cert ->

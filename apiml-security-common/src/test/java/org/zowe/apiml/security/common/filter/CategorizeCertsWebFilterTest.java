@@ -87,7 +87,7 @@ class CategorizeCertsWebFilterTest {
         Set<String> gatewayPublicKeys = new HashSet<>();
         gatewayPublicKeys.add(CertificateLoggingUtils.base64EncodePublicKey(gatewayCert));
 
-        filter = new CategorizeCertsWebFilter(gatewayPublicKeys, mockCertificateValidator, true);
+        filter = new CategorizeCertsWebFilter(gatewayPublicKeys, mockCertificateValidator);
 
         when(mockExchange.getRequest()).thenReturn(mockRequest);
         when(mockExchange.mutate()).thenReturn(mockExchangeBuilder);

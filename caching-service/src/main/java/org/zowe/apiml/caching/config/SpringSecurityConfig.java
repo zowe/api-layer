@@ -10,12 +10,16 @@
 
 package org.zowe.apiml.caching.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -25,23 +29,17 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
-import org.zowe.apiml.security.common.auth.BasicAuthenticationManager;
-import org.zowe.apiml.security.common.util.X509Util;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import java.util.Set;
-
-import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
-import org.zowe.apiml.security.common.verify.CertificateValidator;
-import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
-import org.springframework.context.annotation.Import;
 import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.security.common.auth.BasicAuthenticationManager;
+import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
+import org.zowe.apiml.security.common.util.X509Util;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.security.common.verify.TrustedCertificatesProvider;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableWebFluxSecurity
@@ -78,7 +76,7 @@ public class SpringSecurityConfig {
         if (!isHealthEndpointProtected) {
             antMatchersToIgnore.add("/cachingservice/application/health");
         }
-        var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator, false);
+        var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator);
         // all certificates in the header coming from trusted proxy are allowed for client authentication, including API ML certificate
         certFilter.setCertificateForClientAuth((crt) -> true);
         http
