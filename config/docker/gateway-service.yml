@@ -12,6 +12,8 @@ apiml:
         hostname: gateway-service
         discoveryServiceUrls: https://discovery-service:10011/eureka/
     banner: console
+    security:
+        allowedDomains: gateway-service,discovery-service,discoverable-client,api-catalog-services,caching-service,zaas-service,mock-services
 eureka:
     client:
         instanceInfoReplicationIntervalSeconds: 30
