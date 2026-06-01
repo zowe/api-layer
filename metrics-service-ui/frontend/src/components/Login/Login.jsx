@@ -155,6 +155,7 @@ function Login(props) {
                         value={password}
                         id="password"
                         type="password"
+                        autoComplete="off"
                         onChange={(t) => setPassword(t.target.value)}
                     />
                     <SubmitButton
