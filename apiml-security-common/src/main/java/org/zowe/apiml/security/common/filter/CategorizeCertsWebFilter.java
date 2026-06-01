@@ -100,7 +100,12 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                         certificateForClientAuth
                     );
 
-                    log.debug("DEBUG: clientAuthCerts.length = {}", clientAuthCerts.length);
+                    log.atDebug()
+                        .setMessage("clientAuthCerts serial numbers = {}")
+                        .addArgument(() -> Arrays.stream(clientAuthCerts)
+                            .map(cert -> cert.getSerialNumber().toString(16))
+                            .toList())
+                        .log();
 
                     logIgnoredCertificates(new X509Certificate[]{clientCertFromHeader.get()}, clientAuthCerts);
 
