@@ -260,6 +260,61 @@ class ApimlInstanceRegistryTest {
             assertFalse(leaseMap.isEmpty());
         }
 
+        @Test
+        void givenStaticDefinition_whenSuccessRegistration_thenExpectedNumberOfClientsSendingRenewsDidntChange() {
+            var renewCorrection = (ThreadLocal<Integer>) ReflectionTestUtils.getField(apimlInstanceRegistry, "RENEW_CORRECTION");
+            renewCorrection.set(123);
+            ReflectionTestUtils.setField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews", 5);
+
+            apimlInstanceRegistry.registerStatically(standardInstance, false, false);
+
+            assertEquals(5, ReflectionTestUtils.getField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews"));
+            assertNull(renewCorrection.get());
+        }
+
+        @Test
+        void givenStaticDefinition_whenFailRegistration_thenCorrectionAndExpectedNumberOfClientsSendingRenewsDidntChange() {
+            var renewCorrection = (ThreadLocal<Integer>) ReflectionTestUtils.getField(apimlInstanceRegistry, "RENEW_CORRECTION");
+            renewCorrection.set(123);
+            ReflectionTestUtils.setField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews", 5);
+
+            doThrow(new RuntimeException("test")).when(apimlInstanceRegistry).register(any(), anyInt(), anyBoolean());
+            assertThrows(IllegalStateException.class, () -> apimlInstanceRegistry.registerStatically(standardInstance, false, false));
+
+            assertEquals(5, ReflectionTestUtils.getField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews"));
+            assertNull(renewCorrection.get());
+        }
+
+        @Test
+        void givenStaticDefinition_whenSuccessCancellation_thenExpectedNumberOfClientsSendingRenewsDidntChange() {
+            var renewCorrection = (ThreadLocal<Integer>) ReflectionTestUtils.getField(apimlInstanceRegistry, "RENEW_CORRECTION");
+            apimlInstanceRegistry.registerStatically(standardInstance, false, false);
+
+            renewCorrection.set(123);
+            ReflectionTestUtils.setField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews", 5);
+
+            apimlInstanceRegistry.cancel(standardInstance.getAppName(), standardInstance.getInstanceId(), false);
+
+            assertEquals(5, ReflectionTestUtils.getField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews"));
+            assertNull(renewCorrection.get());
+        }
+
+        @Test
+        void givenNonStaticDefinition_whenSuccessCancellation_thenExpectedNumberOfClientsSendingRenewsChanged() {
+            var renewCorrection = (ThreadLocal<Integer>) ReflectionTestUtils.getField(apimlInstanceRegistry, "RENEW_CORRECTION");
+            var staticRegistrationIds = (Set<String>) ReflectionTestUtils.getField(apimlInstanceRegistry, "staticRegistrationIds");
+            apimlInstanceRegistry.register(standardInstance, false);
+
+            renewCorrection.remove();
+            ReflectionTestUtils.setField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews", 5);
+            staticRegistrationIds.clear();
+
+            apimlInstanceRegistry.cancel(standardInstance.getAppName(), standardInstance.getInstanceId(), false);
+
+            assertEquals(4, ReflectionTestUtils.getField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews"));
+            assertNull(renewCorrection.get());
+        }
+
     }
 
     @Nested
