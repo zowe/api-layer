@@ -87,14 +87,12 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
         ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
 
         certsFromTlsOpt.ifPresent(certsFromTls -> {
-
+            log.debug("isForwardingEnabled = {}", certificateValidator.isForwardingEnabled());
             if (certificateValidator.isForwardingEnabled() &&
                 certificateValidator.hasGatewayChain(certsFromTls)) {
                 Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
-                log.debug("DEBUG: clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
+                log.debug("clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
                 if (clientCertFromHeader.isPresent()) {
-                    log.debug("DEBUG: isForwardingEnabled = {}", certificateValidator.isForwardingEnabled());
-                    log.debug("DEBUG: hasGatewayChain = {}", certificateValidator.hasGatewayChain(certsFromTls));
 
                     certificateValidator.updateAPIMLPublicKeyCertificates(certsFromTls);
 
@@ -117,7 +115,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                     requestBuilder.sslInfo(sslInfo);
                 }
 
-            } else if (useCertFromTlsHandshake) {
+            } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
 
                 log.debug("DEBUG (else): clientAuthCerts.length = {}", clientAuthCerts.length);
