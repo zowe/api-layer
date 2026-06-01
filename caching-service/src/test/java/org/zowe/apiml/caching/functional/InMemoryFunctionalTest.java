@@ -43,7 +43,6 @@ public class InMemoryFunctionalTest {
     @LocalServerPort
     int port;
 
-    public static final String SERVICE_ID_HEADER = "X-Certificate-DistinguishedName";
     public static final String CLIENT_AUTH_CERTIFICATE_HEADER = "Client-Cert";
 
     String contextPath = "/cachingservice/api/v1";
@@ -55,7 +54,7 @@ public class InMemoryFunctionalTest {
     @MockitoBean
     private CertificateValidator certificateValidator;
 
-    private static final String MOCK_FORWARDED_CERT = """
+    private static final String MOCK_FORWARDED_CERT_HEADER = """
         MIID7zCCAtegAwIBAgIED0TPEjANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJD
         WjEPMA0GA1UECBMGUHJhZ3VlMQ8wDQYDVQQHEwZQcmFndWUxFDASBgNVBAoTC1pv
         d2UgU2FtcGxlMRwwGgYDVQQLExNBUEkgTWVkaWF0aW9uIExheWVyMRUwEwYDVQQD
@@ -78,11 +77,7 @@ public class InMemoryFunctionalTest {
         4TEK0MMfO2G1/vUmdb3tq17zKdukj3MUS254mENCck7ioNFR0Cc9lzuSHyBrdb0x
         M/iHeamNblckK/r1roDjhCAQz9DtmETad/o7qGNFxDTRRShRV9Lww0fFB7PaV7u/
         VPx2
-        """;
-
-    // Strip whitespace to match the format produced by X509Util.getEncodedClientCertificate()
-    // which uses Base64.getEncoder() (no line breaks). Base64.getDecoder() rejects whitespace.
-    private static final String MOCK_FORWARDED_CERT_HEADER = MOCK_FORWARDED_CERT.replaceAll("\\s+", "");
+        """.replaceAll("\\s+", "");
 
     @BeforeAll
     void init() {

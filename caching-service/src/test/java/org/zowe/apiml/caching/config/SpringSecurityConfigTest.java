@@ -44,7 +44,7 @@ public class SpringSecurityConfigTest {
 
     private static final String VALID_BASIC_AUTH = "Basic " + Base64.getEncoder().encodeToString((USER + ":" + PASSWORD).getBytes());
     private static final String INVALID_BASIC_AUTH = "Basic " + Base64.getEncoder().encodeToString((USER + ":invalidPassword").getBytes());
-    private static final String X_CS_SERVICE_ID = "Client-Cert";
+    private static final String CLIENT_CERT_HEADER_NAME = "Client-Cert";
     private static final String MOCK_FORWARDED_CERT = """
         MIID7zCCAtegAwIBAgIED0TPEjANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJD
         WjEPMA0GA1UECBMGUHJhZ3VlMQ8wDQYDVQQHEwZQcmFndWUxFDASBgNVBAoTC1pv
@@ -118,7 +118,7 @@ public class SpringSecurityConfigTest {
             @Test
             void thenReturnForbidden() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -133,7 +133,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenValidBasicAuth_thenReturnUnauthorized() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -144,7 +144,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenInvalidBasicAuth_thenReturnUnauthorized() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -188,7 +188,7 @@ public class SpringSecurityConfigTest {
             @Test
             void thenReturnForbidden() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -203,7 +203,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenValidBasicAuth_thenReturnUnauthorized() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -214,7 +214,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenInvalidBasicAuth_thenReturnUnauthorized() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -260,7 +260,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenNoBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -270,7 +270,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenValidBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -281,7 +281,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenInvalidBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -297,7 +297,7 @@ public class SpringSecurityConfigTest {
             void whenNoBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -308,7 +308,7 @@ public class SpringSecurityConfigTest {
             void whenValidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -320,7 +320,7 @@ public class SpringSecurityConfigTest {
             void whenInvalidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -365,7 +365,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenNoBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -375,7 +375,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenValidBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -386,7 +386,7 @@ public class SpringSecurityConfigTest {
             @Test
             void whenInvalidBasicAuth_thenReturnForbidden() {
                 given()
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -402,7 +402,7 @@ public class SpringSecurityConfigTest {
             void whenNoBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .get(getUri(hostname, port))
                     .then()
                     .log().ifValidationFails()
@@ -413,7 +413,7 @@ public class SpringSecurityConfigTest {
             void whenValidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
@@ -425,7 +425,7 @@ public class SpringSecurityConfigTest {
             void whenInvalidBasicAuth_thenReturnSuccess() {
                 given()
                     .config(SslContext.clientCertApiml)
-                    .header(new Header(X_CS_SERVICE_ID, MOCK_FORWARDED_CERT))
+                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
                     .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
                     .get(getUri(hostname, port))
                     .then()
