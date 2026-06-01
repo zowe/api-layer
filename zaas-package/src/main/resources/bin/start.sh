@@ -143,14 +143,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
-    ${JAVA21_CONSOLE_ENCODING} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${CUSTOM_JVM_OPTS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
