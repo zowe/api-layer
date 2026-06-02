@@ -348,10 +348,12 @@ class ApiCatalogAuthenticationTest {
         private ValidatableResponse getApiDocAuthenticated(String token) {
             return given()
                 .urlEncodingEnabled(false)
+                .log().all()
                 .cookie(COOKIE, token)
             .when()
                 .get(getUriFromGateway(CATALOG_SERVICE_ID_PATH + CATALOG_PREFIX + CATALOG_APIDOC_ENDPOINT))
-            .then();
+            .then()
+                .log().all();
         }
 
         @Test
