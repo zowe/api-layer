@@ -344,7 +344,8 @@ class ApimlInstanceRegistryTest {
         void setUp() {
             registry = new ApimlInstanceRegistry(
                 serverConfig, clientConfig, serverCodecs, eurekaClient,
-                eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new EurekaConfig.Tuple("")
+                eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new EurekaConfig.Tuple(""),
+                metadataFilterService
             );
             renewCorrection = (ThreadLocal<Integer>) ReflectionTestUtils.getField(registry, "RENEW_CORRECTION");
         }
