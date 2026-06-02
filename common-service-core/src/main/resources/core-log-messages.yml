@@ -193,6 +193,20 @@ messages:
       reason: "An invalid apiInfo parameter was found while parsing the service metadata."
       action: "Remove or fix the referenced metadata parameter."
 
+    - key: org.zowe.apiml.common.urlNotAllowed
+      number: ZWEAM601
+      type: WARNING
+      text: "URL '%s' is not allowed for instance '%s'"
+      reason: "The URL is not allowed."
+      action: "Validate URL against the allowed domains configuration."
+
+    - key: org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins
+      number: ZWEAM602
+      type: WARNING
+      text: "Pattern '*' is not recommended in apiml.corsAllowedOrigins"
+      reason: "The pattern '*' is not recommended in apiml.corsAllowedOrigins."
+      action: "Use a specific URL instead of a pattern."
+
     # Service specific messages
     # 700-999
 
