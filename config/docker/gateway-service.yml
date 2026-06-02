@@ -13,7 +13,7 @@ apiml:
         discoveryServiceUrls: https://discovery-service:10011/eureka/
     banner: console
     security:
-        allowedDomains: gateway-service,discovery-service,discoverable-client,api-catalog-services,caching-service,zaas-service,mock-services,zowe.github.io
+        allowedDomains: gateway-service,discovery-service,discoverable-client,api-catalog-services,caching-service,zaas-service,mock-services,zowe.github.io,www.zowe.org
 eureka:
     client:
         instanceInfoReplicationIntervalSeconds: 30
