@@ -12,10 +12,7 @@ package org.zowe.apiml.caching.config;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -89,7 +86,7 @@ public class SecurityConfigTest {
             VPx2
             """.replaceAll("\\s+", "");
 
-        @org.junit.jupiter.api.BeforeEach
+        @BeforeEach
         void setup() {
             org.mockito.Mockito.when(certificateValidator.isForwardingEnabled()).thenReturn(true);
             org.mockito.Mockito.when(certificateValidator.hasGatewayChain(org.mockito.Mockito.any())).thenReturn(true);

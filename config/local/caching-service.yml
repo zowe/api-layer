@@ -2,6 +2,9 @@ apiml:
     service:
         port: 10025
     banner: console
+    security:
+        x509:
+            certificatesUrl: https://localhost:10010/gateway/certificates
 jgroups:
     bind:
         port: 7600
