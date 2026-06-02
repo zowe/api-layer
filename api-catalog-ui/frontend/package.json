@@ -158,7 +158,10 @@
         "@babel/runtime": "7.28.6",
         "@babel/runtime-corejs3": "7.28.6",
         "js-yaml": "4.1.1",
-        "qs": "6.15.2"
+        "qs": "6.15.2",
+        "minimatch": "7.4.9",
+        "picomatch": "2.3.2",
+        "immutable-js": "3.8.3"
     },
     "engines": {
         "npm": "=10.9.8",

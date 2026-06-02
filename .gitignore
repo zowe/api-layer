@@ -125,3 +125,5 @@ zowe-cli-id-federation-plugin/*.jcl
 
 data/*
 index/*
+
+tools/*
