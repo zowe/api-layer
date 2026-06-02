@@ -24,6 +24,7 @@ import javax.net.ssl.HostnameVerifier;
 @SuppressWarnings("squid:S106")
 public class ZosmfJwtCheck {
 
+    static final String SCHEME_HTTPS = "https";
     static final String VERIFY_STRICT = "STRICT";
     static final String VERIFY_NONSTRICT = "NONSTRICT";
     static final String VERIFY_DISABLED = "DISABLED";
@@ -45,7 +46,7 @@ public class ZosmfJwtCheck {
             validateConfig(conf);
 
             HttpClientWrapper httpClient;
-            if ("https".equalsIgnoreCase(conf.getScheme())) {
+            if (SCHEME_HTTPS.equalsIgnoreCase(conf.getScheme())) {
                 String verifyMode = conf.getVerifyCertificates().toUpperCase();
 
                 if (VERIFY_DISABLED.equals(verifyMode)) {
@@ -80,7 +81,7 @@ public class ZosmfJwtCheck {
 
     static void validateConfig(ZosmfJwtCheckConf conf) {
         String scheme = conf.getScheme();
-        if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
+        if (!"http".equalsIgnoreCase(scheme) && !SCHEME_HTTPS.equalsIgnoreCase(scheme)) {
             throw new IllegalArgumentException("--scheme must be 'http' or 'https', got: " + scheme);
         }
 
@@ -89,7 +90,7 @@ public class ZosmfJwtCheck {
             throw new IllegalArgumentException("--verify-certificates must be STRICT, NONSTRICT, or DISABLED, got: " + conf.getVerifyCertificates());
         }
 
-        if ("https".equalsIgnoreCase(scheme) && !VERIFY_DISABLED.equals(verifyMode)) {
+        if (SCHEME_HTTPS.equalsIgnoreCase(scheme) && !VERIFY_DISABLED.equals(verifyMode)) {
             if (conf.getTrustStore() == null) {
                 throw new IllegalArgumentException("--truststore-file is required when --scheme=https and verification is not DISABLED. " +
                     "Provide the path to the truststore containing the z/OSMF server certificate.");
@@ -119,7 +120,7 @@ public class ZosmfJwtCheck {
         StringBuilder sb = new StringBuilder(existing);
         for (String prefix : packagePrefixes) {
             if (!existing.contains(prefix)) {
-                if (sb.length() > 0) {
+                if (!sb.isEmpty()) {
                     sb.append('|');
                 }
                 sb.append(prefix);

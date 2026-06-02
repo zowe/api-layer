@@ -29,6 +29,9 @@ public class JwkEndpointChecker {
 
     static final String JWK_ENDPOINT_PATH = "/jwt/ibm/api/zOSMFBuilder/jwk";
     private static final String ZOSMF_CSRF_HEADER = "X-CSRF-ZOSMF-HEADER";
+    private static final String PREFIX_RESPONSE_BODY = "Response body: ";
+    private static final String PREFIX_URL = "URL: ";
+    private static final String PREFIX_DETAILS = "Details: ";
     private static final Pattern N_VALUE_PATTERN = Pattern.compile("\"n\"\\s*:\\s*\"([^\"]*)\"");
 
     private final HttpClientWrapper httpClient;
@@ -58,12 +61,12 @@ public class JwkEndpointChecker {
         } catch (SSLHandshakeException e) {
             System.err.println("FAILURE: SSL handshake failed when connecting to " + urlString + ".");
             System.err.println("Verify that the truststore contains the z/OSMF server certificate.");
-            System.err.println("Details: " + e.getMessage());
+            System.err.println(PREFIX_DETAILS + e.getMessage());
             return false;
         } catch (ConnectException e) {
             System.err.println("FAILURE: Cannot connect to " + conf.getZosmfHost() + ":" + conf.getZosmfPort() + ".");
             System.err.println("Verify the host and port are correct and z/OSMF is running.");
-            System.err.println("Details: " + e.getMessage());
+            System.err.println(PREFIX_DETAILS + e.getMessage());
             return false;
         } catch (SocketTimeoutException e) {
             System.err.println("FAILURE: Connection timed out to " + conf.getZosmfHost() + ":" + conf.getZosmfPort() + ".");
@@ -76,7 +79,7 @@ public class JwkEndpointChecker {
             return false;
         } catch (Exception e) {
             System.err.println("FAILURE: Error when calling " + urlString + " verify hostname and port.");
-            System.err.println("Details: " + e.getMessage());
+            System.err.println(PREFIX_DETAILS + e.getMessage());
             return false;
         }
     }
@@ -103,25 +106,25 @@ public class JwkEndpointChecker {
 
         if (responseCode >= 400 && responseCode < 500) {
             System.err.println("FAILURE: z/OSMF JWK endpoint returned unexpected client error. HTTP " + responseCode);
-            System.err.println("URL: " + urlString);
+            System.err.println(PREFIX_URL + urlString);
             return false;
         }
 
         if (responseCode >= 500) {
             System.err.println("FAILURE: z/OSMF JWK endpoint returned server error. HTTP " + responseCode);
-            System.err.println("URL: " + urlString);
+            System.err.println(PREFIX_URL + urlString);
             return false;
         }
 
         System.err.println("FAILURE: z/OSMF JWK endpoint returned unexpected response code. HTTP " + responseCode);
-        System.err.println("URL: " + urlString);
+        System.err.println(PREFIX_URL + urlString);
         return false;
     }
 
     boolean validateJwkBody(String body) {
         if (body == null || body.isEmpty()) {
             System.err.println("WARNING: z/OSMF JWK endpoint returned an empty response body.");
-            System.err.println("Response body: " + (body == null ? "<null>" : "<empty>"));
+            System.err.println(PREFIX_RESPONSE_BODY + (body == null ? "<null>" : "<empty>"));
             return false;
         }
 
@@ -129,7 +132,7 @@ public class JwkEndpointChecker {
         if (!matcher.find()) {
             System.err.println("WARNING: JWK response does not contain an RSA modulus (\"n\" key).");
             System.err.println("The z/OSMF JWK endpoint may not be properly configured.");
-            System.err.println("Response body: " + body);
+            System.err.println(PREFIX_RESPONSE_BODY + body);
             return false;
         }
 
@@ -138,7 +141,7 @@ public class JwkEndpointChecker {
             System.err.println("FAILURE: JWK response contains an empty RSA modulus (\"n\" key is empty).");
             System.err.println("The z/OSMF server returned a key that cannot be used for JWT verification.");
             System.err.println("Check z/OSMF JWT configuration and ensure the signing key is properly generated.");
-            System.err.println("Response body: " + body);
+            System.err.println(PREFIX_RESPONSE_BODY + body);
             return false;
         }
 

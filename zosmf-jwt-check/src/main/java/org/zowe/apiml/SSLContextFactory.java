@@ -30,11 +30,9 @@ import java.security.cert.X509Certificate;
 @SuppressWarnings("squid:S106")
 public class SSLContextFactory {
 
-    private final ZosmfStores stores;
     private SSLContext sslContext;
 
-    private SSLContextFactory(ZosmfStores stores) {
-        this.stores = stores;
+    private SSLContextFactory() {
     }
 
     public SSLContext getSslContext() {
@@ -48,7 +46,7 @@ public class SSLContextFactory {
      * @return factory holding the initialized SSLContext
      */
     public static SSLContextFactory initSSLContext(ZosmfStores stores) throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException, CertificateException, IOException {
-        SSLContextFactory factory = new SSLContextFactory(stores);
+        SSLContextFactory factory = new SSLContextFactory();
 
         TrustManagerFactory trustFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
         trustFactory.init(stores.getTrustStore());
@@ -73,7 +71,7 @@ public class SSLContextFactory {
      * @return factory holding the trust-all SSLContext
      */
     public static SSLContextFactory initTrustAllSSLContext() throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException, CertificateException, IOException, UnrecoverableKeyException {
-        SSLContextFactory factory = new SSLContextFactory(null);
+        SSLContextFactory factory = new SSLContextFactory();
 
         TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {

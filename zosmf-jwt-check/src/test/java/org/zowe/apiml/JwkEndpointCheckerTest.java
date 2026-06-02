@@ -14,6 +14,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.io.ByteArrayOutputStream;
@@ -90,31 +92,18 @@ class JwkEndpointCheckerTest {
     @Nested
     class FailureResponses {
 
-        @Test
-        void response404IsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(404, ""));
+        @ParameterizedTest
+        @CsvSource({
+            "404, 404",
+            "500, server error",
+            "403, client error"
+        })
+        void failureResponseCodesAreReported(int statusCode, String expectedMessage) throws IOException {
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(statusCode, ""));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertFalse(checker.check());
             assertTrue(errStream.toString().contains("FAILURE"));
-            assertTrue(errStream.toString().contains("404"));
-        }
-
-        @Test
-        void response500IsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(500, ""));
-            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
-            assertFalse(checker.check());
-            assertTrue(errStream.toString().contains("FAILURE"));
-            assertTrue(errStream.toString().contains("server error"));
-        }
-
-        @Test
-        void response403IsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(403, ""));
-            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
-            assertFalse(checker.check());
-            assertTrue(errStream.toString().contains("FAILURE"));
-            assertTrue(errStream.toString().contains("client error"));
+            assertTrue(errStream.toString().contains(expectedMessage));
         }
     }
 
