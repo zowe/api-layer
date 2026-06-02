@@ -164,7 +164,7 @@ server:
         supportedProtocols: v12.stomp,v11.stomp
 
 zuul:
-    sslHostnameValidationEnabled: false
+    sslHostnameValidationEnabled: true
     addProxyHeaders: true
     traceRequestBody: true
     ignoreSecurityHeaders: false
