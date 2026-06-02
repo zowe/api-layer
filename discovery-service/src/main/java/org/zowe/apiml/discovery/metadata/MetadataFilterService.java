@@ -17,6 +17,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,6 +33,9 @@ public class MetadataFilterService implements InitializingBean {
 
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
     private String allowedDomains;
+
+    @InjectApimlLogger
+    private ApimlLogger apimlLogger = ApimlLogger.empty();
 
     private List<String> allowedDomainsList;
 
@@ -70,24 +75,23 @@ public class MetadataFilterService implements InitializingBean {
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var builder = new StringBuilder();
         if (!isAllowedDomain(info.getHomePageUrl())) {
-            builder.append("Home page URL is not allowed: ").append(info.getHomePageUrl());
+            builder.append("Home page URL is not allowed: ").append(info.getHomePageUrl()).append(System.lineSeparator());
         }
         if (!isAllowedDomain(info.getHealthCheckUrl())) {
-            builder.append("Health check URL is not allowed: ").append(info.getHealthCheckUrl());
+            builder.append("Health check URL is not allowed: ").append(info.getHealthCheckUrl()).append(System.lineSeparator());
         }
         if (!isAllowedDomain(info.getStatusPageUrl())) {
-            builder.append("Status page URL is not allowed: ").append(info.getStatusPageUrl());
+            builder.append("Status page URL is not allowed: ").append(info.getStatusPageUrl()).append(System.lineSeparator());
         }
         if (!isAllowedDomain(info.getSecureHealthCheckUrl())) {
-            builder.append("Secure health check URL is not allowed: ").append(info.getSecureHealthCheckUrl());
+            builder.append("Secure health check URL is not allowed: ").append(info.getSecureHealthCheckUrl()).append(System.lineSeparator());
         }
 
-        info.getMetadata().forEach((key, value) -> { // TODO Perhaps it should be only on a set of known metadata entries?
+        info.getMetadata().forEach((key, value) -> {
+
             if (isUrl(value)) {
                 if (!isAllowedDomain(value)) {
-                    log.warn("URL {} is not allowed for instance {}", value, info.getInstanceId());
-
-                    throw new MetadataValidationException("URL is not allowed: " + value + " for instance " + info.getInstanceId());
+                    builder.append("URL ").append(value).append(" in metadata entry ").append(key).append(" is not allowed for instance ").append(info.getInstanceId()).append(System.lineSeparator());
                 } else {
                     if (log.isTraceEnabled()) {
                         log.trace("URL {} is allowed", value);
@@ -97,6 +101,7 @@ public class MetadataFilterService implements InitializingBean {
         });
 
         if (builder.length() > 0) {
+            log.warn(builder.toString());
             throw new MetadataValidationException(builder.toString());
         }
 
