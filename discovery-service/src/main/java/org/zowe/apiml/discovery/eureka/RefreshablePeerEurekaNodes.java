@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -41,11 +42,13 @@ import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.netflix.eureka.server.EurekaServerConfigBean;
 import org.springframework.context.ApplicationListener;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.net.*;
 import java.util.Collection;
@@ -60,6 +63,9 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
     implements ApplicationListener<EnvironmentChangeEvent> {
 
     private static final String USER_AGENT = "Java-EurekaClient-Replication";
+
+    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
+    private boolean nonStrictVerifySslCertificatesOfServices;
 
     private Collection<ClientRequestFilter> replicationClientAdditionalFilters;
     private SSLContext secureSslContext;
@@ -224,12 +230,20 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         }
 
         class CustomClientConfig extends ClientConfig {
+
+            HostnameVerifier getHostnameVerifier() {
+                if (nonStrictVerifySslCertificatesOfServices) {
+                    return NoopHostnameVerifier.INSTANCE;
+                }
+                return new DefaultHostnameVerifier();
+            }
+
             public CustomClientConfig(CodecWrapper fullJsonCodec, EurekaServerConfig config) {
                 DiscoveryJerseyProvider discoveryJerseyProvider = new DiscoveryJerseyProvider(fullJsonCodec, fullJsonCodec);
                 register(discoveryJerseyProvider);
 
                 // Common properties to all clients
-                ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, NoopHostnameVerifier.INSTANCE);
+                ConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(secureSslContext, getHostnameVerifier());
                 var registry = RegistryBuilder.<ConnectionSocketFactory>create();
                 registry.register("https", socketFactory);
                 if (isClientAttlsEnabled) {
