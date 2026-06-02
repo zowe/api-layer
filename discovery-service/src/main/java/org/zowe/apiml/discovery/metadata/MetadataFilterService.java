@@ -58,7 +58,7 @@ public class MetadataFilterService implements InitializingBean {
     }
 
     private boolean isAllowed(String domain, String value) throws MalformedURLException {
-        log.error("checking URL {} against domain {}", value, domain);
+        log.debug("checking URL {} against domain {}", value, domain);
         if (isUrl(value)) {
             value = new URL(value).getHost();
         }

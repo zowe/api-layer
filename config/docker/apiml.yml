@@ -38,7 +38,7 @@ apiml:
                 verify: https://mock-services:10013/zss/saf/verify
         ssl:
             verifySslCertificatesOfServices: true
-        allowedDomains: apiml,discovery-service,discoverable-client,api-catalog-services,caching-service,zaas-service,mock-services,zowe.github.io,www.zowe.org,localhost
+        allowedDomains: apiml,apiml-2,discovery-service,discoverable-client,discoverable-client-2,api-catalog-services,caching-service,zaas-service,mock-services,mock-services-2,zowe.github.io,www.zowe.org,localhost
     banner: console
 spring:
     output:
