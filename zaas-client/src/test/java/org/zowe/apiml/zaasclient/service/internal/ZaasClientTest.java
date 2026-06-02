@@ -40,10 +40,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.*;
@@ -234,7 +231,7 @@ class ZaasClientTest {
     @Test
     void givenValidOidcToken_whenValidate_thenSuccess() throws ZaasClientException {
         var token = "validOidcToken";
-        var successResult = new ZaasOidcValidationResult(true);
+        var successResult = new ZaasOidcValidationResult(true, null);
         when(tokens.validateOidc(token)).thenReturn(successResult);
         assertSame(successResult, underTest.validateOidc(token));
     }
@@ -252,7 +249,7 @@ class ZaasClientTest {
     @Test
     void givenInvalidOidc_whenValidate_thenFalse() throws ZaasClientException {
         var token = "invalidOidc";
-        var failResult = new ZaasOidcValidationResult(false);
+        var failResult = new ZaasOidcValidationResult(false, null);
         when(tokens.validateOidc(token)).thenReturn(failResult);
         assertSame(failResult, underTest.validateOidc(token));
     }
