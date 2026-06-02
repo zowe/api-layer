@@ -50,25 +50,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
-import static org.apache.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 class AuthControllerTest {
@@ -416,17 +403,26 @@ class AuthControllerTest {
     @Nested
     class GivenValidateOIDCTokenRequest {
 
-        private static final String TOKEN = "token";
-
         @Nested
         class WhenValidateToken {
+
+            private static final String TOKEN = "ewogICJ0eXAiOiAiSldUIiwKICAibm9uY2UiOiAiYVZhbHVlVG9CZVZlcmlmaWVkIiwKICAiYWxnIjogIlJTMjU2IiwKICAia2lkIjogIlNlQ1JldEtleSIKfQ.ewogICJhdWQiOiAiMDAwMDAwMDMtMDAwMC0wMDAwLWMwMDAtMDAwMDAwMDAwMDAwIiwKICAiaXNzIjogImh0dHBzOi8vb2lkYy5wcm92aWRlci5vcmcvYXBwIiwKICAiaWF0IjogMTcyMjUxNDEyOSwKICAibmJmIjogMTcyMjUxNDEyOSwKICAiZXhwIjogODcyMjUxODEyNSwKICAic3ViIjogIm9pZGMudXNlcm5hbWUiCn0.c29tZVNpZ25lZEhhc2hDb2Rl";
+
+            private String getBody() throws JSONException {
+                return new JSONObject()
+                    .put("token", TOKEN)
+                    .toString();
+            }
+
             @Test
             void validateOIDCToken() throws Exception {
                 when(oidcProvider.isValid(TOKEN)).thenReturn(true);
                 mockMvc.perform(post("/zaas/api/v1/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body.toString()))
-                    .andExpect(status().is(SC_NO_CONTENT));
+                        .content(getBody()))
+                    .andExpect(status().is(SC_OK))
+                    .andExpect(jsonPath("sub", is("oidc.username")))
+                    .andExpect(jsonPath("iss", is("https://oidc.provider.org/app")));
             }
 
             @Test
@@ -434,10 +430,12 @@ class AuthControllerTest {
                 when(oidcProvider.isValid(TOKEN)).thenReturn(false);
                 mockMvc.perform(post("/zaas/api/v1/auth/oidc-token/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body.toString()))
+                        .content(getBody()))
                     .andExpect(status().is(SC_UNAUTHORIZED));
             }
+
         }
+
     }
 
     @Nested

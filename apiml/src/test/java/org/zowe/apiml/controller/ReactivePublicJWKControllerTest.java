@@ -227,7 +227,7 @@ class ReactivePublicJWKControllerTest {
             .expectNextMatches(responseEntity -> {
                 assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
                 String pem = (String) responseEntity.getBody();
-                return pem.startsWith("-----BEGIN PUBLIC KEY-----") && pem.endsWith("-----END PUBLIC KEY-----\n");
+                return pem.startsWith("-----BEGIN PUBLIC KEY-----") && pem.endsWith("-----END PUBLIC KEY-----" + System.lineSeparator());
             })
             .verifyComplete();
     }
