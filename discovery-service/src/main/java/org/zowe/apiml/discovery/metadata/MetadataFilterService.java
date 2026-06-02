@@ -72,6 +72,43 @@ public class MetadataFilterService implements InitializingBean {
         return false;
     }
 
+    private void verifyMetadataEntry(String key, String value, InstanceInfo info, StringBuilder builder) {
+        var metadataToVerify = List.of(
+            "gatewayUrl",
+            "gateway-url",
+            "serviceUrl",
+            "service-url",
+            "swaggerUrl",
+            "graphqlUrl",
+            "documentationUrl");
+
+        if (metadataToVerify.stream().anyMatch(key::endsWith)) {
+            if (isUrl(value)) {
+                if (!isAllowedDomain(value)) {
+                    builder.append("URL ").append(value).append(" in metadata entry ").append(key).append(" is not allowed for instance ").append(info.getInstanceId()).append(System.lineSeparator());
+                } else {
+                    if (log.isTraceEnabled()) {
+                        log.trace("URL {} is allowed", value);
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void verifyCorsAllowedOrigins(String allowedOrigins, InstanceInfo info, StringBuilder builder) {
+        var urls = Arrays.stream(allowedOrigins.split(",")).map(String::trim).collect(toList());
+        urls.forEach(url -> {
+            if (url.equals("*")) {
+                // TODO WArning
+                return;
+            }
+            if (!isAllowedDomain(url)) {
+                builder.append("URL ").append(url).append(" in metadata entry apiml.corsAllowedOrigins is not allowed for instance ").append(info.getInstanceId()).append(System.lineSeparator());
+            }
+        });
+    }
+
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var builder = new StringBuilder();
         if (!isAllowedDomain(info.getHomePageUrl())) {
@@ -87,17 +124,12 @@ public class MetadataFilterService implements InitializingBean {
             builder.append("Secure health check URL is not allowed: ").append(info.getSecureHealthCheckUrl()).append(System.lineSeparator());
         }
 
-        info.getMetadata().forEach((key, value) -> {
+        if (info.getMetadata().containsKey("apiml.corsAllowedOrigins")) {
+            verifyCorsAllowedOrigins(info.getMetadata().get("apiml.corsAllowedOrigins"), info, builder);
+        }
 
-            if (isUrl(value)) {
-                if (!isAllowedDomain(value)) {
-                    builder.append("URL ").append(value).append(" in metadata entry ").append(key).append(" is not allowed for instance ").append(info.getInstanceId()).append(System.lineSeparator());
-                } else {
-                    if (log.isTraceEnabled()) {
-                        log.trace("URL {} is allowed", value);
-                    }
-                }
-            }
+        info.getMetadata().forEach((key, value) -> {
+            verifyMetadataEntry(key, value, info, builder);
         });
 
         if (builder.length() > 0) {
