@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.zowe.apiml.cache.Storage;
@@ -27,9 +28,12 @@ import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
+import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import reactor.test.StepVerifier;
 
+import javax.security.auth.x500.X500Principal;
 import java.net.URI;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -60,17 +64,17 @@ class CachingControllerTest {
         mockExchange = mock(ServerWebExchange.class);
         mockRequest = mock(ServerHttpRequest.class);
         when(mockExchange.getRequest()).thenReturn(mockRequest);
-        
-        org.springframework.http.server.reactive.SslInfo mockSslInfo = mock(org.springframework.http.server.reactive.SslInfo.class);
-        java.security.cert.X509Certificate mockCert = mock(java.security.cert.X509Certificate.class);
-        javax.security.auth.x500.X500Principal principal = mock(javax.security.auth.x500.X500Principal.class);
+
+        var mockSslInfo = mock(SslInfo.class);
+        var mockCert = mock(X509Certificate.class);
+        var principal = mock(X500Principal.class);
         when(principal.getName()).thenReturn(SERVICE_ID);
         when(mockCert.getSubjectX500Principal()).thenReturn(principal);
-        when(mockSslInfo.getPeerCertificates()).thenReturn(new java.security.cert.X509Certificate[]{mockCert});
+        when(mockSslInfo.getPeerCertificates()).thenReturn(new X509Certificate[]{mockCert});
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
 
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put(org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, new java.security.cert.X509Certificate[]{mockCert});
+        attributes.put(CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, new X509Certificate[]{mockCert});
         when(mockExchange.getAttributes()).thenReturn(attributes);
 
         HttpHeaders headers = new HttpHeaders();
@@ -345,16 +349,16 @@ class CachingControllerTest {
     class WhenUseSpecificServiceHeader {
         @BeforeEach
         void setUp() {
-            org.springframework.http.server.reactive.SslInfo mockSslInfo = mock(org.springframework.http.server.reactive.SslInfo.class);
-            java.security.cert.X509Certificate mockCert = mock(java.security.cert.X509Certificate.class);
-            javax.security.auth.x500.X500Principal principal = mock(javax.security.auth.x500.X500Principal.class);
+            var mockSslInfo = mock(SslInfo.class);
+            var mockCert = mock(X509Certificate.class);
+            var principal = mock(X500Principal.class);
             when(principal.getName()).thenReturn(SERVICE_ID);
             when(mockCert.getSubjectX500Principal()).thenReturn(principal);
-            when(mockSslInfo.getPeerCertificates()).thenReturn(new java.security.cert.X509Certificate[]{mockCert});
+            when(mockSslInfo.getPeerCertificates()).thenReturn(new X509Certificate[]{mockCert});
             when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
 
             Map<String, Object> attributes = new HashMap<>();
-            attributes.put(org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, new java.security.cert.X509Certificate[]{mockCert});
+            attributes.put(CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, new X509Certificate[]{mockCert});
             when(mockExchange.getAttributes()).thenReturn(attributes);
 
             HttpHeaders headers = new HttpHeaders();
@@ -380,16 +384,16 @@ class CachingControllerTest {
 
         @Test
         void givenServiceIdHeaderAndCertificateHeaderForReadForService_thenReturnProperValues() {
-            org.springframework.http.server.reactive.SslInfo mockSslInfo = mock(org.springframework.http.server.reactive.SslInfo.class);
-            java.security.cert.X509Certificate mockCert = mock(java.security.cert.X509Certificate.class);
-            javax.security.auth.x500.X500Principal principal = mock(javax.security.auth.x500.X500Principal.class);
+            var mockSslInfo = mock(SslInfo.class);
+            var mockCert = mock(X509Certificate.class);
+            var principal = mock(X500Principal.class);
             when(principal.getName()).thenReturn("certificate");
             when(mockCert.getSubjectX500Principal()).thenReturn(principal);
-            when(mockSslInfo.getPeerCertificates()).thenReturn(new java.security.cert.X509Certificate[]{mockCert});
+            when(mockSslInfo.getPeerCertificates()).thenReturn(new X509Certificate[]{mockCert});
             when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
 
             Map<String, Object> attributes = new HashMap<>();
-            attributes.put(org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, new java.security.cert.X509Certificate[]{mockCert});
+            attributes.put(CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, new X509Certificate[]{mockCert});
             when(mockExchange.getAttributes()).thenReturn(attributes);
 
             HttpHeaders headers = new HttpHeaders();

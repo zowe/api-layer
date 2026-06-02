@@ -118,12 +118,12 @@ public class RouteLocator implements RouteDefinitionLocator {
                     .map(Boolean::parseBoolean)
                     .orElse(false)
         ) {
-            log.debug("Forwarding client cert is enabled {}", serviceInstance.getServiceId());
+            log.debug("Forwarding client cert is enabled for service: {}", serviceInstance.getServiceId());
             FilterDefinition forwardClientCertFilter = new FilterDefinition();
             forwardClientCertFilter.setName("ForwardClientCertFilterFactory");
             serviceRelated.add(forwardClientCertFilter);
         } else {
-            log.debug("Forwarding client cert is not enabled {}", serviceInstance.getServiceId());
+            log.debug("Forwarding client cert is not enabled for service: {}", serviceInstance.getServiceId());
         }
         //Allow encoded characters by default
         if (!Optional.ofNullable(serviceInstance.getMetadata().get(ENABLE_URL_ENCODED_CHARACTERS))

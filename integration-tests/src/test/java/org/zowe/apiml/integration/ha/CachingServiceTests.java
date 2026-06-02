@@ -172,7 +172,6 @@ class CachingServiceTests {
         log.info("Set value on the first instance to cache storage");
         //@formatter:off
         given()
-            .log().all()
             .config(SslContext.clientCertApiml)
             .contentType(JSON)
             .body(KEY_VALUE)

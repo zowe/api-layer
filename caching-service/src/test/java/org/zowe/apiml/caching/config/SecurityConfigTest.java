@@ -64,7 +64,7 @@ public class SecurityConfigTest {
         @MockitoBean
         private CertificateValidator certificateValidator;
 
-        private static final String MOCK_FORWARDED_CERT = """
+        private static final String MOCK_FORWARDED_CERT_HEADER = """
             MIID7zCCAtegAwIBAgIED0TPEjANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJD
             WjEPMA0GA1UECBMGUHJhZ3VlMQ8wDQYDVQQHEwZQcmFndWUxFDASBgNVBAoTC1pv
             d2UgU2FtcGxlMRwwGgYDVQQLExNBUEkgTWVkaWF0aW9uIExheWVyMRUwEwYDVQQD
@@ -87,11 +87,7 @@ public class SecurityConfigTest {
             4TEK0MMfO2G1/vUmdb3tq17zKdukj3MUS254mENCck7ioNFR0Cc9lzuSHyBrdb0x
             M/iHeamNblckK/r1roDjhCAQz9DtmETad/o7qGNFxDTRRShRV9Lww0fFB7PaV7u/
             VPx2
-            """;
-
-        // Strip whitespace to match the format produced by X509Util.getEncodedClientCertificate()
-        // which uses Base64.getEncoder() (no line breaks). Base64.getDecoder() rejects whitespace.
-        private static final String MOCK_FORWARDED_CERT_HEADER = MOCK_FORWARDED_CERT.replaceAll("\\s+", "");
+            """.replaceAll("\\s+", "");
 
         @org.junit.jupiter.api.BeforeEach
         void setup() {

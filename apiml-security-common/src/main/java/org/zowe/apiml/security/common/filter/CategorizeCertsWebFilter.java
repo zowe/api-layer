@@ -100,12 +100,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                         certificateForClientAuth
                     );
 
-                    log.atDebug()
-                        .setMessage("clientAuthCerts serial numbers = {}")
-                        .addArgument(() -> Arrays.stream(clientAuthCerts)
-                            .map(cert -> cert.getSerialNumber().toString(16))
-                            .toList())
-                        .log();
+                    logSerialNumber("serial number of certificate from header = {}", clientAuthCerts);
 
                     logIgnoredCertificates(new X509Certificate[]{clientCertFromHeader.get()}, clientAuthCerts);
 
@@ -122,8 +117,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
 
-                log.debug("DEBUG (else): clientAuthCerts.length = {}", clientAuthCerts.length);
-
+                logSerialNumber("serial number of certificate from ssl handshake = {}", clientAuthCerts);
                 logIgnoredCertificates(certsFromTls, clientAuthCerts);
 
                 exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
@@ -143,6 +137,15 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             log.debug("No TLS peer certificates found in the request.");
         }
         return exchange.mutate().request(requestBuilder.build()).build();
+    }
+
+    void logSerialNumber(String msg, X509Certificate... clientAuthCerts) {
+        log.atDebug()
+            .setMessage(msg)
+            .addArgument(() -> Arrays.stream(clientAuthCerts)
+                .map(cert -> cert.getSerialNumber().toString(16))
+                .toList())
+            .log();
     }
 
     /**
