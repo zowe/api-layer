@@ -129,18 +129,17 @@ class KeyringUtilsTest {
         }
 
         @Test
-        void givenInvalidPassword_thenThrowsIOException() {
+        void givenInvalidPassword_thenThrowsIOException() throws Exception {
             String truststorePath = "../keystore/localhost/localhost.truststore.p12";
             java.io.File file = new java.io.File(truststorePath);
             if (!file.exists()) {
                 return;
             }
 
-            assertThrows(IOException.class, () -> {
-                try (InputStream is = new java.io.FileInputStream(file)) {
-                    KeyringUtils.readKeyStore(is, "wrongpassword".toCharArray(), "PKCS12");
-                }
-            });
+            try (InputStream is = new java.io.FileInputStream(file)) {
+                assertThrows(IOException.class,
+                    () -> KeyringUtils.readKeyStore(is, "wrongpassword".toCharArray(), "PKCS12"));
+            }
         }
 
         @Test
