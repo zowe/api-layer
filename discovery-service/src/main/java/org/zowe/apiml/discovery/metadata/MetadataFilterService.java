@@ -114,34 +114,39 @@ public class MetadataFilterService implements InitializingBean {
     }
 
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
-        var result = true;
+        var result = new AtomicBoolean(true);
         if (!isAllowedDomain(info.getHomePageUrl())) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Home Page URL", info.getHomePageUrl(), info.getInstanceId());
-            result = false;
+            result.set(false);
         }
         if (!isAllowedDomain(info.getHealthCheckUrl())) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "HealthCheck URL", info.getHealthCheckUrl(), info.getInstanceId());
-            result = false;
+            result.set(false);
         }
         if (!isAllowedDomain(info.getStatusPageUrl())) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Status Page URL", info.getStatusPageUrl(), info.getInstanceId());
-            result = false;
+            result.set(false);
         }
         if (!isAllowedDomain(info.getSecureHealthCheckUrl())) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Secure Health Check URL", info.getSecureHealthCheckUrl(), info.getInstanceId());
-            result = false;
+            result.set(false);
         }
 
         if (info.getMetadata().containsKey("apiml.corsAllowedOrigins")) {
             var corsVerificationResult = verifyCorsAllowedOrigins(info.getMetadata().get("apiml.corsAllowedOrigins"), info);
             if (!corsVerificationResult) {
-                result = false;
+                result.set(false);
             }
         }
 
-        info.getMetadata().forEach((key, value) -> verifyMetadataEntry(key, value, info));
+        info.getMetadata().forEach((key, value) -> {
+            var metadataVerificationResult = verifyMetadataEntry(key, value, info);
+            if (!metadataVerificationResult) {
+                result.set(false);
+            }
+        });
 
-        if (!result) {
+        if (!result.get()) {
             throw new MetadataValidationException("URLs not allowed found for instance " + info.getInstanceId());
         }
 

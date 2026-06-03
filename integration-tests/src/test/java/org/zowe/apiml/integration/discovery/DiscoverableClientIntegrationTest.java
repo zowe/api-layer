@@ -14,12 +14,15 @@ import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
 import org.zowe.apiml.util.categories.RegistrationTest;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoverableClientConfiguration;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
@@ -32,27 +35,35 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
 import static org.zowe.apiml.util.requests.Endpoints.MEDIATION_CLIENT;
 
 @DiscoverableClientDependentTest // TODO This does not run on z/OS tests
-@RegistrationTest // TODO Runs in GA as CITestsRegistration, add CITestsRegistrationModulith
+@RegistrationTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
 
     private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(MEDIATION_CLIENT);
 
+    private static DiscoverableClientConfiguration discoverableClientConfig;
+
     @BeforeAll
     void beforeClass() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+        discoverableClientConfig = ConfigReader.environmentConfiguration().getDiscoverableClientConfiguration();
     }
 
     @Nested
     class WhenIntegratingWithDiscoveryService {
+
+        @BeforeEach
+        void setUp() {
+            unregister(MEDIATION_CLIENT_URI);
+        }
 
         @Nested
         class GivenValidService {
@@ -84,9 +95,9 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                 void whenRegisteringWithUrlNotInAllowList_thenReject() {
                     isRegistered(false, MEDIATION_CLIENT_URI);
 
-                    register(MEDIATION_CLIENT_URI, Collections.singletonMap("some.url", "http://invalid.com"))
+                    register(MEDIATION_CLIENT_URI, Collections.singletonMap("apiml.gatewayUrl", "http://www.invalid.com"))
                         .and()
-                        .statusCode(is(SC_FORBIDDEN));
+                        .statusCode(is(SC_OK));
 
                     isRegistered(false, MEDIATION_CLIENT_URI);
                 }
@@ -100,13 +111,15 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                         .statusCode(is(SC_OK));
                     isRegistered(true, MEDIATION_CLIENT_URI);
 
+                    var instanceId = discoverableClientConfig.getHost() + ":registrationtest:10013";
+
                     given()
                         .config(SslContext.clientCertValid)
                         .contentType(ContentType.JSON)
-                    .when() // FIXME find InstanceID and confirm serviceID
-                        .put(DiscoveryUtils.getDiscoveryUrl() + "/eureka/v2/apps/registrationtest/instanceID/metadata?some.other.url=https://baddomain.net")
+                    .when()
+                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.serviceUrl=https://baddomain.net", instanceId))
                     .then()
-                        .statusCode(is(SC_FORBIDDEN));
+                        .statusCode(is(SC_INTERNAL_SERVER_ERROR));
 
                     unregister(MEDIATION_CLIENT_URI);
                     isRegistered(false, MEDIATION_CLIENT_URI);
@@ -123,8 +136,8 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                     given()
                         .config(SslContext.clientCertValid)
                         .contentType(ContentType.JSON)
-                    .when() //FIXME find InstanceID and confirm serviceID
-                        .put(DiscoveryUtils.getDiscoveryUrl() + "/eureka/v2/apps/registrationtest/instanceID/metadata?key=value")
+                    .when()
+                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.serviceUrl=https://www.zowe.org", discoverableClientConfig.getHost() + ":registrationtest:10013" ))
                     .then()
                         .statusCode(is(SC_OK));
 
@@ -163,6 +176,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
 
     private ValidatableResponse register(URI uri, Map<String, Object> additionalMetadata) {
         return given()
+            .contentType(ContentType.JSON)
             .body(additionalMetadata == null ? Collections.emptyMap() : additionalMetadata)
         .when()
             .post(uri)
