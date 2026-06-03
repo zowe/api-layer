@@ -26,11 +26,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.util.stream.Collectors.toList;
-
 @Service
 @Slf4j
 public class MetadataFilterService implements InitializingBean {
+
+    private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
 
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
     private String allowedDomains;
@@ -42,7 +42,7 @@ public class MetadataFilterService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        allowedDomainsList = Arrays.stream(allowedDomains.split(",")).map(String::trim).collect(toList());
+        allowedDomainsList = Arrays.stream(allowedDomains.split(",")).map(String::trim).toList();
     }
 
     private boolean isAllowedDomain(String domain) {
@@ -83,15 +83,13 @@ public class MetadataFilterService implements InitializingBean {
             "graphqlUrl",
             "documentationUrl");
 
-        if (metadataToVerify.stream().anyMatch(key::endsWith)) {
-            if (isUrl(value)) {
-                if (!isAllowedDomain(value)) {
-                    apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", key, value, info.getInstanceId());
-                    return false;
-                } else {
-                    if (log.isTraceEnabled()) {
-                        log.trace("URL {} is allowed", value);
-                    }
+        if (metadataToVerify.stream().anyMatch(key::endsWith) && isUrl(value)) {
+            if (!isAllowedDomain(value)) {
+                apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, key, value, info.getInstanceId());
+                return false;
+            } else {
+                if (log.isTraceEnabled()) {
+                    log.trace("URL {} is allowed", value);
                 }
             }
         }
@@ -100,7 +98,7 @@ public class MetadataFilterService implements InitializingBean {
     }
 
     private boolean verifyCorsAllowedOrigins(String allowedOrigins, InstanceInfo info) {
-        var urls = Arrays.stream(allowedOrigins.split(",")).map(String::trim).collect(toList());
+        var urls = Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList();
         var result = new AtomicBoolean(true);
         urls.forEach(url -> {
             if (url.equals("*")) {
@@ -108,7 +106,7 @@ public class MetadataFilterService implements InitializingBean {
                 return;
             }
             if (!isAllowedDomain(url)) {
-                apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "API ML CORS Allowed Origin", url, info.getInstanceId());
+                apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "API ML CORS Allowed Origin", url, info.getInstanceId());
                 result.set(false);
             }
         });
@@ -118,19 +116,19 @@ public class MetadataFilterService implements InitializingBean {
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = true;
         if (!isAllowedDomain(info.getHomePageUrl())) {
-            apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "Home Page URL", info.getHomePageUrl(), info.getInstanceId());
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Home Page URL", info.getHomePageUrl(), info.getInstanceId());
             result = false;
         }
         if (!isAllowedDomain(info.getHealthCheckUrl())) {
-            apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "HealthCheck URL", info.getHealthCheckUrl(), info.getInstanceId());
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "HealthCheck URL", info.getHealthCheckUrl(), info.getInstanceId());
             result = false;
         }
         if (!isAllowedDomain(info.getStatusPageUrl())) {
-            apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "Status Page URL", info.getStatusPageUrl(), info.getInstanceId());
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Status Page URL", info.getStatusPageUrl(), info.getInstanceId());
             result = false;
         }
         if (!isAllowedDomain(info.getSecureHealthCheckUrl())) {
-            apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "Secure Health Check URL", info.getSecureHealthCheckUrl(), info.getInstanceId());
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Secure Health Check URL", info.getSecureHealthCheckUrl(), info.getInstanceId());
             result = false;
         }
 
@@ -141,9 +139,7 @@ public class MetadataFilterService implements InitializingBean {
             }
         }
 
-        info.getMetadata().forEach((key, value) -> {
-            verifyMetadataEntry(key, value, info);
-        });
+        info.getMetadata().forEach((key, value) -> verifyMetadataEntry(key, value, info));
 
         if (!result) {
             throw new MetadataValidationException("URLs not allowed found for instance " + info.getInstanceId());

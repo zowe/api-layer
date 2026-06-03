@@ -124,7 +124,7 @@ class MetadataFilterServiceTest {
                     metadataFilterService.verifyAllowedDomains(instanceInfo);
                 });
 
-                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("API ML CORS Allowed Origin"), eq("https://invalid.org:3000"), eq("test-instance"));
+                verify(apimlLogger).log("org.zowe.apiml.common.urlNotAllowed", "API ML CORS Allowed Origin", "https://invalid.org:3000", "test-instance");
             }
 
         }

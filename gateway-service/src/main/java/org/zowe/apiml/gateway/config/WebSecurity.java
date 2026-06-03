@@ -112,8 +112,6 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class WebSecurity {
 
-    // TODO Add global filter to prevent requests to not allowed domains
-
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
     public static final String COOKIE_NONCE = "oidc_nonce";
