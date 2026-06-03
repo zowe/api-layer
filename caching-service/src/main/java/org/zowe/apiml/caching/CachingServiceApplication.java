@@ -12,6 +12,7 @@ package org.zowe.apiml.caching;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.cache.CacheMetricsAutoConfiguration;
 import org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.retry.annotation.EnableRetry;
@@ -21,7 +22,8 @@ import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 @SpringBootApplication(
     exclude = {
         OpenTelemetryAutoConfiguration.class,
-        OpenTelemetryLoggingAutoConfiguration.class
+        OpenTelemetryLoggingAutoConfiguration.class,
+        CacheMetricsAutoConfiguration.class
     }
 )
 @EnableApiDiscovery

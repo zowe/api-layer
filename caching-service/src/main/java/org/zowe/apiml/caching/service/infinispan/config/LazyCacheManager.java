@@ -34,6 +34,11 @@ import org.springframework.context.event.EventListener;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,8 +61,18 @@ public class LazyCacheManager extends DefaultCacheManager {
         ConfigurationBuilderHolder cacheManagerConfig,
         Map<String, ConfigurationBuilder> caches
     ) {
+        this(cacheManagerConfig, caches, 3, 5000, 10000);
+    }
+
+    public LazyCacheManager(
+        ConfigurationBuilderHolder cacheManagerConfig,
+        Map<String, ConfigurationBuilder> caches,
+        int maxRetries,
+        long retryBackoffMs,
+        long jgroupsStopTimeoutMs
+    ) {
         super(cacheManagerConfig, false);
-        cacheInitializer = new CacheInitializer(cacheManagerConfig, caches);
+        cacheInitializer = new CacheInitializer(cacheManagerConfig, caches, maxRetries, retryBackoffMs, jgroupsStopTimeoutMs);
         cacheManager = new AtomicReference<>(cacheInitializer::getDefaultCacheManager);
     }
 
@@ -135,6 +150,7 @@ public class LazyCacheManager extends DefaultCacheManager {
 
     @Override
     public Set<String> getAccessibleCacheNames() {
+        if (!isInitialized()) return Collections.emptySet();
         return getCacheManager().getAccessibleCacheNames();
     }
 
@@ -220,6 +236,7 @@ public class LazyCacheManager extends DefaultCacheManager {
 
     @Override
     public Set<String> getCacheNames() {
+        if (!isInitialized()) return Collections.emptySet();
         return getCacheManager().getCacheNames();
     }
 
@@ -264,22 +281,86 @@ public class LazyCacheManager extends DefaultCacheManager {
 
         private final ConfigurationBuilderHolder cacheManagerConfig;
         private final Map<String, ConfigurationBuilder> caches;
+        private final int maxRetries;
+        private final long retryBackoffMs;
+        private final long jgroupsStopTimeoutMs;
 
         private final Phaser threadCounter = new Phaser();
 
-        private DefaultCacheManager startDefaultCacheManager() {
-            var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
-            try {
-                defaultCacheManager.start();
-                return defaultCacheManager;
-            } catch (RuntimeException reStart) {
-                log.warn("Cannot start caching manager", reStart);
+        private DefaultCacheManager createCacheManagerInstance() {
+            return new DefaultCacheManager(cacheManagerConfig, false);
+        }
+
+        private void startCacheManagerInstance(DefaultCacheManager dcm) {
+            for (int attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    defaultCacheManager.stop();
-                } catch (RuntimeException reStop) {
-                    log.debug("Cannot stop failing caching manager", reStop);
+                    log.debug("Starting cache manager, attempt {}/{}", attempt, maxRetries);
+                    dcm.start();
+                    log.debug("Cache manager started successfully on attempt {}/{}", attempt, maxRetries);
+                    return;
+                } catch (RuntimeException e) {
+                    log.warn("Cannot start caching manager on attempt {}/{}", attempt, maxRetries, e);
+                    if (attempt < maxRetries) {
+                        stopAndWaitForShutdown(dcm);
+                        cleanPersistentState(dcm);
+                        long backoff = retryBackoffMs * (long) attempt;
+                        log.debug("Waiting {}ms before retry {}", backoff, attempt + 1);
+                        try {
+                            Thread.sleep(backoff);
+                        } catch (InterruptedException ie) {
+                            Thread.currentThread().interrupt();
+                            log.warn("Interrupted during backoff, aborting retry loop");
+                            throw new IllegalStateException("Cache manager initialization interrupted", ie);
+                        }
+                    }
                 }
-                throw reStart;
+            }
+            // exhausted all retries
+            log.error("Cannot initialize DefaultCacheManager after {} attempts", maxRetries);
+            underInit = null;
+            throw new IllegalStateException("Cache container is not initialized after " + maxRetries + " attempts");
+        }
+
+        private void stopAndWaitForShutdown(DefaultCacheManager dcm) {
+            try {
+                dcm.stop();
+            } catch (RuntimeException e) {
+                log.debug("Error stopping cache manager during retry", e);
+            }
+            long deadline = System.currentTimeMillis() + jgroupsStopTimeoutMs;
+            while (dcm.getStatus() != ComponentStatus.TERMINATED && System.currentTimeMillis() < deadline) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+            if (dcm.getStatus() != ComponentStatus.TERMINATED) {
+                log.warn("Cache manager status is {} after {}ms shutdown wait", dcm.getStatus(), jgroupsStopTimeoutMs);
+            }
+        }
+
+        private void cleanPersistentState(DefaultCacheManager dcm) {
+            String persistentLocation = dcm.getCacheManagerConfiguration().globalState().persistentLocation();
+            if (persistentLocation != null) {
+                try {
+                    Path path = Paths.get(persistentLocation);
+                    if (Files.exists(path)) {
+                        try (var files = Files.walk(path)) {
+                            files.sorted(Comparator.reverseOrder())
+                                .forEach(p -> {
+                                    try {
+                                        Files.delete(p);
+                                    } catch (IOException ignored) {
+                                        log.trace("Could not delete persistent state file: {}", p, ignored);
+                                    }
+                                });
+                        }
+                    }
+                } catch (IOException e) {
+                    log.warn("Cannot clean persistent state at {}", persistentLocation, e);
+                }
             }
         }
 
@@ -300,7 +381,8 @@ public class LazyCacheManager extends DefaultCacheManager {
                     if (underInit == null) {
                         log.debug("attempt to create cache manager");
                         try {
-                            underInit = startDefaultCacheManager();
+                            underInit = createCacheManagerInstance();
+                            startCacheManagerInstance(underInit);
                             log.debug("cache manager was created");
                         } catch (Exception e) {
                             log.warn("Cannot initialize DefaultCacheManager", e);

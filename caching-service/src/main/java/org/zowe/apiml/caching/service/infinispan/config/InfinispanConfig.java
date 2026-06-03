@@ -113,6 +113,15 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${caching.storage.infinispan.numSegments:256}")
     private int numSegments;
 
+    @Value("${caching.storage.infinispan.maxRetries:3}")
+    private int maxRetries;
+
+    @Value("${caching.storage.infinispan.retryBackoffMs:5000}")
+    private long retryBackoffMs;
+
+    @Value("${caching.storage.infinispan.jgroupsStopTimeoutMs:10000}")
+    private long jgroupsStopTimeoutMs;
+
     private final AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
     @Override
@@ -240,7 +249,7 @@ public class InfinispanConfig implements InitializingBean {
             caches.put("validationOIDCToken", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofSeconds(20)));
         }
 
-        return new LazyCacheManager(getCacheManagerConfig(resourceLoader), caches);
+        return new LazyCacheManager(getCacheManagerConfig(resourceLoader), caches, maxRetries, retryBackoffMs, jgroupsStopTimeoutMs);
     }
 
     private ClusteredLock lock(CacheContainer cacheManager) {
