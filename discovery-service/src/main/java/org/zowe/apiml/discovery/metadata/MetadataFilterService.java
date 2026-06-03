@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.stream.Collectors.toList;
 
@@ -44,7 +45,7 @@ public class MetadataFilterService implements InitializingBean {
         allowedDomainsList = Arrays.stream(allowedDomains.split(",")).map(String::trim).collect(toList());
     }
 
-    public boolean isAllowedDomain(String domain) {
+    private boolean isAllowedDomain(String domain) {
         if (StringUtils.isBlank(domain)) {
             return true;
         }
@@ -57,22 +58,22 @@ public class MetadataFilterService implements InitializingBean {
         });
     }
 
-    private boolean isAllowed(String domain, String value) throws MalformedURLException {
-        log.debug("checking URL {} against domain {}", value, domain);
+    private boolean isAllowed(String allowedDomain, String value) throws MalformedURLException {
+        log.debug("checking URL {} against domain {}", value, allowedDomain);
         if (isUrl(value)) {
             value = new URL(value).getHost();
         }
-        if (value.equals(domain)) {
+        if (value.equals(allowedDomain)) {
             return true;
         }
-        if (value.startsWith("*.")) {
-            return domain.endsWith(value.substring(2));
+        if (allowedDomain.startsWith("*.")) {
+            return value.endsWith(allowedDomain.substring(2));
         }
 
         return false;
     }
 
-    private void verifyMetadataEntry(String key, String value, InstanceInfo info, StringBuilder builder) {
+    private boolean verifyMetadataEntry(String key, String value, InstanceInfo info) {
         var metadataToVerify = List.of(
             "gatewayUrl",
             "gateway-url",
@@ -85,7 +86,8 @@ public class MetadataFilterService implements InitializingBean {
         if (metadataToVerify.stream().anyMatch(key::endsWith)) {
             if (isUrl(value)) {
                 if (!isAllowedDomain(value)) {
-                    builder.append("URL ").append(value).append(" in metadata entry ").append(key).append(" is not allowed for instance ").append(info.getInstanceId()).append(System.lineSeparator());
+                    apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", key, value, info.getInstanceId());
+                    return false;
                 } else {
                     if (log.isTraceEnabled()) {
                         log.trace("URL {} is allowed", value);
@@ -93,48 +95,58 @@ public class MetadataFilterService implements InitializingBean {
                 }
             }
         }
+        return true;
 
     }
 
-    private void verifyCorsAllowedOrigins(String allowedOrigins, InstanceInfo info, StringBuilder builder) {
+    private boolean verifyCorsAllowedOrigins(String allowedOrigins, InstanceInfo info) {
         var urls = Arrays.stream(allowedOrigins.split(",")).map(String::trim).collect(toList());
+        var result = new AtomicBoolean(true);
         urls.forEach(url -> {
             if (url.equals("*")) {
-                // TODO WArning
+                apimlLogger.log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
                 return;
             }
             if (!isAllowedDomain(url)) {
-                builder.append("URL ").append(url).append(" in metadata entry apiml.corsAllowedOrigins is not allowed for instance ").append(info.getInstanceId()).append(System.lineSeparator());
+                apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "API ML CORS Allowed Origin", url, info.getInstanceId());
+                result.set(false);
             }
         });
+        return result.get();
     }
 
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
-        var builder = new StringBuilder();
+        var result = true;
         if (!isAllowedDomain(info.getHomePageUrl())) {
-            builder.append("Home page URL is not allowed: ").append(info.getHomePageUrl()).append(System.lineSeparator());
+            apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "Home Page URL", info.getHomePageUrl(), info.getInstanceId());
+            result = false;
         }
         if (!isAllowedDomain(info.getHealthCheckUrl())) {
-            builder.append("Health check URL is not allowed: ").append(info.getHealthCheckUrl()).append(System.lineSeparator());
+            apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "HealthCheck URL", info.getHealthCheckUrl(), info.getInstanceId());
+            result = false;
         }
         if (!isAllowedDomain(info.getStatusPageUrl())) {
-            builder.append("Status page URL is not allowed: ").append(info.getStatusPageUrl()).append(System.lineSeparator());
+            apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "Status Page URL", info.getStatusPageUrl(), info.getInstanceId());
+            result = false;
         }
         if (!isAllowedDomain(info.getSecureHealthCheckUrl())) {
-            builder.append("Secure health check URL is not allowed: ").append(info.getSecureHealthCheckUrl()).append(System.lineSeparator());
+            apimlLogger.log("org.zowe.apiml.common.urlNotAllowed", "Secure Health Check URL", info.getSecureHealthCheckUrl(), info.getInstanceId());
+            result = false;
         }
 
         if (info.getMetadata().containsKey("apiml.corsAllowedOrigins")) {
-            verifyCorsAllowedOrigins(info.getMetadata().get("apiml.corsAllowedOrigins"), info, builder);
+            var corsVerificationResult = verifyCorsAllowedOrigins(info.getMetadata().get("apiml.corsAllowedOrigins"), info);
+            if (!corsVerificationResult) {
+                result = false;
+            }
         }
 
         info.getMetadata().forEach((key, value) -> {
-            verifyMetadataEntry(key, value, info, builder);
+            verifyMetadataEntry(key, value, info);
         });
 
-        if (builder.length() > 0) {
-            log.warn(builder.toString());
-            throw new MetadataValidationException(builder.toString());
+        if (!result) {
+            throw new MetadataValidationException("URLs not allowed found for instance " + info.getInstanceId());
         }
 
     }

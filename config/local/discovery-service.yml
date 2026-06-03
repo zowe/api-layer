@@ -9,7 +9,7 @@ apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
     security:
-        allowedDomains: localhost,localhost2
+        allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
         ssl.verifySslCertificatesOfServices: true
     banner: console
 

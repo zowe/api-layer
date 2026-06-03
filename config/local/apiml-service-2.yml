@@ -68,6 +68,7 @@ apiml:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
         useDummyCNMapper: true
+        allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
 caching:
     storage:
         mode: infinispan

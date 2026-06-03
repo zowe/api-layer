@@ -10,33 +10,125 @@
 
 package org.zowe.apiml.discovery.metadata;
 
+import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.message.log.ApimlLogger;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataFilterServiceTest {
+
+    @Mock
+    private ApimlLogger apimlLogger;
+    @Mock
+    private InstanceInfo instanceInfo;
 
     private MetadataFilterService metadataFilterService;
 
     @BeforeEach
     void setUp() {
         metadataFilterService = new MetadataFilterService();
+        ReflectionTestUtils.setField(metadataFilterService, "apimlLogger", apimlLogger);
     }
 
-    @Test
-    void testAfterPropertiesSet() {
+    @Nested
+    class GivenAllowedDomains {
+
+        @BeforeEach
+        void setUp() throws Exception {
+            ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "localhost, *.zowe.org");
+            metadataFilterService.afterPropertiesSet();
+        }
+
+        @ParameterizedTest(name = "Key: {0}, Value: {1} -> Allowed: {2}")
+        @CsvSource({
+            "gatewayUrl, https://localhost:8080, true",
+            "gateway-url, https://localhost:8080, true",
+            "serviceUrl, https://example.com:8080, false",
+            "service-url, https://example.com:8080, false",
+            "swaggerUrl, https://sub.zowe.org:8080, true",
+            "graphqlUrl, https://sub.zowe.org:8080, true",
+            "documentationUrl, https://invalid.org:8080, false",
+            "customKey, https://invalid.org:8080, true",
+            "gatewayUrl, invalid-url, true"
+        })
+        void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed) throws Exception {
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put(metadataKey, metadataValue);
+            when(instanceInfo.getMetadata()).thenReturn(metadata);
+            lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+
+            metadataFilterService.verifyAllowedDomains(instanceInfo);
+
+            if (isAllowed) {
+                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
+            } else {
+                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
+            }
+        }
+
+        @Nested
+        class OnCors {
+
+            @Test
+            void whenUsingWildcard_thenWarningIsLogged() throws Exception {
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put("apiml.corsAllowedOrigins", "*");
+                when(instanceInfo.getMetadata()).thenReturn(metadata);
+
+                metadataFilterService.verifyAllowedDomains(instanceInfo);
+
+                verify(apimlLogger).log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
+                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), anyString(), anyString(), anyString());
+            }
+
+            @Test
+            void whenUsingSpecificURL_thenNoWarningIsLogged() throws Exception {
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put("apiml.corsAllowedOrigins", "https://localhost:3000");
+                when(instanceInfo.getMetadata()).thenReturn(metadata);
+
+                metadataFilterService.verifyAllowedDomains(instanceInfo);
+
+                verify(apimlLogger, never()).log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
+                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), anyString(), anyString(), anyString());
+            }
+
+            @Test
+            void whenUsingInvalidURL_thenExceptionIsThrownAndLogged() {
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put("apiml.corsAllowedOrigins", "https://invalid.org:3000");
+                when(instanceInfo.getMetadata()).thenReturn(metadata);
+                when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+
+                assertThrows(MetadataValidationException.class, () -> {
+                    metadataFilterService.verifyAllowedDomains(instanceInfo);
+                });
+
+                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("API ML CORS Allowed Origin"), eq("https://invalid.org:3000"), eq("test-instance"));
+            }
+
+        }
 
     }
 
-    @Test
-    void testIsAllowedDomain() {
-
-    }
-
-    @Test
-    void testVerifyAllowedDomains() {
-
-    }
 }

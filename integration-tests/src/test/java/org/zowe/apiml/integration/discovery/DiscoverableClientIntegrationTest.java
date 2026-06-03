@@ -11,6 +11,7 @@
 package org.zowe.apiml.integration.discovery;
 
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -38,7 +39,7 @@ import static org.hamcrest.Matchers.is;
 import static org.zowe.apiml.util.requests.Endpoints.MEDIATION_CLIENT;
 
 @DiscoverableClientDependentTest // TODO This does not run on z/OS tests
-@RegistrationTest // TODO Runs in GA as CITestsRegistration
+@RegistrationTest // TODO Runs in GA as CITestsRegistration, add CITestsRegistrationModulith
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
 
@@ -101,6 +102,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
 
                     given()
                         .config(SslContext.clientCertValid)
+                        .contentType(ContentType.JSON)
                     .when() // FIXME find InstanceID and confirm serviceID
                         .put(DiscoveryUtils.getDiscoveryUrl() + "/eureka/v2/apps/registrationtest/instanceID/metadata?some.other.url=https://baddomain.net")
                     .then()
@@ -120,6 +122,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
 
                     given()
                         .config(SslContext.clientCertValid)
+                        .contentType(ContentType.JSON)
                     .when() //FIXME find InstanceID and confirm serviceID
                         .put(DiscoveryUtils.getDiscoveryUrl() + "/eureka/v2/apps/registrationtest/instanceID/metadata?key=value")
                     .then()
