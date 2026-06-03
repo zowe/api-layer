@@ -170,28 +170,18 @@ class JwkEndpointCheckerTest {
     @Nested
     class ValidateJwkBody {
 
-        @Test
-        void nullBodyIsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, null));
+        @ParameterizedTest
+        @CsvSource(value = {
+            "NULL_BODY | empty response body",
+            "EMPTY_BODY | empty response body",
+            "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\"}]} | does not contain an RSA modulus"
+        }, delimiter = '|')
+        void invalidBodiesAreFailures(String body, String expectedError) throws IOException {
+            String resolvedBody = "NULL_BODY".equals(body.trim()) ? null : "EMPTY_BODY".equals(body.trim()) ? "" : body.trim();
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, resolvedBody));
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertFalse(checker.check());
-            assertTrue(errStream.toString().contains("empty response body"));
-        }
-
-        @Test
-        void emptyBodyIsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, ""));
-            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
-            assertFalse(checker.check());
-            assertTrue(errStream.toString().contains("empty response body"));
-        }
-
-        @Test
-        void bodyWithoutNKeyIsFailure() throws IOException {
-            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\"}]}"));
-            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
-            assertFalse(checker.check());
-            assertTrue(errStream.toString().contains("does not contain an RSA modulus"));
+            assertTrue(errStream.toString().contains(expectedError.trim()));
         }
     }
 
