@@ -77,11 +77,13 @@ class MetadataFilterServiceTest {
             when(instanceInfo.getMetadata()).thenReturn(metadata);
             lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
-            metadataFilterService.verifyAllowedDomains(instanceInfo);
-
             if (isAllowed) {
+                metadataFilterService.verifyAllowedDomains(instanceInfo);
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
             } else {
+                assertThrows(MetadataValidationException.class, () -> {
+                    metadataFilterService.verifyAllowedDomains(instanceInfo);
+                });
                 verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
             }
         }
