@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -141,6 +142,68 @@ class JwkEndpointCheckerTest {
             JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
             assertFalse(checker.check());
             assertTrue(errStream.toString().contains("verify hostname and port"));
+        }
+
+        @Test
+        void unknownHostExceptionReportsResolutionFailure() throws IOException {
+            when(mockClient.executeCall(any(), anyMap())).thenThrow(new UnknownHostException("zosmf.example.com"));
+            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
+            assertFalse(checker.check());
+            assertTrue(errStream.toString().contains("could not be resolved"));
+        }
+    }
+
+    @Nested
+    class VerboseMode {
+
+        @Test
+        void verbosePrintsResponseBody() throws IOException {
+            when(mockConf.isVerbose()).thenReturn(true);
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(
+                new HttpClientWrapper.Response(200, "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\",\"n\":\"abc123\"}]}"));
+            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
+            assertTrue(checker.check());
+            assertTrue(outStream.toString().contains("Response body:"));
+        }
+    }
+
+    @Nested
+    class ValidateJwkBody {
+
+        @Test
+        void nullBodyIsFailure() throws IOException {
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, null));
+            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
+            assertFalse(checker.check());
+            assertTrue(errStream.toString().contains("empty response body"));
+        }
+
+        @Test
+        void emptyBodyIsFailure() throws IOException {
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, ""));
+            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
+            assertFalse(checker.check());
+            assertTrue(errStream.toString().contains("empty response body"));
+        }
+
+        @Test
+        void bodyWithoutNKeyIsFailure() throws IOException {
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(200, "{\"keys\":[{\"kty\":\"RSA\",\"e\":\"AQAB\"}]}"));
+            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
+            assertFalse(checker.check());
+            assertTrue(errStream.toString().contains("does not contain an RSA modulus"));
+        }
+    }
+
+    @Nested
+    class UnexpectedResponseCodes {
+
+        @Test
+        void unexpectedResponseCodeIsFailure() throws IOException {
+            when(mockClient.executeCall(any(), anyMap())).thenReturn(new HttpClientWrapper.Response(301, ""));
+            JwkEndpointChecker checker = new JwkEndpointChecker(mockClient, mockConf);
+            assertFalse(checker.check());
+            assertTrue(errStream.toString().contains("unexpected response code"));
         }
     }
 }

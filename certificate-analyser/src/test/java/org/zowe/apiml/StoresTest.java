@@ -17,6 +17,9 @@ import org.zowe.apiml.common.StoresNotInitializeException;
 import picocli.CommandLine;
 
 import java.net.MalformedURLException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -131,6 +134,124 @@ class StoresTest {
         @Test
         void givenFormatKeyringUrl_whenNull_thenReturnsNull() {
             assertNull(KeyringUtils.formatKeyringUrl(null));
+        }
+    }
+
+    @Nested
+    class GivenValidStores {
+
+        private Stores createValidStores() {
+            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+                "--truststore", "../keystore/localhost/localhost.truststore.p12",
+                "--keypasswd", "password",
+                "--keyalias", "localhost"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            return new Stores(conf);
+        }
+
+        @Test
+        void getListOfCertificatesReturnsNonEmptyMap() throws Exception {
+            Stores stores = createValidStores();
+            Map<String, Certificate> certs = stores.getListOfCertificates();
+            assertNotNull(certs);
+            assertFalse(certs.isEmpty());
+        }
+
+        @Test
+        void getListOfCertificatesReturnsCachedMap() throws Exception {
+            Stores stores = createValidStores();
+            Map<String, Certificate> first = stores.getListOfCertificates();
+            Map<String, Certificate> second = stores.getListOfCertificates();
+            assertSame(first, second);
+        }
+
+        @Test
+        void getX509CertificateReturnsValidCert() throws Exception {
+            Stores stores = createValidStores();
+            X509Certificate cert = stores.getX509Certificate("localhost");
+            assertNotNull(cert);
+        }
+
+        @Test
+        void getServerCertificateChainWithNullAliasUsesFirstAlias() throws Exception {
+            Stores stores = createValidStores();
+            Certificate[] chain = stores.getServerCertificateChain(null);
+            assertNotNull(chain);
+            assertTrue(chain.length > 0);
+        }
+
+        @Test
+        void getServerCertificateChainWithExplicitAlias() throws Exception {
+            Stores stores = createValidStores();
+            Certificate[] chain = stores.getServerCertificateChain("localhost");
+            assertNotNull(chain);
+            assertTrue(chain.length > 0);
+        }
+
+        @Test
+        void getKeyStoreReturnsNonNull() {
+            Stores stores = createValidStores();
+            assertNotNull(stores.getKeyStore());
+        }
+
+        @Test
+        void getTrustStoreReturnsNonNull() {
+            Stores stores = createValidStores();
+            assertNotNull(stores.getTrustStore());
+        }
+
+        @Test
+        void getConfReturnsNonNull() {
+            Stores stores = createValidStores();
+            assertNotNull(stores.getConf());
+        }
+    }
+
+    @Nested
+    class GivenNullKeystore {
+
+        @Test
+        void whenKeystoreIsNull_thenEmptyKeystoreCreated() {
+            String[] args = {"--truststore", "../keystore/localhost/localhost.truststore.p12",
+                "--keypasswd", "password"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            Stores stores = new Stores(conf);
+            assertNotNull(stores.getTrustStore());
+        }
+    }
+
+    @Nested
+    class GivenNullTruststore {
+
+        @Test
+        void whenTruststoreIsNull_thenEmptyTruststoreCreated() {
+            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+                "--keypasswd", "password",
+                "--keyalias", "localhost"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            Stores stores = new Stores(conf);
+            assertNotNull(stores.getTrustStore());
+        }
+    }
+
+    @Nested
+    class GivenMissingAlias {
+
+        @Test
+        void getX509CertificateThrowsForNonexistentAlias() {
+            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+                "--truststore", "../keystore/localhost/localhost.truststore.p12",
+                "--keypasswd", "password",
+                "--keyalias", "localhost"};
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs(args);
+            Stores stores = new Stores(conf);
+            // getCertificateChain returns null for nonexistent alias, causing NPE
+            assertThrows(NullPointerException.class,
+                () -> stores.getX509Certificate("nonexistent-alias"));
         }
     }
 

@@ -115,4 +115,73 @@ class ZosmfJwtCheckTest {
             assertFalse(errStream.toString().contains("--truststore-file is required"));
         }
     }
+
+    @Nested
+    class HttpsModes {
+
+        @Test
+        void httpsStrictWithValidTruststoreAttemptsConnection() {
+            String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "https",
+                "--truststore-file", "../keystore/localhost/localhost.truststore.p12",
+                "--truststore-password", "password",
+                "--verify-certificates", "STRICT"};
+            int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
+            assertEquals(4, exitCode);
+            assertFalse(errStream.toString().contains("--truststore-file is required"));
+        }
+
+        @Test
+        void httpsNonstrictWithValidTruststoreAttemptsConnection() {
+            String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "https",
+                "--truststore-file", "../keystore/localhost/localhost.truststore.p12",
+                "--truststore-password", "password",
+                "--verify-certificates", "NONSTRICT"};
+            int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
+            assertEquals(4, exitCode);
+            assertTrue(outStream.toString().contains("Hostname verification is disabled"));
+        }
+
+        @Test
+        void httpsStrictWithKeystoreAndTruststoreAttemptsConnection() {
+            String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "https",
+                "--keystore-file", "../keystore/localhost/localhost.keystore.p12",
+                "--keystore-password", "password",
+                "--keystore-type", "PKCS12",
+                "--truststore-file", "../keystore/localhost/localhost.truststore.p12",
+                "--truststore-password", "password",
+                "--truststore-type", "PKCS12",
+                "--verify-certificates", "STRICT"};
+            int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
+            assertEquals(4, exitCode);
+        }
+    }
+
+    @Nested
+    class ConfAccessors {
+
+        @Test
+        void allConfGettersReturnExpectedValues() {
+            ZosmfJwtCheckConf conf = new ZosmfJwtCheckConf();
+            picocli.CommandLine cmd = new picocli.CommandLine(conf);
+            cmd.parseArgs("--zosmf-host", "myhost", "--zosmf-port", "10443",
+                "--scheme", "https", "--keystore-file", "/ks.p12",
+                "--keystore-password", "kspass", "--keystore-type", "JKS",
+                "--truststore-file", "/ts.p12", "--truststore-password", "tspass",
+                "--truststore-type", "PKCS12", "--verify-certificates", "NONSTRICT",
+                "-v");
+
+            assertEquals("myhost", conf.getZosmfHost());
+            assertEquals(10443, conf.getZosmfPort());
+            assertEquals("https", conf.getScheme());
+            assertEquals("/ks.p12", conf.getKeyStore());
+            assertEquals("kspass", conf.getKeyStorePassword());
+            assertEquals("JKS", conf.getKeyStoreType());
+            assertEquals("/ts.p12", conf.getTrustStore());
+            assertEquals("tspass", conf.getTrustStorePassword());
+            assertEquals("PKCS12", conf.getTrustStoreType());
+            assertEquals("NONSTRICT", conf.getVerifyCertificates());
+            assertTrue(conf.isVerbose());
+            assertFalse(conf.isHelpRequested());
+        }
+    }
 }

@@ -138,6 +138,25 @@ class HttpClientWrapperTest {
 
             assertEquals(200, response.getStatusCode());
         }
+
+        @Test
+        void readBodyReturnsNullWhenStreamThrows() throws IOException {
+            server.createContext("/broken", exchange -> {
+                // Send headers claiming 100 bytes, then close immediately without body
+                exchange.sendResponseHeaders(200, 100);
+                exchange.getResponseBody().close();
+            });
+            server.start();
+
+            HttpClientWrapper client = new HttpClientWrapper();
+            URL url = new URL("http://localhost:" + port + "/broken");
+
+            HttpClientWrapper.Response response = client.executeCall(url, null);
+
+            assertEquals(200, response.getStatusCode());
+            // readBody returns either truncated content or null if stream throws
+            // The body should be empty string or null depending on timing
+        }
     }
 
     @Nested

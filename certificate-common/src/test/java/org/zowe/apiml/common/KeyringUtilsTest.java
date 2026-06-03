@@ -106,6 +106,14 @@ class KeyringUtilsTest {
             assertThrows(StoresNotInitializeException.class,
                 () -> KeyringUtils.keyRingUrl(null));
         }
+
+        @Test
+        void givenValidKeyringFormat_thenThrowsMalformedURLExceptionWithoutHandler() {
+            // Valid keyring format but no SAF protocol handler registered on this JVM
+            java.net.MalformedURLException ex = assertThrows(java.net.MalformedURLException.class,
+                () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing"));
+            assertThat(ex.getMessage(), containsString("unknown protocol"));
+        }
     }
 
     @Nested
