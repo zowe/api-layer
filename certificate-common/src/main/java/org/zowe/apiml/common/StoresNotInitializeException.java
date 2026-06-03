@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml;
+package org.zowe.apiml.common;
 
 /**
  * Thrown when keystore or truststore initialization fails

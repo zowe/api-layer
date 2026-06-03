@@ -30,7 +30,7 @@ public class ZosmfJwtCheck {
     static final String VERIFY_DISABLED = "DISABLED";
 
     public static int mainWithExitCode(String[] args) {
-        ensureSafkeyringHandler();
+        org.zowe.apiml.common.KeyringUtils.ensureSafkeyringHandler();
 
         try {
             ZosmfJwtCheckConf conf = new ZosmfJwtCheckConf();
@@ -99,34 +99,6 @@ public class ZosmfJwtCheck {
                 throw new IllegalArgumentException("--truststore-password is required when --scheme=https and verification is not DISABLED.");
             }
         }
-    }
-
-    /**
-     * Registers IBM SAF keyring URL protocol handler packages via the
-     * {@code java.protocol.handler.pkgs} system property.
-     *
-     * <p>On IBM Java 17/21 (z/OS), this property works in conjunction with
-     * {@code --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca} to enable
-     * the {@code safkeyring://} URL protocol. The {@code --add-modules} flag
-     * resolves the module (making classes accessible), while this property tells
-     * the {@link java.net.URL} class which packages to search for the handler.</p>
-     */
-    static void ensureSafkeyringHandler() {
-        String[] packagePrefixes = {
-            "com.ibm.crypto.zsecurity.provider",
-            "com.ibm.crypto.hdwrCCA.provider"
-        };
-        String existing = System.getProperty("java.protocol.handler.pkgs", "");
-        StringBuilder sb = new StringBuilder(existing);
-        for (String prefix : packagePrefixes) {
-            if (!existing.contains(prefix)) {
-                if (!sb.isEmpty()) {
-                    sb.append('|');
-                }
-                sb.append(prefix);
-            }
-        }
-        System.setProperty("java.protocol.handler.pkgs", sb.toString());
     }
 
     public static void main(String[] args) {

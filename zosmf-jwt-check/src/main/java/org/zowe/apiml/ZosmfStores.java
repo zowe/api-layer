@@ -10,18 +10,18 @@
 
 package org.zowe.apiml;
 
+import org.zowe.apiml.common.KeyringUtils;
+import org.zowe.apiml.common.StoresNotInitializeException;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Loads Java {@link java.security.KeyStore} instances from the filesystem
@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 @SuppressWarnings("squid:S106")
 public class ZosmfStores {
 
-    private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
-
     private KeyStore keyStore;
     private KeyStore trustStore;
     private final ZosmfJwtCheckConfig conf;
@@ -39,33 +37,6 @@ public class ZosmfStores {
     public ZosmfStores(ZosmfJwtCheckConfig conf) {
         this.conf = conf;
         init();
-    }
-
-    /**
-     * Checks whether the given path is a SAF keyring URI.
-     *
-     * @param input store path to check
-     * @return {@code true} if the path matches the keyring pattern
-     */
-    public static boolean isKeyring(String input) {
-        if (input == null) return false;
-        Matcher matcher = KEYRING_PATTERN.matcher(input);
-        return matcher.matches();
-    }
-
-    /**
-     * Normalizes a keyring URI to the canonical {@code safkeyring://userId/keyRing} format.
-     *
-     * @param input raw keyring URI
-     * @return normalized URI, or the original input if not a keyring
-     */
-    public static String formatKeyringUrl(String input) {
-        if (input == null) return null;
-        Matcher matcher = KEYRING_PATTERN.matcher(input);
-        if (matcher.matches()) {
-            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
-        }
-        return input;
     }
 
     void init() {
@@ -92,14 +63,14 @@ public class ZosmfStores {
             }
             return;
         }
-        if (isKeyring(conf.getTrustStore())) {
-            URL url = keyRingUrl(conf.getTrustStore());
+        if (KeyringUtils.isKeyring(conf.getTrustStore())) {
+            URL url = KeyringUtils.keyRingUrl(conf.getTrustStore());
             try (InputStream trustStoreIStream = url.openStream()) {
-                this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
+                this.trustStore = KeyringUtils.readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
             }
         } else {
             try (InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
-                this.trustStore = readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
+                this.trustStore = KeyringUtils.readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
             }
         }
     }
@@ -108,24 +79,18 @@ public class ZosmfStores {
         if (conf.getKeyStore() == null) {
             return;
         }
-        if (isKeyring(conf.getKeyStore())) {
-            try (InputStream keyringIStream = keyRingUrl(conf.getKeyStore()).openStream()) {
-                this.keyStore = readKeyStore(keyringIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
+        if (KeyringUtils.isKeyring(conf.getKeyStore())) {
+            try (InputStream keyringIStream = KeyringUtils.keyRingUrl(conf.getKeyStore()).openStream()) {
+                this.keyStore = KeyringUtils.readKeyStore(keyringIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
             } catch (Exception e) {
                 throw new StoresNotInitializeException(e.getMessage());
             }
         } else {
             try (InputStream keyStoreIStream = new FileInputStream(conf.getKeyStore())) {
-                this.keyStore = readKeyStore(keyStoreIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
+                this.keyStore = KeyringUtils.readKeyStore(keyStoreIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
             }
         }
-    }
-
-    public static KeyStore readKeyStore(InputStream is, char[] pass, String type) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        KeyStore keyStore = KeyStore.getInstance(type);
-        keyStore.load(is, pass);
-        return keyStore;
     }
 
     public KeyStore getKeyStore() {
@@ -138,21 +103,5 @@ public class ZosmfStores {
 
     public ZosmfJwtCheckConfig getConf() {
         return conf;
-    }
-
-    public static URL keyRingUrl(String uri) throws MalformedURLException {
-        if (!isKeyring(uri)) {
-            throw new StoresNotInitializeException("Incorrect key ring format: " + uri
-                + ". Make sure you use format safkeyring://userId/keyRing");
-        }
-        String formatted = formatKeyringUrl(uri);
-        try {
-            return new URL(formatted);
-        } catch (MalformedURLException e) {
-            System.err.println("ERROR: Unknown protocol in '" + formatted + "': " + e.getMessage());
-            System.err.println("Ensure the JVM is started with: --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca");
-            System.err.println("And that ensureSafkeyringHandler() has been called to set java.protocol.handler.pkgs");
-            throw e;
-        }
     }
 }
