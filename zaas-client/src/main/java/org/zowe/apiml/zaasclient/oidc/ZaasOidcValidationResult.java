@@ -13,6 +13,8 @@ package org.zowe.apiml.zaasclient.oidc;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+import java.util.Map;
+
 /**
  *
  */
@@ -21,5 +23,6 @@ import lombok.Data;
 public class ZaasOidcValidationResult {
 
     private boolean isValid = false;
+    private Map<String, Object> claims;
 
 }
