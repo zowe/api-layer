@@ -99,7 +99,7 @@ dependencyResolutionManagement {
             version('woodstoxCore', '7.2.0')
             version('jgit', '7.6.0.202603022253-r')
             version('gradleNode', '7.1.0')
-            version('sonarGradlePlugin', '5.1.0.4882')
+            version('sonarGradlePlugin', '7.3.1.8318')
             version('gradleRelease', '3.1.0')
             version('gradleLicencer', '0.6.1')
             version('gradleJibPlugin', '3.5.3')
