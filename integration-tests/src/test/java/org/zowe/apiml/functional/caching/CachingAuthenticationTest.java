@@ -45,13 +45,13 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
 
     private String caching_url = ConfigReader.environmentConfiguration().getCachingServiceConfiguration().getUrl();
     private static final String CERT_HEADER_NAME = "X-Certificate-DistinguishedName";
-    private static String CLIENT_CERT_VALUE;
+    private static String clientCertValue;
 
     @BeforeAll
     static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-        CLIENT_CERT_VALUE = SslContext.clientCertValidCert;
+        clientCertValue = SslContext.clientCertValidCert;
     }
 
     @BeforeEach
@@ -138,7 +138,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
         void cachingApiEndpointsAccessible() {
             given()
                 .config(SslContext.clientCertApiml)
-                .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
+                .header(CLIENT_CERT_HEADER, clientCertValue)
                 .when()
                 .get(caching_url + CACHING_PATH)
                 .then()

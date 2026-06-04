@@ -70,7 +70,7 @@ public class SpringSecurityConfig {
         }
         var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator);
         // all certificates in the header coming from trusted proxy are allowed for client authentication, including API ML certificate
-        certFilter.setCertificateForClientAuth((crt) -> true);
+        certFilter.setCertificateForClientAuth(crt -> true);
         http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .headers(headers -> headers.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable))

@@ -59,7 +59,7 @@ class CachingServiceTests {
     private static final String MAP = "aMap";
     private static final String MAP_KEY = "aMapCacheKey" + new Random().nextInt();
     private static final String MAP_VALUE = "aMapCacheValue";
-    private static String CLIENT_CERT_VALUE;
+    private static String clientCertValue;
 
     private static final KeyValue KEY_VALUE = new KeyValue(KEY, VALUE);
     private static final KeyValue MAP_KEY_VALUE = new KeyValue(MAP_KEY, MAP_VALUE);
@@ -107,7 +107,7 @@ class CachingServiceTests {
     void setUp() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-        CLIENT_CERT_VALUE = SslContext.clientCertValidCert;
+        clientCertValue = SslContext.clientCertValidCert;
         EnvironmentConfiguration environmentConfiguration = environmentConfiguration();
         CachingServiceConfiguration cachingServiceConfiguration = environmentConfiguration.getCachingServiceConfiguration();
 
@@ -134,7 +134,7 @@ class CachingServiceTests {
         // check the all records (tokenCache)
         given()
             .config(SslContext.clientCertApiml)
-            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
+            .header(CLIENT_CERT_HEADER, clientCertValue)
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list")
         .then()
@@ -145,7 +145,7 @@ class CachingServiceTests {
         // check the all records (tokenCache)
         given()
             .config(SslContext.clientCertApiml)
-            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
+            .header(CLIENT_CERT_HEADER, clientCertValue)
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache-list/" + MAP)
         .then()
@@ -156,7 +156,7 @@ class CachingServiceTests {
         // check the concrete record (cache)
         given()
             .config(SslContext.clientCertApiml)
-            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
+            .header(CLIENT_CERT_HEADER, clientCertValue)
         .when()
             .get(baseUrls.get(index) + "/cachingservice/api/v1/cache/" + KEY)
         .then()
@@ -175,7 +175,7 @@ class CachingServiceTests {
             .config(SslContext.clientCertApiml)
             .contentType(JSON)
             .body(KEY_VALUE)
-            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
+            .header(CLIENT_CERT_HEADER, clientCertValue)
             .when()
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache")
             .then()
@@ -187,7 +187,7 @@ class CachingServiceTests {
             .config(SslContext.clientCertApiml)
             .contentType(JSON)
             .body(MAP_KEY_VALUE)
-            .header(CLIENT_CERT_HEADER, CLIENT_CERT_VALUE)
+            .header(CLIENT_CERT_HEADER, clientCertValue)
             .when()
             .post(baseUrls.get(0) + "/cachingservice/api/v1/cache-list/" + MAP)
             .then()

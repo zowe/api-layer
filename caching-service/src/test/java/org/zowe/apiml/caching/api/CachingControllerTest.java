@@ -60,7 +60,7 @@ class CachingControllerTest {
     private CachingController underTest;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         mockExchange = mock(ServerWebExchange.class);
         mockRequest = mock(ServerHttpRequest.class);
         when(mockExchange.getRequest()).thenReturn(mockRequest);
