@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml;
+package org.zowe.apiml.zosmf.jwt.check;
 
 import javax.net.ssl.SSLHandshakeException;
 import java.net.ConnectException;

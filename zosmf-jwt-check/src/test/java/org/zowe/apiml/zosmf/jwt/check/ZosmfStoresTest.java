@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml;
+package org.zowe.apiml.zosmf.jwt.check;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -167,7 +167,7 @@ class ZosmfStoresTest {
             assertNotNull(loaded);
         }
     }
-    
+
     private ZosmfJwtCheckConfig createConf(String keyStore, String keyStorePassword,
                                            String trustStore, String trustStorePassword,
                                            String storeType) {

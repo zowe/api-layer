@@ -10,6 +10,7 @@
 
 package org.zowe.apiml;
 
+import org.zowe.apiml.zosmf.jwt.check.ZosmfJwtCheck;
 import picocli.CommandLine;
 
 import java.util.ArrayList;

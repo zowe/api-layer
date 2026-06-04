@@ -4,6 +4,8 @@ A Java utility that verifies connectivity to the z/OSMF JWK endpoint. This tool 
 
 > **Build Note:** This module no longer produces a standalone runnable JAR. Its functionality is bundled into the **certificate-analyser** fat JAR and accessed via the `--zosmf-jwt-check` CLI flag. See [Running via certificate-analyser](#running-via-certificate-analyser) below.
 
+> **Pre-flight vs. Runtime:** This tool uses JDK `HttpURLConnection` for validation. The Gateway uses a different HTTP/TLS stack (Netty). A pass here confirms reachability but does not guarantee identical runtime behavior.
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
@@ -20,7 +22,6 @@ A Java utility that verifies connectivity to the z/OSMF JWK endpoint. This tool 
   - [4. HTTP Mode (No SSL)](#4-http-mode-no-ssl)
   - [5. Validation Error Tests](#5-validation-error-tests)
 - [SAF Keyrings](#saf-keyrings)
-- [Troubleshooting](#troubleshooting)
 
 ---
 ## Prerequisites

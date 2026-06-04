@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml;
+package org.zowe.apiml.zosmf.jwt.check;
 
 /**
  * Configuration contract for the z/OSMF JWT check tool.
