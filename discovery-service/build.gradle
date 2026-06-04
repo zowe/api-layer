@@ -59,7 +59,8 @@ dependencies {
     api project(':security-service-client-spring')
 
     implementation libs.spring.boot.starter.security
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
+    implementation libs.spring.boot.jackson2
     implementation libs.spring.cloud.starter.eureka.server
 
     implementation libs.apache.commons.lang3

@@ -1,7 +1,7 @@
 dependencies {
 
     api project(':common-service-core')
-    api libs.spring.boot.starter.web
+    api libs.spring.boot.starter.webmvc
     api libs.zowe.zos.utils
     implementation libs.netty.reactor.http
     implementation libs.apache.commons.lang3

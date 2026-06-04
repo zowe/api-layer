@@ -5,7 +5,7 @@ plugins {
 dependencies {
     api project(':apiml-common')
 
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
     implementation libs.spring.boot.starter.security
     implementation libs.reactor
     implementation libs.spring.webflux

@@ -79,7 +79,7 @@ gitProperties {
 }
 
 dependencies {
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
 
     implementation libs.apache.commons.lang3
     implementation libs.jjwt

@@ -6,8 +6,9 @@ dependencies {
     api project(':apiml-utility')
 
     implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
     implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.boot.jackson2
     implementation libs.opentelemetry.spring.boot.starter
     implementation libs.opentelemetry.exporter.common
     implementation libs.opentelemetry.exporter.sender.okhttp
