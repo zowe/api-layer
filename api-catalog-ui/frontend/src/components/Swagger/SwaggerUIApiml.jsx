@@ -48,6 +48,20 @@ function setFilterBarStyle() {
     }
 }
 
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
+function updateCsrfHeader(request) {
+    const csrfToken = getCookie("XSRF-TOKEN");
+    if (csrfToken && request.method !== "GET") {
+        request.headers["X-XSRF-TOKEN"] = csrfToken;
+    }
+    return request;
+}
+
 export default class SwaggerUIApiml extends Component {
     constructor(props) {
         super(props);
@@ -133,22 +147,7 @@ export default class SwaggerUIApiml extends Component {
                 codeSnippets = service.apis.default.codeSnippet;
             }
         }
-        const updateCsrfHeader = (request) => {
 
-            function getCookie(name) {
-                let value = "; " + document.cookie;
-                let parts = value.split("; " + name + "=");
-                if (parts.length === 2) return parts.pop().split(";").shift();
-            }
-
-             let csrfToken = getCookie("XSRF-TOKEN");
-
-             if (csrfToken && request.method !== "GET") {
-                request.headers["X-XSRF-TOKEN"] = csrfToken;
-            }
-
-            return request;
-        };
         try {
             // If no version selected use the default apiDoc
             if (
