@@ -20,6 +20,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,13 +36,16 @@ import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 
 @ActiveProfiles("http")
+@TestPropertySource(
+    properties = {
+        "apiml.discovery.userid=eureka",
+        "apiml.discovery.password=password"
+    }
+)
 class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
 
-    @Value("${apiml.discovery.userid:eureka}")
-    private String eurekaUserid;
-
-    @Value("${apiml.discovery.password:password}")
-    private String eurekaPassword;
+    private static final String EUREKA_USERID = "eureka";
+    private static final String EUREKA_PASSWORD = "password";
 
     @Test
     void uiIsSecuredWithConfiguredBasicAuth() {
@@ -50,7 +54,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
             .then()
             .statusCode(HttpStatus.UNAUTHORIZED.value());
 
-        given().auth().basic(eurekaUserid, eurekaPassword)
+        given().auth().basic(EUREKA_USERID, EUREKA_PASSWORD)
             .get(getDiscoveryUriWithPath("/"))
             .then()
             .statusCode(HttpStatus.OK.value());
@@ -105,7 +109,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
             forbiddenHeaders.add("Strict-Transport-Security");
             Response response = RestAssured
                 .given()
-                .auth().basic(eurekaUserid, eurekaPassword)
+                .auth().basic(EUREKA_USERID, EUREKA_PASSWORD)
                 .get(getDiscoveryUriWithPath("/"));
             Map<String, String> responseHeaders = new HashMap<>();
 
@@ -131,7 +135,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
 
             Response response = RestAssured
                 .given()
-                .auth().basic(eurekaUserid, eurekaPassword)
+                .auth().basic(EUREKA_USERID, EUREKA_PASSWORD)
                 .get(getDiscoveryUriWithPath("/application"));
             Map<String, String> responseHeaders = new HashMap<>();
             response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));

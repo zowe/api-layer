@@ -15,14 +15,19 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.AbstractHttpMessage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
 import java.io.ByteArrayInputStream;
@@ -31,7 +36,7 @@ import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class StaticAPIServiceTest {
@@ -184,4 +189,39 @@ class StaticAPIServiceTest {
             }
         });
     }
+
+    @Nested
+    class EurekaAuthorization {
+
+        @Test
+        void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
+            StaticAPIService service = new StaticAPIService(null, null);
+            ReflectionTestUtils.setField(service, "eurekaUserid", "user");
+            ReflectionTestUtils.setField(service, "eurekaPassword", "password");
+
+            AbstractHttpMessage request = mock(AbstractHttpMessage.class);
+            service.setAuthorization(request);
+
+            verify(request).addHeader(HttpHeaders.AUTHORIZATION, "Basic dXNlcjpwYXNzd29yZA==");
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            ",password,,",
+            "user,,",
+            ",,"
+        })
+        void givenIncompleteCredentials_whenSetCredentials_thenDoNotSetAuthorization(String userId, String password) {
+            StaticAPIService service = new StaticAPIService(null, null);
+            ReflectionTestUtils.setField(service, "eurekaUserid", userId);
+            ReflectionTestUtils.setField(service, "eurekaPassword", password);
+
+            AbstractHttpMessage request = mock(AbstractHttpMessage.class);
+            service.setAuthorization(request);
+
+            verify(request, never()).addHeader(any(), any());
+        }
+
+    }
+
 }
