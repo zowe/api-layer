@@ -141,13 +141,16 @@ verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
   verifySslCertificatesOfServices=false
   nonStrictVerifySslCertificatesOfServices=true
+  zuulSslHostnameValidationEnabled=false
 elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
   verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=true
+  zuulSslHostnameValidationEnabled=false
 else
   # default value is STRICT
   verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=false
+  zuulSslHostnameValidationEnabled=true
 fi
 
 if [ -z "${ZWE_configs_apiml_catalog_serviceId}" ]; then
@@ -440,6 +443,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
     -Djava.library.path=${LIBPATH} \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
+    -Dzuul.sslHostnameValidationEnabled=${zuulSslHostnameValidationEnabled:-true} \
     -jar ${JAR_FILE} &
 
 pid=$!
