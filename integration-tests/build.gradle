@@ -59,6 +59,9 @@ test.enabled = false
 apply plugin: 'java'
 
 tasks.withType(Test) {
+    // Gradle 9: explicit classpath required (convention inheritance removed)
+    classpath = sourceSets.test.runtimeClasspath
+    testClassesDirs = sourceSets.test.output.classesDirs
     jvmArgs '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
