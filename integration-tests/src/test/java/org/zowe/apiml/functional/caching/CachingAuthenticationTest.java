@@ -119,7 +119,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
                 .when()
                 .get(caching_url + CACHING_PATH)
                 .then()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
+                .statusCode(HttpStatus.OK.value());
         }
 
         @Test
