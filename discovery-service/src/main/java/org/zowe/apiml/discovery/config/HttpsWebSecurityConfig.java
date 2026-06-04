@@ -59,12 +59,6 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${server.attlsServer.enabled:false}")
     private boolean isServerAttlsEnabled;
 
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
-
-    @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifySslCertificatesOfServices;
-
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
 
@@ -123,16 +117,13 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(2)
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatcher("/eureka/**"));
-        if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-            http.authorizeHttpRequests(requests -> requests
-                .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isServerAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
-        } else {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+        http.authorizeHttpRequests(requests -> requests
+            .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+        if (isServerAttlsEnabled) {
+            http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
+
         return http.build();
     }
 
@@ -146,13 +137,11 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
             .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
-        if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
-                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isServerAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
+        http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
+            .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+        if (isServerAttlsEnabled) {
+            http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();

@@ -31,12 +31,6 @@ import java.util.Collections;
 @EnableWebSecurity
 public class SpringSecurityConfig {
 
-    @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifyCertificates;
-
-    @Value("${apiml.service.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-    private boolean nonStrictVerifyCerts;
-
     @Value("${server.attlsServer.enabled:false}")
     private boolean isServerAttlsEnabled;
 
@@ -63,17 +57,13 @@ public class SpringSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())   // NOSONAR
-                .headers(headers -> headers.httpStrictTransportSecurity().disable()).sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .headers(headers -> headers.httpStrictTransportSecurity().disable()).sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        if (verifyCertificates || !nonStrictVerifyCerts) {
-            http.authorizeRequests(requests -> requests.anyRequest().authenticated())
-                    .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isServerAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
-        } else {
-            http.authorizeRequests(requests -> requests.anyRequest().permitAll());
+        http.authorizeRequests(requests -> requests.anyRequest().authenticated())
+            .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+        if (isServerAttlsEnabled) {
+            http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
 
         return FixedHeadersConfigurer.fix(http).build();

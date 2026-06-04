@@ -59,14 +59,12 @@ fi
 # how to verifyCertificates
 verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
-  verifySslCertificatesOfServices=false
-  nonStrictVerifySslCertificatesOfServices=true
+    echo "DISABLED is not a supported option for zowe.verifyCertificates"
+    exit 1
 elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
-  verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=true
 else
   # default value is STRICT
-  verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
@@ -239,7 +237,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
   -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
-  -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+  -Dapiml.service.ssl.verifySslCertificatesOfServices=true \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
   -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
   -Dserver.address=0.0.0.0 \

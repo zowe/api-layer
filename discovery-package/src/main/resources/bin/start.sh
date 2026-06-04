@@ -85,14 +85,12 @@ fi
 # how to verifyCertificates
 verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
-  verifySslCertificatesOfServices=false
-  nonStrictVerifySslCertificatesOfServices=true
+    echo "DISABLED is not a supported option for zowe.verifyCertificates"
+    exit 1
 elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
-  verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=true
 else
   # default value is STRICT
-  verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
@@ -289,7 +287,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Dapiml.service.port=${ZWE_configs_port:-7553} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=true \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \

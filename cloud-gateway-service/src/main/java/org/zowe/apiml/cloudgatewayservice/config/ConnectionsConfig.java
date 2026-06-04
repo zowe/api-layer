@@ -115,9 +115,6 @@ public class ConnectionsConfig {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
-
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
@@ -167,7 +164,7 @@ public class ConnectionsConfig {
     public HttpsConfig httpsConfig() {
         HttpsConfig config = HttpsConfig.builder()
             .protocol(protocol)
-            .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
+            .verifySslCertificatesOfServices(true)
             .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
             .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
             .trustStore(trustStorePath).trustStoreType(trustStoreType)

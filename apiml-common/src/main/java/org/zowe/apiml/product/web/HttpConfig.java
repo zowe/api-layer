@@ -81,9 +81,6 @@ public class HttpConfig implements InitializingBean {
     @Value("${server.ssl.keyStoreType:PKCS12}")
     private String keyStoreType;
 
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
-
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
 
@@ -152,7 +149,7 @@ public class HttpConfig implements InitializingBean {
                     .protocol(protocol).enabledProtocols(supportedProtocols).cipherSuite(ciphers)
                     .trustStore(trustStore).trustStoreType(trustStoreType)
                     .trustStorePassword(trustStorePassword).trustStoreRequired(trustStoreRequired)
-                    .verifySslCertificatesOfServices(verifySslCertificatesOfServices)
+                    .verifySslCertificatesOfServices(true)
                     .nonStrictVerifySslCertificatesOfServices(nonStrictVerifySslCertificatesOfServices)
                     .maxConnectionsPerRoute(maxConnectionsPerRoute).maxTotalConnections(maxTotalConnections)
                     .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
@@ -229,9 +226,6 @@ public class HttpConfig implements InitializingBean {
         sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
         if (nonStrictVerifySslCertificatesOfServices) {
             sslContextFactory.setEndpointIdentificationAlgorithm(null);
-        }
-        if (!verifySslCertificatesOfServices) {
-            sslContextFactory.setTrustAll(true);
         }
 
         return sslContextFactory;

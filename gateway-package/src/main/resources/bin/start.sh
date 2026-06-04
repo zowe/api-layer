@@ -139,14 +139,12 @@ fi
 # how to verifyCertificates
 verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
-  verifySslCertificatesOfServices=false
-  nonStrictVerifySslCertificatesOfServices=true
+    echo "DISABLED is not a supported option for zowe.verifyCertificates"
+    exit 1
 elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
-  verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=true
 else
   # default value is STRICT
-  verifySslCertificatesOfServices=true
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
@@ -363,7 +361,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.gateway.timeoutMillis=${ZWE_configs_apiml_gateway_timeoutMillis:-600000} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=true \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.auth.zosmf.serviceId=${ZWE_configs_apiml_security_auth_zosmf_serviceId:-zosmf} \
     -Dapiml.security.auth.provider=${ZWE_configs_apiml_security_auth_provider:-zosmf} \

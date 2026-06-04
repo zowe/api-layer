@@ -100,12 +100,6 @@ public class SecurityConfiguration {
     @Order(1)
     public class FilterChainBasicAuthOrTokenOrCertForApiDoc {
 
-        @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-        private boolean verifySslCertificatesOfServices;
-
-        @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
-        private boolean nonStrictVerifySslCertificatesOfServices;
-
         @Bean
         SecurityFilterChain basicAuthOrTokenOrCertApiDocFilterChain(HttpSecurity http, LogoutHandler logoutHandler) throws Exception {
             mainframeCredentialsConfiguration(
@@ -118,17 +112,15 @@ public class SecurityConfiguration {
                 .authenticationProvider(gatewayTokenProvider)
                 .authenticationProvider(new CertificateAuthenticationProvider());
 
-            if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
-                if (isServerAttlsEnabled) {
-                    http.x509(x509 -> x509
-                            .userDetailsService(x509UserDetailsService()))
-                            .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
-                            .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
-                            .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-                } else {
-                    http.x509(x509 -> x509
-                            .userDetailsService(x509UserDetailsService()));
-                }
+            if (isServerAttlsEnabled) {
+                http.x509(x509 -> x509
+                        .userDetailsService(x509UserDetailsService()))
+                    .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
+                    .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
+                    .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
+            } else {
+                http.x509(x509 -> x509
+                    .userDetailsService(x509UserDetailsService()));
             }
 
             return http.build();

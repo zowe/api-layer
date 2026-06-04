@@ -65,6 +65,18 @@ if [ "${ZWE_configs_debug}" = "true" ]; then
   export LOG_LEVEL="debug"
 fi
 
+# how to verifyCertificates
+verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates}" | tr '[:lower:]' '[:upper:]')
+if [ "${verify_certificates_config}" = "DISABLED" ]; then
+    echo "DISABLED is not a supported option for zowe.verifyCertificates"
+    exit 1
+elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
+  nonStrictVerifySslCertificatesOfServices=true
+else
+  # default value is STRICT
+  nonStrictVerifySslCertificatesOfServices=false
+fi
+
 # Check for Java version and set Java options in case the version is 17 or newer
 ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
@@ -230,6 +242,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=true} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dapiml.cloudGateway.registry.enabled=${ZWE_configs_cloudGateway_registry_enabled:-false} \
