@@ -117,6 +117,7 @@ class CategorizeCertsWebFilterTest {
     void filter_whenNoTlsCerts_doesNothingAndContinuesChain() {
 
         when(mockRequest.getSslInfo()).thenReturn(null);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         Mono<Void> result = filter.filter(mockExchange, mockFilterChain);
@@ -132,6 +133,7 @@ class CategorizeCertsWebFilterTest {
         X509Certificate[] certChain = {clientCert};
 
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
@@ -163,6 +165,7 @@ class CategorizeCertsWebFilterTest {
         X509Certificate[] certChain = {clientCert, gatewayCert};
 
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
@@ -204,6 +207,7 @@ class CategorizeCertsWebFilterTest {
         X509Certificate[] certChain = {gatewayCert};
 
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
@@ -271,6 +275,7 @@ class CategorizeCertsWebFilterTest {
         X509Certificate[] certChain = {clientCert};
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockExchange.getAttributes()).thenReturn(new HashMap<>());
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
