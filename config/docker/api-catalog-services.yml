@@ -33,8 +33,6 @@ apiml:
         hostname: api-catalog-services
         port: 10014
         discoveryServiceUrls: https://discovery-service:10011/eureka/
-        eurekaPassword: password
-        eurekaUserName: eureka
         gatewayHostname: https://gateway-service:10010
         preferIpAddress: false
     service-registry:

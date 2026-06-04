@@ -38,10 +38,10 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
-    @Value("${apiml.discovery.userid:eureka}")
+    @Value("${apiml.discovery.userid:#{null}}")
     private String eurekaUserid;
 
-    @Value("${apiml.discovery.password:password}")
+    @Value("${apiml.discovery.password:#{null}}")
     private String eurekaPassword;
 
     @Qualifier("webClientClientCert")
@@ -52,6 +52,15 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
+    void setAuthorization(HttpHeaders headers) {
+        if (StringUtils.isEmpty(eurekaUserid) || StringUtils.isEmpty(eurekaPassword)) {
+            log.warn("Eureka userid or password not set");
+        } else {
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
+            headers.add(HttpHeaders.AUTHORIZATION, basicToken);
+        }
+    }
+
     @Override
     public Mono<StaticAPIResponse> refresh() {
         return Flux.fromIterable(getDiscoveryServiceUrls())
@@ -61,8 +70,7 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
                 .headers(headers -> {
                     boolean isHttp = uri.startsWith("http://");
                     if (isHttp && !isServerAttlsEnabled) {
-                        String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
-                        headers.add(HttpHeaders.AUTHORIZATION, basicToken);
+                        setAuthorization(headers);
                     }
                 })
                 .exchangeToMono(response -> response
