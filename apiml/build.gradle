@@ -62,11 +62,12 @@ dependencies {
     api project(":api-catalog-services")
 
     implementation libs.bundles.modulith
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
     implementation libs.bundles.jaxb
     implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.boot.jackson2
     implementation libs.spring.cloud.starter.eureka.server
     implementation libs.spring.cloud.starter.gateway
     implementation libs.spring.boot.starter.actuator

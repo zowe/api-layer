@@ -58,6 +58,7 @@ spring:
         gateway:
             server:
                 webflux:
+                    trusted-proxies: "192.168.0.0/16,10.0.0.0/8"
                     x-forwarded:
                         prefix-append: false
                         prefix-enabled: true

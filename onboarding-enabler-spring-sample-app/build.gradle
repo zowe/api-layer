@@ -18,7 +18,6 @@ apply plugin: 'org.springframework.boot'
 
 bootJar {
     archiveBaseName.set("enabler-springboot-${libs.versions.springBoot.get()}-sample")
-    launchScript()
 }
 
 jar {
@@ -34,7 +33,7 @@ repositories {
 dependencies {
     api project(':onboarding-enabler-spring')
 
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.doc
 

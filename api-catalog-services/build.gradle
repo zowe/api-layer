@@ -65,12 +65,13 @@ dependencies {
     api project(':apiml-tomcat-common')
     api project(':security-service-client-spring')
 
-    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.aspectj
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.boot.jackson2
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
     implementation libs.spring.cloud.gateway.server

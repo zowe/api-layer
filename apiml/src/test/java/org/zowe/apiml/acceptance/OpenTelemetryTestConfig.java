@@ -29,7 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtProvider;
 import org.zowe.apiml.zaas.security.service.saf.SafRestAuthenticationService;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @TestConfiguration
 @Profile("OpenTelemetryTest")

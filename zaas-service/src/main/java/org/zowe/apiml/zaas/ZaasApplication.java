@@ -11,8 +11,6 @@
 package org.zowe.apiml.zaas;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -30,8 +28,6 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 @EnableWebSecurity
 @SpringBootApplication(
     exclude = {
-        OpenTelemetryAutoConfiguration.class,
-        OpenTelemetryLoggingAutoConfiguration.class
     }
 )
 @EnableDiscoveryClient

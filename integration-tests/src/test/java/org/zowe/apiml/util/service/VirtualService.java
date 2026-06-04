@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.auth.Authentication;
