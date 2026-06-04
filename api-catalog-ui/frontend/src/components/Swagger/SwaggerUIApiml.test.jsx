@@ -355,6 +355,72 @@ describe('>>> Swagger component tests', () => {
 
     });
 
+    describe('updateCsrfHeader request interceptor', () => {
+        const service = {
+            serviceId: 'testservice',
+            apiDoc: JSON.stringify({ openapi: '3.0.0' }),
+            apis: { default: { apiId: 'testservice' } },
+            defaultApiVersion: 0,
+        };
+
+        function getRequestInterceptor() {
+            const wrapper = shallow(<SwaggerUIApiml service={service} />);
+            return wrapper.instance().state.swaggerProps.requestInterceptor;
+        }
+
+        beforeEach(() => {
+            Object.defineProperty(document, 'cookie', {
+                configurable: true,
+                get: () => 'XSRF-TOKEN=test-csrf-token',
+            });
+        });
+
+        afterEach(() => {
+            Object.defineProperty(document, 'cookie', {
+                configurable: true,
+                get: () => '',
+            });
+        });
+
+        it('should add X-XSRF-TOKEN header for non-GET requests when cookie is present', () => {
+            const interceptor = getRequestInterceptor();
+            const request = { method: 'POST', headers: {} };
+            const result = interceptor(request);
+            expect(result.headers['X-XSRF-TOKEN']).toBe('test-csrf-token');
+        });
+
+        it('should add X-XSRF-TOKEN header for PUT requests when cookie is present', () => {
+            const interceptor = getRequestInterceptor();
+            const request = { method: 'PUT', headers: {} };
+            const result = interceptor(request);
+            expect(result.headers['X-XSRF-TOKEN']).toBe('test-csrf-token');
+        });
+
+        it('should not add X-XSRF-TOKEN header for GET requests', () => {
+            const interceptor = getRequestInterceptor();
+            const request = { method: 'GET', headers: {} };
+            const result = interceptor(request);
+            expect(result.headers['X-XSRF-TOKEN']).toBeUndefined();
+        });
+
+        it('should not add X-XSRF-TOKEN header when XSRF-TOKEN cookie is absent', () => {
+            Object.defineProperty(document, 'cookie', {
+                configurable: true,
+                get: () => '',
+            });
+            const interceptor = getRequestInterceptor();
+            const request = { method: 'POST', headers: {} };
+            const result = interceptor(request);
+            expect(result.headers['X-XSRF-TOKEN']).toBeUndefined();
+        });
+
+        it('should return the original request object', () => {
+            const interceptor = getRequestInterceptor();
+            const request = { method: 'POST', headers: {} };
+            expect(interceptor(request)).toBe(request);
+        });
+    });
+
     it('should not create element api portal disabled and span already exists', () => {
         const service = {
             serviceId: 'testservice',
