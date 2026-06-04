@@ -2686,7 +2686,10 @@ jobs:
             -   name: Run Service ID Prefix Replacer Tests
                 run: >
                     ./gradlew :integration-tests:runIdPrefixReplacerTests -Denvironment.config=-docker
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
