@@ -12,8 +12,8 @@ package org.zowe.apiml.apicatalog.health;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.product.constants.CoreService;

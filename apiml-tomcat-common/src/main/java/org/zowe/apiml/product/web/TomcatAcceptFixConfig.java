@@ -19,7 +19,7 @@ import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.NioEndpoint;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

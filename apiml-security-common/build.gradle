@@ -15,6 +15,7 @@ dependencies {
 
     implementation libs.apache.commons.lang3
     implementation libs.http.client5
+    implementation libs.jackson.databind
 
     implementation libs.nimbus.jose.jwt // Parsing
 

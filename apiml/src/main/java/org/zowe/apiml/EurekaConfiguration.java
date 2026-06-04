@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.web.server.autoconfigure.ServerProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.cloud.client.actuator.HasFeatures;

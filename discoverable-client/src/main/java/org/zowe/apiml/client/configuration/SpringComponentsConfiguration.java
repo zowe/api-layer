@@ -12,7 +12,7 @@ package org.zowe.apiml.client.configuration;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
