@@ -11,7 +11,10 @@
 package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -44,6 +47,7 @@ import java.util.Collections;
  * <p>
  * This configuration is applied if "https" Spring profile is not active
  */
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 @Profile("!https & !attlsServer")
@@ -51,10 +55,10 @@ import java.util.Collections;
 public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
-    @Value("${apiml.discovery.userid:eureka}")
+    @Value("${apiml.discovery.userid:#{null}}")
     private String eurekaUserid;
 
-    @Value("${apiml.discovery.password:password}")
+    @Value("${apiml.discovery.password:#{null}}")
     private char[] eurekaPassword;
 
     @Value("${apiml.health.protected:true}")
@@ -63,43 +67,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
-        auth.authenticationProvider(new AuthenticationProvider() {
-            private MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
-
-            @Override
-            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-                if (
-                    StringUtils.equals(eurekaUserid, String.valueOf(authentication.getPrincipal())) &&
-                        authentication.getCredentials() != null
-                ) {
-                    char[] credentials;
-                    if (authentication.getCredentials() instanceof char[]) {
-                        credentials = (char[]) authentication.getCredentials();
-                    } else {
-                        credentials = String.valueOf(authentication.getCredentials()).toCharArray();
-                    }
-
-                    if (Arrays.equals(eurekaPassword, credentials)) {
-                        UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
-                            authentication.getPrincipal(),
-                            authentication.getCredentials(),
-                            Collections.singleton(new SimpleGrantedAuthority("EUREKA"))
-                        );
-                        result.setDetails(authentication.getDetails());
-                        return result;
-                    }
-                }
-
-                throw new BadCredentialsException(this.messages
-                    .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
-
-            }
-
-            @Override
-            public boolean supports(Class<?> authentication) {
-                return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
-            }
-        });
+        auth.authenticationProvider(new EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword));
     }
 
     private final HandlerInitializer handlerInitializer;
@@ -147,4 +115,63 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
             return new BasicContentFilter(authenticationManager, handlerInitializer.getAuthenticationFailureHandler(), handlerInitializer.getResourceAccessExceptionHandler());
         }
     }
+
+    @RequiredArgsConstructor
+    static class EurekaBasicAuthenticationProvider implements AuthenticationProvider {
+
+        private final String eurekaUserid;
+        private final char[] eurekaPassword;
+
+        private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+
+        private boolean isCredentialsSet() {
+            if (!StringUtils.isEmpty(eurekaUserid) && !ArrayUtils.isEmpty(eurekaPassword)) {
+                return true;
+            }
+
+            log.warn("Eureka credentials are not set. Please configure properties `apiml.discovery.userid` and `apiml.discovery.password` or change type of Eureka authentication.");
+            return false;
+        }
+
+        private char[] getPassword(Authentication authentication) {
+            if (authentication.getCredentials() instanceof char[]) {
+                return (char[]) authentication.getCredentials();
+            }
+            return String.valueOf(authentication.getCredentials()).toCharArray();
+        }
+
+        private String getUser(Authentication authentication) {
+            if (authentication.getCredentials() == null) {
+                return null;
+            }
+            return String.valueOf(authentication.getPrincipal());
+        }
+
+        @Override
+        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+            if (
+                isCredentialsSet() &&
+                    Strings.CS.equals(eurekaUserid, getUser(authentication)) &&
+                    Arrays.equals(eurekaPassword, getPassword(authentication))
+            ) {
+                UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
+                    authentication.getPrincipal(),
+                    authentication.getCredentials(),
+                    Collections.singleton(new SimpleGrantedAuthority("EUREKA"))
+                );
+                result.setDetails(authentication.getDetails());
+                return result;
+            }
+
+            throw new BadCredentialsException(this.messages
+                .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+        }
+
+        @Override
+        public boolean supports(Class<?> authentication) {
+            return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
+        }
+
+    }
+
 }

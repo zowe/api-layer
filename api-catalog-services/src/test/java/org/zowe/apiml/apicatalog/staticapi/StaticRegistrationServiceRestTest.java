@@ -14,9 +14,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.ClientRequest;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
@@ -187,6 +191,40 @@ class StaticRegistrationServiceRestTest {
                 assertEquals(expectedResponse, actualResponse);
             })
             .verifyComplete();
+    }
+
+    @Nested
+    class EurekaAuthorization {
+
+        @Test
+        void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
+            var service = new StaticRegistrationServiceRest(null, null);
+            ReflectionTestUtils.setField(service, "eurekaUserid", "user");
+            ReflectionTestUtils.setField(service, "eurekaPassword", "password");
+
+            var headers = mock(HttpHeaders.class);
+            service.setAuthorization(headers);
+
+            verify(headers).add(HttpHeaders.AUTHORIZATION, "Basic dXNlcjpwYXNzd29yZA==");
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            ",password,,",
+            "user,,",
+            ",,"
+        })
+        void givenIncompleteCredentials_whenSetCredentials_thenDoNotSetAuthorization(String userId, String password) {
+            var service = new StaticRegistrationServiceRest(null, null);
+            ReflectionTestUtils.setField(service, "eurekaUserid", userId);
+            ReflectionTestUtils.setField(service, "eurekaPassword", password);
+
+            var headers = mock(HttpHeaders.class);
+            service.setAuthorization(headers);
+
+            verify(headers, never()).add(any(), any());
+        }
+
     }
 
 }
