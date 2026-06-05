@@ -51,8 +51,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.core.Application;
 import jakarta.ws.rs.ext.Provider;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.spi.Container;
@@ -104,7 +104,7 @@ import java.util.regex.Pattern;
 @PropertySource("classpath:/eureka/server.properties")
 public class EurekaConfiguration implements WebMvcConfigurer {
 
-    private static final Log log = LogFactory.getLog(EurekaConfiguration.class);
+    private static final Logger log = LoggerFactory.getLogger(EurekaConfiguration.class);
 
     /**
      * List of packages containing Jersey resources required by the Eureka server.
