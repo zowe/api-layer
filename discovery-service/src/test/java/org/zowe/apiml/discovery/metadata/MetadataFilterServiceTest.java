@@ -61,15 +61,15 @@ class MetadataFilterServiceTest {
 
         @ParameterizedTest(name = "Key: {0}, Value: {1} -> Allowed: {2}")
         @CsvSource({
-            "apiml.gatewayUrl, https://localhost:8080, true",
-            "apiml.gateway-url, https://localhost:8080, true",
-            "apiml.serviceUrl, https://example.com:8080, false",
-            "apiml.service-url, https://example.com:8080, false",
+            "apiml.externalUrl, https://localhost:8080, true",
+            "apiml.externalUrl, https://localhost:8080, true",
+            "apiml.externalUrl, https://example.com:8080, false",
+            "apiml.swaggerUrl, https://example.com:8080, false",
             "apiml.swaggerUrl, https://sub.zowe.org:8080, true",
             "apiml.graphqlUrl, https://sub.zowe.org:8080, true",
             "apiml.documentationUrl, https://invalid.org:8080, false",
             "apiml.customKey, https://invalid.org:8080, true",
-            "apiml.gatewayUrl, invalid-url, true"
+            "apiml.documentationUrl, invalid-url, false"
         })
         void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed) throws Exception {
             Map<String, String> metadata = new HashMap<>();

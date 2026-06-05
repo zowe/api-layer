@@ -79,14 +79,9 @@ public class MetadataFilterService implements InitializingBean {
 
     private boolean verifyMetadataEntry(String key, String value, InstanceInfo info) {
         var metadataKeysToVerify = List.of(
-            "gatewayUrl",
-            "gateway-url",
-            "serviceUrl",
-            "service-url",
             "swaggerUrl",
             "graphqlUrl",
             "documentationUrl",
-            "openApiUrl",
             "externalUrl");
 
         if (metadataKeysToVerify.stream().anyMatch(metadataKey -> key.startsWith("apiml.") && key.endsWith(metadataKey))) {
