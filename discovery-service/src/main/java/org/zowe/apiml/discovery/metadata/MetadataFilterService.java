@@ -106,16 +106,18 @@ public class MetadataFilterService implements InitializingBean {
     private boolean verifyCorsAllowedOrigins(String allowedOrigins, InstanceInfo info) {
         var urls = Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList();
         var result = new AtomicBoolean(true);
-        urls.forEach(url -> {
-            if (url.equals("*")) {
-                apimlLogger.log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
-                return;
-            }
-            if (!isAllowedDomain(url)) {
-                apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "API ML CORS Allowed Origin", url, info.getInstanceId());
-                result.set(false);
-            }
-        });
+
+        if ("*".equals(allowedOrigins)) {
+            apimlLogger.log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
+        } else {
+            urls.forEach(url -> {
+                if (!isAllowedDomain(url)) {
+                    apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "API ML CORS Allowed Origin", url, info.getInstanceId());
+                    result.set(false);
+                }
+            });
+        }
+
         return result.get();
     }
 
