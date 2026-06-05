@@ -60,6 +60,19 @@ class AnalyserTest {
     }
 
     @Test
+    void whenZosmfJwtCheckFlagPassed_thenDelegatesToZosmfJwtCheck() {
+        String[] args = {"--zosmf-jwt-check", "--help"};
+        assertEquals(8, Analyser.mainWithExitCode(args));
+        assertTrue(outputStream.toString().contains("z/OSMF JWT Check"));
+    }
+
+    @Test
+    void whenZosmfJwtCheckFlagWithNoArgs_thenReturnsExitCode4() {
+        String[] args = {"--zosmf-jwt-check"};
+        assertEquals(4, Analyser.mainWithExitCode(args));
+    }
+
+    @Test
     void whenNoRemoteUrlProvided_thenMessageIsPrinted() {
         String[] args = {};
         assertEquals(4, Analyser.mainWithExitCode(args));
@@ -115,7 +128,7 @@ class AnalyserTest {
         @Test
         void whenPropertyNotSet_thenBothPackagesAreRegistered() {
             System.clearProperty("java.protocol.handler.pkgs");
-            Analyser.ensureSafkeyringHandler();
+            org.zowe.apiml.common.KeyringUtils.ensureSafkeyringHandler();
             String value = System.getProperty("java.protocol.handler.pkgs");
             assertTrue(value.contains("com.ibm.crypto.zsecurity.provider"));
             assertTrue(value.contains("com.ibm.crypto.hdwrCCA.provider"));
@@ -124,7 +137,7 @@ class AnalyserTest {
         @Test
         void whenPropertyAlreadyHasOtherPackages_thenNewPackagesAreAppended() {
             System.setProperty("java.protocol.handler.pkgs", "com.example.custom");
-            Analyser.ensureSafkeyringHandler();
+            org.zowe.apiml.common.KeyringUtils.ensureSafkeyringHandler();
             String value = System.getProperty("java.protocol.handler.pkgs");
             assertTrue(value.startsWith("com.example.custom|"));
             assertTrue(value.contains("com.ibm.crypto.zsecurity.provider"));
@@ -135,7 +148,7 @@ class AnalyserTest {
         void whenPropertyAlreadyContainsPackages_thenNoDuplicatesAdded() {
             System.setProperty("java.protocol.handler.pkgs",
                 "com.ibm.crypto.zsecurity.provider|com.ibm.crypto.hdwrCCA.provider");
-            Analyser.ensureSafkeyringHandler();
+            org.zowe.apiml.common.KeyringUtils.ensureSafkeyringHandler();
             String value = System.getProperty("java.protocol.handler.pkgs");
             assertEquals("com.ibm.crypto.zsecurity.provider|com.ibm.crypto.hdwrCCA.provider", value);
         }

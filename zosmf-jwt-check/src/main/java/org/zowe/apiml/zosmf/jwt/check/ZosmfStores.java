@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml;
+package org.zowe.apiml.zosmf.jwt.check;
 
 import org.zowe.apiml.common.KeyringUtils;
 import org.zowe.apiml.common.StoresNotInitializeException;
@@ -17,25 +17,24 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
+/**
+ * Loads Java {@link java.security.KeyStore} instances from the filesystem
+ * or z/OS SAF keyrings. Supports PKCS12, JKS, and {@code safkeyring://} URIs.
+ */
 @SuppressWarnings("squid:S106")
-public class Stores {
+public class ZosmfStores {
 
     private KeyStore keyStore;
     private KeyStore trustStore;
-    private final Config conf;
-    private Map<String, Certificate> caList;
+    private final ZosmfJwtCheckConfig conf;
 
-    public Stores(Config conf) {
+    public ZosmfStores(ZosmfJwtCheckConfig conf) {
         this.conf = conf;
         init();
     }
@@ -56,79 +55,42 @@ public class Stores {
 
     private void initTruststore() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         if (conf.getTrustStore() == null) {
-            System.out.println("No keystore specified, will use empty.");
             try {
                 this.trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            } catch (KeyStoreException e) {
+                this.trustStore.load(null, null);
+            } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException e) {
                 System.err.println(e.getMessage());
             }
             return;
         }
         if (KeyringUtils.isKeyring(conf.getTrustStore())) {
-            try (InputStream trustStoreIStream = KeyringUtils.keyRingUrl(conf.getTrustStore()).openStream()) {
-                this.trustStore = KeyringUtils.readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+            URL url = KeyringUtils.keyRingUrl(conf.getTrustStore());
+            try (InputStream trustStoreIStream = url.openStream()) {
+                this.trustStore = KeyringUtils.readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
             }
         } else {
             try (InputStream trustStoreIStream = new FileInputStream(conf.getTrustStore())) {
-                this.trustStore = KeyringUtils.readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
+                this.trustStore = KeyringUtils.readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
             }
         }
-
     }
 
     private void initKeystore() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
         if (conf.getKeyStore() == null) {
-            System.out.println("No keystore specified, will use empty.");
-            try {
-                this.keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            } catch (KeyStoreException e) {
-                System.err.println(e.getMessage());
-            }
             return;
         }
         if (KeyringUtils.isKeyring(conf.getKeyStore())) {
             try (InputStream keyringIStream = KeyringUtils.keyRingUrl(conf.getKeyStore()).openStream()) {
-                this.keyStore = KeyringUtils.readKeyStore(keyringIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
+                this.keyStore = KeyringUtils.readKeyStore(keyringIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
             } catch (Exception e) {
                 throw new StoresNotInitializeException(e.getMessage());
             }
         } else {
             try (InputStream keyStoreIStream = new FileInputStream(conf.getKeyStore())) {
-                this.keyStore = KeyringUtils.readKeyStore(keyStoreIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
+                this.keyStore = KeyringUtils.readKeyStore(keyStoreIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
             }
         }
-    }
-
-    public Map<String, Certificate> getListOfCertificates() throws KeyStoreException {
-        if (this.caList != null) {
-            return this.caList;
-        }
-        this.caList = new HashMap<>();
-        Enumeration<String> aliases = trustStore.aliases();
-
-        while (aliases.hasMoreElements()) {
-            String certAuthAlias = aliases.nextElement();
-            this.caList.put(certAuthAlias, trustStore.getCertificate(certAuthAlias));
-        }
-        return this.caList;
-    }
-
-    public X509Certificate getX509Certificate(String alias) throws KeyStoreException {
-        Certificate[] certificate = getServerCertificateChain(alias);
-        if (certificate.length > 0) {
-            return (X509Certificate) certificate[0];
-        } else {
-            System.out.println("Alias \"" + alias + "\" is not available in keystore.");
-            throw new StoresNotInitializeException("No x509 certificate available in keystore");
-        }
-    }
-
-    public Certificate[] getServerCertificateChain(String alias) throws KeyStoreException {
-        if (alias == null) {
-            alias = keyStore.aliases().nextElement();
-        }
-        return keyStore.getCertificateChain(alias);
     }
 
     public KeyStore getKeyStore() {
@@ -139,7 +101,7 @@ public class Stores {
         return trustStore;
     }
 
-    public Config getConf() {
+    public ZosmfJwtCheckConfig getConf() {
         return conf;
     }
 }
