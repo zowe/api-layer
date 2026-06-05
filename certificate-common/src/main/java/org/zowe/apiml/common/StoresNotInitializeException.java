@@ -8,8 +8,12 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml;
+package org.zowe.apiml.common;
 
+/**
+ * Thrown when keystore or truststore initialization fails
+ * (e.g. missing file, wrong password, invalid keyring format).
+ */
 public class StoresNotInitializeException extends RuntimeException {
 
     public StoresNotInitializeException(String message) {
