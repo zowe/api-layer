@@ -58,16 +58,16 @@ public class MetadataFilterService implements InitializingBean {
         });
     }
 
-    private boolean isAllowed(String allowedDomain, String value) throws MalformedURLException {
-        log.debug("checking URL {} against domain {}", value, allowedDomain);
-        if (isUrl(value)) {
-            value = new URL(value).getHost();
+    private boolean isAllowed(String allowedDomain, String domain) throws MalformedURLException {
+        log.debug("checking URL {} against domain {}", domain, allowedDomain);
+        if (isUrl(domain)) {
+            domain = new URL(domain).getHost();
         }
-        if (value.equals(allowedDomain)) {
+        if (domain.equals(allowedDomain)) {
             return true;
         }
         if (allowedDomain.startsWith("*.")) {
-            return value.endsWith(allowedDomain.substring(1));
+            return domain.endsWith(allowedDomain.substring(1));
         }
 
         return false;
@@ -81,7 +81,9 @@ public class MetadataFilterService implements InitializingBean {
             "service-url",
             "swaggerUrl",
             "graphqlUrl",
-            "documentationUrl");
+            "documentationUrl",
+            "openApiUrl",
+            "externalUrl");
 
         if (metadataKeysToVerify.stream().anyMatch(metadataKey -> key.startsWith("apiml.") && key.endsWith(metadataKey)) && isUrl(value)) {
             if (!isAllowedDomain(value)) {
@@ -157,6 +159,7 @@ public class MetadataFilterService implements InitializingBean {
             new URL(value);
             return true;
         } catch (MalformedURLException e) {
+            log.debug("'{}' is not a valid URL", value);
             return false;
         }
 

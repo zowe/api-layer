@@ -17,7 +17,6 @@ public interface TestWithStartedInstances {
 
     @BeforeEach
     default void beforeAllTests() {
-       FullApiMediationLayer.getInstance();
        if (FullApiMediationLayer.startServices()) {
            FullApiMediationLayer.getInstance().waitUntilReady();
        }
