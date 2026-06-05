@@ -82,15 +82,19 @@ public class LocalVerifier implements Verifier {
         return !expired;
     }
 
-    boolean isMatching(String hostname, String cn, List<String> alternativeNames) {
-        if (cn.startsWith("*.")) {
+    boolean isMatching(String hostname, String pattern) {
+        if (pattern.startsWith("*.")) {
             int firstDot = hostname.indexOf('.');
-            if ((firstDot > 0) && cn.substring(1).equalsIgnoreCase(hostname.substring(firstDot))) {
+            if ((firstDot > 0) && pattern.substring(1).equalsIgnoreCase(hostname.substring(firstDot))) {
                 return true;
             }
         }
 
-        return alternativeNames.stream().anyMatch(hostname::equalsIgnoreCase);
+        return pattern.equalsIgnoreCase(hostname);
+    }
+
+    boolean isMatching(String hostname, String cn, List<String> alternativeNames) {
+        return isMatching(hostname, cn) || alternativeNames.stream().anyMatch(alternativeName -> isMatching(hostname, alternativeName));
     }
 
     boolean verifyHostnames(X509Certificate serverCert) {
