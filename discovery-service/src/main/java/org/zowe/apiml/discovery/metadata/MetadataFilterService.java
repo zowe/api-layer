@@ -89,7 +89,7 @@ public class MetadataFilterService implements InitializingBean {
             "openApiUrl",
             "externalUrl");
 
-        if (metadataKeysToVerify.stream().anyMatch(metadataKey -> key.startsWith("apiml.") && key.endsWith(metadataKey)) && isUrl(value)) {
+        if (metadataKeysToVerify.stream().anyMatch(metadataKey -> key.startsWith("apiml.") && key.endsWith(metadataKey))) {
             if (!isAllowedDomain(value)) {
                 apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, key, value, info.getInstanceId());
                 return false;
