@@ -11,7 +11,7 @@
 package org.zowe.apiml.apicatalog.controllers.handlers;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.web.server.ErrorPage;
+import org.springframework.boot.web.error.ErrorPage;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory;
 import org.springframework.http.HttpStatus;
