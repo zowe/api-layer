@@ -22,6 +22,7 @@ import org.springframework.cloud.client.loadbalancer.Request;
 import org.springframework.cloud.client.loadbalancer.RequestDataContext;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.loadbalancer.core.SameInstancePreferenceServiceInstanceListSupplier;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -190,11 +191,11 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
         if (requestContext instanceof RequestDataContext ctx) {
             var uri = ctx.getClientRequest().getUrl();
             if (uri != null) {
-                var params = uri.getQueryParams();
+                var params = UriComponentsBuilder.fromUri(uri).build().getQueryParams();
                 if (params != null) {
                     var groups = params.get("apiml-group");
                     if (groups != null && !groups.isEmpty()) {
-                        return groups.getFirst();
+                        return groups.get(0);
                     }
                 }
             }
