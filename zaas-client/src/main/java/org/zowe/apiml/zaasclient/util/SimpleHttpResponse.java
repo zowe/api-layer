@@ -19,6 +19,7 @@ import org.apache.hc.core5.http.ParseException;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -44,15 +45,15 @@ public class SimpleHttpResponse {
     private final Map<String, List<Header>> headers;
 
     public SimpleHttpResponse(int code, byte[] byteBody) {
-        this(code, byteBody, null, Map.of());
+        this(code, byteBody, new String(byteBody), Map.of());
     }
 
     public SimpleHttpResponse(int code, String stringBody) {
-        this(code, null, stringBody, Map.of());
+        this(code, stringBody == null ? null : stringBody.getBytes(StandardCharsets.UTF_8), stringBody, Map.of());
     }
 
     public SimpleHttpResponse(int code, String stringBody, Map<String, List<Header>> headers) {
-        this(code, null, stringBody, headers);
+        this(code, stringBody == null ? null : stringBody.getBytes(StandardCharsets.UTF_8), stringBody, headers);
     }
 
     public SimpleHttpResponse(int code) {

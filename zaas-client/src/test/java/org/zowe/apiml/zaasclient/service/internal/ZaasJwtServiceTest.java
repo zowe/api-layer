@@ -38,16 +38,9 @@ import org.zowe.apiml.zaasclient.service.ZaasToken;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.GENERIC_EXCEPTION;
 import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.TOKEN_NOT_PROVIDED;
 
@@ -226,11 +219,30 @@ class ZaasJwtServiceTest {
     }
 
     @Test
-    void givenValidToken_whenValidate_thenSuccess() throws ZaasClientException {
+    void givenValidToken_whenValidateBefore3_6_0_thenSuccess() throws ZaasClientException {
         var token = "validOidcToken";
         mockHttpClientResponse(204);
         var validationResult = zaasJwtService.validateOidc(token);
         assertTrue(validationResult.isValid());
+        assertNull(validationResult.getClaims());
+    }
+
+    @Test
+    void givenValidToken_whenValidateOn3_6_0_orLaterVersion_thenSuccess() throws ZaasClientException {
+        var token = "validOidcToken";
+        mockHttpClientResponse(200, """
+            {
+                "sub": "user",
+                "anotherClaim": "x",
+                "exp": 5
+            }
+            """);
+        var validationResult = zaasJwtService.validateOidc(token);
+        assertTrue(validationResult.isValid());
+        assertNotNull(validationResult.getClaims());
+        assertEquals("user", validationResult.getClaims().get("sub"));
+        assertEquals("x", validationResult.getClaims().get("anotherClaim"));
+        assertEquals(5, validationResult.getClaims().get("exp"));
     }
 
     @Test

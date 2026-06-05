@@ -35,6 +35,9 @@ buildscript {
 
 }
 
+plugins {
+    id 'net.minecraftforge.licenser' version '1.2.0' apply false
+}
 
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
@@ -54,12 +57,14 @@ apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 allprojects {
     apply plugin: 'idea'
-    apply plugin: 'org.cadixdev.licenser'
+    apply plugin: 'net.minecraftforge.licenser'
     apply plugin: 'eclipse'
 
     repositories mavenRepositories
@@ -129,8 +134,10 @@ configure(subprojects.findAll { it.name in [
 configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 
     test {
         useJUnitPlatform()
@@ -184,6 +191,7 @@ ext.javaLibraries = [
     'apiml-security-common',
     'apiml-tomcat-common',
     'certificate-analyser',
+    'zosmf-jwt-check',
     'common-service-core',
     'security-service-client-spring',
     'apiml-sample-extension',
