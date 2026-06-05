@@ -195,7 +195,10 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
                 if (params != null) {
                     var groups = params.get("apiml-group");
                     if (groups != null && !groups.isEmpty()) {
-                        return groups.get(0);
+                        var group = groups.get(0);
+                        if (group != null && !group.isEmpty()) {
+                            return group;
+                        }
                     }
                 }
             }

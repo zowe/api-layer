@@ -201,7 +201,7 @@ class DeterministicLoadBalancerTest {
                         @Test
                         void whenInstanceExists_thenUpdateList() {
                             when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance1")));
-                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1")), eq(null)))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))
@@ -217,7 +217,7 @@ class DeterministicLoadBalancerTest {
                         @Test
                         void whenInstanceDoesNotExist_thenUpdatePreference() {
                             when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance3")));
-                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1")), eq(null)))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))
@@ -233,8 +233,8 @@ class DeterministicLoadBalancerTest {
                         @Test
                         void whenCacheEntryExpired_thenUpdatePreference() {
                             when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance2", LocalDateTime.of(2023, 2, 20, 2, 2))));
-                            when(lbCache.delete("USER", "service")).thenReturn(Mono.empty());
-                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
+                            when(lbCache.delete(eq("USER"), eq("service"), eq(null))).thenReturn(Mono.empty());
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1")), eq(null)))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))
@@ -243,8 +243,8 @@ class DeterministicLoadBalancerTest {
                                 assertEquals(1, chosenInstances.size());
                                 assertEquals("instance1", chosenInstances.get(0).getInstanceId());
                                 verify(lbCache).retrieve("USER", "service");
-                                verify(lbCache).delete("USER", "service");
-                                verify(lbCache).store(eq("USER"), eq("service"), any());
+                                verify(lbCache).delete(eq("USER"), eq("service"), eq(null));
+                                verify(lbCache).store(eq("USER"), eq("service"), any(), eq(null));
                             })
                             .expectComplete()
                             .verify();
@@ -256,7 +256,7 @@ class DeterministicLoadBalancerTest {
                     void whenNoPreferece_thenCreateOne() {
                         when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(LoadBalancerCacheRecord.NONE));
 
-                        when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
+                        when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1")), eq(null)))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))
@@ -335,7 +335,7 @@ class DeterministicLoadBalancerTest {
                         @Test
                         void whenInstanceExists_thenUpdateList() {
                             when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance1")));
-                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
+                            when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1")), eq(null)))
                                 .thenReturn(Mono.empty());
 
                             StepVerifier.create(loadBalancer.get(request))
@@ -451,8 +451,6 @@ class DeterministicLoadBalancerTest {
             void whenGroupSpecifiedButNoInstancesMatch_thenReturn503() throws URISyntaxException {
                 var context = new RequestDataContext(requestData);
                 when(requestData.getUrl()).thenReturn(new java.net.URI("http://localhost/service?apiml-group=nonexistent"));
-                when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
-                when(requestData.getHeaders()).thenReturn(new HttpHeaders());
                 when(request.getContext()).thenReturn(context);
 
                 Map<String, String> metadata = new HashMap<>();
@@ -473,10 +471,6 @@ class DeterministicLoadBalancerTest {
                 when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
                 when(requestData.getHeaders()).thenReturn(new HttpHeaders());
                 when(request.getContext()).thenReturn(context);
-
-                Map<String, String> metadata = new HashMap<>();
-                metadata.put(INSTANCE_GROUP, "group-A");
-                when(instance1.getMetadata()).thenReturn(metadata);
 
                 StepVerifier.create(loadBalancer.get(request))
                     .assertNext(chosenInstances -> {
