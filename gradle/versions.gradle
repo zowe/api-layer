@@ -12,7 +12,7 @@ dependencyResolutionManagement {
             version('springCloudCB', '5.0.1')
             version('springCloudGateway', '5.0.1')
             version('springCloud', '2025.1.1')
-            version('springFramework', '7.0')
+            version('springFramework', '7.0.7')
             version('springRetry', '2.0.12')
 
             version('modulith', '1.4.11')
