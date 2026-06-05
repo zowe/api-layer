@@ -261,6 +261,47 @@ class LoadBalancerCacheTest {
 
         }
 
+        @Nested
+        class GivenGroupAwareCache {
+
+            @Test
+            void whenGroupSpecified_thenCacheKeyIncludesGroup() throws JsonProcessingException {
+                var application = mock(Application.class);
+                var instanceInfo = mock(InstanceInfo.class);
+                when(eurekaClient.getApplication("cachingservice")).thenReturn(application);
+                when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo));
+
+                var cacheRecord = new LoadBalancerCacheRecord("instance1");
+                when(cachingServiceClient.create(new CachingServiceClient.ApiKeyValue("lb.anuser:aserviceid:group-A", mapper.writeValueAsString(cacheRecord))))
+                    .thenReturn(empty());
+
+                StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", cacheRecord, "group-A"))
+                    .expectComplete()
+                    .verify();
+
+                verify(cachingServiceClient).create(new CachingServiceClient.ApiKeyValue("lb.anuser:aserviceid:group-A", mapper.writeValueAsString(cacheRecord)));
+            }
+
+            @Test
+            void whenNoGroup_thenCacheKeyMatchesOldFormat() throws JsonProcessingException {
+                var application = mock(Application.class);
+                var instanceInfo = mock(InstanceInfo.class);
+                when(eurekaClient.getApplication("cachingservice")).thenReturn(application);
+                when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo));
+
+                var cacheRecord = new LoadBalancerCacheRecord("instance1");
+                when(cachingServiceClient.create(new CachingServiceClient.ApiKeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord))))
+                    .thenReturn(empty());
+
+                StepVerifier.create(loadBalancerCache.store("anuser", "aserviceid", cacheRecord, null))
+                    .expectComplete()
+                    .verify();
+
+                verify(cachingServiceClient).create(new CachingServiceClient.ApiKeyValue("lb.anuser:aserviceid", mapper.writeValueAsString(cacheRecord)));
+            }
+
+        }
+
     }
 
 }

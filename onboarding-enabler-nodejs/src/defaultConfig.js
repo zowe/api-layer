@@ -69,5 +69,7 @@ export default {
     useLocalMetadata: false,
     preferIpAddress: false,
   },
-  instance: {},
+  instance: {
+    instanceGroup: null,   // optional group identifier
+  },
 };

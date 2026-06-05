@@ -38,6 +38,11 @@ let config;
 
 /**
  * Read ssl service configuration
+ *
+ * The Node.js enabler supports instance grouping through the
+ * `instance.instanceGroup` configuration or through `apiml.instance.group`
+ * custom metadata in Eureka. When set, instances can be targeted via the
+ * ?apiml-group query parameter on API requests.
  */
 function readTlsProps() {
   try {

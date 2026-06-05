@@ -44,6 +44,7 @@ public final class EurekaMetadataDefinition {
     public static final String APPLY_RATE_LIMITER_FILTER = "apiml.gateway.applyRateLimiterFilter";
     public static final String APIML_ID = "apiml.service.apimlId";
     public static final String REGISTRATION_TYPE = "apiml.registrationType";
+    public static final String INSTANCE_GROUP = "apiml.instance.group";
 
     public static final String API_INFO = "apiml.apiInfo";
     public static final String API_INFO_API_ID = "apiId";

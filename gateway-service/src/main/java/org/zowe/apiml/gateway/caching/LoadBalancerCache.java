@@ -66,22 +66,37 @@ public class LoadBalancerCache {
      * @return Mono success / error
      */
     public Mono<Void> store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
+        return store(user, service, loadBalancerCacheRecord, null);
+    }
+
+    /**
+     * Store information about instance the user is balanced towards, with optional group.
+     * If there is already existing record, it will be updated
+     *
+     * @param user     User being routed towards southbound service
+     * @param service  Service towards which is the user routed
+     * @param loadBalancerCacheRecord  Object containing the selected instance and its creation time
+     * @param group    Optional group identifier for instance grouping
+     * @return Mono success / error
+     */
+    public Mono<Void> store(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, String group) {
+        String key = getKey(user, service, group);
         return cachingServiceAvailability()
             .flatMap(available -> {
                 if (Boolean.TRUE.equals(available)) {
-                    return storeToRemoteCache(user, service, loadBalancerCacheRecord);
+                    return storeToRemoteCache(user, service, loadBalancerCacheRecord, key);
                 } else {
-                    localCache.put(getKey(user, service), loadBalancerCacheRecord);
-                    log.debug("Stored record to local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+                    localCache.put(key, loadBalancerCacheRecord);
+                    log.debug("Stored record to local cache for user: {}, service: {}, group: {}, record: {}", user, service, group, loadBalancerCacheRecord);
                     return empty();
                 }
             });
     }
 
-    private Mono<Void> storeToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord) {
+    private Mono<Void> storeToRemoteCache(String user, String service, LoadBalancerCacheRecord loadBalancerCacheRecord, String key) {
         try {
             String serializedRecord = mapper.writeValueAsString(loadBalancerCacheRecord);
-            CachingServiceClient.ApiKeyValue toStore = new CachingServiceClient.ApiKeyValue(getKey(user, service), serializedRecord);
+            CachingServiceClient.ApiKeyValue toStore = new CachingServiceClient.ApiKeyValue(key, serializedRecord);
             return createToRemoteCache(user, service, loadBalancerCacheRecord, toStore);
         } catch (JsonProcessingException e) {
             log.debug("Failed to serialize record for user: {}, service: {}, record {},  with exception: ", user, service, loadBalancerCacheRecord, e);
@@ -120,10 +135,23 @@ public class LoadBalancerCache {
      * @return Retrieved record containing the instance to use for this user and its creation time.
      */
     public Mono<LoadBalancerCacheRecord> retrieve(String user, String service) {
+        return retrieve(user, service, null);
+    }
+
+    /**
+     * Retrieve information about selected instance for combination of User, Service, and optional Group.
+     *
+     * @param user    User being routed towards southbound service
+     * @param service Service towards which is the user routed
+     * @param group   Optional group identifier for instance grouping
+     * @return Retrieved record containing the instance to use for this user and its creation time.
+     */
+    public Mono<LoadBalancerCacheRecord> retrieve(String user, String service, String group) {
+        String key = getKey(user, service, group);
         return cachingServiceAvailability()
             .flatMap(available -> {
                 if (Boolean.TRUE.equals(available)) {
-                    return remoteCache.read(getKey(user, service))
+                    return remoteCache.read(key)
                         .handle((kv, sink) -> {
                             LoadBalancerCacheRecord loadBalancerCacheRecord;
                             try {
@@ -132,12 +160,12 @@ public class LoadBalancerCache {
                                 sink.error(new LoadBalancerCacheException(e));
                                 return;
                             }
-                            log.debug("Retrieved record from remote cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+                            log.debug("Retrieved record from remote cache for user: {}, service: {}, group: {}, record: {}", user, service, group, loadBalancerCacheRecord);
                             sink.next(loadBalancerCacheRecord);
                         });
                 } else {
-                    LoadBalancerCacheRecord loadBalancerCacheRecord = localCache.get(getKey(user, service));
-                    log.debug("Retrieved record from local cache for user: {}, service: {}, record: {}", user, service, loadBalancerCacheRecord);
+                    LoadBalancerCacheRecord loadBalancerCacheRecord = localCache.get(key);
+                    log.debug("Retrieved record from local cache for user: {}, service: {}, group: {}, record: {}", user, service, group, loadBalancerCacheRecord);
                     return loadBalancerCacheRecord == null ? empty() : just(loadBalancerCacheRecord);
                 }
             });
@@ -150,20 +178,43 @@ public class LoadBalancerCache {
      * @param service Service towards which is the user routed
      */
     public Mono<Void> delete(String user, String service) {
+        return delete(user, service, null);
+    }
+
+    /**
+     * Delete information stored for given user, service, and optional group.
+     *
+     * @param user    User being routed towards southbound service
+     * @param service Service towards which is the user routed
+     * @param group   Optional group identifier for instance grouping
+     */
+    public Mono<Void> delete(String user, String service, String group) {
+        String key = getKey(user, service, group);
         return cachingServiceAvailability()
             .flatMap(available -> {
                 if (Boolean.TRUE.equals(available)) {
-                    return remoteCache.delete(getKey(user, service))
-                        .doOnSuccess(v -> log.debug("Deleted record from remote cache for user: {}, service: {}", user, service));
+                    return remoteCache.delete(key)
+                        .doOnSuccess(v -> log.debug("Deleted record from remote cache for user: {}, service: {}, group: {}", user, service, group));
                 } else {
-                    localCache.remove(getKey(user, service));
-                    log.debug("Deleted record from local cache for user: {}, service: {}", user, service);
+                    localCache.remove(key);
+                    log.debug("Deleted record from local cache for user: {}, service: {}, group: {}", user, service, group);
                     return empty();
                 }
             });
     }
 
     private String getKey(String user, String service) {
+        return getKey(user, service, null);
+    }
+
+    /**
+     * Build cache key with optional group. When group is present, the key format is
+     * {@code lb.<user>:<service>:<group>}. Otherwise {@code lb.<user>:<service>}.
+     */
+    private String getKey(String user, String service, String group) {
+        if (group != null && !group.isEmpty()) {
+            return LOAD_BALANCER_KEY_PREFIX + user.toLowerCase() + ":" + service.toLowerCase() + ":" + group;
+        }
         return LOAD_BALANCER_KEY_PREFIX + user.toLowerCase() + ":" + service.toLowerCase();
     }
 

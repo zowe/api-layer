@@ -55,4 +55,13 @@ class EurekaInstanceConfigCreatorTest {
         assertEquals("'ftp' is not valid protocol for baseUrl property", exception.getMessage());
     }
 
+    @Test
+    void whenInstanceGroupIsSet_thenMetadataContainsGroup() throws ServiceDefinitionException {
+        ApiMediationServiceConfig testConfig = configReader.loadConfiguration("service-configuration.yml");
+        testConfig.setInstanceGroup("test-group");
+        EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(testConfig);
+
+        assertThat(translatedConfig.getMetadataMap(), hasEntry("apiml.instance.group", "test-group"));
+    }
+
 }

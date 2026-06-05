@@ -35,6 +35,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.net.URISyntaxException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -47,6 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.INSTANCE_GROUP;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
@@ -412,6 +414,129 @@ class DeterministicLoadBalancerTest {
                         .verify();
                 }
 
+            }
+
+        }
+
+        @Nested
+        class GivenGroupFiltering {
+
+            @Mock
+            private RequestData requestData;
+
+            @Test
+            void whenGroupSpecifiedAndInstancesExist_thenFilterToGroup() throws URISyntaxException {
+                var context = new RequestDataContext(requestData);
+                when(requestData.getUrl()).thenReturn(new java.net.URI("http://localhost/service?apiml-group=group-A"));
+                when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
+                when(requestData.getHeaders()).thenReturn(new HttpHeaders());
+                when(request.getContext()).thenReturn(context);
+
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put(INSTANCE_GROUP, "group-A");
+                when(instance1.getMetadata()).thenReturn(metadata);
+                when(instance2.getMetadata()).thenReturn(new HashMap<>());
+
+                StepVerifier.create(loadBalancer.get(request))
+                    .assertNext(chosenInstances -> {
+                        assertNotNull(chosenInstances);
+                        assertEquals(1, chosenInstances.size());
+                        assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                    })
+                    .expectComplete()
+                    .verify();
+            }
+
+            @Test
+            void whenGroupSpecifiedButNoInstancesMatch_thenReturn503() throws URISyntaxException {
+                var context = new RequestDataContext(requestData);
+                when(requestData.getUrl()).thenReturn(new java.net.URI("http://localhost/service?apiml-group=nonexistent"));
+                when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
+                when(requestData.getHeaders()).thenReturn(new HttpHeaders());
+                when(request.getContext()).thenReturn(context);
+
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put(INSTANCE_GROUP, "group-A");
+                when(instance1.getMetadata()).thenReturn(metadata);
+                when(instance2.getMetadata()).thenReturn(new HashMap<>());
+
+                StepVerifier.create(loadBalancer.get(request))
+                    .expectErrorMatches(e ->
+                        e instanceof ResponseStatusException ex && ex.getStatusCode().value() == 503)
+                    .verify();
+            }
+
+            @Test
+            void whenNoGroupSpecified_thenAllInstancesReturned() {
+                var context = new RequestDataContext(requestData);
+                when(requestData.getUrl()).thenReturn(null);
+                when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
+                when(requestData.getHeaders()).thenReturn(new HttpHeaders());
+                when(request.getContext()).thenReturn(context);
+
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put(INSTANCE_GROUP, "group-A");
+                when(instance1.getMetadata()).thenReturn(metadata);
+
+                StepVerifier.create(loadBalancer.get(request))
+                    .assertNext(chosenInstances -> {
+                        assertNotNull(chosenInstances);
+                        assertEquals(2, chosenInstances.size());
+                    })
+                    .expectComplete()
+                    .verify();
+            }
+
+            @Test
+            void whenEmptyGroupString_thenAllInstancesReturned() throws URISyntaxException {
+                var context = new RequestDataContext(requestData);
+                // Empty query param still returns a list with an empty string
+                when(requestData.getUrl()).thenReturn(new java.net.URI("http://localhost/service?apiml-group="));
+                when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
+                when(requestData.getHeaders()).thenReturn(new HttpHeaders());
+                when(request.getContext()).thenReturn(context);
+
+                StepVerifier.create(loadBalancer.get(request))
+                    .assertNext(chosenInstances -> {
+                        assertNotNull(chosenInstances);
+                        assertEquals(2, chosenInstances.size());
+                    })
+                    .expectComplete()
+                    .verify();
+            }
+
+            @Test
+            void whenGroupWithStickySession_thenUserStaysInGroup() throws URISyntaxException {
+                // Set up a request with group parameter and valid token
+                var context = new RequestDataContext(requestData);
+                when(requestData.getUrl()).thenReturn(new java.net.URI("http://localhost/service?apiml-group=group-A"));
+                when(requestData.getCookies()).thenReturn(new LinkedMultiValueMap<>());
+                when(request.getContext()).thenReturn(context);
+                when(clock.instant()).thenReturn(Instant.ofEpochSecond(1721552753));
+
+                // Token in cookie
+                MultiValueMap<String, String> cookie = new LinkedMultiValueMap<>();
+                cookie.add("apimlAuthenticationToken", VALID_TOKEN);
+                when(requestData.getCookies()).thenReturn(cookie);
+
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put(INSTANCE_GROUP, "group-A");
+                when(instance1.getMetadata()).thenReturn(metadata);
+                when(instance2.getMetadata()).thenReturn(new HashMap<>());
+
+                when(lbCache.retrieve("USER", "service", "group-A")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance1")));
+                when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1")), eq("group-A")))
+                    .thenReturn(Mono.empty());
+
+                StepVerifier.create(loadBalancer.get(request))
+                    .assertNext(chosenInstances -> {
+                        assertNotNull(chosenInstances);
+                        assertEquals(1, chosenInstances.size());
+                        assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                        verify(lbCache).retrieve("USER", "service", "group-A");
+                    })
+                    .expectComplete()
+                    .verify();
             }
 
         }

@@ -68,6 +68,13 @@ public class ApiMediationServiceConfig {
     private String serviceId;
 
     /**
+     * Optional group identifier for instance grouping. Instances with the same group
+     * can be targeted via the ?apiml-group query parameter on API requests.
+     * Example: "department-A", "us-east-1"
+     */
+    private String instanceGroup;
+
+    /**
      * * **title** (XML Path: /instance/metadata/apiml.service.title)
      *
      *   This parameter specifies the human readable name of the API service instance.

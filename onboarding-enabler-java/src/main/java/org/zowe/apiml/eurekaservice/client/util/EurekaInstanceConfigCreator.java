@@ -125,6 +125,11 @@ public class EurekaInstanceConfigCreator {
         metadata.put(SERVICE_TITLE, config.getTitle());
         metadata.put(SERVICE_DESCRIPTION, config.getDescription());
 
+        // fill instance group metadata
+        if (config.getInstanceGroup() != null && !config.getInstanceGroup().isEmpty()) {
+            metadata.put(INSTANCE_GROUP, config.getInstanceGroup());
+        }
+
         // fill custom metadata
         metadata.putAll(flattenMetadata(config.getCustomMetadata()));
 
