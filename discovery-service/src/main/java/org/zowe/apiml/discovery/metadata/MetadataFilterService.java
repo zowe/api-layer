@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
@@ -35,6 +36,8 @@ public class MetadataFilterService implements InitializingBean {
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
     private String allowedDomains;
 
+    private boolean onlyWarn = false;
+
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
 
@@ -43,6 +46,7 @@ public class MetadataFilterService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         allowedDomainsList = Arrays.stream(allowedDomains.split(",")).map(String::trim).toList();
+        onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
     }
 
     private boolean isAllowedDomain(String domain) {
@@ -148,7 +152,7 @@ public class MetadataFilterService implements InitializingBean {
             }
         });
 
-        if (!result.get()) {
+        if (!result.get() && !onlyWarn) {
             throw new MetadataValidationException("URLs not allowed found for instance " + info.getInstanceId());
         }
 
