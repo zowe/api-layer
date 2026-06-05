@@ -12,8 +12,11 @@ package org.zowe.apiml.gateway.config;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -30,6 +33,7 @@ import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
@@ -40,20 +44,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.*;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -68,6 +63,7 @@ import org.springframework.security.web.server.util.matcher.PathPatternParserSer
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGatewayRegistry;
@@ -90,13 +86,7 @@ import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -516,11 +506,12 @@ public class WebSecurity {
 
     @Bean
     StrictServerWebExchangeFirewall httpFirewall() {
-        StrictServerWebExchangeFirewall firewall = new StrictServerWebExchangeFirewall();
+        var strictFirewall = new StrictServerWebExchangeFirewall();
         if (isStrictUrlValidationEnabled) {
-            return firewall;
+            return strictFirewall;
         }
 
+        StrictServerWebExchangeFirewall firewall = new ApimlStrictServerWebExchangeFirewall(strictFirewall);
         firewall.setAllowUrlEncodedSlash(true);
         firewall.setAllowUrlEncodedDoubleSlash(true);
         firewall.setAllowBackSlash(true);
@@ -539,6 +530,72 @@ public class WebSecurity {
         AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry
     ) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         return new X509AndGwAwareXForwardedHeadersFilter(httpsConfig, trustedProxies, additionalRegistrationGatewayRegistry);
+    }
+
+    @RequiredArgsConstructor
+    static class ApimlStrictServerWebExchangeFirewall extends StrictServerWebExchangeFirewall {
+
+        private static final String[] BASE_PATH_MICROSERVICES = {
+            "/gateway",
+            "/application",
+            "/images",
+            "/v3/api-docs"
+        };
+
+        private static final String[] BASE_PATHS_MODULITH = ArrayUtils.addAll(BASE_PATH_MICROSERVICES, new String[] {
+            "/apicatalog",
+            "/cachingservice"
+        });
+
+        @Value("${server.port}")
+        private int gatewayPort;
+
+        @Autowired
+        private ApplicationInfo applicationInfo;
+
+        private final StrictServerWebExchangeFirewall nonRoutingFirewall;
+
+        boolean isPathToRoute(ServerHttpRequest request, String[] prefixes) {
+            var path = request.getPath().value();
+            // homepage
+            if (Strings.CS.equals(path, "/")) {
+                return false;
+            }
+            for (String prefix : prefixes) {
+                if (Strings.CS.equals(path, prefix)) {
+                    return false;
+                }
+                if (Strings.CS.startsWith(path, prefix + "/")) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        boolean isPathToRoute(ServerHttpRequest request) {
+            if (applicationInfo.isModulith()) {
+                // check if the request is to DS on the internal port
+                if (request.getLocalAddress().getPort() != gatewayPort) {
+                    return false;
+                }
+
+                return isPathToRoute(request, BASE_PATHS_MODULITH);
+            }
+
+            return isPathToRoute(request, BASE_PATH_MICROSERVICES);
+        }
+
+
+        @Override
+        public Mono<ServerWebExchange> getFirewalledExchange(ServerWebExchange exchange) {
+            // in case of Gateway and a request to routing use a configured values
+            if (isPathToRoute(exchange.getRequest())) {
+                return super.getFirewalledExchange(exchange);
+            }
+
+            return nonRoutingFirewall.getFirewalledExchange(exchange);
+        }
+
     }
 
 }

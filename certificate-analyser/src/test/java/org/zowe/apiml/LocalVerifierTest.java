@@ -34,6 +34,7 @@ class LocalVerifierTest {
             LocalVerifier localVerifier = new LocalVerifier(null, null);
             assertTrue(localVerifier.isMatching("subdomain.domain.com", "*.domain.com", Collections.emptyList()));
             assertTrue(localVerifier.isMatching("2.DOMAIN.com", "*.domain.COM", Collections.emptyList()));
+            assertTrue(localVerifier.isMatching("2.domain.com", "*.mydomain.COM", Collections.singletonList("*.domain.com")));
         }
 
         @Test
@@ -41,6 +42,7 @@ class LocalVerifierTest {
             LocalVerifier localVerifier = new LocalVerifier(null, null);
             assertFalse(localVerifier.isMatching("a.b.domain.com", "*.domain.com", Collections.emptyList()));
             assertFalse(localVerifier.isMatching("b.domain2.com", "*.domain.com", Collections.emptyList()));
+            assertFalse(localVerifier.isMatching("b.domain2.com", "*.domain.net", Collections.singletonList("*.domain.com")));
         }
 
         @Test
@@ -60,6 +62,20 @@ class LocalVerifierTest {
             assertFalse(localVerifier.isMatching("www.c.net", "*.domain.com", Arrays.asList(
                 "www.a.net", "WWW.B.NET"
             )));
+        }
+
+        @Test
+        void givenExactAlternativeNames_whenVerifyHosts_thenReturnTrue() {
+            LocalVerifier localVerifier = new LocalVerifier(null, null);
+            assertTrue(localVerifier.isMatching("www.domain.net", "*.domain.com", Arrays.asList(
+                "www.domain.net"
+            )));
+        }
+
+        @Test
+        void givenInvalidWildCard_whenVerifyHosts_thenReturnFalse() {
+            LocalVerifier localVerifier = new LocalVerifier(null, null);
+            assertFalse(localVerifier.isMatching("mydomain.com", "*domain.com", Collections.emptyList()));
         }
 
     }
