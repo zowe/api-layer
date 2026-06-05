@@ -954,8 +954,6 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
-                env:
-                    APIML_SECURITY_ALLOWED_DOMAINS: "discovery-service,discoverable-client,api-catalog-services,caching-service,gateway-service,zaas-service,mock-services"
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service:

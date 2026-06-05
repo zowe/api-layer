@@ -67,14 +67,14 @@ public class MetadataFilterService implements InitializingBean {
             return true;
         }
         if (allowedDomain.startsWith("*.")) {
-            return value.endsWith(allowedDomain.substring(2));
+            return value.endsWith(allowedDomain.substring(1));
         }
 
         return false;
     }
 
     private boolean verifyMetadataEntry(String key, String value, InstanceInfo info) {
-        var metadataToVerify = List.of(
+        var metadataKeysToVerify = List.of(
             "gatewayUrl",
             "gateway-url",
             "serviceUrl",
@@ -83,7 +83,7 @@ public class MetadataFilterService implements InitializingBean {
             "graphqlUrl",
             "documentationUrl");
 
-        if (metadataToVerify.stream().anyMatch(key::endsWith) && isUrl(value)) {
+        if (metadataKeysToVerify.stream().anyMatch(metadataKey -> key.startsWith("apiml.") && key.endsWith(metadataKey)) && isUrl(value)) {
             if (!isAllowedDomain(value)) {
                 apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, key, value, info.getInstanceId());
                 return false;
