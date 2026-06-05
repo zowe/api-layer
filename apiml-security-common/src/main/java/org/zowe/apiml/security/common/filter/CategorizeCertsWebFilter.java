@@ -84,9 +84,9 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             .filter(ssl -> ssl.length > 0);
 
         ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
-        Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
-        log.debug("clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
         certsFromTlsOpt.ifPresent(certsFromTls -> {
+            Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
+            log.debug("clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
             log.debug("isForwardingEnabled = {}", certificateValidator.isForwardingEnabled());
             if (certificateValidator.isForwardingEnabled() &&
                 certificateValidator.hasGatewayChain(certsFromTls) &&

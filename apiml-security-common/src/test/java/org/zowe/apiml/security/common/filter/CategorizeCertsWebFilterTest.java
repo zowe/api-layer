@@ -117,7 +117,6 @@ class CategorizeCertsWebFilterTest {
     void filter_whenNoTlsCerts_doesNothingAndContinuesChain() {
 
         when(mockRequest.getSslInfo()).thenReturn(null);
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         Mono<Void> result = filter.filter(mockExchange, mockFilterChain);
