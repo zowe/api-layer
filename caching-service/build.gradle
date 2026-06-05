@@ -64,6 +64,7 @@ dependencies {
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.cache
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
     implementation libs.eureka.jersey.client
