@@ -14,11 +14,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.zowe.apiml.util.service.FullApiMediationLayer;
 
 public interface TestWithStartedInstances {
+
     @BeforeEach
     default void beforeAllTests() {
-       FullApiMediationLayer apiml = FullApiMediationLayer.getInstance();
-       if (apiml.startServices()) {
+       if (FullApiMediationLayer.startServices()) {
            FullApiMediationLayer.getInstance().waitUntilReady();
        }
     }
+
 }

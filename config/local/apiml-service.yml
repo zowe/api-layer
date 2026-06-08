@@ -61,6 +61,7 @@ apiml:
             provider: zosmf
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+        allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
 caching:
     storage:
         mode: infinispan

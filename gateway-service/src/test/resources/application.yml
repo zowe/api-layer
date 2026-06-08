@@ -17,6 +17,8 @@ apiml:
         serviceRegistryEnabled: false
         forwardClientCertEnabled: false
     webClientConfig.enabled: true
+    security:
+        allowedDomains: localhost,localhost2
 
 server:
     port: ${apiml.service.port}
