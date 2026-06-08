@@ -137,7 +137,7 @@ dependencyResolutionManagement {
             version('thymeleaf', '3.1.5.RELEASE')
             version('tomcat', '9.0.118')
             version('velocity', '2.4.1')
-            version('woodstoxCore', '7.2.0')
+            version('woodstoxCore', '7.2.1')
             version('woodstoxStax2', '4.3.0')
             version('xstream') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
