@@ -99,7 +99,6 @@ else
 fi
 
 # Check for Java version and set Java options in case the version is 17 or newer
-ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
     | grep "major version" \
     | cut -d " " -f5)
@@ -107,11 +106,6 @@ ADD_OPENS=""
 
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
-    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
-        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
-        # Set console encoding before application initialization on Java 21+ on z/OS.
-        JAVA21_CONSOLE_ENCODING="-Dstdout.encoding=${ZOWE_CONSOLE_LOG_CHARSET} -Dstderr.encoding=${ZOWE_CONSOLE_LOG_CHARSET}"
-    fi
 fi
 
 add_profile() {
@@ -276,13 +270,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Xms${ZWE_configs_heap_init:-32}m -Xmx${ZWE_configs_heap_max:-512}m \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
-    ${JAVA21_CONSOLE_ENCODING} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     -Dsun.io.useCanonCaches=false \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
