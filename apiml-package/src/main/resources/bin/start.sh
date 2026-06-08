@@ -222,7 +222,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
-    ${JAVA21_CONSOLE_ENCODING} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
@@ -339,7 +338,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Djgroups.keyExchange.socketTimeout=${ZWE_components_caching_service_storage_infinispan_jgroups_keyExchange_socketTimeout:-${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000}} \
     -Djgroups.tcp.diag.enabled=${ZWE_components_caching_service_storage_infinispan_jgroups_tcp_diag_enabled:-${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false}} \
     -Dloader.path=${APIML_LOADER_PATH} \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Dotel.exporter.otlp.endpoint="${ZWE_configs_telemetry_exporter_endpoint:-http://localhost:4318}" \
     -Dotel.exporter.otlp.protocol="${ZWE_configs_telemetry_exporter_protocol:-http/protobuf}" \
     -Dotel.logs.exporter="${ZWE_configs_telemetry_logs_exporter:-otlp}" \
