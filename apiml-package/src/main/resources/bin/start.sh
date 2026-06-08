@@ -23,6 +23,7 @@
 # - ZWE_zowe_logDirectory
 # - ZWE_zowe_runtimeDirectory
 # - ZWE_zowe_workspaceDirectory
+# - ZWE_ALLOWED_DOMAINS
 
 # Optional variables:
 # - LAUNCH_COMPONENT
@@ -240,10 +241,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.connection.timeout=${ZWE_components_gateway_apiml_connection_timeout:-${ZWE_configs_apiml_connection_timeout:-60000}} \
     -Dapiml.connection.timeToLive=${ZWE_components_gateway_apiml_connection_timeToLive:-${ZWE_configs_apiml_connection_timeToLive:-10000}} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.discovery.password=password \
+    -Dapiml.discovery.password=${ZWE_components_gateway_configs_apiml_service_http_password:-${ZWE_configs_apiml_service_http_password:-}} \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_components_discovery_apiml_discovery_serviceIdPrefixReplacer:-${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer}} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR:-} \
-    -Dapiml.discovery.userid=eureka \
+    -Dapiml.discovery.userid=${ZWE_components_gateway_configs_apiml_service_http_userId:-${ZWE_configs_apiml_service_http_userId:-}} \
     -Dapiml.gateway.cachePeriodSec=${ZWE_components_gateway_apiml_gateway_registry_cachePeriodSec:-${ZWE_configs_apiml_gateway_registry_cachePeriodSec:-120}} \
     -Dapiml.gateway.cookieNameForRateLimit=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.gateway.maxSimultaneousRequests=${ZWE_components_gateway_gateway_registry_maxSimultaneousRequests:-${ZWE_configs_gateway_registry_maxSimultaneousRequests:-20}} \
@@ -256,20 +257,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.gateway.servicesToDisableRetry=${ZWE_components_gateway_apiml_gateway_servicesToDisableRetry:-${ZWE_configs_apiml_gateway_servicesToDisableRetry:-}} \
     -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_components_gateway_apiml_gateway_servicesToLimitRequestRate:-${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-}} \
     -Dapiml.health.protected=${ZWE_components_gateway_apiml_health_protected:-${ZWE_configs_apiml_health_protected:-true}} \
-    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
-    -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
-    -Dapiml.service.ssl.key-alias="${client_key_alias}" \
-    -Dapiml.service.ssl.key-password="${client_key_pass}" \
-    -Dapiml.service.ssl.key-store="${client_keystore_location}" \
-    -Dapiml.service.ssl.key-store-password="${client_keystore_pass}" \
-    -Dapiml.service.ssl.key-store-type="${client_keystore_type}" \
-    -Dapiml.service.ssl.protocol=${ZWE_configs_apiml_service_ssl_protocol:-${server_protocol}} \
-    -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
-    -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
-    -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
-    -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
     -Dapiml.internal-discovery.address=${ZWE_configs_internal_discovery_address:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}}} \
+    -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.allowTokenRefresh=${ZWE_components_gateway_apiml_security_allowtokenrefresh:-${ZWE_configs_apiml_security_allowtokenrefresh:-false}} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.auth.jwt.customAuthHeader=${ZWE_components_gateway_apiml_security_auth_jwt_customAuthHeader:-${ZWE_configs_apiml_security_auth_jwt_customAuthHeader:-}} \
@@ -316,6 +307,17 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_components_gateway_apiml_security_x509_enabled:-${ZWE_configs_apiml_security_x509_enabled:-false}} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_components_gateway_port:-${ZWE_configs_port:-7554}} \
+    -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
+    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
+    -Dapiml.service.ssl.key-alias="${client_key_alias}" \
+    -Dapiml.service.ssl.key-password="${client_key_pass}" \
+    -Dapiml.service.ssl.key-store-password="${client_keystore_pass}" \
+    -Dapiml.service.ssl.key-store-type="${client_keystore_type}" \
+    -Dapiml.service.ssl.key-store="${client_keystore_location}" \
+    -Dapiml.service.ssl.protocol=${ZWE_configs_apiml_service_ssl_protocol:-${server_protocol}} \
+    -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
+    -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
+    -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dcaching.storage.evictionStrategy=${ZWE_components_caching_service_storage_evictionStrategy:-${ZWE_configs_storage_evictionStrategy:-reject}} \
     -Dcaching.storage.infinispan.initialHosts=${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-"localhost[7600]"}} \
@@ -340,8 +342,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dotel.exporter.otlp.protocol="${ZWE_configs_telemetry_exporter_protocol:-http/protobuf}" \
     -Dotel.logs.exporter="${ZWE_configs_telemetry_logs_exporter:-otlp}" \
     -Dotel.metrics.exporter="${ZWE_configs_telemetry_metrics_exporter:-otlp}" \
-    -Dotel.traces.exporter="${ZWE_configs_telemetry_traces_exporter:-otlp}" \
     -Dotel.sdk.disabled=${DISABLE_OTEL} \
+    -Dotel.traces.exporter="${ZWE_configs_telemetry_traces_exporter:-otlp}" \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
     -Dserver.maxConnectionsPerRoute=${ZWE_components_gateway_server_maxConnectionsPerRoute:-${ZWE_configs_server_maxConnectionsPerRoute:-100}} \
     -Dserver.maxTotalConnections=${ZWE_components_gateway_server_maxTotalConnections:-${ZWE_configs_server_maxTotalConnections:-1000}} \

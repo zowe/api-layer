@@ -27,6 +27,7 @@ dependencies {
 
     testCompileOnly libs.lombok
     testImplementation libs.netty.reactor.http
+    testImplementation libs.reactor.test
     testAnnotationProcessor libs.lombok
 
     testFixturesImplementation libs.nimbus.jose.jwt

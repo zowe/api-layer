@@ -19,6 +19,7 @@
 # - ZWE_zowe_certificate_truststore_file
 # - ZWE_zowe_job_prefix
 # - ZWE_zowe_logDirectory
+# - ZWE_ALLOWED_DOMAINS
 
 # Optional variables:
 # - CMMN_LB
@@ -100,28 +101,29 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     ${JVM_SECURITY_PROPERTIES} \
     ${CUSTOM_JVM_OPTS} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.discovery.password=password \
+    -Dapiml.discovery.password=${ZWE_configs_apiml_service_http_password:-} \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
-    -Dapiml.discovery.userid=eureka \
+    -Dapiml.discovery.userid=${ZWE_configs_apiml_service_http_userId:-} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
-    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
-    -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
-    -Dapiml.service.ssl.key-alias="${client_key_alias}" \
-    -Dapiml.service.ssl.key-password="${client_key_pass}" \
-    -Dapiml.service.ssl.key-store="${client_keystore_location}" \
-    -Dapiml.service.ssl.key-store-password="${client_keystore_pass}" \
-    -Dapiml.service.ssl.key-store-type="${client_keystore_type}" \
-    -Dapiml.service.ssl.protocol=${ZWE_configs_apiml_service_ssl_protocol:-${server_protocol}} \
-    -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
-    -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
-    -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7553} \
+    -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
+    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
+    -Dapiml.service.ssl.key-alias="${client_key_alias}" \
+    -Dapiml.service.ssl.key-password="${client_key_pass}" \
+    -Dapiml.service.ssl.key-store-password="${client_keystore_pass}" \
+    -Dapiml.service.ssl.key-store-type="${client_keystore_type}" \
+    -Dapiml.service.ssl.key-store="${client_keystore_location}" \
+    -Dapiml.service.ssl.protocol=${ZWE_configs_apiml_service_ssl_protocol:-${server_protocol}} \
+    -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
+    -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
+    -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
     -Dfile.encoding=UTF-8 \
     -Dibm.serversocket.recover=true \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
@@ -130,6 +132,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Dloader.path=${DISCOVERY_LOADER_PATH} \
+    -Dotel.sdk.disabled=true \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
     -Dserver.ssl.ciphers=${server_ciphers} \
     -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
@@ -144,7 +147,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
-    -Dotel.sdk.disabled=true \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

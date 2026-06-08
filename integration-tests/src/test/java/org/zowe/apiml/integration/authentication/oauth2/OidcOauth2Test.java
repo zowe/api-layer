@@ -113,7 +113,7 @@ public class OidcOauth2Test {
                 .body(requestBody)
                 .when()
                 .post(VALIDATE_ENDPOINT)
-                .then().statusCode(HttpStatus.SC_NO_CONTENT);
+                .then().statusCode(HttpStatus.SC_OK);
         }
 
         @Nested

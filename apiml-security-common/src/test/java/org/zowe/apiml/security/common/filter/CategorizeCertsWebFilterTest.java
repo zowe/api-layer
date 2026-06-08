@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.filter;
+package org.zowe.apiml.security.common.filter;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -132,14 +132,12 @@ class CategorizeCertsWebFilterTest {
         X509Certificate[] certChain = {clientCert};
 
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
-
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
 
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
 
@@ -166,11 +164,10 @@ class CategorizeCertsWebFilterTest {
         X509Certificate[] certChain = {clientCert, gatewayCert};
 
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
         when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
 
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
@@ -209,11 +206,10 @@ class CategorizeCertsWebFilterTest {
         X509Certificate[] certChain = {gatewayCert};
 
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
         when(mockExchange.getAttributes()).thenReturn(attributes);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
         when(mockCertificateValidator.isForwardingEnabled()).thenReturn(false);
 
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
@@ -278,10 +274,9 @@ class CategorizeCertsWebFilterTest {
         X509Certificate[] certChain = {clientCert};
         when(mockRequest.getSslInfo()).thenReturn(mockSslInfo);
         when(mockSslInfo.getPeerCertificates()).thenReturn(certChain);
+        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
         when(mockExchange.getAttributes()).thenReturn(new HashMap<>());
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
-        when(mockRequest.getHeaders()).thenReturn(mockHeaders);
-        when(mockHeaders.getFirst(CLIENT_CERT_HEADER)).thenReturn("");
 
         StepVerifier.create(filter.filter(mockExchange, mockFilterChain)).verifyComplete();
 
@@ -301,7 +296,6 @@ class CategorizeCertsWebFilterTest {
             return (X509Certificate) keystore.getCertificate(alias);
         }
     }
-
 
 
 }

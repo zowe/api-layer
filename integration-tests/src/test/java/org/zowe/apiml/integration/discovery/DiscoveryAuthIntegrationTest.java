@@ -77,4 +77,5 @@ class DiscoveryAuthIntegrationTest implements TestWithStartedInstances {
             .setPath(path)
             .build();
     }
+
 }

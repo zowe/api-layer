@@ -39,6 +39,7 @@
 #   - COMMON_LIB
 #   - LIBRARY_PATH
 #   - ZWE_DISCOVERY_SERVICES_LIST
+#   - CERTIFICATES_URLS
 
 ################################################################################
 # Function: add_profile
@@ -120,6 +121,13 @@ if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
     internalProtocol=http
 fi
+
+################################################################################
+# Certificates URLs
+################################################################################
+CERTIFICATES_URLS=${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/gateway/certificates
+CERTIFICATES_URLS=${ZWE_configs_apiml_security_x509_certificatesUrl:-${ZWE_components_gateway_apiml_security_x509_certificatesUrl:-${CERTIFICATES_URLS}}}
+CERTIFICATES_URLS=${ZWE_configs_apiml_security_x509_certificatesUrls:-${ZWE_components_gateway_apiml_security_x509_certificatesUrls:-${CERTIFICATES_URLS}}}
 
 ################################################################################
 # LIBPATH setup

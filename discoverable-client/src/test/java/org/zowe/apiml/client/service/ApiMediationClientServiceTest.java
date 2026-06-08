@@ -26,6 +26,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.client.model.DiscoverableClientConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
+import java.util.Collections;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,13 +51,13 @@ class ApiMediationClientServiceTest {
 
     @Test
     void registerTest() throws ServiceDefinitionException {
-        assertTrue(apiMediationClientService.register());
+        assertTrue(apiMediationClientService.register(Collections.emptyMap()));
     }
 
     @Test
     void registerTest_duplicate() throws ServiceDefinitionException {
-        assertTrue(apiMediationClientService.register());
-        assertThrows(ServiceDefinitionException.class, () -> apiMediationClientService.register());
+        assertTrue(apiMediationClientService.register(Collections.emptyMap()));
+        assertThrows(ServiceDefinitionException.class, () -> apiMediationClientService.register(Collections.emptyMap()));
     }
 
     @Test

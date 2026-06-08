@@ -101,10 +101,6 @@ apiml:
                             scheme: zoweJwt
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-        # Not used in HTTPS mode and not applicable for Zowe
-        # The `apiml.discovery` node contains discovery-service only configuration
-        userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
-        password: password  # Password that Eureka server will use to check authentication of its clients (other services)
         allPeersUrls: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/eureka/
     internal-discovery:
         address: ${server.address}
