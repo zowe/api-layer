@@ -37,11 +37,13 @@
 # - ZWE_configs_port - the port the api discovery service will use
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_ALLOWED_DOMAINS - The allowed domains to be used for the discovery service
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
+
 if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
 else
@@ -272,44 +274,45 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
-    -Dsun.io.useCanonCaches=false \
-    -Dibm.serversocket.recover=true \
-    -Dfile.encoding=UTF-8 \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
-    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
-    -Dspring.profiles.include=$LOG_LEVEL \
-    -Dserver.address=0.0.0.0 \
-    -Dapiml.discovery.userid=eureka \
-    -Dapiml.discovery.password=password \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.discovery.password=password \
+    -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
+    -Dapiml.discovery.userid=eureka \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${client_enabled_protocols}} \
+    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7553} \
-    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
-    -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
-    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
-    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
-    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
-    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${client_enabled_protocols}} \
+    -Dfile.encoding=UTF-8 \
+    -Dibm.serversocket.recover=true \
+    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
+    -Djava.library.path=${LIBPATH} \
+    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
+    -Dloader.path=${DISCOVERY_LOADER_PATH} \
+    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
+    -Dserver.address=0.0.0.0 \
     -Dserver.ssl.ciphers=${server_ciphers} \
-    -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-${server_protocol}} \
     -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
-    -Dserver.ssl.keyStore="${keystore_location}" \
-    -Dserver.ssl.keyStoreType="${keystore_type}" \
-    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
+    -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
     -Dserver.ssl.keyAlias="${key_alias}" \
     -Dserver.ssl.keyPassword="${key_pass}" \
+    -Dserver.ssl.keyStore="${keystore_location}" \
+    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
+    -Dserver.ssl.keyStoreType="${keystore_type}" \
+    -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-${server_protocol}} \
     -Dserver.ssl.trustStore="${truststore_location}" \
-    -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
-    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${DISCOVERY_LOADER_PATH} \
-    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
-    -Djava.library.path=${LIBPATH} \
+    -Dserver.ssl.trustStoreType="${truststore_type}" \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dspring.profiles.include=$LOG_LEVEL \
+    -Dsun.io.useCanonCaches=false \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

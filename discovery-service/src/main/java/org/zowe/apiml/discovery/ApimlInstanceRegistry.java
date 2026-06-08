@@ -22,6 +22,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.discovery.metadata.MetadataFilterService;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -57,6 +58,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private final ApplicationContext appCntx;
     private final EurekaConfig.Tuple tuple;
 
+    private MetadataFilterService metadataFilterService;
+
     public ApimlInstanceRegistry(
         EurekaServerConfig serverConfig,
         EurekaClientConfig clientConfig,
@@ -64,7 +67,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         EurekaClient eurekaClient,
         InstanceRegistryProperties instanceRegistryProperties,
         ApplicationContext appCntx,
-        EurekaConfig.Tuple tuple
+        EurekaConfig.Tuple tuple,
+        MetadataFilterService metadataFilterService
     ) {
 
         super(serverConfig, clientConfig, serverCodecs, eurekaClient,
@@ -73,6 +77,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         );
         this.appCntx = appCntx;
         this.tuple = tuple;
+        this.metadataFilterService = metadataFilterService;
         init();
     }
 
@@ -152,6 +157,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
+            validateInstanceInfo(info);
             info = changeServiceId(info);
         try {
             register3ArgsMethodHandle.invokeWithArguments(this, info, leaseDuration, isReplication);
@@ -165,8 +171,13 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
     }
 
+    private void validateInstanceInfo(InstanceInfo info) {
+        metadataFilterService.verifyAllowedDomains(info);
+    }
+
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
+            validateInstanceInfo(info);
             info = changeServiceId(info);
         try {
             register2ArgsMethodHandle.invokeWithArguments(this, info, isReplication);
