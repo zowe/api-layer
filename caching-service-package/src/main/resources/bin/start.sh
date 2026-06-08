@@ -125,6 +125,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
   -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
   -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
+  -Dapiml.security.x509.certificatesUrls=${CERTIFICATES_URLS} \
   -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-} \
   -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-} \
   -Djdk.tls.client.cipherSuites=${client_ciphers} \
