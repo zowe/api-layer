@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.filter;
+package org.zowe.apiml.security.common.filter;
 
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -84,20 +84,21 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             .filter(ssl -> ssl.length > 0);
 
         ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
-
         certsFromTlsOpt.ifPresent(certsFromTls -> {
             Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
-
+            log.debug("clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
+            log.debug("isForwardingEnabled = {}", certificateValidator.isForwardingEnabled());
             if (certificateValidator.isForwardingEnabled() &&
                 certificateValidator.hasGatewayChain(certsFromTls) &&
                 clientCertFromHeader.isPresent()) {
-
                 certificateValidator.updateAPIMLPublicKeyCertificates(certsFromTls);
 
                 X509Certificate[] clientAuthCerts = selectCerts(
                     new X509Certificate[]{clientCertFromHeader.get()},
                     certificateForClientAuth
                 );
+
+                logSerialNumber("serial number of certificate from header = {}", clientAuthCerts);
 
                 logIgnoredCertificates(new X509Certificate[]{clientCertFromHeader.get()}, clientAuthCerts);
 
@@ -109,10 +110,10 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
 
                 var sslInfo = SimpleSslInfo.builder().peerCertificates(clientAuthCerts).build();
                 requestBuilder.sslInfo(sslInfo);
-
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
 
+                logSerialNumber("serial number of certificate from ssl handshake = {}", clientAuthCerts);
                 logIgnoredCertificates(certsFromTls, clientAuthCerts);
 
                 exchange.getAttributes().put(ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE, clientAuthCerts);
@@ -132,6 +133,15 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             log.debug("No TLS peer certificates found in the request.");
         }
         return exchange.mutate().request(requestBuilder.build()).build();
+    }
+
+    void logSerialNumber(String msg, X509Certificate... clientAuthCerts) {
+        log.atDebug()
+            .setMessage(msg)
+            .addArgument(() -> Arrays.stream(clientAuthCerts)
+                .map(cert -> cert.getSerialNumber().toString(16))
+                .toList())
+            .log();
     }
 
     /**
