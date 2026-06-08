@@ -133,10 +133,6 @@ if [ -n "${ZWE_ZAAS_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_ZAAS_LIBRARY_PATH}"
 fi
 
-# Certificates URLs
-CERTIFICATES_URLS=${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/gateway/certificates
-CERTIFICATES_URLS=${ZWE_configs_apiml_security_x509_certificatesUrl:-${ZWE_components_gateway_apiml_security_x509_certificatesUrl:-${CERTIFICATES_URLS}}}
-CERTIFICATES_URLS=${ZWE_configs_apiml_security_x509_certificatesUrls:-${ZWE_components_gateway_apiml_security_x509_certificatesUrls:-${CERTIFICATES_URLS}}}
 
 ZAAS_CODE=AZ
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \

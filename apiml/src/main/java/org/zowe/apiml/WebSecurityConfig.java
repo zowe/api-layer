@@ -41,7 +41,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CachedBodyFilter;
-import org.zowe.apiml.filter.CategorizeCertsWebFilter;
+import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
 import org.zowe.apiml.filter.OIDCAuthFilter;
 import org.zowe.apiml.filter.QueryWebFilter;
