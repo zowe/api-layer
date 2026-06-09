@@ -19,21 +19,15 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.zowe.apiml.util.config.CloudGatewayConfiguration;
-import org.zowe.apiml.util.config.ConfigReader;
-import org.zowe.apiml.util.config.GatewayServiceConfiguration;
-import org.zowe.apiml.util.config.ItSslConfigFactory;
-import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.*;
 
 import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.text.IsEmptyString.isEmptyOrNullString;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
@@ -141,7 +135,7 @@ class XForwardHeadersProxyTest {
             .body("headers.x-forwarded-proto", is("https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))
             .body("headers.x-forwarded-port", is(String.valueOf(gwConf.getPort())))
-            .body("headers.x-forwarded-for", is(emptyOrNullString()))
+            .body("headers.x-forwarded-for", isEmptyOrNullString())
             .body("headers.x-forwarded-host", not(containsString("9.9.9.9")))
             .body("headers.x-forwarded-host", containsString(gwConf.getHost()));
     }
