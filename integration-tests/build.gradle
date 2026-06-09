@@ -76,6 +76,11 @@ test {
     systemProperty "externalJenkinsToggle", System.getProperty("externalJenkinsToggle")
 }
 
+tasks.withType(Test) {
+    classpath = sourceSets.test.runtimeClasspath
+    testClassesDirs = sourceSets.test.output.classesDirs
+}
+
 task startUpCheck(type: Test) {
     group 'integration tests'
     description "Check that the API Mediation Layer is up and running"
