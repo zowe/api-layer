@@ -23,9 +23,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -48,6 +52,9 @@ class MetadataFilterServiceTest {
     void setUp() {
         metadataFilterService = new MetadataFilterService();
         ReflectionTestUtils.setField(metadataFilterService, "apimlLogger", apimlLogger);
+        @SuppressWarnings("unchecked")
+        Set<String> allowedDomainsSet = (Set<String>) ReflectionTestUtils.getField(metadataFilterService, "allowedDomainsSet");
+        assertEquals(new HashSet<>(Arrays.asList("localhost", "*.zowe.org", "www.ibm.com", "zowe.github.io", "www.zowe.org")), allowedDomainsSet);
     }
 
     @Nested
