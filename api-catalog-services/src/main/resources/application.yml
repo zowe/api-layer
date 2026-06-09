@@ -63,9 +63,6 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
         nonSecurePortEnabled: false
         securePortEnabled: true
-        #eurekaUserId: eureka
-        eurekaUserName: eureka
-        eurekaUserPassword: password
 
         apiDoc:
             title: API Catalog

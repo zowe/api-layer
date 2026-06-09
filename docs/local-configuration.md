@@ -190,8 +190,6 @@ If your editor of choice happens to be Idea and you want to use its 'Run Dashboa
          cacheRefreshDelayInMillis: 10000
          discoveryLocations: http://eureka:password@discoveryInstance1:10022/eureka,http://eureka:password@discoveryInstance2:10033/eureka
          dsIpAddress: 0.0.0.0
-         eurekaPassword: password
-         eurekaUserName: eureka
          hostname: discoveryInstance1
          initialCacheRefreshDelayInMillis: 10000
          ipAddress: 127.0.0.2
