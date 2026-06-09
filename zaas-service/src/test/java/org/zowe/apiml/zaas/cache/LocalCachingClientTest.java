@@ -14,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.cache.Storage;
-import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.security.HttpsConfig;
 
 import javax.security.auth.x500.X500Principal;
