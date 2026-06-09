@@ -56,6 +56,8 @@ apiml:
         filterChainConfiguration: new
         allowTokenRefresh: false
         jwtInitializerTimeout: 5
+        tokenCleanup:
+            intervalMs: 300000
         personalAccessToken:
             enabled: false
         useInternalMapper: false
