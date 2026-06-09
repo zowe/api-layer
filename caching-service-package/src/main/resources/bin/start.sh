@@ -96,14 +96,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -XX:+ExitOnOutOfMemoryError \
   ${QUICK_START} \
   ${SHARED_CLASSES_OPTS} \
-  ${JAVA21_CONSOLE_ENCODING} \
   ${ADD_OPENS} \
   ${LOGBACK} \
   ${JVM_SECURITY_PROPERTIES} \
   ${CUSTOM_JVM_OPTS} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
-  -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \
   -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
   -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
@@ -125,6 +123,9 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
   -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
   -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
+  -Dapiml.security.x509.certificatesUrls=${CERTIFICATES_URLS} \
+  -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-} \
+  -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-} \
   -Djdk.tls.client.cipherSuites=${client_ciphers} \
   -Dserver.ssl.ciphers=${server_ciphers} \
   -Dserver.ssl.protocol=${server_protocol} \

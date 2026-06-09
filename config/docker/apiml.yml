@@ -38,6 +38,7 @@ apiml:
                 verify: https://mock-services:10013/zss/saf/verify
         ssl:
             verifySslCertificatesOfServices: true
+        allowedDomains: apiml,apiml-2,apiml-3,discovery-service,discoverable-client,discoverable-client-2,api-catalog-services,caching-service,zaas-service,mock-services,mock-services-2,zowe.github.io,www.zowe.org,localhost,www.ibm.com,central-gateway-service,apiml-unknown,apiml-2-unknown,apiml-3-unknown,discovery-service-unknown,discoverable-client-unknown,discoverable-client-2-unknown,api-catalog-services-unknown,caching-service-unknown,zaas-service-unknown,mock-services-unknown,mock-services-2-unknown,zowe.github.io,www.zowe.org,localhost,www.ibm.com,central-gateway-service-unknown,nodejs-sample-app,python-sample-app,gateway-service,gateway-service-2
     banner: console
 spring:
     output:

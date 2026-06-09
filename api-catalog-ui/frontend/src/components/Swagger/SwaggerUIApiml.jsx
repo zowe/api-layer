@@ -48,6 +48,20 @@ function setFilterBarStyle() {
     }
 }
 
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
+function updateCsrfHeader(request) {
+    const csrfToken = getCookie("XSRF-TOKEN");
+    if (csrfToken && request.method !== "GET") {
+        request.headers["X-XSRF-TOKEN"] = csrfToken;
+    }
+    return request;
+}
+
 export default class SwaggerUIApiml extends Component {
     constructor(props) {
         super(props);
@@ -133,6 +147,7 @@ export default class SwaggerUIApiml extends Component {
                 codeSnippets = service.apis.default.codeSnippet;
             }
         }
+
         try {
             // If no version selected use the default apiDoc
             if (
@@ -147,6 +162,7 @@ export default class SwaggerUIApiml extends Component {
                         dom_id: '#swaggerContainer',
                         spec: swagger,
                         presets: [SwaggerUi.presets.apis],
+                        requestInterceptor: updateCsrfHeader,
                         requestSnippetsEnabled: true,
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],
                         filter: true,
@@ -161,6 +177,7 @@ export default class SwaggerUIApiml extends Component {
                     swaggerProps: {
                         dom_id: '#swaggerContainer',
                         url,
+                        requestInterceptor: updateCsrfHeader,
                         presets: [SwaggerUi.presets.apis],
                         requestSnippetsEnabled: true,
                         plugins: [this.customPlugins, AdvancedFilterPlugin, CustomizedSnippedGenerator(codeSnippets)],

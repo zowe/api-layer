@@ -1,0 +1,8 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    testImplementation libs.mockito.core
+    testImplementation libs.hamcrest
+}

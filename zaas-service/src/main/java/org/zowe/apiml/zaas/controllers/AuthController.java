@@ -38,19 +38,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.util.JwtUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
@@ -66,9 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.http.HttpStatus.*;
 
 /**
  * Controller offer method to control security. It can contain method for user and also method for calling services
@@ -464,7 +456,7 @@ public class AuthController {
         return currentKey.getJsonWebKeys();
     }
 
-    @PostMapping(path = OIDC_TOKEN_VALIDATE)
+    @PostMapping(path = OIDC_TOKEN_VALIDATE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Validate OIDC token",
         tags = {"OIDC"},
         operationId = "validateOIDCToken",
@@ -481,13 +473,14 @@ public class AuthController {
         @ApiResponse(responseCode = "204", description = "Valid token"),
         @ApiResponse(responseCode = "401", description = "Invalid token or OIDC provider is not defined")
     })
-    public ResponseEntity<Void> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
+    public ResponseEntity<Object> validateOIDCToken(@RequestBody ValidateRequestModel validateRequestModel) {
         log.debug("Validating OIDC token using provider {}", oidcProvider);
         String token = validateRequestModel.getToken();
         if (oidcProvider != null && oidcProvider.isValid(token)) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return new ResponseEntity<>(JwtUtils.getJwtClaims(token).getClaims(), HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        final ApiMessageView message = messageService.createMessage("org.zowe.apiml.common.unauthorized").mapToView();
+        return new ResponseEntity<>(message, HttpStatus.UNAUTHORIZED);
     }
 
     /**

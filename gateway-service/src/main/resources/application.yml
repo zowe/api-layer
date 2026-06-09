@@ -102,7 +102,7 @@ apiml:
         corsAllowedEndpoints: /gateway/**
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
-        forwardClientCertEnabled: false
+        forwardClientCertEnabled: true
         hostname: localhost
         id: ${spring.application.name}
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin

@@ -10,15 +10,26 @@
 
 package org.zowe.apiml;
 
+import org.zowe.apiml.zosmf.jwt.check.ZosmfJwtCheck;
 import picocli.CommandLine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("squid:S106") //ignoring the System.out System.err warnings
 public class Analyser {
 
+    private static final String ZOSMF_JWT_CHECK_FLAG = "--zosmf-jwt-check";
+
     public static int mainWithExitCode(String[] args) {
+        org.zowe.apiml.common.KeyringUtils.ensureSafkeyringHandler();
+
+        if (args.length > 0 && ZOSMF_JWT_CHECK_FLAG.equals(args[0])) {
+            String[] remainingArgs = Arrays.copyOfRange(args, 1, args.length);
+            return ZosmfJwtCheck.mainWithExitCode(remainingArgs);
+        }
+
         try {
             ApimlConf conf = new ApimlConf();
             CommandLine cmd = new CommandLine(conf);

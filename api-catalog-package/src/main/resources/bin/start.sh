@@ -103,7 +103,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
-    ${JAVA21_CONSOLE_ENCODING} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
@@ -111,13 +110,14 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     ${CUSTOM_JVM_OPTS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7552} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
+    -Dapiml.service.eurekaUserName=${ZWE_configs_apiml_service_http_userId:-} \
+    -Dapiml.service.eurekaUserPassword=${ZWE_configs_apiml_service_http_password:-} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \

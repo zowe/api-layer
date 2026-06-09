@@ -1,11 +1,3 @@
-spring.profiles.active: diag
-logging:
-    level:
-        org.springframework.web.socket.client.standard.AnnotatedEndpointConnectionManager: DEBUG
-        org.springframework.web.reactive.socket.client.StandardWebSocketClient: TRACE
-        # org.apache.tomcat.websocket.WsWebSocketContainer: TRACE
-        # org.apache.tomcat: DEBUG
-        # org.apache.coyote: DEBUG
 
 server:
     max-http-request-header-size: 16348
@@ -69,6 +61,7 @@ apiml:
             provider: zosmf
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
+        allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
 caching:
     storage:
         mode: infinispan

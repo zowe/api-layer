@@ -700,6 +700,7 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertAttributesBase(logRecord.getResource().getAttributes(), port);
                         @SuppressWarnings("null")
                         var logBody = logRecord.getBodyValue().asString();
+                        assertNull(getAttribute(logBody, "user.id"));
                         assertEquals("testservice", getAttribute(logBody, "service.id"));
                         assertEquals("GET", getAttribute(logBody, "http.request.method"));
                         assertEquals("ERROR", getAttribute(logBody, "auth.status"));
@@ -751,6 +752,32 @@ class OpenTelemetryResourceAttributesZosTest {
                         assertEquals("ERROR", getAttribute(logBody, "auth.status"));
                         assertEquals("ZWEAO402E The request has not been applied because it lacks valid authentication credentials.", getAttribute(logBody, "auth.error.message"));
                         assertEquals("org.zowe.apiml.security.common.token.TokenExpireException", getAttribute(logBody, "auth.error.type"));
+                        assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
+                        assertEquals("401", getAttribute(logBody, "service.response_code"));
+                        assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
+                        assertEquals("https", getAttribute(logBody, "url.scheme"));
+                        assertEquals("zoweJwt", getAttribute(logBody, "auth.service.auth.method"));
+                        assertNull(getAttribute(logBody, "auth.method"));
+                    }
+
+                    @Test
+                    void givenUntrustedX509_thenLog() {
+                        given()
+                            .config(SslContext.selfSignedUntrusted)
+                            .get(basePath + "/testservice/api/v1/401")
+                            .then()
+                            .statusCode(401);
+
+                        var logRecord = assertOneLogRecordExported("/testservice/api/v1/401");
+                        assertAttributesBase(logRecord.getResource().getAttributes(), port);
+                        @SuppressWarnings("null")
+                        var logBody = logRecord.getBodyValue().asString();
+                        assertNull(getAttribute(logBody, "user.id"));
+                        assertEquals("testservice", getAttribute(logBody, "service.id"));
+                        assertEquals("GET", getAttribute(logBody, "http.request.method"));
+                        assertEquals("ERROR", getAttribute(logBody, "auth.status"));
+                        assertEquals("ZWEAG160E No authentication provided in the request", getAttribute(logBody, "auth.error.message"));
+                        assertEquals("org.springframework.security.authentication.InsufficientAuthenticationException", getAttribute(logBody, "auth.error.type"));
                         assertEquals("localhost:testservice:" + mockServiceZoweJwt.getPort(), getAttribute(logBody, "service.instance.id"));
                         assertEquals("401", getAttribute(logBody, "service.response_code"));
                         assertEquals("/testservice/api/v1/401", getAttribute(logBody, "url.path"));
