@@ -19,14 +19,19 @@ import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.services.ServiceInfo;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -74,6 +79,32 @@ class ModulithConfigTest {
         var basicInfoService = mc.basicInfoService(discoveryClient, eurekaParser);
         List<ServiceInfo> servicesInfo = basicInfoService.getServicesInfo();
         assertThat(servicesInfo, emptyIterable());
+    }
+
+    @Test
+    void givenAdvertisedIpAddressSet_thenGetInstanceInfoUsesAdvertisedIpAddress() throws Exception {
+        // Mock the dependencies needed by getInstanceInfo for "gateway" service
+        var eurekaInstanceGw = mock(GatewayEurekaInstanceConfigBean.class);
+        when(eurekaInstanceGw.getMetadataMap()).thenReturn(new HashMap<>());
+
+        ModulithConfig mc = new ModulithConfig(null, eurekaInstanceGw, null, null, null, null);
+
+        // Set advertisedIpAddress to a specific value and ipAddress to a different value
+        ReflectionTestUtils.setField(mc, "advertisedIpAddress", "192.168.1.100");
+        ReflectionTestUtils.setField(mc, "ipAddress", "10.0.0.1");
+        ReflectionTestUtils.setField(mc, "hostname", "testhost");
+        ReflectionTestUtils.setField(mc, "gatewayPort", 10010);
+        ReflectionTestUtils.setField(mc, "https", false);
+
+        // Invoke private getInstanceInfo via reflection
+        Method method = ModulithConfig.class.getDeclaredMethod("getInstanceInfo", String.class);
+        method.setAccessible(true);
+        InstanceInfo instanceInfo = (InstanceInfo) method.invoke(mc, "gateway");
+
+        assertNotNull(instanceInfo);
+        // advertisedIpAddress should take precedence over ipAddress
+        assertEquals("192.168.1.100", instanceInfo.getIPAddr(),
+            "getInstanceInfo should use advertisedIpAddress when it is set");
     }
 
 }
