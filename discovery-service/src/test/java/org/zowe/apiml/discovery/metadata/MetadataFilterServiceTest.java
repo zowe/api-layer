@@ -52,9 +52,6 @@ class MetadataFilterServiceTest {
     void setUp() {
         metadataFilterService = new MetadataFilterService();
         ReflectionTestUtils.setField(metadataFilterService, "apimlLogger", apimlLogger);
-        @SuppressWarnings("unchecked")
-        Set<String> allowedDomainsSet = (Set<String>) ReflectionTestUtils.getField(metadataFilterService, "allowedDomainsSet");
-        assertEquals(new HashSet<>(Arrays.asList("localhost", "*.zowe.org", "www.ibm.com", "zowe.github.io", "www.zowe.org")), allowedDomainsSet);
     }
 
     @Nested
@@ -64,6 +61,9 @@ class MetadataFilterServiceTest {
         void setUp() throws Exception {
             ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "localhost, *.zowe.org");
             metadataFilterService.afterPropertiesSet();
+            @SuppressWarnings("unchecked")
+        Set<String> allowedDomainsSet = (Set<String>) ReflectionTestUtils.getField(metadataFilterService, "allowedDomainsSet");
+        assertEquals(new HashSet<>(Arrays.asList("localhost", "*.zowe.org", "www.ibm.com", "zowe.github.io", "www.zowe.org")), allowedDomainsSet);
         }
 
         @ParameterizedTest(name = "Key: {0}, Value: {1} -> Allowed: {2}")
