@@ -307,4 +307,102 @@ class CachingServiceClientTest {
 
     }
 
+    @Nested
+    class GivenReadMapTest {
+        private String mapKey = "testMap";
+        private String urlBaseList = "https://localhost:10010/cachingservice/api/v1/cache-list/";
+
+        @Test
+        void whenClientReturnsBody_thenReturnMap() throws CachingServiceClientException {
+            ParameterizedTypeReference<Map<String, String>> responseType =
+                new ParameterizedTypeReference<Map<String, String>>() {
+                };
+            ResponseEntity<Map<String, String>> response = mock(ResponseEntity.class);
+            Map<String, String> responseBody = new HashMap<>();
+            responseBody.put("key1", "value1");
+            responseBody.put("key2", "value2");
+            when(response.getBody()).thenReturn(responseBody);
+            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+            when(restTemplate.exchange(eq(urlBaseList + mapKey), eq(HttpMethod.GET), isNull(), eq(responseType))).thenReturn(response);
+
+            Map<String, String> result = underTest.readMap(mapKey);
+            assertEquals(2, result.size());
+            assertEquals("value1", result.get("key1"));
+        }
+
+        @Test
+        void whenResponseBodyIsNull_thenReturnEmptyMap() throws CachingServiceClientException {
+            ParameterizedTypeReference<Map<String, String>> responseType =
+                new ParameterizedTypeReference<Map<String, String>>() {
+                };
+            ResponseEntity<Map<String, String>> response = mock(ResponseEntity.class);
+            when(response.getBody()).thenReturn(null);
+            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+            when(restTemplate.exchange(eq(urlBaseList + mapKey), eq(HttpMethod.GET), isNull(), eq(responseType))).thenReturn(response);
+
+            Map<String, String> result = underTest.readMap(mapKey);
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        void whenResponseBodyIsEmpty_thenReturnEmptyMap() throws CachingServiceClientException {
+            ParameterizedTypeReference<Map<String, String>> responseType =
+                new ParameterizedTypeReference<Map<String, String>>() {
+                };
+            ResponseEntity<Map<String, String>> response = mock(ResponseEntity.class);
+            when(response.getBody()).thenReturn(new HashMap<>());
+            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+            when(restTemplate.exchange(eq(urlBaseList + mapKey), eq(HttpMethod.GET), isNull(), eq(responseType))).thenReturn(response);
+
+            Map<String, String> result = underTest.readMap(mapKey);
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        void whenNotOk_thenThrowException() {
+            ParameterizedTypeReference<Map<String, String>> responseType =
+                new ParameterizedTypeReference<Map<String, String>>() {
+                };
+            ResponseEntity<Map<String, String>> response = mock(ResponseEntity.class);
+            when(response.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
+            when(restTemplate.exchange(eq(urlBaseList + mapKey), eq(HttpMethod.GET), isNull(), eq(responseType))).thenReturn(response);
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.readMap(mapKey));
+        }
+
+        @Test
+        void whenRestTemplateThrows_thenThrowCachingServiceClientException() {
+            ParameterizedTypeReference<Map<String, String>> responseType =
+                new ParameterizedTypeReference<Map<String, String>>() {
+                };
+            when(restTemplate.exchange(eq(urlBaseList + mapKey), eq(HttpMethod.GET), isNull(), eq(responseType)))
+                .thenThrow(new RestClientException("oops"));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.readMap(mapKey));
+        }
+    }
+
+    @Nested
+    class GivenDeleteMapItemTest {
+        private String mapKey = "testMap";
+        private String entryKey = "testEntry";
+        private String urlBaseList = "https://localhost:10010/cachingservice/api/v1/cache-list/";
+
+        @Test
+        void deleteMapItemWithoutProblem() {
+            assertDoesNotThrow(() -> underTest.deleteMapItem(mapKey, entryKey));
+            verify(restTemplate).exchange(
+                eq(urlBaseList + mapKey + "/" + entryKey),
+                eq(HttpMethod.DELETE),
+                any(HttpEntity.class),
+                eq(String.class));
+        }
+
+        @Test
+        void deleteMapItemWithExceptionFromRestTemplateThrowsDefined() {
+            doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
+            assertThrows(CachingServiceClientException.class, () -> underTest.deleteMapItem(mapKey, entryKey));
+        }
+    }
+
 }

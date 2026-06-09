@@ -659,4 +659,55 @@ class CachingControllerTest {
 
     }
 
+    @Nested
+    class WhenDeleteMapItem {
+        @Test
+        void givenCorrectRequest_thenDeleteMapItem() {
+            StepVerifier.create(underTest.deleteMapItem(MAP_KEY, KEY, mockExchange))
+                .assertNext(response -> {
+                    verify(mockStorage).deleteMapItem(SERVICE_ID, MAP_KEY, KEY);
+                    assertThat(response.getStatusCode(), is(HttpStatus.NO_CONTENT));
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenIncompatibleStorage_thenReturnBadRequest() {
+            doThrow(new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus()))
+                .when(mockStorage).deleteMapItem(any(), any(), any());
+
+            StepVerifier.create(underTest.deleteMapItem(MAP_KEY, KEY, mockExchange))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
+                .verifyComplete();
+        }
+
+        @Test
+        void givenUnexpectedError_thenReturnInternalError() {
+            doThrow(new RuntimeException("unexpected")).when(mockStorage).deleteMapItem(any(), any(), any());
+
+            StepVerifier.create(underTest.deleteMapItem(MAP_KEY, KEY, mockExchange))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
+                .verifyComplete();
+        }
+
+        @Test
+        void givenNoCertificate_thenReturnUnauthorized() {
+            when(mockRequest.getSslInfo()).thenReturn(null);
+            Map<String, Object> emptyAttributes = new HashMap<>();
+            when(mockExchange.getAttributes()).thenReturn(emptyAttributes);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Certificate-DistinguishedName", null);
+            when(mockRequest.getHeaders()).thenReturn(headers);
+
+            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.missingCertificate", "parameter").mapToView();
+
+            StepVerifier.create(underTest.deleteMapItem(MAP_KEY, KEY, mockExchange))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
+                    assertThat(response.getBody(), is(expectedBody));
+                })
+                .verifyComplete();
+        }
+    }
+
 }
