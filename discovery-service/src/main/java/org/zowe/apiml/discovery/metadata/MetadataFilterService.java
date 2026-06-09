@@ -48,6 +48,13 @@ public class MetadataFilterService implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         allowedDomainsList = Arrays.stream(allowedDomains.split(",")).map(String::trim).collect(Collectors.toList());
         onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
+
+        log.info("Allowed domains in Discovery Service: {}", allowedDomains);
+
+        if (onlyWarn) {
+            log.info("Only warning on URL not allowed is enabled");
+        }
+
     }
 
     private boolean isAllowedDomain(String domain) {
