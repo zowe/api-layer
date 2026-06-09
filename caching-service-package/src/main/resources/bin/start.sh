@@ -108,6 +108,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
   -Dapiml.service.port=${ZWE_configs_port:-7555} \
   -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+  -Dapiml.service.advertisedIpAddress=${ZWE_configs_apiml_service_advertisedIpAddress:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_haInstance_hostname:-localhost}}} \
   -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \

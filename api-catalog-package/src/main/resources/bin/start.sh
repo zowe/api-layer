@@ -113,6 +113,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+    -Dapiml.service.advertisedIpAddress=${ZWE_configs_apiml_service_advertisedIpAddress:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_haInstance_hostname:-localhost}}} \
     -Dapiml.service.port=${ZWE_configs_port:-7552} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \

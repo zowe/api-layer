@@ -192,6 +192,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+    -Dapiml.service.advertisedIpAddress=${ZWE_configs_apiml_service_advertisedIpAddress:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_haInstance_hostname:-localhost}}} \
     -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-} \
     -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \

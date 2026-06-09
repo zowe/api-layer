@@ -306,6 +306,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.corsEnabled=${ZWE_components_gateway_apiml_service_corsEnabled:-${ZWE_configs_apiml_service_corsEnabled:-false}} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_components_gateway_apiml_security_x509_enabled:-${ZWE_configs_apiml_security_x509_enabled:-false}} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+    -Dapiml.service.advertisedIpAddress=${ZWE_configs_apiml_service_advertisedIpAddress:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_haInstance_hostname:-localhost}}} \
     -Dapiml.service.port=${ZWE_components_gateway_port:-${ZWE_configs_port:-7554}} \
     -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
     -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
