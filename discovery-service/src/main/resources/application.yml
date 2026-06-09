@@ -77,7 +77,7 @@ eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
+        ipAddress: ${apiml.service.advertisedIpAddress:${apiml.service.ipAddress}}
         port: ${server.port}
         securePort: 0
         nonSecurePortEnabled: true

@@ -105,7 +105,7 @@ management:
 eureka:
     instance:
         hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
+        ipAddress: ${apiml.service.advertisedIpAddress:${apiml.service.ipAddress}}
         #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
         homePageUrl: ${apiml.service.scheme}://${apiml.zaas.hostname}:${apiml.service.port}/
