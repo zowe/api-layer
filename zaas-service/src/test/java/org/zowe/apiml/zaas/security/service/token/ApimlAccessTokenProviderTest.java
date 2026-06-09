@@ -394,4 +394,88 @@ class ApimlAccessTokenProviderTest {
         }
     }
 
+    @Nested
+    class UserLevelRevokeDeletesIndividualEntries {
+
+        private final ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        private final String targetUserId = "TargetUser";
+        private final String otherUserId = "OtherUser";
+
+        @Test
+        void givenEntriesForTargetUser_thenDeleteThemAndStoreUserRule() throws Exception {
+            String t1Hash = accessTokenProvider.getHash("token1");
+            String t2Hash = accessTokenProvider.getHash("token2");
+
+            Map<String, String> invalidTokens = new HashMap<>();
+            invalidTokens.put("entry1", mapper.writeValueAsString(
+                new AccessTokenContainer(targetUserId, t1Hash, null, null, null, null)));
+            invalidTokens.put("entry2", mapper.writeValueAsString(
+                new AccessTokenContainer(targetUserId, t2Hash, null, null, null, null)));
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
+
+            accessTokenProvider.invalidateAllTokensForUser(targetUserId, 1234);
+
+            verify(cachingServiceClient).deleteMapItem(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, "entry1");
+            verify(cachingServiceClient).deleteMapItem(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, "entry2");
+            verify(cachingServiceClient).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
+        }
+
+        @Test
+        void givenEntriesForOtherUser_thenPreserveThemAndStoreUserRule() throws Exception {
+            String otherHash = accessTokenProvider.getHash("otherToken");
+
+            Map<String, String> invalidTokens = new HashMap<>();
+            invalidTokens.put("entry3", mapper.writeValueAsString(
+                new AccessTokenContainer(otherUserId, otherHash, null, null, null, null)));
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
+
+            accessTokenProvider.invalidateAllTokensForUser(targetUserId, 1234);
+
+            verify(cachingServiceClient, never()).deleteMapItem(anyString(), anyString());
+            verify(cachingServiceClient).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
+        }
+
+        @Test
+        void givenMixedEntries_thenDeleteOnlyTargetUserEntries() throws Exception {
+            String tHash = accessTokenProvider.getHash("targetToken");
+            String oHash = accessTokenProvider.getHash("otherToken");
+
+            Map<String, String> invalidTokens = new HashMap<>();
+            invalidTokens.put("target1", mapper.writeValueAsString(
+                new AccessTokenContainer(targetUserId, tHash, null, null, null, null)));
+            invalidTokens.put("target2", mapper.writeValueAsString(
+                new AccessTokenContainer(targetUserId, accessTokenProvider.getHash("targetToken2"), null, null, null, null)));
+            invalidTokens.put("other1", mapper.writeValueAsString(
+                new AccessTokenContainer(otherUserId, oHash, null, null, null, null)));
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
+
+            accessTokenProvider.invalidateAllTokensForUser(targetUserId, 1234);
+
+            verify(cachingServiceClient).deleteMapItem(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, "target1");
+            verify(cachingServiceClient).deleteMapItem(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, "target2");
+            verify(cachingServiceClient, never()).deleteMapItem(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, "other1");
+            verify(cachingServiceClient).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
+        }
+
+        @Test
+        void givenEmptyInvalidTokens_thenStillStoreUserRule() throws Exception {
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(Collections.emptyMap());
+
+            accessTokenProvider.invalidateAllTokensForUser(targetUserId, 1234);
+
+            verify(cachingServiceClient, never()).deleteMapItem(anyString(), anyString());
+            verify(cachingServiceClient).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
+        }
+
+        @Test
+        void givenNullValueReadMap_thenStillStoreUserRule() throws Exception {
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(null);
+
+            accessTokenProvider.invalidateAllTokensForUser(targetUserId, 1234);
+
+            verify(cachingServiceClient, never()).deleteMapItem(anyString(), anyString());
+            verify(cachingServiceClient).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
+        }
+    }
+
 }

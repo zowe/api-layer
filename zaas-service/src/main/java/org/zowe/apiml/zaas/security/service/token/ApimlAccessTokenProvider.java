@@ -69,6 +69,23 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             timestamp = System.currentTimeMillis();
         }
         log.debug("hashedUserId {}, timestamp {}", hashedUserId, timestamp);
+
+        // Clean up individual token revocations for this user before storing the user-level rule
+        Map<String, String> invalidTokens = cachingServiceClient.readMap(INVALID_TOKENS_KEY);
+        if (invalidTokens != null) {
+            for (Map.Entry<String, String> entry : invalidTokens.entrySet()) {
+                try {
+                    AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
+                    if (c != null && c.getUserId() != null
+                        && getHash(c.getUserId().trim().toUpperCase()).equals(hashedUserId)) {
+                        cachingServiceClient.deleteMapItem(INVALID_TOKENS_KEY, entry.getKey());
+                    }
+                } catch (JsonProcessingException e) {
+                    log.error("Not able to parse invalidToken json value during user revocation.", e);
+                }
+            }
+        }
+
         cachingServiceClient.appendList(INVALID_USERS_KEY, new CachingServiceClient.KeyValue(hashedUserId, Long.toString(timestamp)));
     }
 

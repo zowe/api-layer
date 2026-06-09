@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git log *)",
+      "Bash(./gradlew :apiml-common:compileJava --no-daemon)",
+      "Bash(./gradlew :gateway-service:compileJava --no-daemon)",
+      "Bash(./gradlew compileJava --no-daemon)",
+      "Bash(./gradlew compileJava --no-daemon --continue)",
+      "Bash(./gradlew :discovery-service:compileJava --no-daemon)",
+      "Bash(./gradlew :zaas-service:compileJava --no-daemon)",
+      "Bash(./gradlew :discovery-service:dependencies --configuration compileClasspath --no-daemon)",
+      "Bash(jar tf *)",
+      "Bash(./gradlew :apiml:compileJava --no-daemon)",
+      "Bash(./gradlew :zaas-service:dependencies --configuration compileClasspath --no-daemon)",
+      "Bash(xargs -I{} sh -c 'jar tf {} 2>/dev/null | grep -l \"CacheMetrics\" && echo {}')",
+      "Bash(xargs -I {} sh -c 'echo \"=== {} ===\" && grep -A 2 testImplementation {} | grep -E \"logback|jcl|commons-logging\"')",
+      "Read(//tmp/**)",
+      "Bash(jar xf *)",
+      "Read(//tmp/com/netflix/eureka/**)",
+      "Read(//tmp/com/netflix/eureka/registry/**)",
+      "Bash(javap -c -verbose /tmp/org/springframework/boot/health/contributor/AbstractHealthIndicator.class)",
+      "Bash(xargs cat)",
+      "Bash(xargs -I{} sh -c 'cd /tmp && jar xf {} com/netflix/servo/monitor/StatsMonitor.java 2>/dev/null && head -60 /tmp/com/netflix/servo/monitor/StatsMonitor.java 2>/dev/null')",
+      "Bash(java *)",
+      "Bash(head -100 /tmp/com/netflix/eureka/cluster/PeerEurekaNode.java)"
+    ]
+  }
+}
