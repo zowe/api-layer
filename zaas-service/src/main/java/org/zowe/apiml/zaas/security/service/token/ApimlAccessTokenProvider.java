@@ -54,6 +54,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         String hashedValue = getHash(token);
         QueryResponse queryResponse = authenticationService.parseJwtWithSignature(token);
         AccessTokenContainer container = new AccessTokenContainer();
+        container.setUserId(queryResponse.getUserId());
         container.setTokenValue(hashedValue);
         container.setIssuedAt(LocalDateTime.ofInstant(queryResponse.getCreation().toInstant(), ZoneId.systemDefault()));
         container.setExpiresAt(LocalDateTime.ofInstant(queryResponse.getExpiration().toInstant(), ZoneId.systemDefault()));
@@ -87,25 +88,23 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         String hashedUserId = getHash(parsedToken.getUserId().trim().toUpperCase(), salt);
         List<String> hashedServiceIds = parsedToken.getScopes().stream().map(scope -> getHash(scope, salt)).toList();
 
-        Map<String, Map<String, String>> cacheMap = cachingServiceClient.readAllMaps();
-        if (cacheMap != null && !cacheMap.isEmpty()) {
-            Map<String, String> invalidTokens = cacheMap.get(INVALID_TOKENS_KEY);
-            Map<String, String> invalidUsers = cacheMap.get(INVALID_USERS_KEY);
-            Map<String, String> invalidScopes = cacheMap.get(INVALID_SCOPES_KEY);
-            Optional<Boolean> isInvalidated = checkInvalidToken(invalidTokens, hashedToken);
-            if (isInvalidated.isEmpty()) {
-                isInvalidated = checkRule(invalidUsers, hashedUserId, parsedToken);
-            }
+        Map<String, String> invalidTokens = cachingServiceClient.readMap(INVALID_TOKENS_KEY);
+        Optional<Boolean> isInvalidated = checkInvalidToken(invalidTokens, hashedToken);
+        if (isInvalidated.isEmpty()) {
+            Map<String, String> invalidUsers = cachingServiceClient.readMap(INVALID_USERS_KEY);
+            isInvalidated = checkRule(invalidUsers, hashedUserId, parsedToken);
+        }
+        if (isInvalidated.isEmpty()) {
+            Map<String, String> invalidScopes = cachingServiceClient.readMap(INVALID_SCOPES_KEY);
             for (String hashedServiceId : hashedServiceIds) {
-                if (isInvalidated.isEmpty()) {
-                    isInvalidated = checkRule(invalidScopes, hashedServiceId, parsedToken);
-                } else {
+                isInvalidated = checkRule(invalidScopes, hashedServiceId, parsedToken);
+                if (isInvalidated.isPresent()) {
                     break;
                 }
             }
-            if (isInvalidated.isPresent()) {
-                return isInvalidated.get();
-            }
+        }
+        if (isInvalidated.isPresent()) {
+            return isInvalidated.get();
         }
         return false;
     }
@@ -115,7 +114,13 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             String s = invalidTokens.get(tokenId);
             try {
                 AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
-                return Optional.of(c != null);
+                if (c == null) {
+                    return Optional.empty();
+                }
+                if (c.getExpiresAt() != null && LocalDateTime.now().isAfter(c.getExpiresAt())) {
+                    return Optional.empty();
+                }
+                return Optional.of(true);
             } catch (JsonProcessingException e) {
                 log.error("Not able to parse invalidToken json value.", e);
             }
