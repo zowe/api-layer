@@ -34,6 +34,10 @@ import static org.hamcrest.CoreMatchers.notNullValue;
         DiscoveryServiceApplication.class,
         ResponseHeaderFixTest.TestController.class
     },
+    properties = {
+        "apiml.discovery.userid=eureka",
+        "apiml.discovery.password=password"
+    },
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ActiveProfiles("ResponseHeaderFixTest")

@@ -18,6 +18,7 @@ import com.netflix.discovery.converters.jackson.EurekaJsonJacksonCodec;
 import com.netflix.discovery.shared.Applications;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -36,7 +37,6 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.registry.ApplicationWrapper;
 
 import javax.validation.constraints.NotBlank;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -214,7 +214,7 @@ public class InstanceRetrievalService {
 
             log.debug("Querying instance information of the service {} from the URL {} with the user {} and password {}",
                 serviceId, discoveryServiceLocatorUrl, eurekaUsername,
-                eurekaUserPassword.isEmpty() ? "NO PASSWORD" : "*******");
+                StringUtils.isBlank(eurekaUserPassword) ? "NO PASSWORD" : "*******");
 
             EurekaServiceInstanceRequest eurekaServiceInstanceRequest = EurekaServiceInstanceRequest.builder()
                 .serviceId(serviceId)

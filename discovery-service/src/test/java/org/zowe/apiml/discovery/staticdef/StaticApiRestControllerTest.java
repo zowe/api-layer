@@ -10,17 +10,17 @@
 
 package org.zowe.apiml.discovery.staticdef;
 
-import org.zowe.apiml.discovery.DiscoveryServiceApplication;
-import org.zowe.apiml.discovery.config.EurekaConfig;
 import com.netflix.appinfo.InstanceInfo;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
+import org.zowe.apiml.discovery.DiscoveryServiceApplication;
+import org.zowe.apiml.discovery.config.EurekaConfig;
 
 import java.util.Arrays;
 import java.util.Base64;
@@ -38,7 +38,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
         "eureka.client.fetchRegistry=false",
-        "eureka.client.registerWithEureka=false"
+        "eureka.client.registerWithEureka=false",
+        "apiml.discovery.userid=eureka",
+        "apiml.discovery.password=password"
     },
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
