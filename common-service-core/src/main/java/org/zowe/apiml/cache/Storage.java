@@ -109,4 +109,12 @@ public interface Storage {
      * @param mapKey the map key
      */
     void removeNonRelevantTokens(String serviceId, String mapKey);
+
+    /**
+     * Delete a specific entry from a map identified by mapKey.
+     * @param serviceId the id of the service to identify the correct map
+     * @param mapKey the map key
+     * @param entryKey the key of the entry to delete
+     */
+    void deleteMapItem(String serviceId, String mapKey, String entryKey);
 }

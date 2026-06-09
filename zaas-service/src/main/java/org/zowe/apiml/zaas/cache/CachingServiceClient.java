@@ -226,6 +226,50 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     }
 
     /**
+     * Reads all entries from a specific map in the Caching Service.
+     *
+     * @param mapKey Key of the map to read
+     * @return Map of key-value pairs in the specified map
+     * @throws CachingServiceClientException when http response from caching is not 2xx
+     */
+    public Map<String, String> readMap(String mapKey) throws CachingServiceClientException {
+        try {
+            var responseType = new ParameterizedTypeReference<Map<String, String>>() {
+            };
+            var url = getGatewayAddress() + CACHING_LIST_API_PATH + mapKey;
+            log.debug("readMap url: {}", url);
+            var response = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                if (response.getBody() != null && !response.getBody().isEmpty()) {
+                    return response.getBody();
+                }
+                return Map.of();
+            } else {
+                throw new CachingServiceClientException("Unable to read map: " + mapKey + ", caused by response from caching service is null or has no body");
+            }
+        } catch (Exception e) {
+            throw new CachingServiceClientException("Unable to read map: " + mapKey + ", caused by: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Deletes a specific entry from a map in the Caching Service.
+     *
+     * @param mapKey    Key of the map
+     * @param entryKey  Key of the entry to delete
+     * @throws CachingServiceClientException when http response from caching is not 2xx
+     */
+    public void deleteMapItem(String mapKey, String entryKey) throws CachingServiceClientException {
+        try {
+            var url = getGatewayAddress() + CACHING_LIST_API_PATH + mapKey + "/" + entryKey;
+            log.debug("deleteMapItem url: {}", url);
+            restTemplate.exchange(url, HttpMethod.DELETE, new HttpEntity<>(null, defaultHeaders), String.class);
+        } catch (RestClientException e) {
+            throw new CachingServiceClientException("Unable to delete map item: " + entryKey + " from map: " + mapKey + ", caused by: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Data POJO that represents entry in caching service
      */
     @RequiredArgsConstructor

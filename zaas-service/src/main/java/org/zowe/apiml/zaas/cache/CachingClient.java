@@ -29,4 +29,8 @@ public interface CachingClient {
     void update(CachingServiceClient.KeyValue kv);
 
     void delete(String key);
+
+    Map<String, String> readMap(String mapKey);
+
+    void deleteMapItem(String mapKey, String entryKey);
 }

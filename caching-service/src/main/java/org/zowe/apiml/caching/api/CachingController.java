@@ -145,6 +145,26 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
+    @DeleteMapping(value = "/cache-list/{mapKey}/{entryKey}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Delete a specific entry from a map in the cache",
+        description = "Will delete a key-value pair from a specific map identified by mapKey and entryKey")
+    public Mono<ResponseEntity<Object>> deleteMapItem(@PathVariable String mapKey, @PathVariable String entryKey, ServerWebExchange exchange) {
+        return Mono.fromCallable(() -> getServiceId(exchange).map(
+            s -> {
+                log.debug("Delete map item for serviceId: {}, mapKey: {}, entryKey: {}", s, mapKey, entryKey);
+                try {
+                    storage.deleteMapItem(s, mapKey, entryKey);
+                    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+                } catch (Exception exception) {
+                    if (isStorageIncompatible(exception)) {
+                        return handleIncompatibleStorageMethod(exception, exchange);
+                    }
+                    return handleInternalError(exception, exchange);
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse));
+    }
+
     @GetMapping(value = {"/cache-list", "/cache-list/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the maps in the cache",
         description = "Values returned for the calling service")

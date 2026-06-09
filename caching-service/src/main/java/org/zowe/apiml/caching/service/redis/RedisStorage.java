@@ -152,4 +152,9 @@ public class RedisStorage implements Storage {
     public void removeNonRelevantRules(String serviceId, String mapKey) {
         throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
     }
+
+    @Override
+    public void deleteMapItem(String serviceId, String mapKey, String entryKey) {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
 }

@@ -230,6 +230,31 @@ public class InfinispanStorage implements Storage {
         completeJoin(complete);
     }
 
+    @Override
+    public void deleteMapItem(String serviceId, String mapKey, String entryKey) {
+        ClusteredLock lock = lockSupplier.get();
+        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
+            if (Boolean.TRUE.equals(r)) {
+                try {
+                    String cacheKey = serviceId + mapKey;
+                    log.info("Deleting map item from token cache: {} -> {}", cacheKey, entryKey);
+                    Map<String, String> tokenCacheItem = getTokenCache().get(cacheKey);
+                    if (tokenCacheItem != null) {
+                        tokenCacheItem.remove(entryKey);
+                        if (tokenCacheItem.isEmpty()) {
+                            getTokenCache().remove(cacheKey);
+                        } else {
+                            getTokenCache().put(cacheKey, tokenCacheItem);
+                        }
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            }
+        });
+        completeJoin(complete);
+    }
+
     private void completeJoin(CompletableFuture<Boolean> complete) {
         try {
             complete.join();

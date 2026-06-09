@@ -67,6 +67,16 @@ public class LocalCachingClient implements CachingClient {
         storage.delete(getServiceId(), key);
     }
 
+    @Override
+    public Map<String, String> readMap(String mapKey) {
+        return storage.getAllMapItems(getServiceId(), mapKey);
+    }
+
+    @Override
+    public void deleteMapItem(String mapKey, String entryKey) {
+        storage.deleteMapItem(getServiceId(), mapKey, entryKey);
+    }
+
     KeyValue convert(CachingServiceClient.KeyValue kv) {
         return new KeyValue(kv.getKey(), kv.getValue());
     }
