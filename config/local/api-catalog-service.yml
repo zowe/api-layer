@@ -27,8 +27,6 @@ apiml:
         port: 10014
         discoveryServiceUrls: https://localhost:10011/eureka/
         dsIpAddress: 0.0.0.0
-        eurekaPassword: password
-        eurekaUserName: eureka
         gatewayHostname: https://localhost:10010
         preferIpAddress: false
 
