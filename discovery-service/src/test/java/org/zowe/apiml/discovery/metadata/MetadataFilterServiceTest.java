@@ -60,7 +60,7 @@ class MetadataFilterServiceTest {
             ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "localhost, *.zowe.org");
             metadataFilterService.afterPropertiesSet();
             var allowedDomainsSet = ReflectionTestUtils.getField(metadataFilterService, "allowedDomainsSet");
-            assertEquals(Set.of("www.ibm.com", "zowe.github.io", "www.zowe.org"), allowedDomainsSet);
+            assertEquals(Set.of("localhost", "*.zowe.org", "www.ibm.com", "zowe.github.io", "www.zowe.org"), allowedDomainsSet);
         }
 
         @ParameterizedTest(name = "Key: {0}, Value: {1} -> Allowed: {2}")
