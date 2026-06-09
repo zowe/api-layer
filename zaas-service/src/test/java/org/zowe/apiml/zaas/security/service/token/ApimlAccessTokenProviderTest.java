@@ -31,6 +31,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -111,9 +112,7 @@ class ApimlAccessTokenProviderTest {
         String s = mapper.writeValueAsString(invalidateToken);
         Map<String, String> invalidTokens = new HashMap<>();
         invalidTokens.put(tokenHash, s);
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        cacheMap.put(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, invalidTokens);
-        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
 
@@ -158,7 +157,7 @@ class ApimlAccessTokenProviderTest {
 
     @Test
     void givenDifferentToken_returnNotInvalidated() throws Exception {
-        String differentToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkdA";
+        String differentToken = "eyJhbG...wkdA";
         when(as.parseJwtWithSignature(differentToken)).thenReturn(queryResponseWithoutScopes);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
 
@@ -168,9 +167,7 @@ class ApimlAccessTokenProviderTest {
         String s = mapper.writeValueAsString(invalidateToken);
         Map<String, String> invalidTokens = new HashMap<>();
         invalidTokens.put(tokenHash, s);
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        cacheMap.put(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, invalidTokens);
-        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
 
         assertFalse(accessTokenProvider.isInvalidated(differentToken));
     }
@@ -178,12 +175,15 @@ class ApimlAccessTokenProviderTest {
     @Test
     void givenTokenWithUserIdMatchingRule_returnInvalidated() {
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        Map<String, String> invalidUsers = new HashMap<>();
+        when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(Collections.emptyMap());
+        when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_USERS_KEY)).thenReturn(invalidUsers);
         doAnswer(answer -> {
             var mapkey = (String) answer.getArgument(0);
             var keyValue = (CachingServiceClient.KeyValue) answer.getArgument(1);
-            cacheMap.computeIfAbsent(mapkey, key -> new HashMap<>()).put(keyValue.getKey(), keyValue.getValue());
+            if (ApimlAccessTokenProvider.INVALID_USERS_KEY.equals(mapkey)) {
+                invalidUsers.put(keyValue.getKey(), keyValue.getValue());
+            }
             return null;
         }).when(cachingServiceClient).appendList(any(), any());
         accessTokenProvider.invalidateAllTokensForUser("User", System.currentTimeMillis());
@@ -197,9 +197,9 @@ class ApimlAccessTokenProviderTest {
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(new QueryResponse(null, "user", issued, issued, "issuer", Collections.singletonList("service"), null));
         Map<String, String> invalidScopes = new HashMap<>();
         invalidScopes.put(serviceId, String.valueOf(System.currentTimeMillis()));
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        cacheMap.put(ApimlAccessTokenProvider.INVALID_SCOPES_KEY, invalidScopes);
-        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(Collections.emptyMap());
+        when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_USERS_KEY)).thenReturn(Collections.emptyMap());
+        when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_SCOPES_KEY)).thenReturn(invalidScopes);
         assertTrue(accessTokenProvider.isInvalidated(SCOPED_TOKEN));
     }
 
@@ -287,6 +287,111 @@ class ApimlAccessTokenProviderTest {
             verify(cachingServiceClient, times(1)).create(any());
         }
 
+    }
+
+    @Nested
+    class TokenInvalidationWithReadMap {
+
+        @Test
+        void givenExpiredRevocationEntry_thenTokenIsNotInvalidated() throws Exception {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+
+            AccessTokenContainer expiredContainer = new AccessTokenContainer(
+                null, tokenHash, null, LocalDateTime.now().minusDays(1), null, null);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            String s = mapper.writeValueAsString(expiredContainer);
+            Map<String, String> invalidTokens = new HashMap<>();
+            invalidTokens.put(tokenHash, s);
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
+
+            assertFalse(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+
+        @Test
+        void givenNonExpiredRevocationEntry_thenTokenIsInvalidated() throws Exception {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+
+            AccessTokenContainer validContainer = new AccessTokenContainer(
+                null, tokenHash, null, LocalDateTime.now().plusDays(1), null, null);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            String s = mapper.writeValueAsString(validContainer);
+            Map<String, String> invalidTokens = new HashMap<>();
+            invalidTokens.put(tokenHash, s);
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+
+        @Test
+        void givenRevocationEntryWithoutExpiry_thenTokenIsInvalidated() throws Exception {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+
+            AccessTokenContainer noExpiryContainer = new AccessTokenContainer(
+                null, tokenHash, null, null, null, null);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            String s = mapper.writeValueAsString(noExpiryContainer);
+            Map<String, String> invalidTokens = new HashMap<>();
+            invalidTokens.put(tokenHash, s);
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+
+        @Test
+        void givenInvalidation_thenUserIdIsStoredOnContainer() throws Exception {
+            String token = "token";
+            Date issued = new Date(System.currentTimeMillis());
+            when(as.parseJwtWithSignature(token)).thenReturn(
+                new QueryResponse(null, "testuser", issued, issued, "issuer", Collections.emptyList(), null));
+            doNothing().when(cachingServiceClient).appendList(anyString(), any());
+
+            accessTokenProvider.invalidateToken(token);
+
+            verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_TOKENS_KEY),
+                argThat(kv -> kv.getValue().contains("\"userId\":\"testuser\"")));
+        }
+
+        @Test
+        void givenTokenMatchInFirstMap_thenOnlyInvalidTokensMapIsRead() throws Exception {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+
+            AccessTokenContainer container = new AccessTokenContainer(null, tokenHash, null, null, null, null);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            String s = mapper.writeValueAsString(container);
+            Map<String, String> invalidTokens = new HashMap<>();
+            invalidTokens.put(tokenHash, s);
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(invalidTokens);
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+
+            verify(cachingServiceClient, times(1)).readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY);
+            verify(cachingServiceClient, never()).readMap(ApimlAccessTokenProvider.INVALID_USERS_KEY);
+            verify(cachingServiceClient, never()).readMap(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
+        }
+
+        @Test
+        void givenNoMatchInFirstTwoMaps_thenAllThreeMapsAreRead() throws Exception {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY)).thenReturn(Collections.emptyMap());
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_USERS_KEY)).thenReturn(Collections.emptyMap());
+            when(cachingServiceClient.readMap(ApimlAccessTokenProvider.INVALID_SCOPES_KEY)).thenReturn(Collections.emptyMap());
+
+            assertFalse(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+
+            verify(cachingServiceClient, times(1)).readMap(ApimlAccessTokenProvider.INVALID_TOKENS_KEY);
+            verify(cachingServiceClient, times(1)).readMap(ApimlAccessTokenProvider.INVALID_USERS_KEY);
+            verify(cachingServiceClient, times(1)).readMap(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
+        }
     }
 
 }
