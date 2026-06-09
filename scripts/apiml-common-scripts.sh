@@ -17,8 +17,6 @@
 #
 # After sourcing, the following variables will be set:
 #   - QUICK_START (z/OS only)
-#   - ZOWE_CONSOLE_LOG_CHARSET
-#   - JAVA21_CONSOLE_ENCODING (Java 21+ on z/OS only)
 #   - ADD_OPENS
 #   - LIBPATH
 #   - ATTLS_SERVER_ENABLED
@@ -41,6 +39,7 @@
 #   - COMMON_LIB
 #   - LIBRARY_PATH
 #   - ZWE_DISCOVERY_SERVICES_LIST
+#   - CERTIFICATES_URLS
 
 ################################################################################
 # Function: add_profile
@@ -106,21 +105,9 @@ fi
 ################################################################################
 # Platform detection and Java version check
 ################################################################################
-ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
     SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal,silent"
-
-    JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
-        | grep "major version" \
-        | cut -d " " -f5)
-
-    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
-        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
-        # Java 21+ changed default encoding to UTF-8 (JEP 400). Set console encoding
-        # to EBCDIC for z/OS SYSPRINT to prevent garbled characters in early startup logs
-        JAVA21_CONSOLE_ENCODING="-Dstdout.encoding=${ZOWE_CONSOLE_LOG_CHARSET} -Dstderr.encoding=${ZOWE_CONSOLE_LOG_CHARSET}"
-    fi
 fi
 
 ################################################################################
@@ -146,6 +133,13 @@ if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
     internalProtocol=http
 fi
+
+################################################################################
+# Certificates URLs
+################################################################################
+CERTIFICATES_URLS=${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/gateway/certificates
+CERTIFICATES_URLS=${ZWE_configs_apiml_security_x509_certificatesUrl:-${ZWE_components_gateway_apiml_security_x509_certificatesUrl:-${CERTIFICATES_URLS}}}
+CERTIFICATES_URLS=${ZWE_configs_apiml_security_x509_certificatesUrls:-${ZWE_components_gateway_apiml_security_x509_certificatesUrls:-${CERTIFICATES_URLS}}}
 
 ################################################################################
 # LIBPATH setup

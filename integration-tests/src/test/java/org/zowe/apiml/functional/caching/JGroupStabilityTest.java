@@ -262,6 +262,8 @@ class JGroupStabilityTest {
             env.put("ZWE_configs_apiml_health_protected", "false");
             env.put("attlsEnabledOnInfinispanTest", isAttls ? "true" : "false");
 
+            env.put("ZWE_ALLOWED_DOMAINS", "localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com");
+
             if (isModulith) {
                 env.put("CMMN_LB", "build/libs/api-layer-lite-lib-all.jar");
                 env.put("ZWE_configs_internal_discovery_port", String.valueOf(basePort + 1));

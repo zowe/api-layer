@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+}
+
+dependencies {
+    implementation project(':certificate-common')
+    implementation libs.picocli
+    annotationProcessor libs.picocli.codegen
+
+    testImplementation libs.mockito.core
+    testImplementation libs.hamcrest
+}
+
+compileJava {
+    options.compilerArgs += ["-Aproject=${project.group}/${project.name}"]
+}
+
+jar {
+    // Thin JAR — consumed as a dependency by certificate-analyser's fat JAR.
+    // No Main-Class manifest; not intended to be run standalone.
+}

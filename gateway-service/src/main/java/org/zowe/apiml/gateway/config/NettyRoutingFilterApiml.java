@@ -51,7 +51,6 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         super(null, headersFiltersProvider, properties);
         this.httpClientNoCert = httpClientNoCert;
         this.httpClientClientCert = httpClientClientCert;
-
     }
 
     static Integer getInteger(Object connectTimeoutAttr) {
@@ -99,7 +98,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
         if (error == null) {
             return false;
         }
-    
+
         // Check the full cause chain
         Throwable current = error;
         do {
@@ -111,7 +110,7 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
             error = current;
             current = current.getCause();
         } while (current != null && current != error);
-     
+
         return false;
     }
 }

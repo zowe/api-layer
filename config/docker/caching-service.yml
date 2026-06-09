@@ -11,7 +11,9 @@ apiml:
 
         hostname: caching-service
     banner: console
-
+    security:
+        x509:
+            certificatesUrl: https://gateway-service:10010/gateway/certificates
 server:
     address: 0.0.0.0
     ssl:

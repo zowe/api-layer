@@ -13,6 +13,9 @@ apiml:
     service:
         port: 10022
     banner: console
+    security:
+        x509:
+            certificatesUrl: https://localhost:10010/gateway/certificates
 spring:
     profiles:
         include: dev

@@ -19,6 +19,7 @@ dependencies {
     implementation libs.nimbus.jose.jwt // Parsing
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.reactor.test
     testImplementation(testFixtures(project(":apiml-common")))
 
     compileOnly libs.lombok
@@ -26,6 +27,7 @@ dependencies {
 
     testCompileOnly libs.lombok
     testImplementation libs.netty.reactor.http
+    testImplementation libs.reactor.test
     testAnnotationProcessor libs.lombok
 
     testFixturesImplementation libs.nimbus.jose.jwt

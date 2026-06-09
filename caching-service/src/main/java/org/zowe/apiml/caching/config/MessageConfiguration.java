@@ -24,6 +24,7 @@ public class MessageConfiguration {
         MessageService messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/utility-log-messages.yml");
         messageService.loadMessages("/caching-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
         return messageService;
     }
 }

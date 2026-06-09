@@ -11,6 +11,7 @@ apiml:
     security:
         ssl:
             verifySslCertificatesOfServices: true
+        allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
     banner: console
 
 spring:
