@@ -120,6 +120,9 @@ public class ModulithConfig {
     @Value("${apiml.service.ipAddress:127.0.0.1}")
     private String ipAddress;
 
+    @Value("${apiml.service.advertisedIpAddress:${apiml.service.ipAddress:127.0.0.1}}")
+    private String advertisedIpAddress;
+
     @Value("${apiml.service.port:10010}")
     private int gatewayPort;
 
@@ -183,7 +186,7 @@ public class ModulithConfig {
             .setHostName(hostname)
             .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
             .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setIPAddr(ipAddress)
+            .setIPAddr(advertisedIpAddress)
             .setPort(port)
             .setSecurePort(port)
             .enablePort(InstanceInfo.PortType.SECURE, https || isServerAttlsEnabled)
