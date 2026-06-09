@@ -116,7 +116,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                         .config(SslContext.clientCertValid)
                         .contentType(ContentType.JSON)
                     .when()
-                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.externalUrl=https://baddomain.net", instanceId))
+                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/v2/apps/REGISTRATIONTEST/%s/metadata?apiml.externalUrl=https://baddomain.net", instanceId))
                     .then()
                         .statusCode(is(SC_INTERNAL_SERVER_ERROR));
 
@@ -136,7 +136,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                         .config(SslContext.clientCertValid)
                         .contentType(ContentType.JSON)
                     .when()
-                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.externalUrl=https://www.zowe.org", discoverableClientConfig.getHost() + ":registrationtest:10013" ))
+                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/v2/apps/REGISTRATIONTEST/%s/metadata?apiml.externalUrl=https://www.zowe.org", discoverableClientConfig.getHost() + ":registrationtest:10013" ))
                     .then()
                         .statusCode(is(SC_OK));
 

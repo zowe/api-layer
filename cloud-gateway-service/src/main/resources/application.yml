@@ -165,3 +165,4 @@ eureka:
         securePort: 0
         nonSecurePortEnabled: true
         securePortEnabled: false
+        hostname: ${apiml.service.hostname}
