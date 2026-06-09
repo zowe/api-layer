@@ -274,11 +274,19 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    -Dsun.io.useCanonCaches=false \
+    -Dibm.serversocket.recover=true \
+    -Dfile.encoding=UTF-8 \
+    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
+    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dspring.profiles.include=$LOG_LEVEL \
+    -Dserver.address=0.0.0.0 \
+    -Dapiml.discovery.userid=${ZWE_configs_apiml_service_http_userId:-} \
+    -Dapiml.discovery.password=${ZWE_configs_apiml_service_http_password:-} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.discovery.password=password \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
-    -Dapiml.discovery.userid=eureka \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
     -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${client_enabled_protocols}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
