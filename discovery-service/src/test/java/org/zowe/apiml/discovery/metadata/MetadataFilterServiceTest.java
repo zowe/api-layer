@@ -25,7 +25,9 @@ import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -57,6 +59,8 @@ class MetadataFilterServiceTest {
         void setUp() throws Exception {
             ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "localhost, *.zowe.org");
             metadataFilterService.afterPropertiesSet();
+            var allowedDomainsSet = ReflectionTestUtils.getField(metadataFilterService, "allowedDomainsSet");
+            assertEquals(Set.of("www.ibm.com", "zowe.github.io", "www.zowe.org"), allowedDomainsSet);
         }
 
         @ParameterizedTest(name = "Key: {0}, Value: {1} -> Allowed: {2}")
