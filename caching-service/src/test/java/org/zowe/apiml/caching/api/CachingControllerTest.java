@@ -21,9 +21,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.zowe.apiml.cache.Storage;
+import org.zowe.apiml.cache.CacheNotAvailableException;
+import org.zowe.apiml.cache.DuplicateKeyException;
+import org.zowe.apiml.cache.IncompatibleStorageMethodException;
+import org.zowe.apiml.cache.InsufficientStorageException;
 import org.zowe.apiml.cache.InvalidPayloadException;
+import org.zowe.apiml.cache.KeyNotFoundException;
 import org.zowe.apiml.cache.KeyNotProvidedException;
+import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
@@ -625,6 +630,183 @@ class CachingControllerTest {
 
         }
 
+    }
+
+    @Nested
+    class WhenControllerAdviceHandlesExceptions {
+
+        private CachingControllerAdvice advice;
+        private ServerWebExchange mockExchange;
+        private ServerHttpRequest mockRequest;
+        private final MessageService adviceMessageService = new YamlMessageService("/caching-log-messages.yml");
+
+        @BeforeEach
+        void setUp() {
+            advice = new CachingControllerAdvice(adviceMessageService);
+            mockExchange = mock(ServerWebExchange.class);
+            mockRequest = mock(ServerHttpRequest.class);
+            when(mockExchange.getRequest()).thenReturn(mockRequest);
+            when(mockRequest.getURI()).thenReturn(URI.create("http://localhost"));
+        }
+
+        // --- Per-exception HTTP status mapping tests ---
+
+        @Test
+        void givenKeyNotFoundException_thenReturn404() {
+            KeyNotFoundException ex = new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), KEY, SERVICE_ID);
+
+            StepVerifier.create(advice.handleKeyNotFound(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenKeyNotProvidedException_thenReturn400() {
+            KeyNotProvidedException ex = new KeyNotProvidedException(Messages.KEY_NOT_PROVIDED.getKey());
+
+            StepVerifier.create(advice.handleKeyNotProvided(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenInvalidPayloadException_thenReturn400() {
+            InvalidPayloadException ex = new InvalidPayloadException(Messages.INVALID_PAYLOAD.getKey(), "key", "No value");
+
+            StepVerifier.create(advice.handleInvalidPayload(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenDuplicateKeyException_thenReturn409() {
+            DuplicateKeyException ex = new DuplicateKeyException(Messages.DUPLICATE_KEY.getKey(), KEY);
+
+            StepVerifier.create(advice.handleDuplicateKey(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenCacheNotAvailableException_thenReturn503() {
+            CacheNotAvailableException ex = new CacheNotAvailableException(Messages.CACHE_NOT_AVAILABLE.getKey());
+
+            StepVerifier.create(advice.handleCacheNotAvailable(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.SERVICE_UNAVAILABLE));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenInsufficientStorageException_thenReturn507() {
+            InsufficientStorageException ex = new InsufficientStorageException(Messages.INSUFFICIENT_STORAGE.getKey());
+
+            StepVerifier.create(advice.handleInsufficientStorage(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.INSUFFICIENT_STORAGE));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenIncompatibleStorageMethodException_thenReturn400() {
+            IncompatibleStorageMethodException ex = new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
+
+            StepVerifier.create(advice.handleIncompatibleStorageMethod(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenStorageException_thenReturnStatusFromException() {
+            StorageException ex = new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), HttpStatus.INTERNAL_SERVER_ERROR, "detail");
+
+            StepVerifier.create(advice.handleStorageException(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        // --- Generic/fallback handler ---
+
+        @Test
+        void givenUnexpectedException_thenReturn500() {
+            Exception ex = new RuntimeException("unexpected error");
+
+            StepVerifier.create(advice.handleInternal(mockExchange, ex))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+                    assertThat(response.getBody(), notNullValue());
+                })
+                .verifyComplete();
+        }
+
+        // --- Message body preservation (AC-6: backward compatibility) ---
+
+        @Test
+        void givenKeyNotFoundException_thenResponseBodyContainsMessageKey() {
+            KeyNotFoundException ex = new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), KEY, SERVICE_ID);
+
+            StepVerifier.create(advice.handleKeyNotFound(mockExchange, ex))
+                .assertNext(response -> {
+                    ApiMessageView body = (ApiMessageView) response.getBody();
+                    assertThat(body, notNullValue());
+                    assertThat(body.getMessages(), notNullValue());
+                    assertThat(body.getMessages().isEmpty(), is(false));
+                    assertThat(body.getMessages().get(0).getMessageKey(), is(Messages.KEY_NOT_IN_CACHE.getKey()));
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenDuplicateKeyException_thenResponseBodyContainsMessageParameters() {
+            DuplicateKeyException ex = new DuplicateKeyException(Messages.DUPLICATE_KEY.getKey(), KEY);
+
+            StepVerifier.create(advice.handleDuplicateKey(mockExchange, ex))
+                .assertNext(response -> {
+                    ApiMessageView body = (ApiMessageView) response.getBody();
+                    assertThat(body, notNullValue());
+                    assertThat(body.getMessages(), notNullValue());
+                    assertThat(body.getMessages().isEmpty(), is(false));
+                })
+                .verifyComplete();
+        }
+
+        @Test
+        void givenUnexpectedException_thenResponseBodyContainsInternalServerErrorMessage() {
+            Exception ex = new RuntimeException("something broke");
+
+            StepVerifier.create(advice.handleInternal(mockExchange, ex))
+                .assertNext(response -> {
+                    ApiMessageView body = (ApiMessageView) response.getBody();
+                    assertThat(body, notNullValue());
+                    assertThat(body.getMessages(), notNullValue());
+                    assertThat(body.getMessages().isEmpty(), is(false));
+                    assertThat(body.getMessages().get(0).getMessageKey(),
+                        is("org.zowe.apiml.common.internalServerError"));
+                })
+                .verifyComplete();
+        }
     }
 
 }
