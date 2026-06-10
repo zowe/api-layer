@@ -300,7 +300,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runCloudGatewayCentralRegistryTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true -Dgateway.port=10037
+                    ./gradlew :integration-tests:runCloudGatewayCentralRegistryTest --info -Denvironment.config=-docker -Denvironment.offPlatform=true -Dforward.expect.hop=10037
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data

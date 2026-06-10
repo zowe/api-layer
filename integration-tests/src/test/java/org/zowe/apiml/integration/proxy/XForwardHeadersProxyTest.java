@@ -49,6 +49,8 @@ class XForwardHeadersProxyTest {
     static String cgwIp;
     static String localIp;
 
+    static String expectedHops;
+
     @BeforeAll
     static void init() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
@@ -64,6 +66,8 @@ class XForwardHeadersProxyTest {
 
         cgwIp = InetAddress.getByName(cgwConf.getHost()).getHostAddress();
         localIp = InetAddress.getLocalHost().getHostAddress();
+
+        expectedHops = System.getProperty("forward.expect.hop", gwConf.getInternalPorts());
 
         log.debug("CGW hostname and IP Address: {}: {}", cgwConf.getHost(), Arrays.toString(InetAddress.getAllByName(cgwConf.getHost())));
         log.debug("GW hostname and IP Address: {}: {}", gwConf.getHost(), Arrays.toString(InetAddress.getAllByName(gwConf.getHost())));
@@ -88,7 +92,7 @@ class XForwardHeadersProxyTest {
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))
-            .body("headers.x-forwarded-port", is(cgwConf.getPort() + "," + gwConf.getPort()))
+            .body("headers.x-forwarded-port", is(cgwConf.getPort() + "," + expectedHops))
             .body("headers.x-forwarded-for", containsString(cgwIp))
             .body("headers.x-forwarded-for", containsString(localIp))
             .body("headers.x-forwarded-host", containsString(cgwConf.getHost()))
@@ -111,7 +115,7 @@ class XForwardHeadersProxyTest {
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", is("/dcpassticket/api/v1"))
-            .body("headers.x-forwarded-port", is(cgwConf.getPort() + "," + gwConf.getPort()))
+            .body("headers.x-forwarded-port", is(cgwConf.getPort() + "," + expectedHops))
             .body("headers.x-forwarded-for", not(containsString("6.6.6.6")))
             .body("headers.x-forwarded-for", is(cgwIp))
             .body("headers.x-forwarded-host", not(containsString("9.9.9.9")))
