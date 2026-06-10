@@ -11,6 +11,9 @@
 package org.zowe.apiml.caching.service.inmemory;
 
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.cache.DuplicateKeyException;
+import org.zowe.apiml.cache.IncompatibleStorageMethodException;
+import org.zowe.apiml.cache.KeyNotFoundException;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -52,7 +55,7 @@ public class InMemoryStorage implements Storage {
         storage.computeIfAbsent(serviceId, k -> new HashMap<>());
         Map<String, KeyValue> serviceStorage = storage.get(serviceId);
         if (serviceStorage.containsKey(toCreate.getKey())) {
-            throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
+            throw new DuplicateKeyException(Messages.DUPLICATE_KEY.getKey(), toCreate.getKey());
         }
 
         if (aboveThreshold()) {
@@ -66,17 +69,17 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public Map<String, String> getAllMapItems(String serviceId, String mapKey) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public Map<String, Map<String, String>> getAllMaps(String serviceId) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
@@ -85,7 +88,7 @@ public class InMemoryStorage implements Storage {
 
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
         if (serviceSpecificStorage == null || !serviceSpecificStorage.containsKey(key)) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), key, serviceId);
         }
 
         return serviceSpecificStorage.get(key);
@@ -97,7 +100,7 @@ public class InMemoryStorage implements Storage {
 
         String key = toUpdate.getKey();
         if (isKeyNotInCache(serviceId, key)) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), key, serviceId);
         }
 
         Map<String, KeyValue> serviceStorage = storage.get(serviceId);
@@ -111,7 +114,7 @@ public class InMemoryStorage implements Storage {
         log.info("Deleting Record: {}|{}|{}", serviceId, key, "-");
 
         if (isKeyNotInCache(serviceId, key)) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), key, serviceId);
         }
 
         Map<String, KeyValue> serviceSpecificStorage = storage.get(serviceId);
@@ -130,12 +133,12 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public void removeNonRelevantTokens(String serviceId, String mapKey) {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public void removeNonRelevantRules(String serviceId, String mapKey) {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     private boolean isKeyNotInCache(String serviceId, String keyToTest) {
