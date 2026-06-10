@@ -50,7 +50,7 @@ apiml:
         preferIpAddress: false
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
-
+        forwardClientCertEnabled: true
     httpclient:
         conn-pool:
             requestConnectionTimeout: ${apiml.gateway.timeoutMillis}
@@ -98,7 +98,7 @@ apiml:
             provider: zosmf
         x509:
             enabled: false
-            acceptForwardedCert: false
+            acceptForwardedCert: true
             certificatesUrl:
             externalMapperUrl:
         saf:

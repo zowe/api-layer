@@ -123,6 +123,7 @@ public class HttpConfig implements InitializingBean {
     private final Timer connectionManagerTimer = new Timer("ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     private Set<String> publicKeyCertificatesBase64;
+    private HttpsConfig httpsConfig;
 
     @Resource
     private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
@@ -162,7 +163,7 @@ public class HttpConfig implements InitializingBean {
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
                 .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
                 .build();
-
+            this.httpsConfig = httpsConfig;
             HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();
 
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());
@@ -307,6 +308,11 @@ public class HttpConfig implements InitializingBean {
     @Bean
     public Supplier<EurekaJerseyClientBuilder> eurekaJerseyClientBuilder() {
         return () -> factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, isClientAttlsEnabled);
+    }
+
+    @Bean
+    public HttpsConfig httpsConfig() {
+        return httpsConfig;
     }
 
 }

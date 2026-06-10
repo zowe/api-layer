@@ -2,7 +2,9 @@ apiml:
     service:
         discoveryServiceUrls: https://discovery-service:10011/eureka/
         hostname: caching-service
-
+    security:
+        x509:
+            certificatesUrl: https://gateway-service:10010/gateway/certificates
 server:
     ssl:
         keyAlias: localhost

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.caching.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +25,10 @@ import org.springframework.security.web.authentication.preauth.x509.X509Authenti
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.FixedHeadersConfigurer;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
 
 import java.util.Collections;
+import java.util.Set;
 
 @Configuration
 @EnableWebSecurity
@@ -42,6 +45,17 @@ public class SpringSecurityConfig {
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
+
+    private final Set<String> publicKeyCertificatesBase64;
+    private final CertificateValidator certificateValidator;
+
+    public SpringSecurityConfig(
+        @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64,
+        CertificateValidator certificateValidator
+    ) {
+        this.publicKeyCertificatesBase64 = publicKeyCertificatesBase64;
+        this.certificateValidator = certificateValidator;
+    }
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -63,11 +77,12 @@ public class SpringSecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())   // NOSONAR
-                .headers(headers -> headers.httpStrictTransportSecurity().disable()).sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .headers(headers -> headers.httpStrictTransportSecurity().disable()).sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        AcceptForwardedCertFilter certFilter = new AcceptForwardedCertFilter(publicKeyCertificatesBase64, certificateValidator);
         if (verifyCertificates || !nonStrictVerifyCerts) {
             http.authorizeRequests(requests -> requests.anyRequest().authenticated())
-                    .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
             if (isServerAttlsEnabled) {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
@@ -75,7 +90,7 @@ public class SpringSecurityConfig {
         } else {
             http.authorizeRequests(requests -> requests.anyRequest().permitAll());
         }
-
+        http.addFilterBefore(certFilter, X509AuthenticationFilter.class);
         return FixedHeadersConfigurer.fix(http).build();
     }
 

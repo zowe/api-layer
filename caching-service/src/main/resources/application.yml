@@ -32,7 +32,7 @@ logging:
         org.zowe.apiml.caching: WARN
         org.springdoc: WARN
         org.springframework: WARN
-        org.springframework.boot: OFF
+        org.springframework.boot: DEBUG
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR
@@ -45,10 +45,18 @@ logging:
         javax.net.ssl: ERROR # For running with java 17
 eureka:
     client:
+        enabled: false
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
         instanceInfoReplicationIntervalSeconds: 30
         registryFetchIntervalSeconds: 30
 apiml:
     enabled: true
+
+    security:
+        x509:
+            certificatesUrl: https://localhost:10010/gateway/certificates
+            acceptForwardedCert: true
     service:
         preferIpAddress: false
 
@@ -105,6 +113,8 @@ apiml:
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /gateway/api/v1/auth
                 corsEnabled: false
+                service:
+                    supportClientCertForwarding: true
 
 spring:
     config:
@@ -171,7 +181,9 @@ logging:
         org.zowe.apiml: DEBUG
         org.zowe.apiml.enable: DEBUG
         org.zowe.apiml.caching: DEBUG
-        org.springframework: INFO
+        org.springframework: DEBUG
+        org.springframework.context: DEBUG
+        org.springframework.beans: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO

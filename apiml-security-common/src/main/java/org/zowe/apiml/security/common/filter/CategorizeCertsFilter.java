@@ -70,7 +70,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         if (certs != null) {
             if (certificateValidator.isForwardingEnabled() && certificateValidator.isTrusted(certs)) {
                 certificateValidator.updateAPIMLPublicKeyCertificates(certs);
-                Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request);
+                Optional<Certificate> clientCert = getClientCertFromHeader((HttpServletRequest) request, apimlLog);
                 if (clientCert.isPresent()) {
                     // add the client certificate to the certs array
                     String subjectDN = ((X509Certificate) clientCert.get()).getSubjectX500Principal().getName();
@@ -86,7 +86,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
         }
     }
 
-    private Optional<Certificate> getClientCertFromHeader(HttpServletRequest request) {
+    public static Optional<Certificate> getClientCertFromHeader(HttpServletRequest request, ApimlLogger apimlLog) {
         String certFromHeader = request.getHeader(CLIENT_CERT_HEADER);
 
         if (StringUtils.isNotEmpty(certFromHeader)) {
@@ -109,7 +109,7 @@ public class CategorizeCertsFilter extends OncePerRequestFilter {
      * @param originalRequest incoming original http request object
      * @return wrapped http request object with overridden functions
      */
-    private HttpServletRequest mutate(HttpServletRequest originalRequest) {
+    public static HttpServletRequest mutate(HttpServletRequest originalRequest) {
         return new HttpServletRequestWrapper(originalRequest) {
 
             @Override
