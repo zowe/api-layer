@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
-import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.cache.InvalidPayloadException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 
 import java.io.UnsupportedEncodingException;
@@ -71,7 +71,7 @@ public class VsamRecord {
             byte[] bytes = StringUtils.rightPad(key.getKey(serviceId, keyValue.getKey()) + mapper.writeValueAsString(keyValue), config.getRecordLength())
                 .getBytes(config.getEncoding());
             if (bytes.length > config.getRecordLength()) {
-                throw new StorageException(Messages.PAYLOAD_TOO_LARGE.getKey(), Messages.PAYLOAD_TOO_LARGE.getStatus(), keyValue.getKey());
+                throw new InvalidPayloadException(Messages.PAYLOAD_TOO_LARGE.getKey(), keyValue.getKey());
             }
 
             return bytes;
