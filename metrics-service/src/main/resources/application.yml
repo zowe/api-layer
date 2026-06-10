@@ -204,4 +204,5 @@ eureka:
     instance:
         nonSecurePortEnabled: true
         securePortEnabled: false
+        hostname: ${apiml.service.hostname}
 
