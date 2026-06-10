@@ -15,6 +15,9 @@ import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.EvictionStrategy;
 import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.cache.DuplicateKeyException;
+import org.zowe.apiml.cache.IncompatibleStorageMethodException;
+import org.zowe.apiml.cache.KeyNotFoundException;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
@@ -89,7 +92,7 @@ public class VsamStorage implements Storage {
         }
 
         if (result == null) {
-            throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
+            throw new DuplicateKeyException(Messages.DUPLICATE_KEY.getKey(), toCreate.getKey(), serviceId);
         }
 
         return result;
@@ -97,17 +100,17 @@ public class VsamStorage implements Storage {
 
     @Override
     public KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public Map<String, String> getAllMapItems(String serviceId, String mapKey) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public Map<String, Map<String, String>> getAllMaps(String serviceId) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     private boolean aboveThreshold(int currentSize) {
@@ -131,7 +134,7 @@ public class VsamStorage implements Storage {
         }
 
         if (result == null) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), key, serviceId);
         }
 
         return result;
@@ -154,7 +157,7 @@ public class VsamStorage implements Storage {
         }
 
         if (result == null) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), toUpdate.getKey(), serviceId);
         }
 
         return result;
@@ -178,7 +181,7 @@ public class VsamStorage implements Storage {
         }
 
         if (result == null) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), toDelete, serviceId);
         }
 
         return result;
@@ -211,11 +214,11 @@ public class VsamStorage implements Storage {
 
     @Override
     public void removeNonRelevantTokens(String serviceId, String mapKey) {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public void removeNonRelevantRules(String serviceId, String mapKey) {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 }
