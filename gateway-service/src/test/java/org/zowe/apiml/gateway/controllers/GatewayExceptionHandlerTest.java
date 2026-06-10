@@ -10,7 +10,13 @@
 
 package org.zowe.apiml.gateway.controllers;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -18,6 +24,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.context.annotation.Bean;
@@ -36,9 +47,11 @@ import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
 import org.zowe.apiml.gateway.filters.ForbidSlashException;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,6 +60,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -142,6 +156,59 @@ class GatewayExceptionHandlerTest {
                 exchange, 500, "org.zowe.apiml.common.tlsError",
                 new URI("https://localhost/some/url"), "Test TLS exception"
             );
+        }
+
+    }
+
+    @Nested
+    class ServiceUnavailable {
+
+        private GatewayExceptionHandler gatewayExceptionHandler;
+        private Logger logger;
+        private AutoCloseable mocks;
+
+        @Mock
+        private Appender<ILoggingEvent> mockedAppender;
+
+        @Captor
+        private ArgumentCaptor<ILoggingEvent> loggingEventCaptor;
+
+        @BeforeEach
+        void setUp() {
+            mocks = MockitoAnnotations.openMocks(this);
+            gatewayExceptionHandler = spy(new GatewayExceptionHandler(null, null, null) {
+                @Override
+                public Mono<Void> setBodyResponse(ServerWebExchange exchange, int responseCode, String messageCode, Object... args) {
+                    return Mono.empty();
+                }
+            });
+
+            logger = (Logger) LoggerFactory.getLogger(GatewayExceptionHandler.class);
+            logger.setLevel(Level.DEBUG);
+            logger.addAppender(mockedAppender);
+        }
+
+        @AfterEach
+        void tearDown() throws Exception {
+            logger.detachAppender(mockedAppender);
+            if (mocks != null) {
+                mocks.close();
+            }
+        }
+
+        @Test
+        void givenServiceNotAccessibleWithChainedCause_whenHandleException_thenLogIncludesRootCause() throws URISyntaxException {
+            ConnectException rootCause = new ConnectException("connection refused");
+            ServiceNotAccessibleException ex = new ServiceNotAccessibleException("Service not available", rootCause);
+            MockServerHttpRequest request = MockServerHttpRequest.get("https://localhost/some/url").build();
+            MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+            gatewayExceptionHandler.handleServiceNotAccessibleException(exchange, ex);
+
+            verify(mockedAppender).doAppend(loggingEventCaptor.capture());
+            assertThat(loggingEventCaptor.getValue().getFormattedMessage())
+                .contains("root cause:")
+                .contains("connection refused");
         }
 
     }

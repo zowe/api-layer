@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.config;
 
 import io.netty.channel.ChannelOption;
-import io.netty.channel.ConnectTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,12 +20,12 @@ import org.springframework.cloud.gateway.filter.NettyRoutingFilter;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
 import org.springframework.cloud.gateway.route.Route;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.security.common.error.ServiceAccessClassifier;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
-import java.net.ConnectException;
-import java.net.NoRouteToHostException;
+import javax.net.ssl.SSLException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -85,7 +84,12 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return super.filter(exchange, chain).onErrorResume(e -> {
-            if (isServiceUnavailable(e)) {
+            if (ServiceAccessClassifier.hasSslOrCertificateCause(e)) {
+                Throwable rootCause = findCause(e);
+                log.debug("SSL error detected for {}: {}", exchange.getRequest().getURI(), rootCause.getMessage());
+                return Mono.error(new SSLException(rootCause.getMessage(), rootCause));
+            }
+            if (ServiceAccessClassifier.isServiceUnavailable(e)) {
                 log.debug("Connection to {} was not established: {}", exchange.getRequest().getURI(), e.getMessage());
                 var uri = exchange.getRequest().getURI();
                 return Mono.error(new ServiceNotAccessibleException(String.format("Service is not available at %s://%s:%d", uri.getScheme(), uri.getHost(), uri.getPort()), e));
@@ -95,22 +99,22 @@ public class NettyRoutingFilterApiml extends NettyRoutingFilter {
     }
 
     static boolean isServiceUnavailable(Throwable error) {
-        if (error == null) {
-            return false;
-        }
+        return ServiceAccessClassifier.isServiceUnavailable(error);
+    }
 
-        // Check the full cause chain
+    /**
+     * Walks the exception cause chain to find the root cause.
+     *
+     * @param error the exception to inspect
+     * @return the deepest cause in the chain, or the original error if no cause exists
+     */
+    static Throwable findCause(Throwable error) {
         Throwable current = error;
-        do {
-            if (current instanceof ConnectException
-                    || current instanceof ConnectTimeoutException
-                    || current instanceof NoRouteToHostException) {
-                return true;
-            }
-            error = current;
-            current = current.getCause();
-        } while (current != null && current != error);
-
-        return false;
+        Throwable cause = current.getCause();
+        while (cause != null && cause != current) {
+            current = cause;
+            cause = current.getCause();
+        }
+        return current;
     }
 }

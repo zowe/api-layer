@@ -171,7 +171,8 @@ public class GatewayExceptionHandler {
 
     @ExceptionHandler({ServiceNotAccessibleException.class, WebClientResponseException.ServiceUnavailable.class})
     public Mono<Void> handleServiceNotAccessibleException(ServerWebExchange exchange, Exception ex) {
-        log.debug("A service is not available at the moment to finish request {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        Throwable rootCause = getRootCause(ex);
+        log.debug("A service is not available at the moment to finish request {}: {} (root cause: {})", exchange.getRequest().getURI(), ex.getMessage(), rootCause.getMessage());
         return setBodyResponse(exchange, SC_SERVICE_UNAVAILABLE, "org.zowe.apiml.common.serviceUnavailable", exchange.getRequest().getPath());
     }
 

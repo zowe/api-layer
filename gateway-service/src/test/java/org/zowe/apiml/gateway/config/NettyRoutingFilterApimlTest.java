@@ -194,6 +194,14 @@ class NettyRoutingFilterApimlTest {
         }
 
         @Test
+        void givenSslExceptionWrappedInConnectException_whenIsServiceUnavailable_thenReturnsFalse() {
+            SSLException sslEx = new SSLException("certificate error");
+            ConnectException connEx = new ConnectException("connection refused");
+            connEx.initCause(sslEx);
+            assertFalse(NettyRoutingFilterApiml.isServiceUnavailable(connEx));
+        }
+
+        @Test
         void givenNoRouteToHostException_whenIsServiceUnavailable_thenReturnsTrue() {
             assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(new NoRouteToHostException("no route to host")));
         }
@@ -233,6 +241,44 @@ class NettyRoutingFilterApimlTest {
             level1.initCause(level2);
             level2.initCause(level3);
             assertTrue(NettyRoutingFilterApiml.isServiceUnavailable(level1));
+        }
+
+    }
+
+    @Nested
+    class FindCause {
+
+        @Test
+        void givenSingleException_whenFindCause_thenReturnsItself() {
+            RuntimeException ex = new RuntimeException("standalone error");
+            assertSame(ex, NettyRoutingFilterApiml.findCause(ex));
+        }
+
+        @Test
+        void givenSslExceptionWrappedInConnectException_whenFindCause_thenReturnsSslException() {
+            SSLException sslEx = new SSLException("certificate error");
+            ConnectException connEx = new ConnectException("connection refused");
+            connEx.initCause(sslEx);
+            Throwable root = NettyRoutingFilterApiml.findCause(connEx);
+            assertTrue(root instanceof SSLException);
+            assertEquals("certificate error", root.getMessage());
+        }
+
+        @Test
+        void givenMultiLevelNesting_whenFindCause_thenReturnsDeepestCause() {
+            RuntimeException level1 = new RuntimeException("level1");
+            RuntimeException level2 = new RuntimeException("level2");
+            ConnectException level3 = new ConnectException("connection refused");
+            level1.initCause(level2);
+            level2.initCause(level3);
+            Throwable root = NettyRoutingFilterApiml.findCause(level1);
+            assertTrue(root instanceof ConnectException);
+            assertEquals("connection refused", root.getMessage());
+        }
+
+        @Test
+        void givenNull_whenFindCause_thenThrowsNullPointerException() {
+            assertThrows(NullPointerException.class, () -> NettyRoutingFilterApiml.findCause(null));
         }
 
     }
