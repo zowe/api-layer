@@ -27,6 +27,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.Base64;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -154,24 +155,27 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return getSecurePassword(token, getSalt());
     }
 
-    String initializeSalt() throws CachingServiceClientException, SecureTokenInitializationException {
-        String localSalt;
+    byte[] initializeSalt() throws CachingServiceClientException, SecureTokenInitializationException {
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
-            localSalt = keyValue.getValue();
+            String storedValue = keyValue.getValue();
+            try {
+                return Base64.getDecoder().decode(storedValue);
+            } catch (IllegalArgumentException e) {
+                // Legacy non-Base64 stored value — treat as cache miss, generate new salt
+                log.debug("Stored salt is not valid Base64, generating new salt", e);
+            }
         } catch (CachingServiceClientException | StorageException e) {
             log.debug("Cannot read salt.", e);
             if (e.getCause() != null) {
                 // it could be because of timeout for example
                 throw e;
             }
-            // a null value was returned
-            byte[] newSalt = generateSalt();
-            storeSalt(newSalt);
-            localSalt = new String(newSalt);
         }
-
-        return localSalt;
+        // a null value was returned or legacy non-Base64 value — generate new salt
+        byte[] newSalt = generateSalt();
+        storeSalt(newSalt);
+        return newSalt;
     }
 
     public String getToken(String username, int expirationTime, Set<String> scopes) {
@@ -193,11 +197,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
-        return initializeSalt().getBytes();
+        return initializeSalt();
     }
 
     private void storeSalt(byte[] salt) throws CachingServiceClientException {
-        cachingServiceClient.create(new CachingServiceClient.KeyValue("salt", new String(salt)));
+        cachingServiceClient.create(new CachingServiceClient.KeyValue("salt", Base64.getEncoder().encodeToString(salt)));
     }
 
     public static byte[] generateSalt() {

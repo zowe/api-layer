@@ -31,6 +31,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -54,7 +55,7 @@ class ApimlAccessTokenProviderTest {
     void setup() throws CachingServiceClientException,SecureTokenInitializationException {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
-        when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
+        when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", Base64.getEncoder().encodeToString(ApimlAccessTokenProvider.generateSalt())));
         accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, new ObjectMapper().registerModule(new JavaTimeModule()));
     }
 
@@ -282,9 +283,19 @@ class ApimlAccessTokenProviderTest {
         void givenNoSaltInCache_whenInitializing_thenCreateNewOne() {
             Exception noRecordException = new CachingServiceClientException("no record");
             doThrow(noRecordException).when(cachingServiceClient).read("salt");
-            String salt = accessTokenProvider.initializeSalt();
-            assertTrue(StringUtils.isNotBlank(salt));
+            byte[] salt = accessTokenProvider.initializeSalt();
+            assertNotNull(salt);
+            assertEquals(16, salt.length);
             verify(cachingServiceClient, times(1)).create(any());
+        }
+
+        @Test
+        void givenBase64EncodedSaltInCache_whenInitializing_thenReturnOriginalBytes() {
+            byte[] originalSalt = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+            String encoded = Base64.getEncoder().encodeToString(originalSalt);
+            when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", encoded));
+            byte[] decodedSalt = accessTokenProvider.initializeSalt();
+            assertArrayEquals(originalSalt, decodedSalt);
         }
 
     }
