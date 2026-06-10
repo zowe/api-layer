@@ -14,6 +14,7 @@ import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
+@Deprecated
 public class StorageException extends RuntimeException {
     private final String key;
     private final String[] parameters;
