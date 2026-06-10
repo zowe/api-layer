@@ -49,7 +49,7 @@ public class MetadataFilterService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).collect(Collectors.toSet());
+        allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
         onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
 
         log.info("Allowed domains in Discovery Service: {}", allowedDomains);
@@ -75,6 +75,9 @@ public class MetadataFilterService implements InitializingBean {
 
     private boolean isAllowed(String allowedDomain, String domain) throws MalformedURLException {
         log.debug("checking URL {} against domain {}", domain, allowedDomain);
+        allowedDomain = allowedDomain.toLowerCase();
+        domain = domain.toLowerCase();
+
         if (isUrl(domain)) {
             domain = new URL(domain).getHost();
         }
