@@ -482,16 +482,21 @@ public class WebSecurityConfig {
 
 
     /**
-     * This security filter chain secures the /refresh access token (PAT) endpoint
+     * This security filter chain secures the /refresh access token (PAT) endpoint.
+     * Supports OIDC token authentication (when enabled) in addition to APIML JWT.
+     * The OIDC filter runs before QueryWebFilter; on successful OIDC auth it strips the token
+     * from the request so QueryWebFilter does not attempt to re-validate the non-APIML JWT.
      *
      * @param http
+     * @param authConfigurationProperties
      * @return
      */
     @ConditionalOnProperty(name = "apiml.security.allowTokenRefresh", havingValue = "true")
     @Bean
-    SecurityWebFilterChain refreshTokenFilter(ServerHttpSecurity http) {
+    SecurityWebFilterChain refreshTokenFilter(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
         var man = new ProviderManager(tokenAuthenticationProvider);
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
         return x509SecurityConfig(http)
             .securityMatcher(new AndServerWebExchangeMatcher(
                 pathMatchers(POST, "gateway/api/v1/auth/refresh")
@@ -525,15 +530,20 @@ public class WebSecurityConfig {
 
 
     /**
-     * This security filter chain secures the /ticket endpoint
+     * This security filter chain secures the /ticket endpoint.
+     * Supports OIDC token authentication (when enabled) in addition to APIML JWT.
+     * The OIDC filter runs before QueryWebFilter; on successful OIDC auth it strips the token
+     * from the request so QueryWebFilter does not attempt to re-validate the non-APIML JWT.
      *
      * @param http
+     * @param authConfigurationProperties
      * @return
      */
     @Bean
-    SecurityWebFilterChain ticketFilter(ServerHttpSecurity http) {
+    SecurityWebFilterChain ticketFilter(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties) {
         var man = new ProviderManager(tokenAuthenticationProvider);
         var reactiveTokenAuthProvider = new ReactiveAuthenticationManagerAdapter(man);
+        addOidcFilterIfEnabled(http, authConfigurationProperties);
         return x509SecurityConfig(http)
             .securityMatcher(new AndServerWebExchangeMatcher(
                 pathMatchers("gateway/api/v1/auth/ticket")
