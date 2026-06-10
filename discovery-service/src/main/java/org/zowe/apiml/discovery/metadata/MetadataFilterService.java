@@ -25,13 +25,17 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
 public class MetadataFilterService implements InitializingBean {
 
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
+    private static final String[] DEFAULT_ALLOWED_DOMAINS = { "www.ibm.com", "zowe.github.io", "www.zowe.org" };
 
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
     private String allowedDomains;
@@ -41,11 +45,11 @@ public class MetadataFilterService implements InitializingBean {
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
 
-    private List<String> allowedDomainsList;
+    private Set<String> allowedDomainsSet;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        allowedDomainsList = Arrays.stream(allowedDomains.split(",")).map(String::trim).toList();
+        allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
         onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
 
         log.info("Allowed domains in Discovery Service: {}", allowedDomains);
@@ -60,7 +64,7 @@ public class MetadataFilterService implements InitializingBean {
         if (StringUtils.isBlank(domain)) {
             return true;
         }
-        return allowedDomainsList.stream().anyMatch(allowedDomain -> {
+        return allowedDomainsSet.stream().anyMatch(allowedDomain -> {
             try {
                 return isAllowed(allowedDomain, domain);
             } catch (MalformedURLException e) {
@@ -71,8 +75,10 @@ public class MetadataFilterService implements InitializingBean {
 
     private boolean isAllowed(String allowedDomain, String domain) throws MalformedURLException {
         log.debug("checking URL {} against domain {}", domain, allowedDomain);
+        allowedDomain = allowedDomain.toLowerCase();
+        domain = domain.toLowerCase();
         if (isUrl(domain)) {
-            domain = new URL(domain).getHost();
+            domain = new URL(domain).getHost().toLowerCase();
         }
         if (domain.equals(allowedDomain)) {
             return true;

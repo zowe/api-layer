@@ -25,7 +25,9 @@ import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -57,6 +59,8 @@ class MetadataFilterServiceTest {
         void setUp() throws Exception {
             ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "localhost, *.zowe.org");
             metadataFilterService.afterPropertiesSet();
+            var allowedDomainsSet = ReflectionTestUtils.getField(metadataFilterService, "allowedDomainsSet");
+            assertEquals(Set.of("localhost", "*.zowe.org", "www.ibm.com", "zowe.github.io", "www.zowe.org"), allowedDomainsSet);
         }
 
         @ParameterizedTest(name = "Key: {0}, Value: {1} -> Allowed: {2}")
@@ -69,7 +73,9 @@ class MetadataFilterServiceTest {
             "apiml.graphqlUrl, https://sub.zowe.org:8080, true",
             "apiml.documentationUrl, https://invalid.org:8080, false",
             "apiml.customKey, https://invalid.org:8080, true",
-            "apiml.documentationUrl, invalid-url, false"
+            "apiml.documentationUrl, invalid-url, false",
+            "apiml.externalUrl, HTTPS://LOCALHOST:8080, true",
+            "apiml.externalUrl, HTTPS://INVALID.ORG:8080, false"
         })
         void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed) throws Exception {
             Map<String, String> metadata = new HashMap<>();
