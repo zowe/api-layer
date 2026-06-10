@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.infinispan.lock.api.ClusteredLock;
 import org.infinispan.manager.DefaultCacheManager;
+import org.zowe.apiml.cache.KeyNotFoundException;
+import org.zowe.apiml.cache.DuplicateKeyException;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -65,7 +67,7 @@ public class InfinispanStorage implements Storage {
         KeyValue serviceCache = getCache().putIfAbsent(serviceId + toCreate.getKey(), toCreate);
 
         if (serviceCache != null) {
-            throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey());
+            throw new DuplicateKeyException(Messages.DUPLICATE_KEY.getKey(), toCreate.getKey());
         }
         return null;
     }
@@ -126,7 +128,7 @@ public class InfinispanStorage implements Storage {
         if (serviceCache != null) {
             return serviceCache;
         } else {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), key, serviceId);
         }
     }
 
@@ -136,7 +138,7 @@ public class InfinispanStorage implements Storage {
         log.info("Updating record for service {} under key {}", serviceId, toUpdate);
         KeyValue serviceCache = getCache().put(serviceId + toUpdate.getKey(), toUpdate);
         if (serviceCache == null) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), toUpdate.getKey(), serviceId);
         }
         return toUpdate;
 
@@ -149,7 +151,7 @@ public class InfinispanStorage implements Storage {
         if (entry != null) {
             return entry;
         } else {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), toDelete, serviceId);
         }
     }
 
