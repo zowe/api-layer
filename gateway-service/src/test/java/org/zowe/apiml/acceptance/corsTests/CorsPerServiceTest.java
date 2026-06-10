@@ -15,6 +15,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -46,6 +47,9 @@ import static org.mockito.Mockito.*;
  */
 @AcceptanceTest
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "apiml.service.corsAllowedOrigins=https://foo.bar.org"
+})
 class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     @Test
         // Verify the header to allow CORS isn't set
@@ -81,7 +85,7 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
         .when()
-            .get(basePath + serviceWithDefaultConfiguration.getPath())
+            .post(basePath + serviceWithDefaultConfiguration.getPath())
         .then()
             .statusCode(is(SC_FORBIDDEN))
             .header("Access-Control-Allow-Origin", is(nullValue()));

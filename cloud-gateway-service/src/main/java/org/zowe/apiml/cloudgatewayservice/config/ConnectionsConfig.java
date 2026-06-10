@@ -73,10 +73,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
@@ -333,7 +330,7 @@ public class ConnectionsConfig {
 
     @Bean
     public CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, null);
+        return new CorsUtils(corsEnabled, Collections.emptyList());
     }
 
     @Bean

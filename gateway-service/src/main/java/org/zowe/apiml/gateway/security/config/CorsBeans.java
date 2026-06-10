@@ -11,6 +11,9 @@
 package org.zowe.apiml.gateway.security.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
+import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,10 +35,13 @@ import java.util.*;
 @ConditionalOnProperty(name = "apiml.security.filterChainConfiguration", havingValue = "new", matchIfMissing = false)
 @Configuration
 @RequiredArgsConstructor
+@Slf4j
 public class CorsBeans {
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
+    @Value("${apiml.service.corsAllowedOrigins:}")
+    private Set<String> allowedOrigins;
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
     private String ignoredHeadersWhenCorsEnabled;
 
@@ -65,7 +71,7 @@ public class CorsBeans {
     ) throws URISyntaxException {
         boolean isAttls = Arrays.asList(environment.getActiveProfiles()).contains("attls");
         if (corsEnabled || !isAttls) {
-            return null; // NOSONAR
+            return Collections.emptyList();
         }
 
         Set<String> gatewayOrigins = new HashSet<>();
@@ -88,6 +94,12 @@ public class CorsBeans {
         @Value("${server.hostname:${apiml.service.hostname}}") String hostname,
         @Value("${server.port}") int port
     ) throws URISyntaxException {
-        return new CorsUtils(corsEnabled, getDefaultAllowedOrigins(environment, externalUrl, hostname, port));
+        if (corsEnabled && allowedOrigins.isEmpty()) {
+            log.warn("Custom cors configuration is enabled but no cors allowed origins defined. Set gateway.apiml.service.corsAllowedOrigins in your zowe.yml");
+        }
+
+        allowedOrigins.addAll(getDefaultAllowedOrigins(environment, externalUrl, hostname, port));
+
+        return new CorsUtils(corsEnabled, new ArrayList<>(allowedOrigins));
     }
 }

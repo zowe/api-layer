@@ -12,10 +12,14 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.NestedTestConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -28,7 +32,11 @@ import static org.mockito.Mockito.*;
 
 @AcceptanceTest
 @ActiveProfiles("test")
+@TestPropertySource(properties = {
+    "apiml.service.corsAllowedOrigins=https://foo.bar.org"
+})
 class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
+
     @Test
     // The CORS headers are properly set on the request
     void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() throws Exception {
@@ -37,20 +45,20 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
             .header(new Header("Origin", "https://foo.bar.org"))
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-        .when()
+            .when()
             .options(basePath + "/gateway/version")
-        .then()
+            .then()
             .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin","https://foo.bar.org")
+            .header("Access-Control-Allow-Origin", "https://foo.bar.org")
             .header("Access-Control-Allow-Methods", "GET,HEAD,POST,DELETE,PUT,OPTIONS")
             .header("Access-Control-Allow-Headers", "origin, x-requested-with");
 
         // Actual request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
-        .when()
+            .when()
             .get(basePath + "/gateway/version")
-        .then()
+            .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", "https://foo.bar.org");
     }

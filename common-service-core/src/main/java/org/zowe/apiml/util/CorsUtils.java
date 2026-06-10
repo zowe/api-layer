@@ -15,10 +15,7 @@ import org.apache.logging.log4j.util.TriConsumer;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.cors.CorsConfiguration;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
@@ -57,14 +54,14 @@ public class CorsUtils {
         // Check if the configuration specifies allowed origins for this service
         final CorsConfiguration config = new CorsConfiguration();
         if (isCorsEnabledForService(metadata)) {
+            allowedOrigins.forEach(config::addAllowedOrigin);
             String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
-            if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
-                // Origins not specified: allow everything
-                config.addAllowedOriginPattern(CorsConfiguration.ALL);
-            } else {
+            if (corsAllowedOriginsForService != null && !corsAllowedOriginsForService.isEmpty()) {
                 // Origins specified: split by comma, add to whitelist
+                // apiml.corsAllowedOrigins = https://www.google.com:443,https://foo.bar:1234,*
                 Arrays.stream(corsAllowedOriginsForService.split(","))
-                    .forEach(config::addAllowedOrigin);
+                    .forEach(config::addAllowedOrigin)
+                    ;
             }
             config.setAllowCredentials(true);
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
@@ -82,7 +79,6 @@ public class CorsUtils {
         config.setAllowedOrigins(allowedOrigins);
         if (corsEnabled) {
             config.setAllowCredentials(true);
-            config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(allowedCorsHttpMethods);
             pathsToEnable = CORS_ENABLED_ENDPOINTS;
