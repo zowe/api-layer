@@ -22,6 +22,8 @@ import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.zowe.apiml.cache.Storage;
+import org.zowe.apiml.cache.InvalidPayloadException;
+import org.zowe.apiml.cache.KeyNotProvidedException;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
@@ -107,8 +109,8 @@ class CachingControllerTest {
             when(mockStorage.readForService(SERVICE_ID)).thenThrow(new RuntimeException());
 
             StepVerifier.create(underTest.getAllValues(mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(RuntimeException.class)
+                .verify();
         }
     }
 
@@ -129,8 +131,8 @@ class CachingControllerTest {
             when(mockStorage.readForService(SERVICE_ID)).thenThrow(new RuntimeException());
 
             StepVerifier.create(underTest.getAllValues(mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(RuntimeException.class)
+                .verify();
         }
     }
 
@@ -152,27 +154,18 @@ class CachingControllerTest {
 
         @Test
         void givenNoKey_thenResponseBadRequest() {
-            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided", SERVICE_ID).mapToView();
-
             StepVerifier.create(underTest.getValue(null, mockExchange))
-                .assertNext(response -> {
-                    assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-                    assertThat(response.getBody(), is(expectedBody));
-                })
-                .verifyComplete();
+                .expectError(KeyNotProvidedException.class)
+                .verify();
         }
 
         @Test
         void givenStoreWithNoKey_thenResponseNotFound() {
-            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
             when(mockStorage.read(any(), any())).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), new Exception("the cause"), KEY, SERVICE_ID));
 
             StepVerifier.create(underTest.getValue(KEY, mockExchange))
-                .assertNext(response -> {
-                    assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-                    assertThat(response.getBody(), is(expectedBody));
-                })
-                .verifyComplete();
+                .expectError(StorageException.class)
+                .verify();
         }
 
         @Test
@@ -180,8 +173,8 @@ class CachingControllerTest {
             when(mockStorage.read(any(), any())).thenThrow(new RuntimeException("error"));
 
             StepVerifier.create(underTest.getValue(KEY, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(RuntimeException.class)
+                .verify();
         }
     }
 
@@ -202,14 +195,10 @@ class CachingControllerTest {
         @Test
         void givenStorageWithExistingKey_thenResponseConflict() {
             when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), KEY));
-            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyCollision", KEY).mapToView();
 
             StepVerifier.create(underTest.createKey(KEY_VALUE, mockExchange))
-                .assertNext(response -> {
-                    assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
-                    assertThat(response.getBody(), is(expectedBody));
-                })
-                .verifyComplete();
+                .expectError(StorageException.class)
+                .verify();
         }
 
         @Test
@@ -217,8 +206,8 @@ class CachingControllerTest {
             when(mockStorage.create(SERVICE_ID, KEY_VALUE)).thenThrow(new RuntimeException("error"));
 
             StepVerifier.create(underTest.createKey(KEY_VALUE, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(RuntimeException.class)
+                .verify();
         }
     }
 
@@ -239,14 +228,10 @@ class CachingControllerTest {
         @Test
         void givenStorageWithNoKey_thenResponseNotFound() {
             when(mockStorage.update(SERVICE_ID, KEY_VALUE)).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), KEY, SERVICE_ID));
-            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
 
             StepVerifier.create(underTest.update(KEY_VALUE, mockExchange))
-                .assertNext(response -> {
-                    assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-                    assertThat(response.getBody(), is(expectedBody));
-                })
-                .verifyComplete();
+                .expectError(StorageException.class)
+                .verify();
         }
     }
 
@@ -266,40 +251,26 @@ class CachingControllerTest {
 
         @Test
         void givenNoKey_thenResponseBadRequest() {
-            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotProvided").mapToView();
-
             StepVerifier.create(underTest.delete(null, mockExchange))
-                .assertNext(response -> {
-                    assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-                    assertThat(response.getBody(), is(expectedBody));
-                })
-                .verifyComplete();
+                .expectError(KeyNotProvidedException.class)
+                .verify();
         }
 
         @Test
         void givenStorageWithNoKey_thenResponseNotFound() {
-            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.keyNotInCache", KEY, SERVICE_ID).mapToView();
             when(mockStorage.delete(any(), any())).thenThrow(new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), KEY, SERVICE_ID));
 
             StepVerifier.create(underTest.delete(KEY, mockExchange))
-                .assertNext(response -> {
-                    assertThat(response.getStatusCode(), is(HttpStatus.NOT_FOUND));
-                    assertThat(response.getBody(), is(expectedBody));
-                })
-                .verifyComplete();
+                .expectError(StorageException.class)
+                .verify();
         }
     }
 
     @Test
     void givenNoPayload_whenValidatePayload_thenResponseBadRequest() {
-        ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", null, "No KeyValue provided in the payload").mapToView();
-
         StepVerifier.create(underTest.createKey(null, mockExchange))
-            .assertNext(response -> {
-                assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
-                assertThat(response.getBody(), is(expectedBody));
-            })
-            .verifyComplete();
+            .expectError(InvalidPayloadException.class)
+            .verify();
     }
 
     @ParameterizedTest
@@ -307,15 +278,17 @@ class CachingControllerTest {
     void givenVariousKeyValue_whenValidatePayload_thenResponseAccordingly(String key, String value, String errMessage, HttpStatus statusCode) {
         KeyValue keyValue = new KeyValue(key, value);
 
-        StepVerifier.create(underTest.createKey(keyValue, mockExchange))
-            .assertNext(response -> {
-                assertThat(response.getStatusCode(), is(statusCode));
-                if (errMessage != null) {
-                    ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.invalidPayload", keyValue, errMessage).mapToView();
-                    assertThat(response.getBody(), is(expectedBody));
-                }
-            })
-            .verifyComplete();
+        if (errMessage != null) {
+            StepVerifier.create(underTest.createKey(keyValue, mockExchange))
+                .expectError(InvalidPayloadException.class)
+                .verify();
+        } else {
+            StepVerifier.create(underTest.createKey(keyValue, mockExchange))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(statusCode));
+                })
+                .verifyComplete();
+        }
     }
 
     private static Stream<Arguments> provideStringsForGivenVariousKeyValue() {
@@ -431,8 +404,8 @@ class CachingControllerTest {
             KeyValue keyValue = new KeyValue(null, VALUE);
 
             StepVerifier.create(underTest.storeMapItem(MAP_KEY, keyValue, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
-                .verifyComplete();
+                .expectError(InvalidPayloadException.class)
+                .verify();
         }
 
         @Test
@@ -441,8 +414,8 @@ class CachingControllerTest {
                 .thenThrow(new StorageException(Messages.INTERNAL_SERVER_ERROR.getKey(), Messages.INTERNAL_SERVER_ERROR.getStatus(), new Exception("the cause"), KEY));
 
             StepVerifier.create(underTest.storeMapItem(MAP_KEY, KEY_VALUE, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(StorageException.class)
+                .verify();
         }
 
         @Test
@@ -450,14 +423,9 @@ class CachingControllerTest {
             when(mockStorage.storeMapItem(SERVICE_ID, MAP_KEY, KEY_VALUE))
                 .thenThrow(new StorageException(Messages.DUPLICATE_VALUE.getKey(), Messages.DUPLICATE_VALUE.getStatus(), VALUE));
 
-            ApiMessageView expectedBody = messageService.createMessage("org.zowe.apiml.cache.duplicateValue", VALUE).mapToView();
-
             StepVerifier.create(underTest.storeMapItem(MAP_KEY, KEY_VALUE, mockExchange))
-                .assertNext(response -> {
-                    assertThat(response.getStatusCode(), is(HttpStatus.CONFLICT));
-                    assertThat(response.getBody(), is(expectedBody));
-                })
-                .verifyComplete();
+                .expectError(StorageException.class)
+                .verify();
         }
     }
 
@@ -533,8 +501,8 @@ class CachingControllerTest {
                 .thenThrow(new RuntimeException("error"));
 
             StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(RuntimeException.class)
+                .verify();
         }
 
         @Test
@@ -542,8 +510,8 @@ class CachingControllerTest {
             when(mockStorage.getAllMapItems(any(), any())).thenThrow(new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), HttpStatus.BAD_REQUEST));
 
             StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
-                .verifyComplete();
+                .expectError(StorageException.class)
+                .verify();
         }
 
         @Test
@@ -551,8 +519,8 @@ class CachingControllerTest {
             when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
 
             StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(RuntimeException.class)
+                .verify();
         }
 
     }
@@ -582,12 +550,12 @@ class CachingControllerTest {
             doThrow(new RuntimeException()).when(mockStorage).removeNonRelevantRules(SERVICE_ID, MAP_KEY);
 
             StepVerifier.create(underTest.evictTokens(MAP_KEY, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(RuntimeException.class)
+                .verify();
 
             StepVerifier.create(underTest.evictRules(MAP_KEY, mockExchange))
-                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                .verifyComplete();
+                .expectError(RuntimeException.class)
+                .verify();
         }
     }
 
@@ -603,16 +571,16 @@ class CachingControllerTest {
                 doThrow(storageException).when(mockStorage).getAllMapItems(any(), any());
 
                 StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockExchange))
-                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
-                    .verifyComplete();
+                    .expectError(StorageException.class)
+                    .verify();
             }
 
             @Test
             void givenUnexpectedError_whenGetAllMapItems_thenReturn500() {
                 doThrow(new RuntimeException("unexpected")).when(mockStorage).getAllMapItems(any(), any());
                 StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockExchange))
-                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                    .verifyComplete();
+                    .expectError(RuntimeException.class)
+                    .verify();
             }
 
             @Test
@@ -620,8 +588,8 @@ class CachingControllerTest {
                 Exception storageException = new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus());
                 doThrow(storageException).when(mockStorage).getAllMapItems(any(), any());
                 StepVerifier.create(underTest.getAllMapItems(MAP_KEY, mockExchange))
-                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                    .verifyComplete();
+                    .expectError(StorageException.class)
+                    .verify();
             }
 
         }
@@ -634,16 +602,16 @@ class CachingControllerTest {
                 Exception storageException = new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
                 doThrow(storageException).when(mockStorage).getAllMaps(any());
                 StepVerifier.create(underTest.getAllMaps(mockExchange))
-                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
-                    .verifyComplete();
+                    .expectError(StorageException.class)
+                    .verify();
             }
 
             @Test
             void givenUnexpectedError_whenGetAllMapItems_thenReturn500() {
                 doThrow(new RuntimeException("unexpected")).when(mockStorage).getAllMaps(any());
                 StepVerifier.create(underTest.getAllMaps(mockExchange))
-                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                    .verifyComplete();
+                    .expectError(RuntimeException.class)
+                    .verify();
             }
 
             @Test
@@ -651,8 +619,8 @@ class CachingControllerTest {
                 Exception storageException = new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus());
                 doThrow(storageException).when(mockStorage).getAllMaps(any());
                 StepVerifier.create(underTest.getAllMaps(mockExchange))
-                    .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR)))
-                    .verifyComplete();
+                    .expectError(StorageException.class)
+                    .verify();
             }
 
         }

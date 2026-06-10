@@ -13,7 +13,7 @@ package org.zowe.apiml.caching.service.inmemory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.caching.service.RejectStrategy;
-import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.cache.InsufficientStorageException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,7 +28,7 @@ class RejectStrategyTest {
 
     @Test
     void evictThrowsException() {
-        assertThrows(StorageException.class, () -> {
+        assertThrows(InsufficientStorageException.class, () -> {
             underTest.evict("anyValue");
         });
     }

@@ -12,7 +12,7 @@ package org.zowe.apiml.caching.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.cache.InsufficientStorageException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 @RequiredArgsConstructor
@@ -24,6 +24,6 @@ public class RejectStrategy implements EvictionStrategy {
     public void evict(String key) {
         apimlLog.log("org.zowe.apiml.cache.insufficientStorage");
 
-        throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus());
+        throw new InsufficientStorageException(Messages.INSUFFICIENT_STORAGE.getKey());
     }
 }

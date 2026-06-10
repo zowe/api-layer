@@ -36,7 +36,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.CacheNotAvailableException;
-import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
