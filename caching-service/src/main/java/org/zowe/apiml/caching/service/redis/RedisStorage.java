@@ -14,6 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.retry.annotation.Retryable;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.cache.DuplicateKeyException;
+import org.zowe.apiml.cache.IncompatibleStorageMethodException;
+import org.zowe.apiml.cache.InsufficientStorageException;
+import org.zowe.apiml.cache.KeyNotFoundException;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.redis.exceptions.RedisOutOfMemoryException;
@@ -51,27 +55,27 @@ public class RedisStorage implements Storage {
             boolean result = redis.create(entryToCreate);
 
             if (!result) {
-                throw new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus(), toCreate.getKey(), serviceId);
+                throw new DuplicateKeyException(Messages.DUPLICATE_KEY.getKey(), toCreate.getKey(), serviceId);
             }
         } catch (RedisOutOfMemoryException e) {
-            throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus());
+            throw new InsufficientStorageException(Messages.INSUFFICIENT_STORAGE.getKey());
         }
         return toCreate;
     }
 
     @Override
     public KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public Map<String, String> getAllMapItems(String serviceId, String mapKey) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public Map<String, Map<String, String>> getAllMaps(String serviceId) throws StorageException {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
@@ -81,7 +85,7 @@ public class RedisStorage implements Storage {
 
         RedisEntry result = redis.get(serviceId, key);
         if (result == null) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), key, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), key, serviceId);
         }
         return result.getEntry();
     }
@@ -96,10 +100,10 @@ public class RedisStorage implements Storage {
             boolean result = redis.update(entryToUpdate);
 
             if (!result) {
-                throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
+                throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), toUpdate.getKey(), serviceId);
             }
         } catch (RedisOutOfMemoryException e) {
-            throw new StorageException(Messages.INSUFFICIENT_STORAGE.getKey(), Messages.INSUFFICIENT_STORAGE.getStatus());
+            throw new InsufficientStorageException(Messages.INSUFFICIENT_STORAGE.getKey());
         }
         return toUpdate;
     }
@@ -113,7 +117,7 @@ public class RedisStorage implements Storage {
         boolean result = redis.delete(serviceId, toDelete);
 
         if (!result) {
-            throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toDelete, serviceId);
+            throw new KeyNotFoundException(Messages.KEY_NOT_IN_CACHE.getKey(), toDelete, serviceId);
         }
         return entryToDelete.getEntry();
     }
@@ -145,11 +149,11 @@ public class RedisStorage implements Storage {
 
     @Override
     public void removeNonRelevantTokens(String serviceId, String mapKey) {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 
     @Override
     public void removeNonRelevantRules(String serviceId, String mapKey) {
-        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+        throw new IncompatibleStorageMethodException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey());
     }
 }
