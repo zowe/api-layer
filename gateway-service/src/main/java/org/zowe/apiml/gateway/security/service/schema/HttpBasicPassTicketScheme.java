@@ -105,7 +105,7 @@ public class HttpBasicPassTicketScheme implements IAuthenticationScheme {
             passTicket = passTicketService.generate(userId, applId);
         } catch (IRRPassTicketGenerationException e) {
             String error = String.format("Could not generate PassTicket for user ID %s and APPLID %s", userId, applId);
-            logger.log(MessageType.DEBUG, error);
+            logger.log(MessageType.DEBUG, String.format("%s: %s", error, e));
             throw new AuthSchemeException("org.zowe.apiml.security.ticket.generateFailed", error);
         }
         final String encoded = Base64.getEncoder()

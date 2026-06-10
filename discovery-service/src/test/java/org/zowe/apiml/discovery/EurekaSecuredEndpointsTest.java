@@ -28,7 +28,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
         "eureka.client.fetchRegistry=false",
-        "eureka.client.registerWithEureka=false"
+        "eureka.client.registerWithEureka=false",
+        "apiml.discovery.userid=eureka",
+        "apiml.discovery.password=password"
     },
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )

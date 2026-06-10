@@ -113,7 +113,7 @@ class ZoweTokensTest implements TestWithStartedInstances {
 
         @Test
         void givenValidOAuthToken() {
-            String oAuthToken = validOktaAccessToken(true);
+            String oAuthToken = validOidcAccessToken(true);
 
             //@formatter:off
             given()

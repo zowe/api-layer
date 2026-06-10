@@ -53,9 +53,7 @@ public class HttpsFactory {
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
-
     public CloseableHttpClient createSecureHttpClient(HttpClientConnectionManager connectionManager) {
-
         RequestConfig requestConfig = RequestConfig.custom()
             .setConnectTimeout(config.getRequestConnectionTimeout())
             .setSocketTimeout(config.getRequestConnectionTimeout())
@@ -67,7 +65,6 @@ public class HttpsFactory {
             .setConnectionManager(connectionManager).disableCookieManagement().setUserTokenHandler(userTokenHandler)
             .setKeepAliveStrategy(ApimlKeepAliveStrategy.INSTANCE)
             .disableAuthCaching().build();
-
     }
 
     public ConnectionSocketFactory createSslSocketFactory() {
@@ -229,26 +226,6 @@ public class HttpsFactory {
         }
     }
 
-    private void setSystemProperty(String key, String value) {
-        if (value == null) {
-            System.clearProperty(key);
-        } else {
-            System.setProperty(key, value);
-        }
-    }
-
-    public void setSystemSslProperties() {
-        setSystemProperty("javax.net.ssl.keyStore", SecurityUtils.formatKeyringUrl(config.getKeyStore()));
-        setSystemProperty("javax.net.ssl.keyStorePassword",
-            config.getKeyStorePassword() == null ? null : String.valueOf(config.getKeyStorePassword()));
-        setSystemProperty("javax.net.ssl.keyStoreType", config.getKeyStoreType());
-
-        setSystemProperty("javax.net.ssl.trustStore", SecurityUtils.formatKeyringUrl(config.getTrustStore()));
-        setSystemProperty("javax.net.ssl.trustStorePassword",
-            config.getTrustStorePassword() == null ? null : String.valueOf(config.getTrustStorePassword()));
-        setSystemProperty("javax.net.ssl.trustStoreType", config.getTrustStoreType());
-    }
-
     public HostnameVerifier getHostnameVerifier() {
         if (config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices()) {
             return SSLConnectionSocketFactory.getDefaultHostnameVerifier();
@@ -257,7 +234,7 @@ public class HttpsFactory {
         }
     }
 
-    public EurekaJerseyClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId) {
+    public EurekaJerseyClientBuilder createEurekaJerseyClientBuilder(String eurekaServerUrl, String serviceId, boolean isClientAttlsEnabled) {
         EurekaJerseyClientBuilder builder = new EurekaJerseyClientBuilder();
         builder.withClientName(serviceId);
         builder.withMaxTotalConnections(10);
@@ -268,15 +245,11 @@ public class HttpsFactory {
         // See:
         // https://github.com/Netflix/eureka/blob/master/eureka-core/src/main/java/com/netflix/eureka/transport/JerseyReplicationClient.java#L160
         if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
-        } else {
-            System.setProperty("com.netflix.eureka.shouldSSLConnectionsUseSystemSocketFactory", "true");
-
-            if (config.isVerifySslCertificatesOfServices()) {
-                setSystemSslProperties();
+            if (!isClientAttlsEnabled) {
+                apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
             }
+        } else {
             builder.withCustomSSL(getSslContext());
-
             builder.withHostnameVerifier(getHostnameVerifier());
         }
         return builder;

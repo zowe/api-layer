@@ -75,7 +75,7 @@ dependencies {
     implementation libs.spring.boot.configuration.processor
     implementation libs.spring.cloud.commons
     implementation libs.spring.cloud.starter.bootstrap
-    implementation libs.spring.eureka.client.v3
+    implementation libs.spring.cloud.starter.eureka
     implementation libs.spring.cloud.starter.hystrix
     implementation libs.spring.retry
     implementation libs.jackson.annotations

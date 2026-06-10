@@ -10,12 +10,15 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockserver.integration.ClientAndServer;
+import org.mockserver.model.HttpRequest;
 import org.zowe.apiml.zaasclient.config.ConfigProperties;
 import org.zowe.apiml.zaasclient.config.DefaultZaasClientConfiguration;
 import org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes;
@@ -23,6 +26,8 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -32,6 +37,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.mockserver.model.HttpRequest.request;
+import static org.mockserver.model.HttpResponse.response;
 import static org.zowe.apiml.zaasclient.exception.ZaasClientErrorCodes.*;
 import static org.zowe.apiml.zaasclient.exception.ZaasConfigurationErrorCodes.IO_CONFIGURATION_ISSUE;
 
@@ -44,7 +51,17 @@ class ZaasClientTest {
     private static final String VALID_USERNAME = "username";
     private static final char[] VALID_NEW_PASSWORD = "username".toCharArray();
     private static final String VALID_APPLICATION_ID = "APPLID";
+    private static final String INVALID_APPLICATION_ID = "XBADAPPL";
     private static final String VALID_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
+
+    private static final String[] SSL_SYSTEM_ENVIRONMENT_VALUES = {
+        "javax.net.ssl.keyStore",
+        "javax.net.ssl.keyStorePassword",
+        "javax.net.ssl.keyStoreType",
+        "javax.net.ssl.trustStore",
+        "javax.net.ssl.trustStorePassword",
+        "javax.net.ssl.trustStoreType"
+    };
 
     @BeforeEach
     void setUp() {
@@ -52,6 +69,13 @@ class ZaasClientTest {
         passTickets = mock(PassTicketService.class);
 
         underTest = new ZaasClientImpl(tokens, passTickets);
+    }
+
+    @AfterEach
+    void assertSystemEnvironmentValues() {
+        for (String env : SSL_SYSTEM_ENVIRONMENT_VALUES) {
+            assertNull(System.getProperty(env));
+        }
     }
 
     private void assertThatExceptionContainValidCode(ZaasClientException zce, ZaasClientErrorCodes code) {
@@ -160,6 +184,13 @@ class ZaasClientTest {
     }
 
     @Test
+    void givenValidTokenInvalidApplId_whenPassTicketApiIsCalled_thenRaisedClientExceptionIsRethrown() throws Exception {
+        when(passTickets.passTicket(anyString(), anyString())).thenThrow(new ZaasClientException(INTERNAL_SERVER_ERROR));
+        ZaasClientException exception = assertThrows(ZaasClientException.class, () -> underTest.passTicket(VALID_TOKEN, INVALID_APPLICATION_ID));
+        assertTrue(exception.getMessage().contains("'ZWEAS504E', message='Internal server error while generating PassTicket.'"));
+    }
+
+    @Test
     void givenInvalidKeyConfiguration_whenPassTicketApiIsCalled_thenRaisedConfigurationExceptionIsRethrown() throws Exception {
         when(passTickets.passTicket(anyString(), anyString())).thenThrow(
             new ZaasConfigurationException(IO_CONFIGURATION_ISSUE)
@@ -263,4 +294,75 @@ class ZaasClientTest {
 
     }
 
+    @Nested
+    class CookieManagement {
+
+        private ClientAndServer mockServer;
+
+        private final HttpRequest queryRequest = request()
+            .withMethod("GET")
+            .withPath("/gateway/api/v1/auth/query");
+
+        @BeforeEach
+        void setup() {
+            this.mockServer = ClientAndServer.startClientAndServer();
+
+            mockServer.when(
+                request()
+                    .withMethod("POST")
+                    .withPath("/gateway/api/v1/auth/login")
+            ).respond(
+                response()
+                    .withStatusCode(204)
+                    .withCookie("apimlAuthenticationToken", "tokenFromLogin")
+            );
+
+            mockServer.when(
+                queryRequest
+            ).respond(
+                response()
+                    .withStatusCode(200)
+                    .withBody("{}"));
+
+        }
+
+        @Test
+        void givenHttps_thenCookieManagementDisabled() throws IOException, ZaasConfigurationException, ZaasClientException {
+            ConfigProperties props = ZaasHttpsClientProviderTests.getConfigProperties();
+            props.setApimlPort(Integer.toString(mockServer.getLocalPort()));
+
+            List<String> queryRequestCookieHeader = issueLoginAndQueryRequest(props);
+
+            assertThat(queryRequestCookieHeader.size(), is(1));
+            assertThat(queryRequestCookieHeader.get(0), is("apimlAuthenticationToken=tokenForValidation"));
+        }
+
+        @Test
+        void givenHttp_thenCookieManagementDisabled() throws IOException, ZaasConfigurationException, ZaasClientException {
+            ConfigProperties props = ZaasHttpsClientProviderTests.getConfigProperties();
+            props.setApimlPort(Integer.toString(mockServer.getLocalPort()));
+            props.setHttpOnly(true);
+
+            List<String> queryRequestCookieHeader = issueLoginAndQueryRequest(props);
+
+            assertThat(queryRequestCookieHeader.size(), is(1));
+            assertThat(queryRequestCookieHeader.get(0), is("apimlAuthenticationToken=tokenForValidation"));
+        }
+
+        private List<String> issueLoginAndQueryRequest(ConfigProperties props) throws ZaasConfigurationException, ZaasClientException {
+            ZaasClient client = new ZaasClientImpl(props);
+            String token = client.login("user", "pass".toCharArray());
+            assertThat(token, is("tokenFromLogin"));
+
+            client.query("tokenForValidation");
+
+            HttpRequest[] requests = mockServer.retrieveRecordedRequests(
+                request()
+                    .withMethod("GET")
+                    .withPath("/gateway/api/v1/auth/query")
+            );
+
+            return requests[0].getHeader("Cookie");
+        }
+    }
 }

@@ -17,10 +17,12 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.SubProtocolCapable;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
@@ -30,6 +32,7 @@ import org.zowe.apiml.product.routing.RoutedServicesUser;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Singleton;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -45,7 +48,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @Singleton
 @Slf4j
-public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser, SubProtocolCapable {
+public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implements RoutedServicesUser, SubProtocolCapable, ClientSessionFailureCallback, ClientSessionSuccessCallback {
 
     @Value("${server.webSocket.supportedProtocols:-}")
     private List<String> subProtocols;
@@ -67,7 +70,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
     @Autowired
     public WebSocketProxyServerHandler(WebSocketClientFactory webSocketClientFactory, LoadBalancerClient lbCLient, ApplicationContext context) {
         this.webSocketClientFactory = webSocketClientFactory;
-        this.routedSessions = new ConcurrentHashMap<>();  // Default
+        this.routedSessions = new ConcurrentHashMap<>();
         this.webSocketRoutedSessionFactory = new WebSocketRoutedSessionFactoryImpl();
         this.lbCLient = lbCLient;
         this.context = context;
@@ -102,6 +105,7 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         return routedSessions;
     }
 
+    // This is the client (usually a browser) to API ML Gateway session
     @Override
     public void afterConnectionEstablished(WebSocketSession webSocketSession) throws IOException {
         String[] uriParts = getUriParts(webSocketSession);
@@ -145,7 +149,11 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         }
     }
 
-    @Retryable(value = WebSocketProxyError.class, backoff = @Backoff(value = 1000))
+    @Retryable(
+        value = WebSocketProxyError.class,
+        backoff = @Backoff(value = 1000, multiplier = 2),
+        maxAttempts = 3
+    )
     void openConn(String serviceId, RoutedService service, WebSocketSession webSocketSession, String path) throws IOException {
         ServiceInstance serviceInstance = this.lbCLient.choose(serviceId);
         if (serviceInstance != null) {
@@ -181,20 +189,21 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
 
         log.debug(String.format("Opening routed WebSocket session from %s to %s with %s by %s", uri.toString(), targetUrl, webSocketClientFactory, this));
 
-        WebSocketRoutedSession session = webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory);
-        routedSessions.put(webSocketSession.getId(), session);
+        webSocketRoutedSessionFactory.session(webSocketSession, targetUrl, webSocketClientFactory, this, this);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         // if the browser closes the session, close the GWs client one as well.
+        log.debug("Server session closed from client with status {}", status);
         Optional.ofNullable(routedSessions.get(session.getId()))
-            .map(WebSocketRoutedSession::getWebSocketClientSession)
+            .filter(WebSocketRoutedSession::isClientConnected)
+            .map(WebSocketRoutedSession::getClientSession)
             .ifPresent(clientSession -> {
                 try {
                     clientSession.close(status);
                 } catch (IOException e) {
-                    log.debug("Error closing WebSocket client connection {}: {}", clientSession.getId(), e.getMessage());
+                    log.debug("Error closing WebSocket client connection: {}", e.getMessage());
                 }
             });
         routedSessions.remove(session.getId());
@@ -223,25 +232,79 @@ public class WebSocketProxyServerHandler extends AbstractWebSocketHandler implem
         }
     }
 
+    @Recover
+    void closeServerSession(ServerNotYetAvailableException e, WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
+        log.debug("Trying to close Server WebSocket session {} because of too many ServerNotYetAvailableException failures", webSocketSession.getId());
+        try {
+            webSocketSession.close(CloseStatus.SESSION_NOT_RELIABLE);
+        } catch (IOException e1) {
+            log.debug("Failed closing Server WebSocket session {}", webSocketSession.getId());
+        }
+    }
+
     @Override
+    @Retryable(
+        include = ServerNotYetAvailableException.class,
+        backoff = @Backoff(value = 6000),
+        recover = "closeServerSession",
+        maxAttempts = 5
+    )
     public void handleMessage(WebSocketSession webSocketSession, WebSocketMessage<?> webSocketMessage) {
-        log.debug("handleMessage(session={},message={})", webSocketSession, webSocketMessage);
+        log.debug("handleMessage(session={}, message={})", webSocketSession, webSocketMessage);
         WebSocketRoutedSession session = getRoutedSession(webSocketSession);
 
         if (session == null) {
-            close(webSocketSession, CloseStatus.SESSION_NOT_RELIABLE);
-            return;
+            throw new ServerNotYetAvailableException();
         }
 
         try {
+            if (!isClientConnectionReady(session)) {
+                log.debug("Client Session for Server session {} is available but not ready", webSocketSession.getId());
+                throw new ServerNotYetAvailableException();
+            } else if (isClientConnectionClosed(session)) {
+                closeServerSession(null, webSocketSession, webSocketMessage);
+            }
             session.sendMessageToServer(webSocketMessage);
+        } catch (ServerNotYetAvailableException e) {
+            throw e;
         } catch (Exception ex) {
             log.debug("Error sending WebSocket message. Closing session due to exception:", ex);
             close(webSocketSession, CloseStatus.SESSION_NOT_RELIABLE);
         }
     }
 
+    private boolean isClientConnectionClosed(WebSocketRoutedSession session) {
+        WebSocketSession clientSession = session.getClientSession();
+        return clientSession != null && !clientSession.isOpen();
+    }
+
+    private boolean isClientConnectionReady(WebSocketRoutedSession session) {
+        return session != null && session.isClientConnected();
+    }
+
     private WebSocketRoutedSession getRoutedSession(WebSocketSession webSocketSession) {
         return routedSessions.get(webSocketSession.getId());
+    }
+
+    @Override
+    public void onClientSessionSuccess(WebSocketRoutedSession routedSession, WebSocketSession serverSession, WebSocketSession clientSession) {
+        routedSessions.put(serverSession.getId(), routedSession);
+    }
+
+    @Override
+    public void onClientSessionFailure(WebSocketRoutedSession routedSession, WebSocketSession serverSession, Throwable throwable) {
+        log.debug("Failed opening client web socket session against {}. Server WebSocket session is {}", routedSession.getTargetUrl(), serverSession.getId(), throwable);
+        try {
+            routedSession.getClientHandler().handleMessage(serverSession, new TextMessage("Failed opening a session against " + routedSession.getTargetUrl() + ": " + throwable.getMessage()));
+            routedSessions.remove(serverSession.getId());
+        } catch (Exception e) {
+            log.debug("Failed sending server error WebSocket message to client: {}", e.getMessage());
+        } finally {
+            try {
+                serverSession.close(CloseStatus.SERVER_ERROR);
+            } catch (IOException e) {
+                log.debug("Failed closing server WebSocket session: {}", e.getMessage());
+            }
+        }
     }
 }

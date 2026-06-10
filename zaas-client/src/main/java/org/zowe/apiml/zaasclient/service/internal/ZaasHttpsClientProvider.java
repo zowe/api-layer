@@ -11,11 +11,9 @@
 package org.zowe.apiml.zaasclient.service.internal;
 
 import lombok.AllArgsConstructor;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -49,10 +47,9 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
 
     private TrustManagerFactory tmf;
     private KeyManagerFactory kmf;
+    private SSLContext sslContext;
 
     private final HostnameVerifier hostnameVerifier;
-
-    private final CookieStore cookieStore = new BasicCookieStore();
 
     private CloseableHttpClient httpsClient;
 
@@ -82,16 +79,9 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         return input;
     }
 
-    public void clearCookieStore() {
-        this.cookieStore.clear();
-    }
-
     @Override
     public synchronized CloseableHttpClient getHttpClient() throws ZaasConfigurationException {
         if (httpsClient == null) {
-            if (kmf == null) {
-                initializeKeyStoreManagerFactory();
-            }
             httpsClient = sharedHttpClientConfiguration(getSSLContext()).build();
         }
         return httpsClient;
@@ -153,18 +143,29 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
         return new FileInputStream(uri);
     }
 
-    private SSLContext getSSLContext() throws ZaasConfigurationException {
+    private void initializeSSLContext() throws ZaasConfigurationException {
         try {
-            SSLContext sslContext = SSLContext.getInstance(configProperties.getProtocol());
+            sslContext = SSLContext.getInstance(configProperties.getProtocol());
             sslContext.init(
                 kmf != null ? kmf.getKeyManagers() : null,
                 tmf.getTrustManagers(),
                 new SecureRandom()
             );
-            return sslContext;
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             throw new ZaasConfigurationException(ZaasConfigurationErrorCodes.WRONG_CRYPTO_CONFIGURATION, e);
         }
+    }
+
+    private SSLContext getSSLContext() throws ZaasConfigurationException {
+        if (kmf == null) {
+            initializeKeyStoreManagerFactory();
+        }
+
+        if (sslContext == null) {
+            initializeSSLContext();
+        }
+
+        return sslContext;
     }
 
     /**
@@ -180,7 +181,8 @@ class ZaasHttpsClientProvider implements CloseableClientProvider {
             .setDefaultRequestConfig(this.requestConfig)
             .setMaxConnTotal(3 * 3)
             .setMaxConnPerRoute(3)
-            .setDefaultCookieStore(cookieStore);
+            .disableCookieManagement()
+            .disableAuthCaching();
     }
 
     private RequestConfig buildCustomRequestConfig() {

@@ -8,15 +8,19 @@ dependencies {
     implementation libs.jetty.websocket.client
 
     compileOnly libs.spring.boot.starter.web
+    compileOnly libs.spring.cloud.starter.eureka
     compileOnly libs.spring.boot.configuration.processor
-    implementation libs.findbugs
+    implementation libs.jsr305
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
     testImplementation libs.javax.servlet.api
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
+    testImplementation libs.mockito.inline
+    testImplementation libs.awaitility
 
     testCompileOnly libs.lombok
+    testCompileOnly libs.spring.cloud.starter.eureka
     testAnnotationProcessor libs.lombok
 }

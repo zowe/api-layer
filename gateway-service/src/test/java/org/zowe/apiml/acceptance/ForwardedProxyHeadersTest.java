@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import static io.restassured.RestAssured.when;
 import static org.apache.http.HttpStatus.SC_OK;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,23 +38,14 @@ class ForwardedProxyHeadersTest extends AcceptanceTestWithTwoServices {
         .then()
             .statusCode(is(SC_OK));
 
-        assertForwardedHeaders();
-    }
-
-    private void assertForwardedHeaders() throws IOException {
         ArgumentCaptor<HttpUriRequest> captor = ArgumentCaptor.forClass(HttpUriRequest.class);
         verify(mockClient, times(1)).execute(captor.capture());
 
         HttpUriRequest toVerify = captor.getValue();
 
-        assertHeaderWithValue(toVerify, "X-Forwarded-Host", "localhost:" + port);
-        assertHeaderWithValue(toVerify, "X-Forwarded-Prefix", "/serviceid2");
-        assertHeaderWithValue(toVerify, "X-Forwarded-Port", String.valueOf(port));
-        assertHeaderWithValue(toVerify, "X-Forwarded-For", "127.0.0.1");
-    }
-
-    private void assertHeaderWithValue(HttpUriRequest request, String header, String value) {
-        assertThat(request.getHeaders(header).length, is(1));
-        assertThat(request.getFirstHeader(header).getValue(), is(value));
+        assertHeaderEqualsValue(toVerify, "X-Forwarded-Host", "localhost:" + port);
+        assertHeaderEqualsValue(toVerify, "X-Forwarded-Prefix", "/serviceid2");
+        assertHeaderEqualsValue(toVerify, "X-Forwarded-Port", String.valueOf(port));
+        assertHeaderEqualsValue(toVerify, "X-Forwarded-For", "127.0.0.1");
     }
 }

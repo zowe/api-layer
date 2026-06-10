@@ -116,7 +116,7 @@ class CachedApiDocServiceTest {
         Exception exception = assertThrows(ApiDocNotFoundException.class,
             () -> cachedApiDocService.getApiDocForService(serviceId, version),
             "Expected exception is not ApiDocNotFoundException");
-        assertEquals("No API Documentation was retrieved for the service Service.", exception.getMessage());
+        assertEquals("No API Documentation was retrieved for the service Service. Root cause: ", exception.getMessage());
     }
 
     @Nested
@@ -220,7 +220,7 @@ class CachedApiDocServiceTest {
         Exception exception = assertThrows(ApiDocNotFoundException.class,
             () -> cachedApiDocService.getDefaultApiDocForService(serviceId),
             "Expected exception is not ApiDocNotFoundException");
-        assertEquals("No API Documentation was retrieved for the service service.", exception.getMessage());
+        assertEquals("No API Documentation was retrieved for the service service. Root cause: ", exception.getMessage());
     }
 
     @Nested

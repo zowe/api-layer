@@ -32,6 +32,7 @@ import static org.zowe.apiml.security.SecurityUtils.readPassword;
 
 @GeneralAuthenticationTest
 class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
+
     private final static String CATALOG_PREFIX = "/api/v1";
     private final static String CATALOG_SERVICE_ID = "/apicatalog";
     private final static String LOGIN_ENDPOINT = "/auth/login";

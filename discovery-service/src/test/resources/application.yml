@@ -1,14 +1,14 @@
 apiml:
     discovery:
-        userid: eureka
-        password: password
-        allPeersUrls: http://${apiml.discovery.userid}:${apiml.discovery.password}@${apiml.service.hostname}:${apiml.service.port}/eureka/
+        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/
     service:
         id: discovery
         hostname: localhost
         port: 20011
         ipAddress: 127.0.0.1
         preferIpAddress: false
+    security:
+        allowedDomains: localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com,*.internal.cloudapp.net
 
 spring:
     config:
@@ -63,6 +63,12 @@ management:
                   DOWN: 503
                   PARTIAL: 200
             show-details: always
+
+logging:
+    level:
+        ROOT: DEBUG
+        org.springframework: DEBUG
+
 ---
 spring:
     profiles: https
@@ -83,3 +89,30 @@ server:
         keyStorePassword: password
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
+
+---
+spring:
+    profiles: attlsServer
+
+server:
+    attlsServer:
+        enabled: true
+    ssl:
+        enabled: false
+
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+eureka:
+    instance:
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+
+apiml:
+    discovery:
+        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/

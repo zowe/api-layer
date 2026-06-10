@@ -22,7 +22,7 @@ import java.io.IOException;
 public class SecureConnectionFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         try {
             if (InboundAttls.get() != null && InboundAttls.get().getStatConn() == StatConn.SECURE) {
                 filterChain.doFilter(request, response);

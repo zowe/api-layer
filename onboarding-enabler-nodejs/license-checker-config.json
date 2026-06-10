@@ -1,0 +1,16 @@
+{
+  "license": "../.licence/EPL-2.0-licence-header.txt",
+  "licenseFormats": {
+    "ts|js": {
+      "prepend": "/*",
+      "append": " */\n",
+      "eachLine": {
+        "prepend": " * "
+      }
+    }
+  },
+  "ignore": [
+    "bin", "lib", "coverage",
+    ".*", "*.md", "*.gradle", "**/*.yml"
+  ]
+}

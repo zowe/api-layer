@@ -92,7 +92,8 @@ class SuccessfulQueryHandlerTest {
             applicationContext,
             authenticationService,
             tokenCreationService,
-            new ArrayList<>());
+            new ArrayList<>(),
+            null);
         AuthenticationService authenticationService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
             discoveryClient, restTemplate, cacheManager, new CacheUtils()

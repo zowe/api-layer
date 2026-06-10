@@ -75,6 +75,9 @@ dependencies {
     implementation libs.json.smart
 
     implementation libs.ribbon.eureka
+    // replacement of com.google.code.findbugs:annotations in ribbon.eureka
+    implementation libs.bundles.findbugreplacement
+
     implementation libs.swagger3.parser
     implementation libs.swagger.models
     implementation libs.swagger.inflector

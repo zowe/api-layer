@@ -38,8 +38,8 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
  */
 @RequiredArgsConstructor
 public class PageRedirectionFilter extends PostZuulFilter implements RoutedServicesUser {
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
     private static final int MAX_ENTRIES = 1000;
 
     private final DiscoveryClient discovery;
@@ -110,7 +110,7 @@ public class PageRedirectionFilter extends PostZuulFilter implements RoutedServi
     }
 
     private String updateScheme(String transformedUrl) {
-        if (isAttlsEnabled) {
+        if (isServerAttlsEnabled) {
             return transformedUrl.replace("http://", "https://");
         } else {
             return transformedUrl;

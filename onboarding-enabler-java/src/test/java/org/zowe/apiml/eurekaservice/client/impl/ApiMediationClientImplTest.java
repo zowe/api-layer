@@ -41,6 +41,15 @@ class ApiMediationClientImplTest {
 
     private EurekaClientConfigProvider eurekaClientConfigProvider;
 
+    private static final String[] SSL_SYSTEM_ENVIRONMENT_VALUES = {
+        "javax.net.ssl.keyStore",
+        "javax.net.ssl.keyStorePassword",
+        "javax.net.ssl.keyStoreType",
+        "javax.net.ssl.trustStore",
+        "javax.net.ssl.trustStorePassword",
+        "javax.net.ssl.trustStoreType"
+    };
+
     ApiMediationServiceConfig getValidConfiguration() {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null);
         Catalog catalogUiTile = new Catalog(new Catalog.Tile("cademoapps", "Sample API Mediation Layer Applications", "Applications which demonstrate how to make a service integrated to the API Mediation Layer ecosystem", "1.0.0"));
@@ -84,6 +93,11 @@ class ApiMediationClientImplTest {
         assertEquals(InstanceInfo.InstanceStatus.UP, client.getEurekaClient().getApplicationInfoManager().getInfo().getStatus());
         assertTrue(client.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().containsKey("apiml.authentication.scheme"));
         assertFalse(client.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().containsKey("apiml.authentication.applid"));
+
+        for (String env : SSL_SYSTEM_ENVIRONMENT_VALUES) {
+            assertNull(System.getProperty(env));
+        }
+
         // ...
         client.unregister();
     }

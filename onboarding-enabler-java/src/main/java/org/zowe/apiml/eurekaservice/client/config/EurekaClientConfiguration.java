@@ -16,7 +16,7 @@ import java.util.List;
 
 public class EurekaClientConfiguration extends DefaultEurekaClientConfig {
     private static final int DEFAULT_RENEWAL_INTERVAL = 30;
-    private ApiMediationServiceConfig config;
+    private final ApiMediationServiceConfig config;
 
     public EurekaClientConfiguration(ApiMediationServiceConfig config) {
         this.config = config;
@@ -60,4 +60,15 @@ public class EurekaClientConfiguration extends DefaultEurekaClientConfig {
     public int getRegistryFetchIntervalSeconds() {
         return DEFAULT_RENEWAL_INTERVAL;
     }
+
+    @Override
+    public int getEurekaServerConnectTimeoutSeconds() {
+        return config.getConnectTimeout();
+    }
+
+    @Override
+    public int getEurekaServerReadTimeoutSeconds() {
+        return config.getReadTimeout();
+    }
+
 }

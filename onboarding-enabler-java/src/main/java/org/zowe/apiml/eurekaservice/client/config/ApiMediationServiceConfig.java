@@ -67,6 +67,10 @@ public class ApiMediationServiceConfig {
      *    XML Path: /instance/app
      */
     private String serviceId;
+    /**
+     * to verify if Attls is enabled for the service
+     */
+    private boolean attlsEnabled;
 
     /**
      * * **title** (XML Path: /instance/metadata/apiml.service.title)
@@ -223,6 +227,20 @@ public class ApiMediationServiceConfig {
 
 
     private boolean preferIpAddress;
+
+    /**
+     * Connect timeout interval, in seconds.
+     * The value MUST be an instance convertible to Integer. A value of zero (0) is equivalent to an interval of infinity.
+     * {@link org.glassfish.jersey.client.ClientProperties.CONNECT_TIMEOUT}
+     */
+    private int connectTimeout = 5;
+
+    /**
+    *  Read timeout interval, in seconds.
+     * The value MUST be an instance convertible to Integer. A value of zero (0) is equivalent to an interval of infinity.
+     * {@link org.glassfish.jersey.client.ClientProperties.READ_TIMEOUT}
+     */
+    private int readTimeout = 8;
 
 
     /**

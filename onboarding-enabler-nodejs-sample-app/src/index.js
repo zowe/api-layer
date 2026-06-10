@@ -8,9 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-const express = require("express");
-const https = require("https");
-const apiLayerService = require("@zowe/apiml-onboarding-enabler-nodejs");
+import express from "express";
+import * as https from "https";
+import * as apiLayerService from "@zowe/apiml-onboarding-enabler-nodejs";
 
 // Command-line arguments:
 const args = {
@@ -54,7 +54,7 @@ function startHttpsService() {
     app.use(express.static("src/static"));
 
     // Start HTTPS server and register to Discovery Service:
-    tlsOptions = apiLayerService.tlsOptions;
+    const tlsOptions = apiLayerService.tlsOptions;
     httpsServer = https.createServer(tlsOptions, app);
     httpsServer.listen(args.port, function () {
         console.log(`${args.serviceId} service listening on port ${args.port}`);

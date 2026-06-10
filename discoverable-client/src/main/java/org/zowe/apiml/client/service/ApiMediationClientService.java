@@ -16,6 +16,7 @@ import org.zowe.apiml.client.model.DiscoverableClientConfig;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig.ApiMediationServiceConfigBuilder;
 import org.zowe.apiml.eurekaservice.client.config.Authentication;
 import org.zowe.apiml.eurekaservice.client.config.Route;
 import org.zowe.apiml.eurekaservice.client.config.Ssl;
@@ -23,6 +24,7 @@ import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Service that allows a new {@link com.netflix.discovery.EurekaClient} to be registered and un-registered via ApiMediationClientImpl instance.
@@ -44,7 +46,7 @@ public class ApiMediationClientService {
         this.dcConfig = dcConfig;
     }
 
-    public boolean register() throws ServiceDefinitionException {
+    public boolean register(Map<String, Object> additionalMetadata) throws ServiceDefinitionException {
         ApiInfo apiInfo = new ApiInfo(SERVICE_ID, GATEWAY_URL, "1.0.0", null, null);
         Authentication authentication = new Authentication("bypass", null, null);
         Ssl ssl = new Ssl(dcConfig.isSslEnabled(), dcConfig.isVerifyCerts(), dcConfig.isNonStrictVerifyCerts(), dcConfig.getSslProtocol(), dcConfig.getKeyAlias(),
@@ -52,7 +54,7 @@ public class ApiMediationClientService {
             dcConfig.getKeyStoreType(), dcConfig.getTrustStore(), dcConfig.getTrustStorePassword().toCharArray(), dcConfig.getTrustStoreType());
         Route apiRoute = new Route(GATEWAY_URL, "/" + SERVICE_ID + "/" + GATEWAY_URL);
 
-        ApiMediationServiceConfig apiConfig = ApiMediationServiceConfig.builder()
+        ApiMediationServiceConfigBuilder apiConfig = ApiMediationServiceConfig.builder()
             .apiInfo(Collections.singletonList(apiInfo))
             .authentication(authentication)
             .routes(Collections.singletonList(apiRoute))
@@ -67,8 +69,14 @@ public class ApiMediationClientService {
             .ssl(ssl)
             .preferIpAddress(false)
             .serviceIpAddress("0.0.0.0") //use hostname instead of IP address
-            .build();
-        apiMediationClient.register(apiConfig);
+            .connectTimeout(dcConfig.getConnectTimeout())
+            .readTimeout(dcConfig.getReadTimeout());
+
+        if (additionalMetadata != null && !additionalMetadata.isEmpty()) {
+            apiConfig.customMetadata(additionalMetadata);
+        }
+
+        apiMediationClient.register(apiConfig.build());
         return true; // indicates success, successful unless exception thrown. Used to assert success in unit tests.
     }
 
@@ -80,4 +88,5 @@ public class ApiMediationClientService {
     public boolean isRegistered() {
         return apiMediationClient.isRegistered();
     }
+
 }

@@ -125,6 +125,7 @@ public class AuthController {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
         String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        log.debug("revokeAllUserAccessTokens: userId={}", userId);
         long timeStamp = 0;
         if (rulesRequestModel != null) {
             timeStamp = rulesRequestModel.getTimestamp();
@@ -143,6 +144,7 @@ public class AuthController {
         if (userId == null) {
             return badRequestForPATInvalidation();
         }
+        log.debug("revokeAccessTokensForUser: userId={}", userId);
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);

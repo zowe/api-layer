@@ -12,12 +12,15 @@ package org.zowe.apiml.apicatalog.staticapi;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.AbstractHttpMessage;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
@@ -35,17 +38,17 @@ public class StaticAPIService {
 
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
-    @Value("${apiml.discovery.userid:eureka}")
+    @Value("${apiml.discovery.userid:#{null}}")
     private String eurekaUserid;
 
-    @Value("${apiml.discovery.password:password}")
+    @Value("${apiml.discovery.password:#{null}}")
     private String eurekaPassword;
 
     @Qualifier("secureHttpClientWithKeystore")
     private final CloseableHttpClient httpClient;
 
-    @Value("${server.attls.enabled:false}")
-    private boolean isAttlsEnabled;
+    @Value("${server.attlsServer.enabled:false}")
+    private boolean isServerAttlsEnabled;
 
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
@@ -55,9 +58,8 @@ public class StaticAPIService {
 
             String discoveryServiceUrl = discoveryServiceUrls.get(i);
 
-            try {
-                HttpPost post = getHttpRequest(discoveryServiceUrl);
-                CloseableHttpResponse response = httpClient.execute(post);
+            HttpPost post = getHttpRequest(discoveryServiceUrl);
+            try (CloseableHttpResponse response = httpClient.execute(post)) {
                 final HttpEntity responseEntity = response.getEntity();
                 String responseBody = "";
                 if (responseEntity != null) {
@@ -80,11 +82,20 @@ public class StaticAPIService {
         return response.getStatusLine().getStatusCode() >= 200 && response.getStatusLine().getStatusCode() <= 299;
     }
 
+    void setAuthorization(AbstractHttpMessage request) {
+        if (StringUtils.isEmpty(eurekaUserid) || StringUtils.isEmpty(eurekaPassword)) {
+            log.warn("Eureka userid or password not set");
+        } else {
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
+            request.addHeader(HttpHeaders.AUTHORIZATION, basicToken);
+        }
+    }
+
     private HttpPost getHttpRequest(String discoveryServiceUrl) {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpPost post = new HttpPost(discoveryServiceUrl);
         post.addHeader("Accept", "application/json");
-        if (isHttp && !isAttlsEnabled) {
+        if (isHttp && !isServerAttlsEnabled) {
             String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
             post.addHeader("Authorization", basicToken);
         }
@@ -100,4 +111,5 @@ public class StaticAPIService {
         }
         return discoveryServiceUrls;
     }
+
 }

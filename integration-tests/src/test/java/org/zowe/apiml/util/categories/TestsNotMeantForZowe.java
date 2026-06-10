@@ -27,4 +27,7 @@ import static java.lang.annotation.ElementType.TYPE;
 @Target({ TYPE, METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TestsNotMeantForZowe {
+
+    String value() default "";
 }
+

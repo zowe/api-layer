@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 logging:
     level:
         ROOT: INFO
@@ -22,6 +25,7 @@ logging:
         # New Config
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         javax.servlet: INFO
+        javax.net.ssl: ERROR # For running with java 17
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.eclipse.jetty.util.ssl: ERROR
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
@@ -46,6 +50,7 @@ apiml:
         preferIpAddress: false
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
+        externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
 
     httpclient:
         conn-pool:
@@ -160,7 +165,7 @@ server:
         supportedProtocols: v12.stomp,v11.stomp
 
 zuul:
-    sslHostnameValidationEnabled: false
+    sslHostnameValidationEnabled: true
     addProxyHeaders: true
     traceRequestBody: true
     ignoreSecurityHeaders: false
@@ -265,6 +270,7 @@ eureka:
                     title: API Gateway
                     description: API Gateway service to route requests to services registered in the API Mediation Layer and provides an API for mainframe security.
                     supportClientCertForwarding: true
+                    externalUrl: ${apiml.service.externalUrl:${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}}
                 authentication:
                     sso: true
 
@@ -301,12 +307,14 @@ logging:
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.springframework.web.socket: DEBUG
         org.zowe.apiml.gateway.ws: DEBUG
 
 ---
@@ -337,25 +345,46 @@ logbackServiceName: ZWEAGW1
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    internal:
-        ssl:
-            enabled: false
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
-    service:
-        scheme: http
 apiml:
     service:
+        nonSecurePortEnabled: false
+        securePortEnabled: true
         corsEnabled: true
-        scheme: http
+
 eureka:
     instance:
+        securePort: ${apiml.service.port}
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+
+---
+spring:
+    profiles: attlsClient
+
+server:
+    attlsClient:
+        enabled: true
+
+apiml:
+    service:
+        scheme: http
+        nonSecurePortEnabled: true
+        securePortEnabled: false
+        discoveryServiceUrls: http://localhost:10011/eureka/
+
+eureka:
+    instance:
+        securePort: 0
+        nonSecurePortEnabled: true
+        securePortEnabled: false
         metadata-map:
             apiml:
                 apiInfo:

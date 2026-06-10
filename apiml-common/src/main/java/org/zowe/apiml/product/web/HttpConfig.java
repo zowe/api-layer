@@ -21,24 +21,18 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
-import org.zowe.apiml.security.ApimlPoolingHttpClientConnectionManager;
-import org.zowe.apiml.security.HttpsConfig;
-import org.zowe.apiml.security.HttpsConfigError;
-import org.zowe.apiml.security.HttpsFactory;
-import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.security.*;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -47,14 +41,19 @@ import java.util.function.Supplier;
 
 @Slf4j
 @Configuration
-public class HttpConfig {
+public class HttpConfig implements InitializingBean {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
+
     @Value("${server.ssl.protocol:TLSv1.2}")
     private String protocol;
+
     @Value("${apiml.httpclient.ssl.enabled-protocols:TLSv1.2,TLSv1.3}")
     private String[] supportedProtocols;
+
     @Value("${server.ssl.ciphers:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384}")
     private String[] ciphers;
 
@@ -105,20 +104,23 @@ public class HttpConfig {
 
     @Value("${apiml.httpclient.conn-pool.idleConnTimeoutSeconds:#{5}}")
     private int idleConnTimeoutSeconds;
+
     @Value("${apiml.httpclient.conn-pool.requestConnectionTimeout:#{10000}}")
     private int requestConnectionTimeout;
+
     @Value("${apiml.httpclient.conn-pool.readTimeout:#{10000}}")
     private int readTimeout;
+
     @Value("${apiml.httpclient.conn-pool.timeToLive:#{10000}}")
     private int timeToLive;
 
+    private HttpsFactory factory;
     private CloseableHttpClient secureHttpClient;
     private CloseableHttpClient secureHttpClientWithoutKeystore;
     private SSLContext secureSslContext;
+    private SSLContext secureSslContextWithoutKeystore;
     private HostnameVerifier secureHostnameVerifier;
-    private EurekaJerseyClientBuilder eurekaJerseyClientBuilder;
-    private final Timer connectionManagerTimer = new Timer(
-        "ApimlHttpClientConfiguration.connectionManagerTimer", true);
+    private final Timer connectionManagerTimer = new Timer("ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     private Set<String> publicKeyCertificatesBase64;
 
@@ -136,7 +138,11 @@ public class HttpConfig {
         }
     }
 
-    @PostConstruct
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        init();
+    }
+
     public void init() {
         updateStorePaths();
 
@@ -161,21 +167,18 @@ public class HttpConfig {
 
             log.info("Using HTTPS configuration: {}", httpsConfig.toString());
 
-            HttpsFactory factory = new HttpsFactory(httpsConfig);
+            factory = new HttpsFactory(httpsConfig);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
             secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
             secureSslContext = factory.getSslContext();
             secureHostnameVerifier = factory.getHostnameVerifier();
-            eurekaJerseyClientBuilder = factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId);
             optionalArgs.setEurekaJerseyClient(eurekaJerseyClient());
             HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
-
-            factory.setSystemSslProperties();
+            secureSslContextWithoutKeystore = factoryWithoutKeystore.getSslContext();
 
             publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
-
         } catch (HttpsConfigError e) {
             log.error("Invalid configuration of HTTPs: {}", e.getMessage());
             System.exit(1);
@@ -204,7 +207,6 @@ public class HttpConfig {
     }
 
     @Bean
-    @Qualifier("publicKeyCertificatesBase64")
     public Set<String> publicKeyCertificatesBase64() {
         return publicKeyCertificatesBase64;
     }
@@ -218,7 +220,6 @@ public class HttpConfig {
     }
 
     @Bean
-    @Qualifier("jettyClientSslContextFactory")
     public SslContextFactory.Client jettyClientSslContextFactory() {
         SslContextFactory.Client sslContextFactory = new SslContextFactory.Client();
         sslContextFactory.setProtocol(protocol);
@@ -226,6 +227,9 @@ public class HttpConfig {
         setTruststore(sslContextFactory);
         log.debug("jettySslContextFactory: {}", sslContextFactory.dump());
         sslContextFactory.setHostnameVerifier(secureHostnameVerifier());
+        if (nonStrictVerifySslCertificatesOfServices) {
+            sslContextFactory.setEndpointIdentificationAlgorithm(null);
+        }
         if (!verifySslCertificatesOfServices) {
             sslContextFactory.setTrustAll(true);
         }
@@ -241,7 +245,6 @@ public class HttpConfig {
      */
     @Bean
     @Primary
-    @Qualifier("restTemplateWithKeystore")
     public RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
         factory.setReadTimeout(readTimeout);
@@ -257,7 +260,6 @@ public class HttpConfig {
      * @return default RestTemplate, which doesn't use certificate from keystore
      */
     @Bean
-    @Qualifier("restTemplateWithoutKeystore")
     public RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
         factory.setReadTimeout(readTimeout);
@@ -268,9 +270,8 @@ public class HttpConfig {
     /**
      * @return HttpClient which use a certificate to authenticate
      */
-    @Bean
+    @Bean("secureHttpClientWithKeystore")
     @Primary
-    @Qualifier("secureHttpClientWithKeystore")
     public CloseableHttpClient secureHttpClient() {
         return secureHttpClient;
     }
@@ -279,7 +280,6 @@ public class HttpConfig {
      * @return HttpClient, which doesn't use a certificate to authenticate
      */
     @Bean
-    @Qualifier("secureHttpClientWithoutKeystore")
     public CloseableHttpClient secureHttpClientWithoutKeystore() {
         return secureHttpClientWithoutKeystore;
     }
@@ -290,18 +290,23 @@ public class HttpConfig {
     }
 
     @Bean
+    public SSLContext secureSslContextWithoutKeystore() {
+        return secureSslContextWithoutKeystore;
+    }
+
+    @Bean
     public HostnameVerifier secureHostnameVerifier() {
         return secureHostnameVerifier;
     }
 
     @Bean
     public EurekaJerseyClient eurekaJerseyClient() {
-        return eurekaJerseyClientBuilder.build();
+        return eurekaJerseyClientBuilder().get().build();
     }
 
     @Bean
-    public EurekaJerseyClientBuilder eurekaJerseyClientBuilder() {
-        return eurekaJerseyClientBuilder;
+    public Supplier<EurekaJerseyClientBuilder> eurekaJerseyClientBuilder() {
+        return () -> factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, isClientAttlsEnabled);
     }
 
 }

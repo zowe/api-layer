@@ -40,8 +40,8 @@ public class CorsBeans {
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
-    @Value("${apiml.service.corsAllowedOrigins:}")
-    private Set<String> allowedOrigins;
+    @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
+    private List<String> corsAllowedMethods;
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
     private String ignoredHeadersWhenCorsEnabled;
 
@@ -69,9 +69,9 @@ public class CorsBeans {
         String hostname,
         int port
     ) throws URISyntaxException {
-        boolean isAttls = Arrays.asList(environment.getActiveProfiles()).contains("attls");
-        if (corsEnabled || !isAttls) {
-            return Collections.emptyList();
+        boolean isClientAttlsEnabled = Arrays.asList(environment.getActiveProfiles()).contains("attlsClient");
+        if (corsEnabled || !isClientAttlsEnabled) {
+            return null; // NOSONAR
         }
 
         Set<String> gatewayOrigins = new HashSet<>();
@@ -94,12 +94,6 @@ public class CorsBeans {
         @Value("${server.hostname:${apiml.service.hostname}}") String hostname,
         @Value("${server.port}") int port
     ) throws URISyntaxException {
-        if (corsEnabled && allowedOrigins.isEmpty()) {
-            log.warn("Custom cors configuration is enabled but no cors allowed origins defined. Set gateway.apiml.service.corsAllowedOrigins in your zowe.yml");
-        }
-
-        allowedOrigins.addAll(getDefaultAllowedOrigins(environment, externalUrl, hostname, port));
-
-        return new CorsUtils(corsEnabled, new ArrayList<>(allowedOrigins));
+        return new CorsUtils(corsEnabled, corsAllowedMethods, getDefaultAllowedOrigins(environment, externalUrl, hostname, port));
     }
 }

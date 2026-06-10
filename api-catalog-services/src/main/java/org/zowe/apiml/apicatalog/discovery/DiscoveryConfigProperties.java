@@ -26,9 +26,9 @@ public class DiscoveryConfigProperties {
     @Value("${apiml.service.discoveryServiceUrls}")
     private String[] locations;
 
-    @Value("${apiml.service.eurekaUserName:eureka}")
+    @Value("${apiml.service.eurekaUserName:#{null}}")
     private String eurekaUserName;
 
-    @Value("${apiml.service.eurekaUserPassword:password}")
+    @Value("${apiml.service.eurekaUserPassword:#{null}}")
     private String eurekaUserPassword;
 }

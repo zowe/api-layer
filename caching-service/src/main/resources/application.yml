@@ -1,3 +1,6 @@
+# for back-compatibility
+spring.profiles.group.attls: attlsServer,attlsClient
+
 caching:
     storage:
         mode: inMemory
@@ -36,12 +39,14 @@ logging:
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        javax.net.ssl: ERROR # For running with java 17
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
 apiml:
     enabled: true
     service:
@@ -105,6 +110,7 @@ spring:
     config:
         useLegacyProcessing: true
     cloud:
+        discovery.client.composite-indicator.enabled: false
         compatibilityVerifier:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
     application:
@@ -148,6 +154,9 @@ management:
             base-path: /application
             exposure:
                 include: health,info,hystrixstream
+    endpoint:
+        health:
+            showDetails: always
 
 hystrix.command.default.execution.timeout.enabled: false
 
@@ -165,12 +174,17 @@ logging:
         org.springframework: INFO
         org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         com.netflix: INFO
         org.hibernate: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.apache.tomcat: DEBUG
+        org.apache.catalina: DEBUG
+        org.apache.coyote.http11.Http11InputBuffer: TRACE
+        org.infinispan: DEBUG
 
 ---
 spring:
@@ -187,17 +201,25 @@ logbackServiceName: ZWEACS1
 
 ---
 spring:
-    profiles: attls
+    profiles: attlsServer
 
 server:
-    attls:
+    attlsServer:
         enabled: true
     ssl:
         enabled: false
 
+---
+spring:
+    profiles: attlsClient
+
 apiml:
     service:
         scheme: http
+
+server:
+    attlsClient:
+        enabled: true
 
 eureka:
     instance:

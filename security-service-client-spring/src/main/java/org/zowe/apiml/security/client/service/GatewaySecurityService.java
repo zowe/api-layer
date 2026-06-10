@@ -71,20 +71,21 @@ public class GatewaySecurityService {
             HttpPost post = new HttpPost(uri);
             String json = objectMapper.writeValueAsString(loginRequest);
             post.setEntity(new StringEntity(json, ContentType.APPLICATION_JSON));
-            CloseableHttpResponse response = closeableHttpClient.execute(post);
-            final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
-            if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
-                final HttpEntity responseEntity = response.getEntity();
-                String responseBody = null;
-                if (responseEntity != null) {
-                    responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+            try (CloseableHttpResponse response = closeableHttpClient.execute(post)) {
+                final int statusCode = response.getStatusLine() != null ? response.getStatusLine().getStatusCode() : 0;
+                if (statusCode < HttpStatus.SC_OK || statusCode >= HttpStatus.SC_MULTIPLE_CHOICES) {
+                    final HttpEntity responseEntity = response.getEntity();
+                    String responseBody = null;
+                    if (responseEntity != null) {
+                        responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
+                    }
+                    ErrorType errorType = getErrorType(responseBody);
+                    responseHandler.handleErrorType(response, errorType,
+                        "Cannot access Gateway service. Uri '{}' returned: {}", uri);
+                    return Optional.empty();
                 }
-                ErrorType errorType = getErrorType(responseBody);
-                responseHandler.handleErrorType(response, errorType,
-                    "Cannot access Gateway service. Uri '{}' returned: {}", uri);
-                return Optional.empty();
+                return extractToken(response.getFirstHeader(HttpHeaders.SET_COOKIE).getValue());
             }
-            return extractToken(response.getFirstHeader(HttpHeaders.SET_COOKIE).getValue());
         } catch (IOException e) {
             responseHandler.handleException(e);
         } finally {
@@ -107,10 +108,10 @@ public class GatewaySecurityService {
         String cookie = String.format("%s=%s", authConfigurationProperties.getCookieProperties().getCookieName(), token);
 
 
-        try {
-            HttpGet get = new HttpGet(uri);
-            get.addHeader(HttpHeaders.COOKIE, cookie);
-            CloseableHttpResponse response = closeableHttpClient.execute(get);
+
+        HttpGet get = new HttpGet(uri);
+        get.addHeader(HttpHeaders.COOKIE, cookie);
+        try (CloseableHttpResponse response = closeableHttpClient.execute(get)) {
             final HttpEntity responseEntity = response.getEntity();
             String responseBody = null;
             if (responseEntity != null) {

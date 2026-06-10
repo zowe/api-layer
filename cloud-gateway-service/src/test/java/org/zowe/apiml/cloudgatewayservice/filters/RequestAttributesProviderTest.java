@@ -61,8 +61,8 @@ class RequestAttributesProviderTest {
     }
 
     @Test
-    void givenRequestAttributesProvider_whenOrder_thenIsTheFirstOne() {
-        assertEquals(Integer.MIN_VALUE, new RequestAttributesProvider().getOrder());
+    void givenRequestAttributesProvider_whenOrder_thenIsTheFirstOneAfterWritableHeaders() {
+        assertEquals(Integer.MIN_VALUE + 1, new RequestAttributesProvider().getOrder());
     }
 
     @ParameterizedTest(name = "givenMockRequest_whenFilter_thenDoNoCrash with {0}")

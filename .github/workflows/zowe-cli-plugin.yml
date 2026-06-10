@@ -1,17 +1,13 @@
 name: zowe-cli-plugin-deployment
 
 on:
-    push:
-        branches: [ v2.x.x ]
-    pull_request:
-        branches: [ v2.x.x ]
     workflow_dispatch:
 
 jobs:
     release:
-        if: github.event_name == 'push' && github.ref_protected
         runs-on: ubuntu-latest
         timeout-minutes: 40
+        permissions: write-all
 
         steps:
             - name: Checkout
@@ -46,6 +42,12 @@ jobs:
                   cd zowe-cli-id-federation-plugin
                   npm run build
                   npm version ${{ github.event.inputs.scope || env.DEFAULT_SCOPE }}
+
+            - name: Configure npm
+              run: |
+                  cd zowe-cli-id-federation-plugin
+                  echo "registry=https://registry.npmjs.org/" > .npmrc
+                  echo "@zowe:registry=https://zowe.jfrog.io/zowe/api/npm/npm-release/" >> .npmrc
 
             - uses: zowe-actions/octorelease@master
               with:

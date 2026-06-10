@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.RequestFacade;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeansException;
@@ -56,7 +57,8 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(name = "server.attls.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "server.attlsServer.enabled", havingValue = "true")
+@Slf4j
 public class AttlsHttpHandler implements BeanPostProcessor {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -127,6 +129,7 @@ public class AttlsHttpHandler implements BeanPostProcessor {
                     request = updateCertificate(request, requestFacade, attlsContext.getCertificate());
                 } catch (IoctlCallException | UnknownEnumValueException | ContextIsNotInitializedException |
                          CertificateException e) {
+                    log.error("Cannot verify AT-TLS status", e);
                     return internalError(request, response);
                 }
 

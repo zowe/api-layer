@@ -37,11 +37,13 @@
 # - ZWE_configs_port - the port the api discovery service will use
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_ALLOWED_DOMAINS - The allowed domains to be used for the discovery service
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
+
 if [ -n "${LAUNCH_COMPONENT}" ]; then
     JAR_FILE="${LAUNCH_COMPONENT}/discovery-service-lite.jar"
 else
@@ -96,28 +98,55 @@ else
   nonStrictVerifySslCertificatesOfServices=false
 fi
 
+# Check for Java version and set Java options in case the version is 17 or newer
+ZOWE_CONSOLE_LOG_CHARSET=UTF-8
+JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
+    | grep "major version" \
+    | cut -d " " -f5)
+ADD_OPENS=""
+
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
+    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
+        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
+    fi
 fi
 
-ATTLS_ENABLED="false"
+add_profile() {
+    new_profile=$1
+    if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
+    fi
+    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}${new_profile}"
+}
+
+# Begin AT-TLS section
+ATTLS_SERVER_ENABLED="false"
+ATTLS_CLIENT_ENABLED="false"
 # ZWE_configs_spring_profiles_active for back compatibility, should be removed in v3 - enabling via Spring profile
 if [ "${ZWE_zowe_network_server_tls_attls}" = "true" -o "$(echo ${ZWE_configs_spring_profiles_active:-} | awk '/^(.*,)?attls(,.*)?$/')" ]; then
-  ATTLS_ENABLED="true"
+  ATTLS_SERVER_ENABLED="true"
 fi
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+if [ "${ZWE_zowe_network_client_tls_attls}" = "true" ]; then
+    ATTLS_CLIENT_ENABLED="true"
+fi
+
+if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
+  add_profile "attlsServer"
   ZWE_configs_server_ssl_enabled="false"
-  if [ -n "${ZWE_configs_spring_profiles_active}" ]; then
-    ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active},"
-  fi
-  ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active}attls"
+fi
+
+if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" ]; then
+    add_profile "https"
 fi
 
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
-if [ "${ATTLS_ENABLED}" = "true" ]; then
+if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
+    add_profile "attlsClient"
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
 fi
+# End AT-TLS section
 
 # setting the cookieName based on the instances
 ZWE_components_gateway_apiml_security_auth_uniqueCookie="${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}"
@@ -141,6 +170,50 @@ LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/default"
 LIBPATH="$LIBPATH":"${JAVA_HOME}/lib/s390/j9vm"
 LIBPATH="$LIBPATH":"${LIBRARY_PATH}"
 
+get_enabled_protocol_limit() {
+    target=$1
+    type=$2
+    key_component="ZWE_configs_zowe_network_${target}_tls_${type}Tls"
+    value_component=$(eval echo \$$key_component)
+    key_gateway="ZWE_components_gateway_zowe_network_${target}_tls_${type}Tls"
+    value_gateway=$(eval echo \$$key_gateway)
+    key_zowe="ZWE_zowe_network_${target}_tls_${type}Tls"
+    value_zowe=$(eval echo \$$key_zowe)
+    enabled_protocol_limit=${value_component:-${value_gateway:-${value_zowe:-}}}
+}
+
+extract_between() {
+    echo "$1" | sed -e "s/.*$2,//" -e "s/$3.*//"
+}
+
+get_enabled_protocol() {
+    target=$1
+    get_enabled_protocol_limit "${target}" "min"
+    enabled_protocols_min=${enabled_protocol_limit}
+    get_enabled_protocol_limit "${target}" "max"
+    enabled_protocols_max=${enabled_protocol_limit}
+
+    if [ "${enabled_protocols_min:-}" = "${enabled_protocols_max:-}" ]; then
+        result="${enabled_protocols_max:-}"
+    elif [ -z "${enabled_protocols_min:-}" ]; then
+        result="${enabled_protocols_max:-}"
+    else
+        enabled_protocols_max=${enabled_protocols_max:-"TLSv1.2"}
+        enabled_protocols=,TLSv1,TLSv1.1,TLSv1.2,TLSv1.3,TLSv1.4,
+        # Extract protocols between min and max (inclusive)
+        result=$(extract_between "$enabled_protocols" "$enabled_protocols_min" "$enabled_protocols_max")
+        result="$enabled_protocols_min,$result$enabled_protocols_max"
+    fi
+}
+
+server_protocol="TLS"
+get_enabled_protocol "server"
+server_enabled_protocols=${result:-"TLSv1.2"}
+server_ciphers=${ZWE_configs_zowe_network_server_tls_ciphers:-${ZWE_components_gateway_zowe_network_server_tls_ciphers:-${ZWE_zowe_network_server_tls_ciphers:-TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_RSA_WITH_AES_256_GCM_SHA384,TLS_DHE_DSS_WITH_AES_256_GCM_SHA384,TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,TLS_DHE_DSS_WITH_AES_128_GCM_SHA256,TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256,TLS_RSA_WITH_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384,TLS_RSA_WITH_AES_256_CBC_SHA256,TLS_RSA_WITH_AES_128_CBC_SHA256,TLS_RSA_WITH_AES_256_CBC_SHA,TLS_RSA_WITH_AES_128_CBC_SHA,TLS_EMPTY_RENEGOTIATION_INFO_SCSV}}}
+get_enabled_protocol "client"
+client_enabled_protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${result:-${server_enabled_protocols}}}
+client_ciphers=${ZWE_configs_zowe_network_client_tls_ciphers:-${ZWE_components_gateway_zowe_network_client_tls_ciphers:-${ZWE_zowe_network_client_tls_ciphers:-${server_ciphers}}}}
+
 keystore_type="${ZWE_configs_certificate_keystore_type:-${ZWE_zowe_certificate_keystore_type:-PKCS12}}"
 keystore_pass="${ZWE_configs_certificate_keystore_password:-${ZWE_zowe_certificate_keystore_password}}"
 key_alias="${ZWE_configs_certificate_keystore_alias:-${ZWE_zowe_certificate_keystore_alias}}"
@@ -152,15 +225,6 @@ keystore_location="${ZWE_configs_certificate_keystore_file:-${ZWE_zowe_certifica
 truststore_location="${ZWE_configs_certificate_truststore_file:-${ZWE_zowe_certificate_truststore_file}}"
 #echo "keystore='$keystore_location' truststore='$truststore_location'"
 
-# NOTE: these are moved from below
-# -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
-# -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
-
-# Check for Java version and set --add-opens Java option in case the version is 17 or later
-JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
-    | grep "major version" \
-    | cut -d " " -f5)
-ADD_OPENS=""
 if [ $JAVA_VERSION -ge 61 ]; then
     ADD_OPENS="--add-opens=java.base/java.lang=ALL-UNNAMED
                 --add-opens=java.base/java.lang.invoke=ALL-UNNAMED
@@ -172,16 +236,20 @@ if [ $JAVA_VERSION -ge 61 ]; then
                 --add-opens=java.base/java.io=ALL-UNNAMED"
 
     if [ "${keystore_type}" = "JCERACFKS" ]; then
-    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
-    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjce://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjce://_)
     elif [ "${keystore_type}" = "JCECCARACFKS" ]; then
-    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
-    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcecca://_)
     elif [ "${keystore_type}" = "JCEHYBRIDRACFKS" ]; then
-    keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
-    truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+        keystore_location=$(echo "${keystore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
+        truststore_location=$(echo "${truststore_location}" | sed s_safkeyring://_safkeyringjcehybrid://_)
     fi
 fi
+
+# NOTE: these are moved from below
+# -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS:-127.0.0.1} \
+# -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS:-false} \
 
 LOGBACK=""
 if [ -n "${ZWE_configs_logging_config}" ]; then
@@ -190,7 +258,7 @@ fi
 
 # Disable Java keyring loading for ICSF hardware private key storage.
 # Only z/OSMF JWT authentication provider is supported with this type of keyrings.
-if [ "${ATTLS_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
+if [ "${ATTLS_SERVER_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" = "true" ]; then
   keystore_type=
   keystore_pass=
   key_pass=
@@ -206,39 +274,53 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     ${QUICK_START} \
     ${ADD_OPENS} \
     ${LOGBACK} \
+    -Dsun.io.useCanonCaches=false \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
+    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
-    -Dapiml.discovery.userid=eureka \
-    -Dapiml.discovery.password=password \
+    -Dapiml.discovery.userid=${ZWE_configs_apiml_service_http_userId:-} \
+    -Dapiml.discovery.password=${ZWE_configs_apiml_service_http_password:-} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
+    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
+    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-${client_enabled_protocols}} \
+    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7553} \
-    -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
-    -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
-    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
-    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
-    -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
+    -Dfile.encoding=UTF-8 \
+    -Dibm.serversocket.recover=true \
+    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
+    -Djava.library.path=${LIBPATH} \
+    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
+    -Djdk.tls.client.cipherSuites=${client_ciphers} \
+    -Dloader.path=${DISCOVERY_LOADER_PATH} \
+    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
+    -Dserver.address=0.0.0.0 \
+    -Dserver.ssl.ciphers=${server_ciphers} \
+    -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
-    -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-"TLSv1.2"}  \
-    -Dserver.ssl.keyStore="${keystore_location}" \
-    -Dserver.ssl.keyStoreType="${keystore_type}" \
-    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
     -Dserver.ssl.keyAlias="${key_alias}" \
     -Dserver.ssl.keyPassword="${key_pass}" \
+    -Dserver.ssl.keyStore="${keystore_location}" \
+    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
+    -Dserver.ssl.keyStoreType="${keystore_type}" \
+    -Dserver.ssl.protocol=${ZWE_configs_server_ssl_protocol:-${server_protocol}} \
     -Dserver.ssl.trustStore="${truststore_location}" \
-    -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
-    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${DISCOVERY_LOADER_PATH} \
-    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
-    -Djava.library.path=${LIBPATH} \
+    -Dserver.ssl.trustStoreType="${truststore_type}" \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dspring.profiles.include=$LOG_LEVEL \
+    -Dsun.io.useCanonCaches=false \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

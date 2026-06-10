@@ -34,6 +34,9 @@ apiCatalogServiceConfiguration:
     instances: 2
 cachingServiceConfiguration:
     url:
+    scheme: https
+    host: caching-service,caching-service-2,caching-service-3
+    port: 10016
 cloudGatewayConfiguration:
     scheme: https
     host: cloud-gateway-service
@@ -56,9 +59,8 @@ zosmfServiceConfiguration:
     serviceId: mockzosmf
 auxiliaryUserList:
     value: 'servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
-idpConfiguration:
-    host: https://dev-95727686.okta.com
+oidcConfiguration:
+    providerName: auth0
+    host: https://dev-svlu6abyr3eo710c.us.auth0.com
 safIdtConfiguration:
     enabled: true
-oidcConfiguration:
-    clientId:

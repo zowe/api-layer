@@ -11,6 +11,7 @@
 package org.zowe.apiml.util.http;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
@@ -45,8 +46,7 @@ public class HttpRequestUtils {
     }
 
     public static HttpResponse getResponse(String endpoint, int returnCode, int port, String host) throws IOException {
-        HttpGet request = new HttpGet(
-            getUriFromGateway(endpoint, port, host, Collections.emptyList())
+        HttpGet request = new HttpGet(getUriFromGateway(endpoint, port, host, Collections.emptyList())
         );
 
         // When
@@ -62,6 +62,23 @@ public class HttpRequestUtils {
         URI uri = getUriFromGateway(endpoint);
 
         return new HttpGet(uri);
+    }
+
+    public static URI getUriFromGateway(String scheme, String endpoint, int port, String host, NameValuePair... arguments) {
+        URI uri = null;
+        try {
+            uri = new URIBuilder()
+                .setScheme(scheme)
+                .setHost(host)
+                .setPort(port)
+                .setPath(endpoint)
+                .addParameters(Arrays.asList(arguments))
+                .build();
+        } catch (URISyntaxException e) {
+            log.error("Can't create URI for endpoint '{}'", endpoint, e);
+        }
+
+        return uri;
     }
 
     public static URI getUriFromGateway(String endpoint, int port, String host, List<NameValuePair> arguments) {
@@ -88,22 +105,20 @@ public class HttpRequestUtils {
         return uri;
     }
 
-    public static URI getUriFromGateway(String endpoint, List<NameValuePair> arguments) {
-        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(), arguments);
+    public static URI getUriFromGateway(GatewayServiceConfiguration serviceConfiguration, String endpoint, NameValuePair...arguments) {
+        String scheme = serviceConfiguration.getScheme();
+        String host = serviceConfiguration.getHost();
+        StringTokenizer hostnameTokenizer = new StringTokenizer(host, ",");
+        host = hostnameTokenizer.nextToken();
+        if (StringUtils.isNotBlank(serviceConfiguration.getDvipaHost())) {
+            host = serviceConfiguration.getDvipaHost();
+        }
+        int port = serviceConfiguration.getPort();
+        return getUriFromGateway(scheme, endpoint, port, host, arguments);
     }
 
-    public static URI getUriFromGateway(String endpoint) {
-        return getUriFromGateway(endpoint, ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort(), ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost(), Collections.emptyList());
+    public static URI getUriFromGateway(String endpoint, NameValuePair... arguments) {
+        return getUriFromGateway(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, arguments);
     }
 
-    public static URI getUriFromDiscovery(String endpoint, String host) throws URISyntaxException {
-        DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
-
-        return new URIBuilder()
-            .setScheme(discoveryServiceConfiguration.getScheme())
-            .setHost(host)
-            .setPort(discoveryServiceConfiguration.getPort())
-            .setPath(endpoint)
-            .build();
-    }
 }

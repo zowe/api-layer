@@ -39,7 +39,7 @@ class MetricServiceTest {
     }
 
     @Test
-    void allClustersAraAvailable() {
+    void allClustersAreAvailable() {
         String jwt = gatewayToken();
         given().header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
             .get(METRICS_PATH)

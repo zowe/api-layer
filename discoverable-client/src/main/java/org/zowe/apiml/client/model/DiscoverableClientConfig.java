@@ -66,4 +66,10 @@ public class DiscoverableClientConfig {
 
     @Value("${server.ssl.trustStorePassword}")
     private String trustStorePassword;
+
+    @Value("${apiml.service.connectTimeout:5}")
+    private int connectTimeout;
+
+    @Value("${apiml.service.readTimeout:8}")
+    private int readTimeout;
 }

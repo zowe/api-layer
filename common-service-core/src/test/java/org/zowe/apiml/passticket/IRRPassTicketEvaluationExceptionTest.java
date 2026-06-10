@@ -23,7 +23,7 @@ class IRRPassTicketEvaluationExceptionTest {
         assertEquals(12, exception.getRacfRc());
         assertEquals(20, exception.getRacfRsn());
         assertEquals(AbstractIRRPassTicketException.ErrorCode.ERR_8_12_20, exception.getErrorCode());
-        assertEquals("Error on evaluation of PassTicket: Invocation of the Security Server Network Authentication Service Program Call (PC) interface failed with an 'abend in the PC service routine' return code. The symptom record associated with this abend can be found in the logrec data set.", exception.getMessage());
+        assertEquals("Error on evaluation of PassTicket: Invocation of the Security Server Network Authentication Service Program Call (PC) interface failed with an 'abend in the PC service routine' return code. The symptom record associated with this abend can be found in the logrec data set.: safRc=8, racfRc=12, racfRsn=20", exception.getMessage());
 
         IRRPassTicketEvaluationException exception2 = new IRRPassTicketEvaluationException(AbstractIRRPassTicketException.ErrorCode.ERR_8_16_28);
         assertEquals(8, exception2.getSafRc());

@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.gateway.security.config;
 
+import com.nimbusds.jose.util.DefaultResourceRetriever;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,8 @@ import org.zowe.apiml.gateway.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+
+import javax.net.ssl.SSLContext;
 
 
 /**
@@ -92,5 +95,11 @@ public class ComponentsConfiguration {
     @Bean
     public SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider, RauditxService rauditxService) {
         return new SuccessfulAccessTokenHandler(apimlAccessTokenProvider, rauditxService);
+    }
+
+    @Bean
+    DefaultResourceRetriever defaultResourceRetriever(@Qualifier("secureSslContextWithoutKeystore") SSLContext secureSslContextWithoutKeystore) {
+        return new DefaultResourceRetriever(
+            0, 0, 0, true, secureSslContextWithoutKeystore.getSocketFactory());
     }
 }

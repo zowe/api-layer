@@ -2,6 +2,80 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `APIML 2.18.20 / Zowe 2.18.4 (2026-01-29)`
+
+* Bugfix: expect 401 status code (#4465) ([768f66a](https://github.com/zowe/api-layer/commit/768f66a3407bef90c08030e98c1da775934de967)), closes [#4465](https://github.com/zowe/api-layer/pull/4465)
+* Bugfix: Fix configuration of internal port on Gateway (#4391) ([cd61d79](https://github.com/zowe/api-layer/commit/cd61d799e5d22b69219bf0265aadc6841e699b56)), closes [4391](https://github.com/zowe/api-layer/pull/4391)
+* Bugfix: Fix infinispan configuration, exception handling, and the whole cache operation (#4408) ([566b9ef
+](https://github.com/zowe/api-layer/commit/566b9ef8c433bd61f309cf2782ce3cc19c17e340)), closes [#4408](https://github.com/zowe/api-layer/pull/4408)
+* Bugfix: Loading JWKs from z/OSMF (#4432) ([d592a4e](https://github.com/zowe/api-layer/commit/d592a4e)), closes [#4432](https://github.com/zowe/api-layer/pull/4432)
+
+## `APIML 2.18.19 / Zowe 2.18.3 (2025-10-31)`
+
+* Feature:  Support PATCH method in CORS. (#4255) ([1d86960](https://github.com/zowe/api-layer/commit/1d86960)), closes [#4255](https://github.com/zowe/api-layer/issues/4255)
+
+* Bugfix:  Fix default eureka intervals of Caching Service. (#4225) ([5cd6898](https://github.com/zowe/api-layer/commit/5cd6898)), closes [#4225](https://github.com/zowe/api-layer/issues/4225)
+* Bugfix:  Fix API ML services logs so that "URL/Path not transformed" entries omit API ML services. (#4292) ([e75539d](https://github.com/zowe/api-layer/commit/e75539d)), closes [#4292](https://github.com/zowe/api-layer/issues/4292)
+* Bugfix:  Fix z/OSMF static definition for AT-TLS. (#4330) ([262a654](https://github.com/zowe/api-layer/commit/262a654)), closes [#4330](https://github.com/zowe/api-layer/issues/4330)
+* Bugfix:  Fix URLs for onboarding when AT-TLS is enabled and gateway read a keyring with empty values. ([823006f](https://github.com/zowe/api-layer/commit/823006f)), closes [#4337](https://github.com/zowe/api-layer/issues/4337)
+* Bugfix:  Fix correct protocol scheme in hybrid AT-TLS setup. (#4338) ([631bf96](https://github.com/zowe/api-layer/commit/631bf96)), closes [#4338](https://github.com/zowe/api-layer/issues/4338)
+
+## `APIML 2.18.16 / Zowe 2.18.2 (2025-07-22)`
+
+* Feature:  New configuration property **`apiml.security.forwardHeader.trustedProxies`** added to specify the regular expression pattern used to identify trusted proxies from which `X-Forwarded-*` headers are accepted and forwarded. Mitigates CVE-2025-41235. (#4148) ([55c9db6](https://github.com/zowe/api-layer/commit/55c9db6)), closes [#4148](https://github.com/zowe/api-layer/pull/4148), (#4188) ([d9dfd17](https://github.com/zowe/api-layer/commit/d9dfd17)), closes [#4188](https://github.com/zowe/api-layer/pull/4188)
+* Feature:  Add Java sample app to authenticate client certificate. (#4009) ([0808c65](https://github.com/zowe/api-layer/commit/0808c65)), closes [#4009](https://github.com/zowe/api-layer/issues/4009)
+* Feature:  Users can now configure the connect and read timeout for Eureka HTTP client. (#4046) ([6a1f73e](https://github.com/zowe/api-layer/commit/6a1f73e)), closes [#4046](https://github.com/zowe/api-layer/issues/4046)
+* Feature:  Support Java 21. (#4027) ([6a554ba](https://github.com/zowe/api-layer/commit/6a554ba)), closes [#4027](https://github.com/zowe/api-layer/issues/4027)
+
+* Bugfix:  Gateway returns empty auth keys from z/OSMF when **`apiml.security.auth.zosmf.jwtAutoconfiguration`** is set to **`jwt`**. (#4221) ([259996f](https://github.com/zowe/api-layer/pull/4221/commits/259996f)), closes [#4092](https://github.com/zowe/api-layer/issues/4092)
+* BugFix:  NPE in ApimlPeerEurekaNode stops heartbeats. (#4195) ([6fba33d](https://github.com/zowe/api-layer/commit/6fba33d)), closes [#4195](https://github.com/zowe/api-layer/pull/4195)
+* BugFix:  Logout in API Catalog call to Gateway. (#4185) ([cbce1ea](https://github.com/zowe/api-layer/commit/cbce1ea)), closes [#4185](https://github.com/zowe/api-layer/pull/4185)
+* BugFix:  Disable infinispan diagnostics by default. (#4170) ([a80a2f9](https://github.com/zowe/api-layer/commit/a80a2f9)), closes [#4170](https://github.com/zowe/api-layer/pull/4170)
+* Bugfix:  Resource leak in the http client. (#4153) ([1acce27](https://github.com/zowe/api-layer/commit/1acce27)), closes [#4153](https://github.com/zowe/api-layer/pull/4153)
+* Bugfix:  Adding HSTS header when AT-TLS is enabled. (#4071) ([9fdf3e6](https://github.com/zowe/api-layer/commit/9fdf3e6)), closes [#4071](https://github.com/zowe/api-layer/issues/4071)
+* Bugfix:  Change error code SERVICE_UNAVAILABLE to INTERNAL_SERVER_ERROR when ticket generation fails. (#4043 ([f7f78dd](https://github.com/zowe/api-layer/commit/f7f78dd)), closes [#4043](https://github.com/zowe/api-layer/issues/4043)
+
+## `APIML 2.18.10 / Zowe 2.18.1 (2025-03-27)`
+
+* Feature:  Support client AT-TLS setting (#3825) ([999d062](https://github.com/zowe/api-layer/commit/999d062)), closes [#3825](https://github.com/zowe/api-layer/pull/3825)
+
+* Bugfix:  Backwards compatible default ciphers list (#4026) ([38a3e54](https://github.com/zowe/api-layer/commit/38a3e548e92050d15722900d095dd09dfd3be28e))), closes [#4026](https://github.com/zowe/api-layer/pull/4026)
+* Bugfix:  Do not fail when missing permissions to create SMF record (#4037) ([4093dd9](https://github.com/zowe/api-layer/commit/4093dd9)), closes [#4037](https://github.com/zowe/api-layer/issues/4037)
+* Bugfix:  Non-strict hostname verification in Jetty client for WebSockets (#4038) ([3b96e91](https://github.com/zowe/api-layer/commit/3b96e91)), closes [#4038](https://github.com/zowe/api-layer/issues/4038)
+* Bugfix:  Fix login filter check causing 400 Invalid credentials (#4014) ([84cac88](https://github.com/zowe/api-layer/commit/84cac88)), closes [#4014](https://github.com/zowe/api-layer/issues/4014)
+* Bugfix:  Add missing OIDC documentation to OpenAPI (#4013) ([d60d23d](https://github.com/zowe/api-layer/commit/d60d23d)), closes [#4013](https://github.com/zowe/api-layer/issues/4013)
+* Bugfix:  Add newPassword to Open API Documentation of the login endpoint (#4002) ([5c9c827](https://github.com/zowe/api-layer/commit/5c9c827)), closes [#4002](https://github.com/zowe/api-layer/issues/4002)
+* Bugfix:  Fix four slashes support in SSE class (#4001) ([92371af](https://github.com/zowe/api-layer/commit/92371af)), closes [#4001](https://github.com/zowe/api-layer/issues/4001)
+* Bugfix:  Fix failing LoginFilter in AccessToken generate filter chain (#3984) ([7acb2ee](https://github.com/zowe/api-layer/commit/7acb2ee)), closes [#3984](https://github.com/zowe/api-layer/issues/3984)
+* Bugfix:  Set default ssl.protocol (#3994) ([8abb6e6](https://github.com/zowe/api-layer/commit/8abb6e6)), closes [#3994](https://github.com/zowe/api-layer/issues/3994)
+* Bugfix:  Improve PassTicket logging (#3996) ([8223a14](https://github.com/zowe/api-layer/commit/8223a14)), closes [#3996](https://github.com/zowe/api-layer/issues/3996)
+* Bugfix:  Fix 'exampleSetFlag' leaking in api doc (#3934) ([0211ba5](https://github.com/zowe/api-layer/commit/0211ba5)), closes [#3934](https://github.com/zowe/api-layer/issues/3934)
+* Bugfix:  Fix Cloud Gateway configuration (#3956) ([72d8125](https://github.com/zowe/api-layer/commit/72d8125)), closes [#3956](https://github.com/zowe/api-layer/issues/3956)
+* Bugfix:  Fix initialization of the API Catalog (#3959) ([51a1fc5](https://github.com/zowe/api-layer/commit/51a1fc5)), closes [#3959](https://github.com/zowe/api-layer/issues/3959)
+* Bugfix:  Improve error handling in case of failure when retrieving API doc (#3936) ([85b0493](https://github.com/zowe/api-layer/commit/85b0493)), closes [#3936](https://github.com/zowe/api-layer/issues/3936)
+* Bugfix:  Improve untrusted certificate message when certificate is not forwarded (#3926) ([86cc43a](https://github.com/zowe/api-layer/commit/86cc43a)), closes [#3926](https://github.com/zowe/api-layer/issues/3926)
+* Bugfix:  Allow users to configure the TLS version and cipher suite list (#3943) ([012da72](https://github.com/zowe/api-layer/commit/012da72)), closes [#3943](https://github.com/zowe/api-layer/issues/3943)
+* Bugfix:  Fix order of Cloud Gateway filters and solve the conflict with RequestAttributesProvider (#3965) ([9f9b5da](https://github.com/zowe/api-layer/commit/9f9b5da)), closes [#3965](https://github.com/zowe/api-layer/issues/3965)
+* Bugfix:  Fix z/OSMF static definition file processing (#3975) ([85aa6a7](https://github.com/zowe/api-layer/commit/85aa6a7)), closes [#3975](https://github.com/zowe/api-layer/issues/3975)
+* Bugfix:  Remove global setup of keystores (#3702) ([05f6984](https://github.com/zowe/api-layer/commit/05f6984)), closes [#3702](https://github.com/zowe/api-layer/issues/3702)
+* Bugfix:  Fix Sonar analysis issues (#3800) ([d4f6145](https://github.com/zowe/api-layer/commit/d4f6145)), closes [#3800](https://github.com/zowe/api-layer/issues/3800)
+* Bugfix:  Change port to handle AT-TLS client aware mode (#3863) ([8917d1f](https://github.com/zowe/api-layer/commit/8917d1f)), closes [#3863](https://github.com/zowe/api-layer/issues/3863)
+* Bugfix:  Update default javax.net.ssl log level (#3872) ([82414a4](https://github.com/zowe/api-layer/commit/82414a4)), closes [#3872](https://github.com/zowe/api-layer/issues/3872)
+* Bugfix:  Throw insecureHttpWarning message only when AT-TLS is not enabled (#3810) ([b846083](https://github.com/zowe/api-layer/commit/b846083)), closes [#3810](https://github.com/zowe/api-layer/issues/3810)
+* Bugfix:  Fix WebSocket session opening to be non-blocking and callback-based (#3695) ([b6f2461](https://github.com/zowe/api-layer/commit/b6f2461)), closes [#3695](https://github.com/zowe/api-layer/issues/3695)
+* Bugfix:  Fix Zowe cli plugin and enable manual trigger only (#3804) ([6ba9242](https://github.com/zowe/api-layer/commit/6ba9242)), closes [#3804](https://github.com/zowe/api-layer/issues/3804)
+
+
+## `APIML 2.18.1 / Zowe 2.18.0 (2024-08-26)`
+
+* Feature:  Validation of OIDC token via user info endpoint (#3670) ([9fc5976](https://github.com/zowe/api-layer/commit/9fc5976)), closes [#3670](https://github.com/zowe/api-layer/issues/3670)
+* Feature:  Customizable path to Logback configuration (#3669) ([1febddc](https://[https://github.com/zowe/api-layer/commit/1febddc)), closes [#3669](https://github.com/zowe/api-layer/issues/3669)
+
+
+* Bugfix:  Added the optional authentication requirement for `application/health` endpoints (#3636) ([b41b071](https://github.com/zowe/api-layer/commit/b41b071)), closes [#3636](https://github.com/zowe/api-layer/issues/3636)
+* Bugfix:  Support customized code snippets for endpoints with query parameters (#3665) ([5e024f4](https://github.com/zowe/api-layer/commit/5e024f4)), closes [#3665](https://github.com/zowe/api-layer/issues/3665)
+
+
 ## `APIML 2.17.2 / Zowe 2.17.0 (2024-07-18)`
 
 * Feature:  Cloud gateway support for AT-TLS (#3564) ([084f9b4](https://github.com/zowe/api-layer/commit/084f9b4)), closes [#3564](https://github.com/zowe/api-layer/issues/3564)

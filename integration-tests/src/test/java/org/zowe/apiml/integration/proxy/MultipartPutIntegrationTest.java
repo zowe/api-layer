@@ -24,13 +24,13 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.zowe.apiml.util.requests.Endpoints.*;
+import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_MULTIPART;
 
 @DiscoverableClientDependentTest
 class MultipartPutIntegrationTest implements TestWithStartedInstances {
     private final String configFileName = "example.txt";
     private final ClassLoader classLoader = ClassLoader.getSystemClassLoader();
-    private URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
+    private final URI url = HttpRequestUtils.getUriFromGateway(DISCOVERABLE_MULTIPART);
 
     @BeforeAll
     static void beforeClass() {
@@ -48,7 +48,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                 given().
                     contentType("multipart/form-data").
                     multiPart(new File(classLoader.getResource(configFileName).getFile())).
-                expect().
+                    expect().
                     statusCode(200).
                     body("fileName", equalTo("example.txt")).
                     body("fileType", equalTo("application/octet-stream")).
@@ -63,7 +63,7 @@ class MultipartPutIntegrationTest implements TestWithStartedInstances {
                 given().
                     contentType("multipart/form-data").
                     multiPart(new File(classLoader.getResource(configFileName).getFile())).
-                expect().
+                    expect().
                     statusCode(200).
                     body("fileName", equalTo("example.txt")).
                     body("fileType", equalTo("application/octet-stream")).

@@ -46,8 +46,8 @@ class InfinispanStorageTest {
     void setup() {
         cache = mock(Cache.class);
         tokenCache = mock(AdvancedCache.class);
-        storage = new InfinispanStorage(cache, tokenCache, lock);
         lock = mock(ClusteredLock.class);
+        storage = new InfinispanStorage(cache, tokenCache, () -> lock);
     }
 
     @Nested
@@ -124,7 +124,7 @@ class InfinispanStorageTest {
         @Test
         void itemIsDeleted() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
             assertNull(storage.create(serviceId1, TO_CREATE));
             assertEquals(TO_CREATE, storage.delete(serviceId1, TO_CREATE.getKey()));
         }
@@ -132,7 +132,7 @@ class InfinispanStorageTest {
         @Test
         void returnAll() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
             assertEquals(2, storage.readForService(serviceId1).size());
@@ -141,7 +141,7 @@ class InfinispanStorageTest {
         @Test
         void removeAll() {
             ConcurrentMap<String, KeyValue> cache = new ConcurrentHashMap<>();
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
             storage.create(serviceId1, new KeyValue("key", "value"));
             storage.create(serviceId1, new KeyValue("key2", "value2"));
             assertEquals(2, storage.readForService(serviceId1).size());
@@ -173,7 +173,7 @@ class InfinispanStorageTest {
         void addToken() {
             HashMap<String, String> hashMap = new HashMap<>();
             hashMap.put("key", "token");
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
             when(tokenCache.get(anyString())).thenAnswer(invocation -> hashMap);
             assertNull(storage.storeMapItem(serviceId1, "invalidTokens", new KeyValue("newkey", "newvalue")));
             verify(tokenCache, times(1)).put(serviceId1 + "invalidTokens", hashMap);
@@ -183,7 +183,7 @@ class InfinispanStorageTest {
         void updateToken() {
             HashMap<String, String> hashMap = new HashMap();
             hashMap.put("key", "token");
-            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, lock);
+            InfinispanStorage storage = new InfinispanStorage(cache, tokenCache, () -> lock);
             when(tokenCache.get(serviceId1 + "invalidTokens")).thenReturn(hashMap);
             KeyValue keyValue = new KeyValue("key", "token2");
             assertNull(storage.storeMapItem(serviceId1, "invalidTokens", keyValue));
@@ -223,7 +223,7 @@ class InfinispanStorageTest {
             tokenCache.put(serviceId1 + "invalidTokens", tokensService1);
             tokenCache.put(serviceId1 + "invalidTokenRules", rulesService1);
             tokenCache.put(serviceId2 + "invalidTokens", tokensService2);
-            underTest = new InfinispanStorage(cache, tokenCache, lock);
+            underTest = new InfinispanStorage(cache, tokenCache, () -> lock);
         }
 
 
@@ -275,7 +275,7 @@ class InfinispanStorageTest {
             tokenCache.put(serviceId1 + "invalidTokens", tokensService);
             tokenCache.put(serviceId1 + "invalidScopes", rulesService);
             tokenCache.put(serviceId1 + "invalidUsers", rulesUsers);
-            underTest = new InfinispanStorage(cache, tokenCache, lock);
+            underTest = new InfinispanStorage(cache, tokenCache, () -> lock);
         }
         @Test
         void thenEvictItems() {

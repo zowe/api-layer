@@ -114,3 +114,11 @@ messages:
         text: "Missing header with certificate."
         reason: "Call executed without valid client certificate."
         action: "Verify ssl context in client application."
+
+    -   key: org.zowe.apiml.cache.notAvailable
+        number: ZWECS703
+        type: WARNING
+        text: "Cache is not available: %s"
+        reason: "Cache is not ready to write at the moment."
+        action: "Wait till initialization of cache is done. In case it is done verify the instance configuration or connectivity between multiple instances."
+

@@ -153,7 +153,7 @@ public class ZaasNegativeTest {
         @ParameterizedTest
         @MethodSource("org.zowe.apiml.integration.zaas.ZaasNegativeTest#provideZaasEndpoints")
         void givenOKTATokenWithNoMapping(URI uri, RequestSpecification requestSpecification) {
-            String oktaTokenNoMapping = SecurityUtils.validOktaAccessToken(false);
+            String oktaTokenNoMapping = SecurityUtils.validOidcAccessToken(false);
             //@formatter:off
             requestSpecification
                 .header("Authorization", "Bearer " + oktaTokenNoMapping)

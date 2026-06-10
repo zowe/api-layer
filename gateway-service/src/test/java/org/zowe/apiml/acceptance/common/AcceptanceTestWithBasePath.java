@@ -10,7 +10,9 @@
 
 package org.zowe.apiml.acceptance.common;
 
+import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.zowe.apiml.acceptance.requests.SecurityRequests;
 
@@ -18,7 +20,9 @@ import org.zowe.apiml.acceptance.requests.SecurityRequests;
 public class AcceptanceTestWithBasePath {
     protected String basePath;
     protected SecurityRequests securityRequests;
-
+    @Value("${test.proxyAddress}")
+    protected String proxyAddress;
+    protected String additionalGatewayAddress = "7.7.7.7";
     @LocalServerPort
     protected int port;
 
@@ -26,5 +30,6 @@ public class AcceptanceTestWithBasePath {
     public void setBasePath() {
         basePath = String.format("https://localhost:%d", port);
         securityRequests = new SecurityRequests(basePath);
+        RestAssured.useRelaxedHTTPSValidation();
     }
 }

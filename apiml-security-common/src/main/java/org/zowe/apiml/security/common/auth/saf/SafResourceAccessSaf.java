@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.auth.saf;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 
 import java.lang.invoke.MethodHandle;
@@ -96,6 +97,9 @@ public class SafResourceAccessSaf implements SafResourceAccessVerifying {
     @Override
     public boolean hasSafResourceAccess(Authentication authentication, String resourceClass, String resourceName, String accessLevel) {
         String userid = authentication.getName();
+        if (StringUtils.isEmpty(userid)) {
+            return false;
+        }
         AccessLevel level = AccessLevel.valueOf(accessLevel);
         log.debug("Evaluating access of user {} to resource {} in class {} level {}", userid, resourceClass, resourceName, level);
         return checkPermission(userid, resourceClass, resourceName, level.getValue(), true);

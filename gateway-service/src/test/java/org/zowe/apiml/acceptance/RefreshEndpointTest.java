@@ -13,14 +13,13 @@ package org.zowe.apiml.acceptance;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.config.SSLConfig;
 import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.login.LoginRequest;
-
-import javax.net.ssl.SSLContext;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -34,15 +33,8 @@ public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
     private final static String USERNAME = "USER";
     private final static char[] PASSWORD = "validPassword".toCharArray();
 
-    private RestAssuredConfig restAssuredConfig;
-
     @Autowired
     HttpConfig httpConfig;
-
-    @BeforeEach
-    void setUp() {
-        initializeTls();
-    }
 
     @Nested
     @SuppressWarnings("squid:S2699") // sonar doesn't identify the restAssured assertions
@@ -50,7 +42,7 @@ public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
         @Test
         void noClientCertificateGivesForbidden() {
 
-            given().config(RestAssuredConfig.newConfig().sslConfig(new SSLConfig()))
+            given().config(RestAssuredConfig.newConfig().sslConfig(new SSLConfig().relaxedHTTPSValidation()))
                 .when()
                 .post(basePath + "/gateway/api/v1/auth/refresh") //REFRESH_URL
                 .then()
@@ -61,23 +53,16 @@ public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
         void clientCertificateWithoutTokenGivesUnauthorized() {
             LoginRequest loginRequest = new LoginRequest(USERNAME, PASSWORD);
 
-            given().config(restAssuredConfig)
-                .when()
+            given().config(RestAssuredConfig.newConfig().sslConfig(
+                new SSLConfig()
+                    .sslSocketFactory(new SSLSocketFactory(httpConfig.secureSslContext(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)))
+            ).when()
                 .contentType(JSON)
                 .body(loginRequest)
                 .post(basePath + "/gateway/api/v1/auth/refresh")
-                .then()
+            .then()
                 .statusCode(is(SC_UNAUTHORIZED));
         }
     }
-
-
-    public synchronized void initializeTls() {
-        if (restAssuredConfig == null) {
-            SSLContext sslContext = httpConfig.secureSslContext();
-            restAssuredConfig =  RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext, SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)));
-        }
-    }
-
 
 }

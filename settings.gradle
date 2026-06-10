@@ -60,4 +60,5 @@ include 'apiml-sample-extension'
 include 'apiml-sample-extension-package'
 include 'apiml-extension-loader'
 include 'zowe-cli-id-federation-plugin'
+include 'client-cert-auth-sample'
 

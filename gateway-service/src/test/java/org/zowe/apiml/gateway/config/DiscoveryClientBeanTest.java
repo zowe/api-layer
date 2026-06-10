@@ -10,12 +10,7 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.DataCenterInfo;
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.LeaseInfo;
-import com.netflix.appinfo.MyDataCenterInfo;
+import com.netflix.appinfo.*;
 import com.netflix.discovery.shared.transport.jersey.EurekaJerseyClientImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,15 +21,15 @@ import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.config.AdditionalRegistration;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
+import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,8 +41,8 @@ class DiscoveryClientBeanTest {
     @BeforeEach
     void setup() {
         ApplicationContext context = mock(ApplicationContext.class);
-        EurekaJerseyClientImpl.EurekaJerseyClientBuilder builder = mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class);
-        dcConfig = new DiscoveryClientConfig(null, apimlDiscoveryClientFactory, context, builder);
+        Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> builder = () -> mock(EurekaJerseyClientImpl.EurekaJerseyClientBuilder.class);
+        dcConfig = new DiscoveryClientConfig(null, apimlDiscoveryClientFactory, context, builder, new AdditionalRegistrationGatewayRegistry());
     }
 
     @Test
@@ -69,7 +64,7 @@ class DiscoveryClientBeanTest {
         when(info.getLeaseInfo()).thenReturn(leaseInfo);
 
         EurekaClientConfigBean bean = new EurekaClientConfigBean();
-        DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoveryClientWrapper(manager, bean, null, additionalRegistrations);
+        DiscoveryClientWrapper wrapper = dcConfig.additionalDiscoveryClientWrapper(manager, bean, null, additionalRegistrations, java.util.Optional.empty());
         wrapper.shutdown();
 
         assertThat(wrapper.getDiscoveryClients()).hasSize(2);

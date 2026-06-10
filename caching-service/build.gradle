@@ -99,6 +99,9 @@ dependencies {
     implementation libs.jackson.core
     implementation libs.jackson.databind
 
+    implementation libs.eureka.client
+    implementation libs.apache.commons.lang3
+
     implementation libs.logback.core
     implementation libs.logback.classic
 

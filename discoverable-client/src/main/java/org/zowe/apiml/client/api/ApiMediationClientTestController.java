@@ -19,6 +19,9 @@ import org.zowe.apiml.client.model.Registered;
 import org.zowe.apiml.client.service.ApiMediationClientService;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
+import java.util.Collections;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/apiMediationClient")
 @Tag(
@@ -35,9 +38,9 @@ public class ApiMediationClientTestController {
     @PostMapping
     @Operation(summary = "Forward registration to discovery service via API mediation client")
     @HystrixCommand
-    public ResponseEntity<String> forwardRegistration() {
+    public ResponseEntity<String> forwardRegistration(@RequestBody(required = false) Map<String, Object> additionalMetadata) {
         try {
-            apiMediationClientService.register();
+            apiMediationClientService.register(additionalMetadata == null ? Collections.emptyMap() : additionalMetadata);
             return ResponseEntity.ok().build();
         } catch (ServiceDefinitionException e) {
             return ResponseEntity.status(500).body(e.getMessage());
@@ -58,4 +61,5 @@ public class ApiMediationClientTestController {
         boolean isRegistered = apiMediationClientService.isRegistered();
         return new Registered(isRegistered);
     }
+
 }

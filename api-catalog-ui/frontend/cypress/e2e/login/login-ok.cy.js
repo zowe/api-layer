@@ -37,7 +37,7 @@ describe('>>> Login ok page test', () => {
         cy.getCookie('apimlAuthenticationToken').should('exist');
         cy.get('button[data-testid="logout-menu"]').click();
         cy.get('li[data-testid="logout"]').click();
-        cy.contains('API Catalog');
+        cy.contains('Please enter your mainframe username'); // wait to see login screen again
 
         cy.getCookie('apimlAuthenticationToken').should('not.exist');
     });

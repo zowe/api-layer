@@ -17,6 +17,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.AbstractServerHttpRequest;
+import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -27,8 +28,18 @@ import reactor.core.publisher.Mono;
 @Component
 public class RequestAttributesProvider implements WebFilter, GlobalFilter, Ordered {
 
+    private <R> R getRequest(ServerWebExchange exchange) {
+        Object request = exchange.getRequest();
+        while (request instanceof ServerHttpRequestDecorator) {
+            Object delegatedRequest = ((ServerHttpRequestDecorator) request).getDelegate();
+            if (request == delegatedRequest) break;
+            request = delegatedRequest;
+        }
+        return (R) request;
+    }
+
     private void copyAttributes(ServerWebExchange exchange) {
-        AbstractServerHttpRequest request = (AbstractServerHttpRequest) exchange.getRequest();
+        AbstractServerHttpRequest request = getRequest(exchange);
         RequestFacade requestFacade;
         try {
             requestFacade = request.getNativeRequest();
@@ -56,7 +67,7 @@ public class RequestAttributesProvider implements WebFilter, GlobalFilter, Order
 
     @Override
     public int getOrder() {
-        return Ordered.HIGHEST_PRECEDENCE;
+        return Ordered.HIGHEST_PRECEDENCE + 1;
     }
 
 }

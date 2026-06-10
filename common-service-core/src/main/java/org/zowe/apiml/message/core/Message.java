@@ -25,6 +25,8 @@ import java.util.MissingFormatArgumentException;
  */
 public final class Message {
     public static final String INVALID_KEY_MESSAGE = "org.zowe.apiml.common.invalidMessageKey";
+    public static final String INVALID_KEY_MESSAGE_TEXT = "Internal error: Invalid message key '%s' provided. " +
+        "No default message found. Please contact support of further assistance.";
     public static final String INVALID_MESSAGE_TEXT_FORMAT = "org.zowe.apiml.common.invalidMessageTextFormat";
 
     private final String requestedKey;
@@ -63,13 +65,25 @@ public final class Message {
     }
 
     /**
+     * Returns an {@link MessageType#ERROR} {@link Message} object indicating that the specified key is invalid.
+     * The {@link MessageTemplate} for this message has key {@link #INVALID_KEY_MESSAGE}.
+     *
+     * @param requestedKey the invalid key.
+     * @return {@link Message}
+     */
+    public static Message invalidKeyMessage(String requestedKey) {
+        return new Message(requestedKey, new MessageTemplate(Message.INVALID_KEY_MESSAGE, "ZWEAM102",
+            MessageType.ERROR, Message.INVALID_KEY_MESSAGE_TEXT), new Object[]{requestedKey});
+    }
+
+    /**
      * Validate the message text and parameters returning them as formatted String.
      *
      * @param messageText       the message text.
      * @param messageParameters the object containing the message parameters.
-     * @throws MissingFormatArgumentException when the amount of parameters is less than required.
-     * @throws IllegalFormatConversionException when format is not valid.
      * @return a formatted String
+     * @throws MissingFormatArgumentException   when the amount of parameters is less than required.
+     * @throws IllegalFormatConversionException when format is not valid.
      */
     private static String validateMessageTextFormat(String messageText, Object[] messageParameters) {
         return String.format(messageText, messageParameters);

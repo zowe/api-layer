@@ -22,6 +22,7 @@ import org.zowe.apiml.apicatalog.swagger.TransformApiDocService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 /**
@@ -48,6 +49,53 @@ public class CachedApiDocService {
     }
 
     /**
+     * Fetches API documentation for a given service and version.
+     *
+     * @param serviceId    service identifier
+     * @param cacheKeySuffix version or default API key
+     * @param retrievalLogic supplier providing the API documentation retrieval logic
+     * @return the API documentation
+     */
+    private String fetchApiDoc(
+        final String serviceId,
+        final String cacheKeySuffix,
+        final Supplier<ApiDocInfo> retrievalLogic
+    ) {
+        ApiDocCacheKey cacheKey = new ApiDocCacheKey(serviceId, cacheKeySuffix);
+        String errorMessage = "";
+        Exception exception = null;
+
+        // Try to fetch API doc from the retrieval logic
+        try {
+            ApiDocInfo apiDocInfo = retrievalLogic.get();
+            if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
+                String apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
+                CachedApiDocService.serviceApiDocs.put(cacheKey, apiDoc);
+                return apiDoc;
+            } else {
+                log.debug("No API Documentation found for the service {}", serviceId);
+            }
+        } catch (Exception e) {
+            log.debug("Exception updating API doc in cache for '{} {}'", serviceId, cacheKeySuffix, e);
+            errorMessage = e.getMessage();
+            exception = e;
+        }
+
+        // If no DS is available, try to use cached data
+        String apiDoc = CachedApiDocService.serviceApiDocs.get(cacheKey);
+        if (apiDoc != null) {
+            log.debug("Using cached API doc for service '{}'", serviceId);
+            return apiDoc;
+        }
+
+        // Cannot obtain API doc, throw exception
+        log.error("No API doc available for '{} {}'", serviceId, cacheKeySuffix);
+        throw new ApiDocNotFoundException(
+            exceptionMessage.apply(serviceId) + " Root cause: " + errorMessage, exception
+        );
+    }
+
+    /**
      * Update the api docs for this service
      *
      * @param serviceId  service identifier
@@ -55,27 +103,11 @@ public class CachedApiDocService {
      * @return api doc info for the requested service id
      */
     public String getApiDocForService(final String serviceId, final String apiVersion) {
-        // First try to fetch apiDoc from the DS
-        try {
-            ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion);
-            if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
-                String apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
-                CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, apiVersion), apiDoc);
-                return apiDoc;
-            }
-        } catch (Exception e) {
-            log.debug("Exception updating API doc in cache for '{} {}'", serviceId, apiVersion, e);
-        }
-
-        // if no DS is available try to use cached data
-        String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, apiVersion));
-        if (apiDoc != null) {
-            return apiDoc;
-        }
-
-        // cannot obtain apiDoc ends with exception
-        log.error("No API doc available for '{} {}'", serviceId, apiVersion);
-        throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
+        return fetchApiDoc(
+            serviceId,
+            apiVersion,
+            () -> apiDocRetrievalService.retrieveApiDoc(serviceId, apiVersion)
+        );
     }
 
     /**
@@ -97,27 +129,11 @@ public class CachedApiDocService {
      * @return api doc info for the latest API of the request service id
      */
     public String getDefaultApiDocForService(final String serviceId) {
-        // First try to fetch apiDoc from the DS
-        try {
-            ApiDocInfo apiDocInfo = apiDocRetrievalService.retrieveDefaultApiDoc(serviceId);
-            if (apiDocInfo != null && apiDocInfo.getApiDocContent() != null) {
-                String apiDoc = transformApiDocService.transformApiDoc(serviceId, apiDocInfo);
-                CachedApiDocService.serviceApiDocs.put(new ApiDocCacheKey(serviceId, DEFAULT_API_KEY), apiDoc);
-                return apiDoc;
-            }
-        } catch (Throwable t) {
-            log.debug("Exception updating default API doc in cache for '{}'.", serviceId, t);
-        }
-
-        // if no DS is available try to use cached data
-        String apiDoc = CachedApiDocService.serviceApiDocs.get(new ApiDocCacheKey(serviceId, DEFAULT_API_KEY));
-        if (apiDoc != null) {
-            return apiDoc;
-        }
-
-        // cannot obtain apiDoc ends with exception
-        log.error("No default API doc available for service '{}'", serviceId);
-        throw new ApiDocNotFoundException(exceptionMessage.apply(serviceId));
+        return fetchApiDoc(
+            serviceId,
+            DEFAULT_API_KEY,
+            () -> apiDocRetrievalService.retrieveDefaultApiDoc(serviceId)
+        );
     }
 
     /**
@@ -155,7 +171,7 @@ public class CachedApiDocService {
             return versions;
         }
 
-        // cannot obtain apiDoc ends with exception
+        // Cannot obtain API doc, end with exception
         log.error("No API versions available for service '{}'", serviceId);
         throw new ApiVersionNotFoundException("No API versions were retrieved for the service " + serviceId + ".");
     }

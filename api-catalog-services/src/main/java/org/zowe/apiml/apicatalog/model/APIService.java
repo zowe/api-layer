@@ -57,6 +57,9 @@ public class APIService implements Serializable {
     @Schema(description = "The default API version for this service")
     private String defaultApiVersion = "v1";
 
+    @Schema(description = "The error message occurred when trying to retrieve the API doc")
+    private String apiDocErrorMessage;
+
     @Schema(description = "The available API versions for this service")
     private List<String> apiVersions;
 

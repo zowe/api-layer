@@ -12,13 +12,13 @@ package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Cookie;
-import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.util.StringUtils;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.zOSMFAuthTest;
 import org.zowe.apiml.util.config.ConfigReader;
@@ -27,8 +27,6 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
@@ -46,9 +44,10 @@ class ZosmfLoginTest implements TestWithStartedInstances {
 
     private final static boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
+    private static final String ZOSMF_CONTEXT_ROOT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getContextRoot();
+    private final static String ZOSMF_ENDPOINT_GW = "/" + ZOSMF_SERVICE_ID + "/api/v1/" + (StringUtils.hasText(ZOSMF_CONTEXT_ROOT) ? ZOSMF_CONTEXT_ROOT + "/" : "") + "restfiles/ds";
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
     private final static String ZOSMF_ENDPOINT_MOCK = "/" + ZOSMF_SERVICE_ID + "/api/zosmf/restfiles/ds";
-    private final static String ZOSMF_ENDPOINT_GW = "/" + ZOSMF_SERVICE_ID + "/api/v1/restfiles/ds";
     private final static String ZOSMF_ENDPOINT = ZOS_TARGET ? ZOSMF_ENDPOINT_GW : ZOSMF_ENDPOINT_MOCK;
 
     @BeforeAll
@@ -67,14 +66,11 @@ class ZosmfLoginTest implements TestWithStartedInstances {
             String dsname1 = "SYS1.PARMLIB";
             String dsname2 = "SYS1.PROCLIB";
 
-            List<NameValuePair> arguments = new ArrayList<>();
-            arguments.add(new BasicNameValuePair("dslevel", "sys1.p*"));
-
             given()
-                .config(SslContext.clientCertValid)
+                .config(SslContext.clientCertUser)
                 .header("X-CSRF-ZOSMF-HEADER", "")
                 .when()
-                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, arguments))
+                .get(HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, new BasicNameValuePair("dslevel", "sys1.p*")))
                 .then()
                 .statusCode(is(SC_OK))
                 .body(

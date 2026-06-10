@@ -27,7 +27,8 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -387,12 +388,21 @@ class CachingControllerTest {
         }
 
         @Test
-        void givenErrorReadingStorage_thenResponseBadRequest() throws StorageException {
-            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
+        void givenInvalidStorage_thenResponseBadRequest() throws StorageException {
+            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), HttpStatus.BAD_REQUEST));
 
             ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
         }
+
+        @Test
+        void givenGenericErrorReadingStorage_thenResponseInternalError() throws StorageException {
+            when(mockStorage.getAllMapItems(any(), any())).thenThrow(new RuntimeException("error"));
+
+            ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
+            assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+
     }
 
     @Nested
@@ -417,4 +427,66 @@ class CachingControllerTest {
             assertThat(responseScopesEviction.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
+
+    @Nested
+    class WhenGetAll {
+
+        @Nested
+        class MapItems {
+
+            @Test
+            void givenWrongStorage_whenGetAllMapItems_thenReturn400() {
+                Exception storageException = new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+                doThrow(storageException).when(mockStorage).getAllMapItems(any(), any());
+                ResponseEntity<?> response = underTest.getAllMapItems(MAP_KEY, mockRequest);
+                assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+            }
+
+            @Test
+            void givenUnexpectedError_whenGetAllMapItems_thenReturn500() {
+                doThrow(new RuntimeException("unexpected")).when(mockStorage).getAllMapItems(any(), any());
+                ResponseEntity<?> response = underTest.getAllMapItems(MAP_KEY, mockRequest);
+                assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+            }
+
+            @Test
+            void givenUOtherStorageException_whenGetAllMapItems_thenReturn500() {
+                Exception storageException = new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus());
+                doThrow(storageException).when(mockStorage).getAllMapItems(any(), any());
+                ResponseEntity<?> response = underTest.getAllMapItems(MAP_KEY, mockRequest);
+                assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+            }
+
+        }
+
+        @Nested
+        class Maps {
+
+            @Test
+            void givenWrongStorage_whenGetAllMapItems_thenReturn400() {
+                Exception storageException = new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+                doThrow(storageException).when(mockStorage).getAllMaps(any());
+                ResponseEntity<?> response = underTest.getAllMaps(mockRequest);
+                assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+            }
+
+            @Test
+            void givenUnexpectedError_whenGetAllMapItems_thenReturn500() {
+                doThrow(new RuntimeException("unexpected")).when(mockStorage).getAllMaps(any());
+                ResponseEntity<?> response = underTest.getAllMaps(mockRequest);
+                assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+            }
+
+            @Test
+            void givenUOtherStorageException_whenGetAllMapItems_thenReturn500() {
+                Exception storageException = new StorageException(Messages.DUPLICATE_KEY.getKey(), Messages.DUPLICATE_KEY.getStatus());
+                doThrow(storageException).when(mockStorage).getAllMaps(any());
+                ResponseEntity<?> response = underTest.getAllMaps(mockRequest);
+                assertThat(response.getStatusCode(), is(HttpStatus.INTERNAL_SERVER_ERROR));
+            }
+
+        }
+
+    }
+
 }
