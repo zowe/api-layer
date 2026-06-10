@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
 import org.zowe.apiml.cache.Storage;
+import org.zowe.apiml.cache.CacheNotAvailableException;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange;
@@ -256,7 +257,7 @@ public class InfinispanConfig implements InitializingBean {
                 return clm.get(LOCK_ZOWE_INVALIDATED);
             } catch (AvailabilityException | ClusteredLockException e) {
                 log.debug("Cannot obtain lock", e);
-                throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), e.getMessage());
+                throw new CacheNotAvailableException(Messages.CACHE_NOT_AVAILABLE.getKey(), e.getMessage());
             }
         });
     }
