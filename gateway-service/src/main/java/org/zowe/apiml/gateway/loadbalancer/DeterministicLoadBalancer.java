@@ -36,7 +36,6 @@ import java.text.ParseException;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.zowe.apiml.constants.ApimlConstants.X_INSTANCEID;
