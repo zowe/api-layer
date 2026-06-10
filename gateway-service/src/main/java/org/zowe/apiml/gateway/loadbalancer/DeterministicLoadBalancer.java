@@ -207,19 +207,28 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
     }
 
     /**
-     * Filters the list of service instances to include only those with the specified instance ID.
+     * Applies soft preference for the requested instance ID: the matching instance is placed
+     * first in the list with all other instances following as fallback. Throws 404 only if the
+     * requested instance ID does not exist anywhere in the service instances list.
      *
      * @param instanceId       ID of the service instance
-     * @param serviceInstances the list of service instances to filter
-     * @return the filtered list of service instances
+     * @param serviceInstances the list of service instances
+     * @return ordered list with matched instance first, all others following
      */
     private List<ServiceInstance> checkInstanceIdHeader(String instanceId, List<ServiceInstance> serviceInstances) {
         if (instanceId != null) {
-            List<ServiceInstance> filteredInstances = serviceInstances.stream()
+            Optional<ServiceInstance> matchedInstance = serviceInstances.stream()
                 .filter(instance -> instanceId.equals(instance.getInstanceId()))
-                .toList();
-            if (!filteredInstances.isEmpty()) {
-                return filteredInstances;
+                .findFirst();
+            if (matchedInstance.isPresent()) {
+                List<ServiceInstance> orderedList = new ArrayList<>();
+                orderedList.add(matchedInstance.get());
+                for (ServiceInstance instance : serviceInstances) {
+                    if (!instance.getInstanceId().equals(instanceId)) {
+                        orderedList.add(instance);
+                    }
+                }
+                return orderedList;
             }
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Service instance not found for the provided instance ID");
         }
@@ -228,21 +237,36 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
 
 
     /**
-     * Selected the preferred instance if not null, if the preferred instance is not found or is null a new preference is created
+     * Returns the ordered list of service instances with the preferred instance first.
+     * If the preferred instance is found (by instanceId), it is placed at the head of the list
+     * with all other instances following as fallback. The cache always stores the preferred
+     * instance for sticky affinity. If no preference exists, the first instance from the list
+     * becomes the new preference.
      *
      * @param instanceId       The preferred instanceId
      * @param user             The user
      * @param serviceInstances The default serviceInstances available
-     * @return Flux with a list containing only one selected instance
+     * @return Flux with the ordered list: preferred instance first, all others following
      */
     private Flux<List<ServiceInstance>> chooseOne(String instanceId, String user, List<ServiceInstance> serviceInstances) {
-        Stream<ServiceInstance> stream = serviceInstances.stream();
+        ServiceInstance chosenInstance;
         if (instanceId != null) {
-            stream = stream.filter(instance -> instanceId.equals(instance.getInstanceId()));
+            chosenInstance = serviceInstances.stream()
+                .filter(instance -> instanceId.equals(instance.getInstanceId()))
+                .findAny()
+                .orElse(serviceInstances.get(0));
+        } else {
+            chosenInstance = serviceInstances.get(0);
         }
-        ServiceInstance chosenInstance = stream.findAny().orElse(serviceInstances.get(0));
+        List<ServiceInstance> orderedList = new ArrayList<>(serviceInstances.size());
+        orderedList.add(chosenInstance);
+        for (ServiceInstance instance : serviceInstances) {
+            if (!instance.getInstanceId().equals(chosenInstance.getInstanceId())) {
+                orderedList.add(instance);
+            }
+        }
         return cache.store(user, chosenInstance.getServiceId(), new LoadBalancerCacheRecord(chosenInstance.getInstanceId()))
-            .thenMany(just(Collections.singletonList(chosenInstance)));
+            .thenMany(just(orderedList));
     }
 
     /**

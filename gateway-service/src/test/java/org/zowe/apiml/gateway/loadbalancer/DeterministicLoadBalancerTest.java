@@ -205,8 +205,9 @@ class DeterministicLoadBalancerTest {
                             StepVerifier.create(loadBalancer.get(request))
                                 .assertNext(chosenInstances -> {
                                     assertNotNull(chosenInstances);
-                                    assertEquals(1, chosenInstances.size());
+                                    assertEquals(2, chosenInstances.size());
                                     assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                                    assertEquals("instance2", chosenInstances.get(1).getInstanceId());
                                 })
                                 .expectComplete()
                                 .verify();
@@ -221,8 +222,9 @@ class DeterministicLoadBalancerTest {
                             StepVerifier.create(loadBalancer.get(request))
                             .assertNext(chosenInstances -> {
                                 assertNotNull(chosenInstances);
-                                assertEquals(1, chosenInstances.size());
+                                assertEquals(2, chosenInstances.size());
                                 assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                                assertEquals("instance2", chosenInstances.get(1).getInstanceId());
                             })
                             .expectComplete()
                             .verify();
@@ -238,8 +240,9 @@ class DeterministicLoadBalancerTest {
                             StepVerifier.create(loadBalancer.get(request))
                             .assertNext(chosenInstances -> {
                                 assertNotNull(chosenInstances);
-                                assertEquals(1, chosenInstances.size());
+                                assertEquals(2, chosenInstances.size());
                                 assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                                assertEquals("instance2", chosenInstances.get(1).getInstanceId());
                                 verify(lbCache).retrieve("USER", "service");
                                 verify(lbCache).delete("USER", "service");
                                 verify(lbCache).store(eq("USER"), eq("service"), any());
@@ -260,8 +263,9 @@ class DeterministicLoadBalancerTest {
                             StepVerifier.create(loadBalancer.get(request))
                             .assertNext(chosenInstances -> {
                                 assertNotNull(chosenInstances);
-                                assertEquals(1, chosenInstances.size());
+                                assertEquals(2, chosenInstances.size());
                                 assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                                assertEquals("instance2", chosenInstances.get(1).getInstanceId());
 
                                 verify(lbCache).retrieve("USER", "service");
                             })
@@ -339,8 +343,9 @@ class DeterministicLoadBalancerTest {
                             StepVerifier.create(loadBalancer.get(request))
                                 .assertNext(chosenInstances -> {
                                     assertNotNull(chosenInstances);
-                                    assertEquals(1, chosenInstances.size());
+                                    assertEquals(2, chosenInstances.size());
                                     assertEquals("instance1", chosenInstances.get(0).getInstanceId());
+                                    assertEquals("instance2", chosenInstances.get(1).getInstanceId());
                                 })
                                 .expectComplete()
                                 .verify();
@@ -378,8 +383,9 @@ class DeterministicLoadBalancerTest {
                     StepVerifier.create(loadBalancer.get(request))
                         .assertNext(chosenInstances -> {
                             assertNotNull(chosenInstances);
-                            assertEquals(1, chosenInstances.size());
+                            assertEquals(2, chosenInstances.size());
                             assertEquals("instance2", chosenInstances.get(0).getInstanceId());
+                            assertEquals("instance1", chosenInstances.get(1).getInstanceId());
                             verify(lbCache, never()).retrieve(any(), any());
                         })
                         .expectComplete()
@@ -412,6 +418,48 @@ class DeterministicLoadBalancerTest {
                         .verify();
                 }
 
+            }
+
+        }
+
+        @Nested
+        class GivenHaFailoverScenario {
+
+            @BeforeEach
+            void setUp() {
+                var requestData = mock(RequestData.class);
+                var context = new RequestDataContext(requestData);
+
+                MultiValueMap<String, String> cookie = new LinkedMultiValueMap<>();
+                cookie.add("apimlAuthenticationToken", VALID_TOKEN);
+
+                when(requestData.getCookies()).thenReturn(cookie);
+                when(request.getContext()).thenReturn(context);
+                when(clock.instant()).thenReturn(Instant.ofEpochSecond(1721552753));
+
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put("apiml.lb.type", "authentication");
+                when(instance1.getMetadata()).thenReturn(metadata);
+            }
+
+            @Test
+            void givenCacheHasPreference_whenPreferredInstanceAvailable_thenPreferredIsFirstAndAllInstancesReturned() {
+                when(lbCache.retrieve("USER", "service")).thenReturn(Mono.just(new LoadBalancerCacheRecord("instance1")));
+                when(lbCache.store(eq("USER"), eq("service"), argThat(cacheRecord -> cacheRecord.getInstanceId().equals("instance1"))))
+                    .thenReturn(Mono.empty());
+
+                StepVerifier.create(loadBalancer.get(request))
+                    .assertNext(chosenInstances -> {
+                        assertNotNull(chosenInstances);
+                        assertEquals(2, chosenInstances.size(),
+                            "All instances must be returned for transparent failover");
+                        assertEquals("instance1", chosenInstances.get(0).getInstanceId(),
+                            "Preferred instance must be first in list");
+                        assertEquals("instance2", chosenInstances.get(1).getInstanceId(),
+                            "Fallback instance must follow the preferred");
+                    })
+                    .expectComplete()
+                    .verify();
             }
 
         }
