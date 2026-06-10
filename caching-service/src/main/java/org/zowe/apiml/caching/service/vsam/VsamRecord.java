@@ -16,7 +16,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.cache.InvalidPayloadException;
-import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 
 import java.io.UnsupportedEncodingException;
