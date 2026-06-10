@@ -74,7 +74,11 @@ public class ClientCertFilter extends PreZuulFilter {
         context.addZuulRequestHeader(CLIENT_CERT_HEADER, null);
 
         HttpServletRequest request = context.getRequest();
+
         X509Certificate[] certs = (X509Certificate[]) request.getAttribute(CLIENT_CERT_ATTRIBUTE);
+        if (certs == null || certs.length == 0) {
+            certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        }
 
         if (certs != null && certs.length > 0) {
             try {
