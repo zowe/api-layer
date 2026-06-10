@@ -31,6 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -134,7 +135,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
                 if (c == null) {
                     return Optional.empty();
                 }
-                if (c.getExpiresAt() != null && LocalDateTime.now().isAfter(c.getExpiresAt())) {
+                if (c.getExpiresAt() != null && LocalDateTime.now(ZoneOffset.UTC).isAfter(c.getExpiresAt())) {
                     return Optional.empty();
                 }
                 return Optional.of(true);
