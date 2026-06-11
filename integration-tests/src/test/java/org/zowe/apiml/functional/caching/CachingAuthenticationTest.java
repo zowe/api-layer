@@ -13,7 +13,10 @@ package org.zowe.apiml.functional.caching;
 import io.restassured.RestAssured;
 import io.restassured.config.SSLConfig;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -21,13 +24,16 @@ import org.springframework.http.HttpStatus;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.categories.NotAttlsTest;
-import org.zowe.apiml.util.config.*;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;
 
 import java.util.List;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.CLIENT_CERT_HEADER;
 
 /**
  * This test is specifically testing the access to the Caching service. It doesn't go through the Gateway.
@@ -42,11 +48,13 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
 
     private String caching_url = ConfigReader.environmentConfiguration().getCachingServiceConfiguration().getUrl();
     private static final String CERT_HEADER_NAME = "X-Certificate-DistinguishedName";
+    private static String clientCertValue;
 
     @BeforeAll
     static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+        clientCertValue = SslContext.clientCertValidCert;
     }
 
     @BeforeEach
@@ -131,7 +139,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
         void cachingApiEndpointsAccessible() {
             given()
                 .config(SslContext.clientCertApiml)
-                .header(CERT_HEADER_NAME, "value")
+                .header(CLIENT_CERT_HEADER, clientCertValue)
                 .when()
                 .get(caching_url + CACHING_PATH)
                 .then()
