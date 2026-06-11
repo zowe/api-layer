@@ -38,6 +38,7 @@ import org.zowe.apiml.product.routing.transform.TransformService;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_EXTERNAL_URL;
@@ -130,7 +131,7 @@ public class GatewayConfig {
             instance.setHostname(hostname);
         }
 
-        String externalUrl = getProperty("apiml.service.external-url");
+        String externalUrl = Optional.ofNullable(getProperty("apiml.service.external-url")).filter(StringUtils::hasText).orElse(getProperty("apiml.service.externalUrl"));
         if (!StringUtils.hasText(externalUrl)) {
             externalUrl = (isSecurePortEnabled || isAttlsServerEnabled ? "https" : "http") + "://" + hostname + ":" + serverPort;
         }

@@ -192,6 +192,8 @@ public class JGroupStabilityTest {
             env.put("attlsEnabledOnInfinispanTest", isAttls ? "true" : "false");
             env.put("ZWE_zowe_network_client_tls_attls", isAttls ? "true" : "false");
 
+            env.put("ZWE_ALLOWED_DOMAINS", "localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com");
+
             ProcessBuilder builder = new ProcessBuilder("caching-service-package/src/main/resources/bin/start.sh");
             builder.environment().putAll(env);
 
