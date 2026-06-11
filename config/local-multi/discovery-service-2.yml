@@ -9,8 +9,6 @@ apiml:
         staticApiDefinitionsDirectories: config/local/api-defs
         allPeersUrls: http://localhost2:10021/eureka,http://localhost:10011/eureka
     security:
-        ssl:
-            verifySslCertificatesOfServices: true
         allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
     banner: console
 

@@ -25,7 +25,6 @@
 #   - ATTLS_CLIENT_ENABLED
 #   - internalProtocol
 #   - externalProtocol
-#   - verifySslCertificatesOfServices
 #   - nonStrictVerifySslCertificatesOfServices
 #   - server_protocol
 #   - server_enabled_protocols
@@ -81,14 +80,12 @@ fi
 ################################################################################
 verify_certificates_config=$(echo "${ZWE_zowe_verifyCertificates:-STRICT}" | tr '[:lower:]' '[:upper:]')
 if [ "${verify_certificates_config}" = "DISABLED" ]; then
-    verifySslCertificatesOfServices=false
-    nonStrictVerifySslCertificatesOfServices=false
+    echo "DISABLED is not a supported option for zowe.verifyCertificates"
+    exit 1
 elif [ "${verify_certificates_config}" = "NONSTRICT" ]; then
-    verifySslCertificatesOfServices=true
     nonStrictVerifySslCertificatesOfServices=true
 else
     # default value is STRICT
-    verifySslCertificatesOfServices=true
     nonStrictVerifySslCertificatesOfServices=false
 fi
 

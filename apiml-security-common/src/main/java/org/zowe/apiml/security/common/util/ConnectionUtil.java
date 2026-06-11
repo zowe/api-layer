@@ -79,7 +79,7 @@ public class ConnectionUtil {
     public HttpClient getHttpClient(HttpConfig config, HttpClient httpClient, boolean useClientCert) throws UnrecoverableKeyException, CertificateException, IOException, NoSuchAlgorithmException, KeyStoreException {
         var sslContextBuilder = SslProvider.builder().sslContext(ConnectionUtil.getSslContext(config, useClientCert));
         log.debug("ConnectionUtil.getHttpClient - SSL config: verifySslCertificatesOfServices={}, nonStrictVerifySslCertificatesOfServices={}, hostnameVerificationEnabled={}, useClientCert={}",
-            config.isVerifySslCertificatesOfServices(),
+            true,
             config.isNonStrictVerifySslCertificatesOfServices(),
             isHostnameVerificationEnabled(config),
             useClientCert);
@@ -101,7 +101,7 @@ public class ConnectionUtil {
     }
 
     private boolean isHostnameVerificationEnabled(HttpConfig config) {
-        return config.isVerifySslCertificatesOfServices() && !config.isNonStrictVerifySslCertificatesOfServices();
+        return !config.isNonStrictVerifySslCertificatesOfServices();
     }
 
     @VisibleForTesting

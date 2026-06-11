@@ -12,40 +12,40 @@ package org.zowe.apiml.caching.config;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Header;
-import org.apache.http.HttpHeaders;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.caching.CachingServiceApplication;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
-import java.util.Base64;
-
 import static io.restassured.RestAssured.given;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest(
+    classes = CachingServiceApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SpringSecurityConfigTest {
 
-    private static final String USER = "user";
-    private static final String PASSWORD = "password";
+    @Value("${apiml.service.hostname:localhost}")
+    String hostname;
+    @LocalServerPort
+    int port;
 
-    private static final String VALID_BASIC_AUTH = "Basic " + Base64.getEncoder().encodeToString((USER + ":" + PASSWORD).getBytes());
-    private static final String INVALID_BASIC_AUTH = "Basic " + Base64.getEncoder().encodeToString((USER + ":invalidPassword").getBytes());
-    private static final String CLIENT_CERT_HEADER_NAME = "Client-Cert";
-    private static final String MOCK_FORWARDED_CERT = """
+    @MockitoBean
+    private CertificateValidator certificateValidator;
+
+    private static final String MOCK_FORWARDED_CERT_HEADER = """
         MIID7zCCAtegAwIBAgIED0TPEjANBgkqhkiG9w0BAQsFADB6MQswCQYDVQQGEwJD
         WjEPMA0GA1UECBMGUHJhZ3VlMQ8wDQYDVQQHEwZQcmFndWUxFDASBgNVBAoTC1pv
         d2UgU2FtcGxlMRwwGgYDVQQLExNBUEkgTWVkaWF0aW9uIExheWVyMRUwEwYDVQQD
@@ -78,362 +78,35 @@ public class SpringSecurityConfigTest {
         SslContext.prepareSslAuthentication(configurer);
     }
 
+    @BeforeEach
+    void setup() {
+        when(certificateValidator.isForwardingEnabled()).thenReturn(true);
+        when(certificateValidator.hasGatewayChain(any())).thenReturn(true);
+    }
+
     private String getUri(String hostname, int port) {
         return String.format("%s://%s:%d/%s", "https", hostname, port, "cachingservice/api/v1/cache");
     }
 
-    @Nested
-    @DirtiesContext
-    @TestPropertySource(
-        properties = {
-            "apiml.service.ssl.verifySslCertificatesOfServices=false",
-            "apiml.service.http.userId=user",
-            "apiml.service.http.password=password"
-        }
-    )
-    @SpringBootTest(
-        classes = CachingServiceApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-    )
-    class GivenDisabledSSLVerificationAndCachingCredentials {
-
-        @MockitoBean
-        CertificateValidator certificateValidator;
-
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-
-        @LocalServerPort
-        int port;
-
-        @BeforeEach
-        void setup() {
-            when(certificateValidator.isForwardingEnabled()).thenReturn(true);
-            when(certificateValidator.hasGatewayChain(any())).thenReturn(true);
-        }
-
-        @Nested
-        class givenNoBasicAuth {
-
-            @Test
-            void thenReturnForbidden() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.FORBIDDEN.value());
-            }
-
-        }
-
-        @Nested
-        class givenBasicAuth {
-
-            @Test
-            void whenValidBasicAuth_thenReturnUnauthorized() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
-            }
-
-            @Test
-            void whenInvalidBasicAuth_thenReturnUnauthorized() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
-            }
-        }
+    @Test
+    void whenNoClientCertificate_thenReturnUnauthorized() {
+        given()
+            .header(new Header("X-CS-Service-ID", "apimtst"))
+            .get(getUri(hostname, port))
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpStatus.FORBIDDEN.value());
     }
 
-    @Nested
-    @DirtiesContext
-    @TestPropertySource(
-        properties = {
-            "apiml.service.ssl.verifySslCertificatesOfServices=false"
-        }
-    )
-    @SpringBootTest(
-        classes = CachingServiceApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-    )
-    class GivenDisabledSSLVerificationAndNoCachingCredentials {
-
-        @MockitoBean
-        CertificateValidator certificateValidator;
-
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-
-        @LocalServerPort
-        int port;
-
-        @BeforeEach
-        void setup() {
-            when(certificateValidator.isForwardingEnabled()).thenReturn(true);
-            when(certificateValidator.hasGatewayChain(any())).thenReturn(true);
-        }
-
-        @Nested
-        class givenNoBasicAuth {
-
-            @Test
-            void thenReturnForbidden() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.FORBIDDEN.value());
-            }
-
-        }
-
-        @Nested
-        class givenBasicAuth {
-
-            @Test
-            void whenValidBasicAuth_thenReturnUnauthorized() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
-            }
-
-            @Test
-            void whenInvalidBasicAuth_thenReturnUnauthorized() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.UNAUTHORIZED.value());
-            }
-        }
+    @Test
+    void whenClientCertificate_thenReturnOk() {
+        given()
+            .config(SslContext.clientCertApiml)
+            .header(new Header("X-CS-Service-ID", "apimtst"))
+            .header(new Header("Client-Cert", MOCK_FORWARDED_CERT_HEADER))
+            .get(getUri(hostname, port))
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpStatus.OK.value());
     }
-
-    @Nested
-    @DirtiesContext
-    @TestPropertySource(
-        properties = {
-            "apiml.service.ssl.verifySslCertificatesOfServices=true",
-            "apiml.service.http.userId=user",
-            "apiml.service.http.password=password"
-        }
-    )
-    @SpringBootTest(
-        classes = CachingServiceApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-    )
-    class GivenEnabledSSLVerificationAndCachingCredentials {
-
-        @MockitoBean
-        CertificateValidator certificateValidator;
-
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-
-        @LocalServerPort
-        int port;
-
-        @BeforeEach
-        void setup() {
-            when(certificateValidator.isForwardingEnabled()).thenReturn(true);
-            when(certificateValidator.hasGatewayChain(any())).thenReturn(true);
-        }
-
-        @Nested
-        class givenNoClientCertificate {
-
-            @Test
-            void whenNoBasicAuth_thenReturnForbidden() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.FORBIDDEN.value());
-            }
-
-            @Test
-            void whenValidBasicAuth_thenReturnForbidden() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.FORBIDDEN.value());
-            }
-
-            @Test
-            void whenInvalidBasicAuth_thenReturnForbidden() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.FORBIDDEN.value());
-            }
-        }
-
-        @Nested
-        class givenClientCertificate {
-
-            @Test
-            void whenNoBasicAuth_thenReturnSuccess() {
-                given()
-                    .config(SslContext.clientCertApiml)
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.OK.value());
-            }
-
-            @Test
-            void whenValidBasicAuth_thenReturnSuccess() {
-                given()
-                    .config(SslContext.clientCertApiml)
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.OK.value());
-            }
-
-            @Test
-            void whenInvalidBasicAuth_thenReturnSuccess() {
-                given()
-                    .config(SslContext.clientCertApiml)
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.OK.value());
-            }
-        }
-
-    }
-
-    @Nested
-    @DirtiesContext
-    @TestPropertySource(
-        properties = {
-            "apiml.service.ssl.verifySslCertificatesOfServices=true"
-        }
-    )
-    @SpringBootTest(
-        classes = CachingServiceApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-    )
-    class GivenEnabledSSLVerificationAndNoCachingCredentials {
-
-        @MockitoBean
-        CertificateValidator certificateValidator;
-
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-
-        @LocalServerPort
-        int port;
-
-        @BeforeEach
-        void setup() {
-            when(certificateValidator.isForwardingEnabled()).thenReturn(true);
-            when(certificateValidator.hasGatewayChain(any())).thenReturn(true);
-        }
-
-        @Nested
-        class givenNoClientCertificate {
-
-            @Test
-            void whenNoBasicAuth_thenReturnForbidden() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.FORBIDDEN.value());
-            }
-
-            @Test
-            void whenValidBasicAuth_thenReturnForbidden() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.FORBIDDEN.value());
-            }
-
-            @Test
-            void whenInvalidBasicAuth_thenReturnForbidden() {
-                given()
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.FORBIDDEN.value());
-            }
-        }
-
-        @Nested
-        class givenClientCertificate {
-
-            @Test
-            void whenNoBasicAuth_thenReturnSuccess() {
-                given()
-                    .config(SslContext.clientCertApiml)
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.OK.value());
-            }
-
-            @Test
-            void whenValidBasicAuth_thenReturnSuccess() {
-                given()
-                    .config(SslContext.clientCertApiml)
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, VALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.OK.value());
-            }
-
-            @Test
-            void whenInvalidBasicAuth_thenReturnSuccess() {
-                given()
-                    .config(SslContext.clientCertApiml)
-                    .header(new Header(CLIENT_CERT_HEADER_NAME, MOCK_FORWARDED_CERT))
-                    .header(new Header(HttpHeaders.AUTHORIZATION, INVALID_BASIC_AUTH))
-                    .get(getUri(hostname, port))
-                    .then()
-                    .log().ifValidationFails()
-                    .statusCode(HttpStatus.OK.value());
-            }
-        }
-
-    }
-
 }

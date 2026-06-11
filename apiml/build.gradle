@@ -78,7 +78,6 @@ dependencies {
 
     testImplementation(testFixtures(project(":apiml-common")))
     testImplementation(project(":zaas-service"))
-    testImplementation(testFixtures(project(":apiml-security-common")))
     testImplementation(testFixtures(project(":gateway-service")))
     testImplementation(testFixtures(project(":apiml-security-common")))
     testImplementation libs.spring.boot.starter.test

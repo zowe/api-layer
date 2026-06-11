@@ -41,7 +41,6 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CachedBodyFilter;
-import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
 import org.zowe.apiml.filter.OIDCAuthFilter;
 import org.zowe.apiml.filter.QueryWebFilter;
@@ -52,6 +51,7 @@ import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
@@ -105,12 +105,6 @@ public class WebSecurityConfig {
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
-
-    @Value("${apiml.service.port}")
-    private int gatewayPort;
-
     @Value("${apiml.internal-discovery.port:10011}")
     private int internalDiscoveryPort;
 
@@ -156,22 +150,12 @@ public class WebSecurityConfig {
                 notInUnauthenticatedPaths,
                 exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch() // Prevents matching /eureka (mapping for homepage in modulith)
             ))
-            .authorizeExchange(authorizeExchangeSpec -> {
-                if (verifySslCertificatesOfServices) {
-                    authorizeExchangeSpec
-                        .anyExchange().authenticated();
-                } else {
-                    authorizeExchangeSpec.anyExchange().permitAll();
-                }
-            })
+            .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 
-        if (verifySslCertificatesOfServices) {
-            return x509SecurityConfig(http).build();
-        }
+        return x509SecurityConfig(http).build();
 
-        return http.build();
     }
 
     /**
@@ -198,10 +182,8 @@ public class WebSecurityConfig {
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
 
-        if (verifySslCertificatesOfServices) {
-            return x509SecurityConfig(http).build();
-        }
-        return http.build();
+        return x509SecurityConfig(http).build();
+
     }
 
     /**
@@ -592,16 +574,11 @@ public class WebSecurityConfig {
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .exceptionHandling(eh -> eh.authenticationEntryPoint(
                 catalogEntryPoint(serverAuthenticationEntryPoint)
-            ));
-
-        if (verifySslCertificatesOfServices) {
-            http.x509(x509 -> x509
+            ))
+            .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
-            );
-        }
-
-        http
+            )
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
 

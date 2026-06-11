@@ -221,21 +221,11 @@ teardown() {
     [ "$LIBRARY_PATH" = "../common-java-lib/bin/" ]
 }
 
-@test "apiml-common-scripts: certificate verification DISABLED sets both to false" {
-    export ZWE_zowe_verifyCertificates="DISABLED"
-
-    . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
-
-    [ "$verifySslCertificatesOfServices" = "false" ]
-    [ "$nonStrictVerifySslCertificatesOfServices" = "false" ]
-}
-
 @test "apiml-common-scripts: certificate verification NONSTRICT sets both to true" {
     export ZWE_zowe_verifyCertificates="NONSTRICT"
 
     . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
 
-    [ "$verifySslCertificatesOfServices" = "true" ]
     [ "$nonStrictVerifySslCertificatesOfServices" = "true" ]
 }
 
@@ -244,17 +234,15 @@ teardown() {
 
     . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
 
-    [ "$verifySslCertificatesOfServices" = "true" ]
     [ "$nonStrictVerifySslCertificatesOfServices" = "false" ]
 }
 
 @test "apiml-common-scripts: certificate verification is case insensitive" {
-    export ZWE_zowe_verifyCertificates="disabled"
+    export ZWE_zowe_verifyCertificates="nonstrict"
 
     . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
 
-    [ "$verifySslCertificatesOfServices" = "false" ]
-    [ "$nonStrictVerifySslCertificatesOfServices" = "false" ]
+    [ "$nonStrictVerifySslCertificatesOfServices" = "true" ]
 }
 
 @test "apiml-common-scripts: AT-TLS server disabled by default" {

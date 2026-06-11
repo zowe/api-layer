@@ -29,8 +29,6 @@ apiml:
     security:
         filterChainConfiguration: new
         allowTokenRefresh: true
-        ssl:
-            verifySslCertificatesOfServices: true
         auth:
             provider: dummy
             zosmf:

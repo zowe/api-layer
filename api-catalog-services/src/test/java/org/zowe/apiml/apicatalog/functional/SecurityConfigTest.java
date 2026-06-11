@@ -11,13 +11,14 @@
 package org.zowe.apiml.apicatalog.functional;
 
 import io.restassured.RestAssured;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.apicatalog.ApiCatalogApplication;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
@@ -39,6 +40,17 @@ import static org.mockito.Mockito.when;
 )
 public class SecurityConfigTest {
 
+    @Value("${apiml.service.hostname:localhost}")
+    String hostname;
+    @LocalServerPort
+    int port;
+
+    @MockitoBean
+    GatewaySecurity gatewaySecurity;
+
+    @MockitoBean
+    ApiDocService apiDocService;
+
 
     @BeforeAll
     static void init() throws Exception {
@@ -48,89 +60,44 @@ public class SecurityConfigTest {
 
     }
 
+    @BeforeEach
+    void setup() {
+        when(apiDocService.retrieveDefaultApiDoc(any())).thenReturn(Mono.just("{}"));
+    }
+
     private String getUri(String hostname, int port) {
         return String.format("%s://%s:%d/%s", "https", hostname, port, "apicatalog/apidoc/service1");
     }
 
-    @Nested
-    @TestPropertySource(
-        properties = {
-            "apiml.security.ssl.verifySslCertificatesOfServices=false"
-        }
-    )
-    @DirtiesContext
-    class GivenDisabledSSLVerification {
-
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-        @LocalServerPort
-        int port;
-
-        @Test
-        void whenClientCertificate_thenReturnUnauthorized() {
-            given()
-                .config(SslContext.clientCertApiml)
-                .get(getUri(hostname, port))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
-        }
+    @Test
+    void whenNoClientCertificateButBasicAuth_thenReturnOk() {
+        when(gatewaySecurity.login(any(), any(), any())).thenReturn(Optional.of("token"));
+        given()
+            .header("Authorization", "Basic dXNlcjpwYXNz")
+            .get(getUri(hostname, port))
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpStatus.OK.value());
     }
 
-    @Nested
-    @TestPropertySource(
-        properties = {
-            "apiml.security.ssl.verifySslCertificatesOfServices=true"
-        }
-    )
-    @DirtiesContext
-    class GivenEnabledSSLVerification {
-
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-        @LocalServerPort
-        int port;
-
-        @MockitoBean
-        GatewaySecurity gatewaySecurity;
-
-        @MockitoBean
-        ApiDocService apiDocService;
-
-        @BeforeEach
-        void setup() {
-            when(apiDocService.retrieveDefaultApiDoc(any())).thenReturn(Mono.just("{}"));
-        }
-
-        @Test
-        void whenNoClientCertificateButBasicAuth_thenReturnOk() {
-            when(gatewaySecurity.login(any(), any(), any())).thenReturn(Optional.of("token"));
-            given()
-                .header("Authorization", "Basic dXNlcjpwYXNz")
-                .get(getUri(hostname, port))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpStatus.OK.value());
-        }
-
-        @Test
-        void whenClientCertificate_thenReturnOk() {
-            given()
-                .config(SslContext.clientCertApiml)
-                .get(getUri(hostname, port))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpStatus.OK.value());
-        }
-
-        @Test
-        void whenNoCredentials_thenReturnUnauthorized() {
-
-            given()
-                .get(getUri(hostname, port))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
-        }
+    @Test
+    void whenClientCertificate_thenReturnOk() {
+        given()
+            .config(SslContext.clientCertApiml)
+            .get(getUri(hostname, port))
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpStatus.OK.value());
     }
+
+    @Test
+    void whenNoCredentials_thenReturnUnauthorized() {
+
+        given()
+            .get(getUri(hostname, port))
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpStatus.UNAUTHORIZED.value());
+    }
+
 }

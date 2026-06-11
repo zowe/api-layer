@@ -57,7 +57,6 @@ class ConnectionUtilTest {
         when(httpConfig.getTrustStoreType()).thenReturn("PKCS12");
         when(httpConfig.getTrustStorePath()).thenReturn("../keystore/localhost/localhost.truststore.p12");
         when(httpConfig.getTrustStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
-        when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
     }
 
     @Test
@@ -107,7 +106,6 @@ class ConnectionUtilTest {
 
     @Test
     void whenNonStrict_thenDisableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-        when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
         when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(true);
 
         try (MockedStatic<SslContextBuilder> sslContextBuilder = Mockito.mockStatic(SslContextBuilder.class)) {
@@ -126,7 +124,6 @@ class ConnectionUtilTest {
 
         @Test
         void whenHostnameVerificationEnabled_thenEnableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-            when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
             when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
             var baseHttpClient = HttpClient.create();
             var result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
@@ -139,7 +136,6 @@ class ConnectionUtilTest {
 
         @Test
         void whenUseClientCertTrueAndHostnameVerificationStrict_thenEnableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-            when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
             when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
             when(httpConfig.getKeyStoreType()).thenReturn("PKCS12");
             when(httpConfig.getKeyStorePath()).thenReturn("../keystore/localhost/localhost.keystore.p12");
@@ -153,19 +149,7 @@ class ConnectionUtilTest {
 
         @Test
         void whenHostnameVerificationDisabled_thenDisableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-            when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
             when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(true);
-
-            var baseHttpClient = HttpClient.create();
-            var result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);
-
-            assertNull(ReflectionTestUtils.getField(result.configuration().sslProvider().getSslContext(), "endpointIdentificationAlgorithm"));
-        }
-
-        @Test
-        void whenVerifySslDisabled_thenDisableEndpointIdentificationAlgorithm() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
-            when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(false);
-            when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
 
             var baseHttpClient = HttpClient.create();
             var result = ConnectionUtil.getHttpClient(httpConfig, baseHttpClient, false);

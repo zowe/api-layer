@@ -37,8 +37,6 @@ apiml:
     discovery:
         allPeersUrls: https://localhost:10011/eureka,https://localhost2:10021/eureka
     security:
-        # ssl:
-        #     verifySslCertificatesOfServices: false
         x509:
             enabled: true
             certificatesUrl: https://localhost:10010/gateway/certificates

@@ -56,7 +56,6 @@ export LIBRARY_PATH=$dir/lib/
 export ROOT_DIR=$dir
 #export STATIC_DEF_CONFIG_DIR
 export TRUSTSTORE=$dir/keystore/truststore.p12
-export VERIFY_CERTIFICATES=true
 #export VSAM_FILE_NAME
 export WORKSPACE_DIR=$dir
 export ZOWE_EXPLORER_HOST=$systemHostname

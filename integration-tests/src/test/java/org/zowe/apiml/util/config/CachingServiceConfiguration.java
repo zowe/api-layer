@@ -35,8 +35,4 @@ public class CachingServiceConfiguration implements ServiceConfiguration {
         return "/" + getServiceId() + "/";
     }
 
-    @Override
-    public boolean isBasicAuthenticationSupported() {
-        return false;
-    }
 }

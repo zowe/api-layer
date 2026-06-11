@@ -249,17 +249,3 @@ Import [keystore/local_ca/localca.cer](/keystore/local_ca/localca.cer) to your r
   /* Enable experimental Windows trust store support */
   pref("security.enterprise_roots.enabled", true);
   ```
-
-### Disabling certificate validation on localhost
-
-The default configuration of services for local development is to verify certificates of all services. Since the API ML service use correctly generated certificates, there should be no issues.
-
-Follow these steps to quickly register an existing service without generating a certificate for it
-
-1. Set the `apiml.security.ssl.verifySslCertificatesOfServices` configuration property to `false` from the default `true` for API ML services (Gateway, Discovery service and API Catalog).
-
-2. Add the following options to the startup command of each service in `package.json` or in your IDE:
-
-    ```bash
-    --apiml.security.ssl.verifySslCertificatesOfServices=false
-    ```

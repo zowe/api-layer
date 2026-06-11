@@ -12,16 +12,13 @@ package org.zowe.apiml.discovery.functional;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
@@ -36,6 +33,11 @@ import static io.restassured.RestAssured.given;
 @ActiveProfiles({"https"})
 public class SecurityConfigTest {
 
+    @Value("${apiml.service.hostname:localhost}")
+    String hostname;
+    @LocalServerPort
+    int port;
+
     @BeforeAll
     static void init() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
@@ -47,62 +49,24 @@ public class SecurityConfigTest {
         return String.format("%s://%s:%d/%s", "https", hostname, port, "eureka/apps");
     }
 
-    @Nested
-    @TestPropertySource(
-        properties = {
-            "apiml.security.ssl.verifySslCertificatesOfServices=false"
-        }
-    )
-    @DirtiesContext
-    class GivenDisabledSSLVerification {
-
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-        @LocalServerPort
-        int port;
-
-        @Test
-        void thenDoNotRequireAuth() {
-            given()
-                .get(getUri(hostname, port))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpStatus.OK.value());
-        }
+    @Test
+    void whenNoClientCertificate_thenReturnUnauthorized() {
+        given()
+            .get(getUri(hostname, port))
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpStatus.FORBIDDEN.value());
     }
 
-    @Nested
-    @TestPropertySource(
-        properties = {
-            "apiml.security.ssl.verifySslCertificatesOfServices=true"
-        }
-    )
-    @DirtiesContext
-    class GivenEnabledSSLVerification {
+    @Test
+    void whenClientCertificate_thenReturnOk() {
 
-        @Value("${apiml.service.hostname:localhost}")
-        String hostname;
-        @LocalServerPort
-        int port;
-
-        @Test
-        void whenNoClientCertificate_thenReturnUnauthorized() {
-            given()
-                .get(getUri(hostname, port))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpStatus.FORBIDDEN.value());
-        }
-
-        @Test
-        void whenClientCertificate_thenReturnOk() {
-
-            given()
-                .config(SslContext.clientCertApiml)
-                .get(getUri(hostname, port))
-                .then()
-                .log().ifValidationFails()
-                .statusCode(HttpStatus.OK.value());
-        }
+        given()
+            .config(SslContext.clientCertApiml)
+            .get(getUri(hostname, port))
+            .then()
+            .log().ifValidationFails()
+            .statusCode(HttpStatus.OK.value());
     }
+
 }

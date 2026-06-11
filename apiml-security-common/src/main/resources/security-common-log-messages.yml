@@ -199,14 +199,6 @@ messages:
       reason: "The registry name configuration is required to correctly map distributed user name from the OIDC access token."
       action: "Make sure that 'components.gateway.apiml.security.oidc.registry' is correctly set in 'zowe.yaml'."
 
-    # Other
-    - key: org.zowe.apiml.security.common.auth.missingDefaultCredentials
-      number: ZWEAT611
-      type: WARNING
-      text: "APIML credentials are not set."
-      reason: "Basic authentication is required when SSL certificate verification is disabled."
-      action: "Ensure that the parameters `apiml.service.http.userId` and `apiml.service.http.password` are correctly configured."
-
     # Service specific messages
     # 700-999
 

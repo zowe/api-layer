@@ -29,7 +29,6 @@ import org.springframework.security.web.server.authentication.HttpStatusServerEn
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.product.web.HttpConfig;
-import org.zowe.apiml.security.common.auth.BasicAuthenticationManager;
 import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
@@ -44,15 +43,6 @@ import java.util.Set;
 @EnableWebFluxSecurity
 @Import({HttpConfig.class, CertificateValidator.class, TrustedCertificatesProvider.class})
 public class SpringSecurityConfig {
-
-    @Value("${apiml.service.http.userId:#{null}}")
-    private String cachingServiceUserId;
-
-    @Value("${apiml.service.http.password:#{null}}")
-    private char[] cachingServicePassword;
-
-    @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifyCertificates;
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
@@ -83,16 +73,10 @@ public class SpringSecurityConfig {
             .addFilterAfter(certFilter, SecurityWebFiltersOrder.FIRST);
 
         http.authorizeExchange(exchange -> exchange
-            .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
-            .anyExchange().authenticated());
-
-        if (verifyCertificates) {
-            http.x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
+                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+                .anyExchange().authenticated())
+            .x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
-        } else {
-            http.httpBasic(httpBasicSpec -> httpBasicSpec.authenticationManager(
-                new BasicAuthenticationManager(cachingServiceUserId, cachingServicePassword, "CACHING_SERVICE")));
-        }
 
         return http.build();
     }

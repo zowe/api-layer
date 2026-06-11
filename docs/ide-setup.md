@@ -130,7 +130,6 @@ Example to launch Gateway application in `launch.json`:
         "-Dspring.profiles.active=https"
     ],
     "args": [
-        "--apiml.security.ssl.verifySslCertificatesOfServices=true",
         "--server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
         "--server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
         "--server.internal.ssl.keyStore=../keystore/localhost/localhost-multi.keystore.p12",

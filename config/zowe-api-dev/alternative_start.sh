@@ -15,7 +15,7 @@
 # - DISCOVERY_PORT - the port the discovery service will use
 # - CATALOG_PORT - the port the api catalog service will use
 # - GATEWAY_PORT - the port the api gateway service will use
-# - VERIFY_CERTIFICATES - boolean saying if we accept only verified certificates
+# - NONSTRICT_VERIFY_CERTIFICATES - boolean saying if we accept trusted certificates without hostName verification
 # - DISCOVERY_PORT - The port the data sets server will use
 # - KEY_ALIAS
 # - KEYSTORE - The keystore to use for SSL certificates
@@ -65,7 +65,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.gateway.timeoutMillis=${APIML_GATEWAY_TIMEOUT_MILLIS} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.auth.zosmf.serviceId=${APIML_ZOSMF_ID:-ibmzosmf} \
     -Dapiml.security.auth.provider=${APIML_SECURITY_AUTH_PROVIDER} \
@@ -142,7 +141,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${DISCOVERY_CODE} java -Xms32m -Xmx256m ${QUICK_START
     -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
     -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${APIML_STATIC_DEF} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true} \
     -Dserver.ssl.keyStore="${KEYSTORE}" \
@@ -175,7 +173,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CATALOG_CODE} java \
     -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
     -Dapiml.service.gatewayHostname=${ZOWE_EXPLORER_HOST} \
     -Dapiml.logs.location=${WORKSPACE_DIR}/api-mediation/logs \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
     -Dserver.address=0.0.0.0 \
     -Dserver.ssl.enabled=${APIML_SSL_ENABLED:-true}  \
@@ -206,7 +203,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${CACHING_CODE} java -Xms16m -Xmx512m \
   -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
   -Dapiml.service.ipAddress=${ZOWE_IP_ADDRESS} \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${GATEWAY_PORT} \
-  -Dapiml.service.ssl.verifySslCertificatesOfServices=${VERIFY_CERTIFICATES:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${NONSTRICT_VERIFY_CERTIFICATES:-false} \
   -Dcaching.storage.evictionStrategy=${ZWE_CACHING_EVICTION_STRATEGY:-reject} \
   -Dcaching.storage.size=${ZWE_CACHING_STORAGE_SIZE:-100} \

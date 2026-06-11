@@ -26,8 +26,6 @@ apiml:
     auth:
       zosmf:
         serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
-    ssl:
-      verifySslCertificatesOfServices: true
     x509:
       enabled: true
     useDummyCNMapper: true

@@ -14,8 +14,6 @@ apiml:
             provider: zosmf
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
-        ssl:
-            verifySslCertificatesOfServices: true
         x509:
             enabled: true
     banner: console

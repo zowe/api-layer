@@ -64,9 +64,6 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
-
     @Bean
     WebSecurityCustomizer httpsWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
@@ -124,19 +121,16 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(2)
     SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.securityMatcher("/eureka/**"));
-        if (verifySslCertificatesOfServices) {
-            http.x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
-                .authorizeHttpRequests(requests -> requests
-                    .anyRequest().authenticated()
-                );
-            if (isServerAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
-        } else {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+        baseConfigure(http.securityMatcher("/eureka/**"))
+            .x509(x509 -> x509.userDetailsService(x509UserDetailsService()))
+            .authorizeHttpRequests(requests -> requests
+                .anyRequest().authenticated()
+            );
+        if (isServerAttlsEnabled) {
+            http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
+
         return http.build();
     }
 
@@ -149,14 +143,13 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         baseConfigure(http.securityMatcher("/discovery/**"))
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
-            .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
-        if (verifySslCertificatesOfServices) {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
-                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
-            if (isServerAttlsEnabled) {
-                http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
-                http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            }
+            .httpBasic(basic -> basic.realmName(DISCOVERY_REALM))
+            .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
+            .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
+
+        if (isServerAttlsEnabled) {
+            http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
+            http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
         }
 
         return http.with(new CustomSecurityFilters(), t -> {

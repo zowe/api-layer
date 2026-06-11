@@ -92,9 +92,6 @@ public class SecurityConfiguration {
     private final MessageService messageService;
     private final ObjectMapper objectMapper;
 
-    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
-    private boolean verifySslCertificatesOfServices;
-
     private WebFilter basicAuthenticationFilter;
     private WebFilter tokenAuthenticationFilter;
     private WebFilter oidcAuthenticationFilter;
@@ -154,14 +151,11 @@ public class SecurityConfiguration {
             serverAuthenticationEntryPoint,
             basicAuthenticationFilter, tokenAuthenticationFilter, oidcAuthenticationFilter
         )
-            .authorizeExchange(exchange -> exchange.anyExchange().authenticated());
-
-        if (verifySslCertificatesOfServices) {
-            http.x509(x509 -> x509
+            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
             );
-        }
 
         return http.build();
     }

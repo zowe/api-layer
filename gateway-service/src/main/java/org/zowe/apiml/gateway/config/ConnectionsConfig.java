@@ -112,7 +112,7 @@ public class ConnectionsConfig {
     NettyRoutingFilterApiml createNettyRoutingFilterApiml(HttpClient httpClient, ObjectProvider<List<HttpHeadersFilter>> headersFiltersProvider, HttpClientProperties properties) {
         boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isClientAttlsEnabled;
         log.debug("ConnectionsConfig.createNettyRoutingFilterApiml - Creating routing filter with SSL config: verifySslCertificatesOfServices={}, nonStrictVerifySslCertificatesOfServices={}, isKeyLoadPrevented={}",
-            config.isVerifySslCertificatesOfServices(),
+            true,
             config.isNonStrictVerifySslCertificatesOfServices(),
             isKeyLoadPrevented);
         try {
