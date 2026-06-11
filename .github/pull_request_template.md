@@ -14,7 +14,7 @@ Please delete options that are not relevant.
 - [ ] docs: Change in a documentation
 - [ ] refactor: Refactor the code 
 - [ ] chore: Chore, repository cleanup, updates the dependencies.
-- [ ] BREAKING CHANGE or !: Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] BREAKING CHANGE: Breaking change (fix or feature that would cause existing functionality to not work as expected)
 
 # Checklist:
 

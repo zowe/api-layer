@@ -26,6 +26,12 @@ const branchToMerge = process.argv[6];
         return line.replace("* fix:", "* Bugfix: ")
     }).join("\n");
 
+    const breakingChanges = lines.filter(line => {
+        return line.startsWith("* BREAKING CHANGE:");
+    }).map(line => {
+        return line.replace("* BREAKING CHANGE:", "* Breaking Change: ")
+    }).join("\n");
+
     const currentChangelog = await readFile("../../CHANGELOG.md");
     const changeLogLines = currentChangelog.toString().split(/\r?\n/)
     // Remove first 4 lines as they will be replaces by the header that\s visible below
@@ -40,6 +46,8 @@ const branchToMerge = process.argv[6];
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
 ## \`${version} (${releaseDate})\`
+
+${breakingChanges}
 
 ${addedFeatures}
 
