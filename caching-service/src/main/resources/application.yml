@@ -32,7 +32,7 @@ logging:
         org.zowe.apiml.caching: WARN
         org.springdoc: WARN
         org.springframework: WARN
-        org.springframework.boot: DEBUG
+        org.springframework.boot: OFF
         com.netflix: WARN
         com.netflix.discovery: ERROR
         com.netflix.config: ERROR

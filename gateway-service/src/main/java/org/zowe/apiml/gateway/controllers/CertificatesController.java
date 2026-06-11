@@ -41,10 +41,11 @@ import java.security.cert.Certificate;
 @Slf4j
 @RequestMapping({ CertificatesController.CONTROLLER_PATH, CertificatesController.CONTROLLER_FULL_PATH })
 public class CertificatesController {
+
     public static final String CONTROLLER_PATH = "/gateway/certificates";
     public static final String CONTROLLER_FULL_PATH = "/gateway/api/v1/certificates";
-
-
+    private static final ApimlLogger apimlLog = ApimlLogger.of(CertificatesController.class, YamlMessageServiceInstance.getInstance());
+    private Certificate[] certificates;
 
     @GetMapping
     @Operation(summary = "Returns the certificate chain that is used by Gateway",
@@ -57,13 +58,9 @@ public class CertificatesController {
             schema = @Schema(implementation = String.class)
         ))
     })
-    public Mono<String> getCertificates() {
-        return Mono.just(getCertificatesInPEMFormat());
+    public String getCertificates() {
+        return getCertificatesInPEMFormat();
     }
-
-
-    private static final ApimlLogger apimlLog = ApimlLogger.of(CertificatesController.class, YamlMessageServiceInstance.getInstance());
-    Certificate[] certificates;
 
     private final HttpsConfig config;
 

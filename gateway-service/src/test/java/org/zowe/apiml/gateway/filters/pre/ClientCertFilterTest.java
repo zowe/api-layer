@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 
@@ -57,13 +58,7 @@ class ClientCertFilterTest {
         when(instance.getMetadata()).thenReturn(metadata);
 
         underTest = new ClientCertFilter(discoveryClient);
-        setForwardingEnabled(underTest, true);
-    }
-
-    private void setForwardingEnabled(ClientCertFilter filter, boolean value) throws Exception {
-        java.lang.reflect.Field field = ClientCertFilter.class.getDeclaredField("forwardingClientCertEnabled");
-        field.setAccessible(true);
-        field.set(filter, value);
+        ReflectionTestUtils.setField(underTest, "forwardingClientCertEnabled", true);
     }
 
     @Nested
@@ -170,7 +165,7 @@ class ClientCertFilterTest {
         @BeforeEach
         void setup() throws Exception {
             metadata.put(EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING, "true");
-            setForwardingEnabled(underTest, false);
+            ReflectionTestUtils.setField(underTest, "forwardingClientCertEnabled", false);
         }
 
         @Test
