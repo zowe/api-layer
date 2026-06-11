@@ -28,7 +28,6 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.SecurityUtils;
-import reactor.core.publisher.Mono;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
@@ -39,7 +38,7 @@ import java.security.cert.Certificate;
 @Tag(name = "Certificates")
 @RestController
 @Slf4j
-@RequestMapping({ CertificatesController.CONTROLLER_PATH, CertificatesController.CONTROLLER_FULL_PATH })
+@RequestMapping({CertificatesController.CONTROLLER_PATH, CertificatesController.CONTROLLER_FULL_PATH})
 public class CertificatesController {
 
     public static final String CONTROLLER_PATH = "/gateway/certificates";
