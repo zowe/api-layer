@@ -110,17 +110,13 @@ public class SecurityConfiguration {
                         .requestMatchers(APIDOC_ROUTES, STATIC_REFRESH_ROUTE).authenticated())
                 .authenticationProvider(gatewayLoginProvider)
                 .authenticationProvider(gatewayTokenProvider)
-                .authenticationProvider(new CertificateAuthenticationProvider());
+                .authenticationProvider(new CertificateAuthenticationProvider())
+                .x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
 
             if (isServerAttlsEnabled) {
-                http.x509(x509 -> x509
-                        .userDetailsService(x509UserDetailsService()))
-                    .addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
+                http.addFilterBefore(reversedCategorizeCertFilter(), X509AuthenticationFilter.class)
                     .addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class)
                     .addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
-            } else {
-                http.x509(x509 -> x509
-                    .userDetailsService(x509UserDetailsService()));
             }
 
             return http.build();
