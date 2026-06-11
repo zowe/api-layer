@@ -59,7 +59,7 @@ public class CertificateValidator {
         if (certs == null || certs.length == 0) return false;
 
         if (ObjectUtils.isEmpty(proxyCertificatesEndpoint)) {
-            log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrls");
+            log.debug("No endpoint configured to retrieve trusted certificates. Provide URL via apiml.security.x509.certificatesUrl");
             return false;
         }
 
