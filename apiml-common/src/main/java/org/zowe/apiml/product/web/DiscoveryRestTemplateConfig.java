@@ -57,7 +57,7 @@ public class DiscoveryRestTemplateConfig {
     }
 
     @Bean
-    RestClientDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone}") String eurekaServerUrl,
+    RestClientDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone:http://localhost:8761/eureka/}") String eurekaServerUrl,
                                                       @Qualifier("secureSslContext") SSLContext secureSslContext,
                                                       HostnameVerifier secureHostnameVerifier
     ) {

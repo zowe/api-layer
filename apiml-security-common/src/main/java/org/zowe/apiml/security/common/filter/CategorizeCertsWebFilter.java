@@ -84,6 +84,7 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             .filter(ssl -> ssl.length > 0);
 
         ServerHttpRequest.Builder requestBuilder = exchange.getRequest().mutate();
+        SslInfo originalSslInfo = exchange.getRequest().getSslInfo();
         certsFromTlsOpt.ifPresent(certsFromTls -> {
             Optional<X509Certificate> clientCertFromHeader = getClientCertFromHeader(exchange.getRequest());
             log.debug("clientCertFromHeader.isPresent = {}", clientCertFromHeader.isPresent());
@@ -108,8 +109,13 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, certsFromTls);
                 log.debug("Retaining full TLS certificate chain in attribute {}: {}", ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(certsFromTls));
 
-                var sslInfo = SimpleSslInfo.builder().peerCertificates(clientAuthCerts).build();
-                requestBuilder.sslInfo(sslInfo);
+                if (clientAuthCerts.length > 0) {
+                    var sslInfo = SimpleSslInfo.builder()
+                        .sessionId(originalSslInfo != null ? originalSslInfo.getSessionId() : null)
+                        .peerCertificates(clientAuthCerts)
+                        .build();
+                    requestBuilder.sslInfo(sslInfo);
+                }
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
 
@@ -122,8 +128,13 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 X509Certificate[] apimlFilteredCerts = selectCerts(certsFromTls, apimlCertificate);
                 exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, apimlFilteredCerts);
                 log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(apimlFilteredCerts));
-                var sslInfo = SimpleSslInfo.builder().peerCertificates(clientAuthCerts).build();
-                requestBuilder.sslInfo(sslInfo);
+                if (clientAuthCerts.length > 0) {
+                    var sslInfo = SimpleSslInfo.builder()
+                        .sessionId(originalSslInfo != null ? originalSslInfo.getSessionId() : null)
+                        .peerCertificates(clientAuthCerts)
+                        .build();
+                    requestBuilder.sslInfo(sslInfo);
+                }
 
             }
 
