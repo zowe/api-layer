@@ -484,12 +484,6 @@ teardown() {
     [ "$truststore_type" = "PKCS12" ]
 }
 
-@test "apiml-common-scripts: sets ZOWE_CONSOLE_LOG_CHARSET to UTF-8 on non-z/OS" {
-    . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
-
-    [ "$ZOWE_CONSOLE_LOG_CHARSET" = "UTF-8" ]
-}
-
 @test "apiml-common-scripts: add_profile function is defined and works" {
     . "${SCRIPTS_DIR}/apiml-common-scripts.sh"
 

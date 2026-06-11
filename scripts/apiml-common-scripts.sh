@@ -17,8 +17,6 @@
 #
 # After sourcing, the following variables will be set:
 #   - QUICK_START (z/OS only)
-#   - ZOWE_CONSOLE_LOG_CHARSET
-#   - JAVA21_CONSOLE_ENCODING (Java 21+ on z/OS only)
 #   - ADD_OPENS
 #   - LIBPATH
 #   - ATTLS_SERVER_ENABLED
@@ -58,13 +56,21 @@ add_profile() {
 # Common library path setup
 ################################################################################
 if [ -z "${CMMN_LB}" ]; then
-    COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
+    if [ -d "apiml-common-lib/bin/BOOT-INF/lib/" ]; then
+        COMMON_LIB="apiml-common-lib/bin/BOOT-INF/lib/"
+    else
+        COMMON_LIB="../apiml-common-lib/bin/BOOT-INF/lib/"
+    fi
 else
     COMMON_LIB="${CMMN_LB}"
 fi
 
 if [ -z "${LIBRARY_PATH}" ]; then
-    LIBRARY_PATH="../common-java-lib/bin/"
+    if [ -d "common-java-lib/bin/" ]; then
+        LIBRARY_PATH="common-java-lib/bin/"
+    else
+        LIBRARY_PATH="../common-java-lib/bin/"
+    fi
 fi
 
 ################################################################################
@@ -72,7 +78,11 @@ fi
 ################################################################################
 JVM_SECURITY_PROPERTIES=""
 if [ "${JVM_SECURITY_PROPERTIES_OVERRIDE:-false}" = "true" ]; then
-    JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+    if [ -f "apiml-common-lib/bin/jvm.security.override.properties" ]; then
+        JVM_SECURITY_PROPERTIES="-Djava.security.properties=apiml-common-lib/bin/jvm.security.override.properties"
+    else
+        JVM_SECURITY_PROPERTIES="-Djava.security.properties=../apiml-common-lib/bin/jvm.security.override.properties"
+    fi
 fi
 
 ################################################################################
@@ -92,21 +102,9 @@ fi
 ################################################################################
 # Platform detection and Java version check
 ################################################################################
-ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
     SHARED_CLASSES_OPTS="-Xshareclasses:name=apiml_shared_classes,nonfatal,silent"
-
-    JAVA_VERSION=$(${JAVA_HOME}/bin/javap -J-Xms4m -J-Xmx16m -verbose java.lang.String \
-        | grep "major version" \
-        | cut -d " " -f5)
-
-    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
-        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
-        # Java 21+ changed default encoding to UTF-8 (JEP 400). Set console encoding
-        # to EBCDIC for z/OS SYSPRINT to prevent garbled characters in early startup logs
-        JAVA21_CONSOLE_ENCODING="-Dstdout.encoding=${ZOWE_CONSOLE_LOG_CHARSET} -Dstderr.encoding=${ZOWE_CONSOLE_LOG_CHARSET}"
-    fi
 fi
 
 ################################################################################
