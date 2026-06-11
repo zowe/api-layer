@@ -29,6 +29,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.discovery.metadata.MetadataFilterService;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.WrongMethodTypeException;
@@ -47,6 +48,7 @@ class ApimlInstanceRegistryTest {
     private ApplicationContext appCntx;
     private InstanceInfo standardInstance;
     private EurekaConfig.Tuple tuple;
+    private MetadataFilterService metadataFilterService;
 
     @BeforeEach
     void setUp() {
@@ -58,13 +60,17 @@ class ApimlInstanceRegistryTest {
         instanceRegistryProperties = mock(InstanceRegistryProperties.class);
         appCntx = mock(ApplicationContext.class);
         tuple = new EurekaConfig.Tuple("service*,hello");
+        metadataFilterService = mock(MetadataFilterService.class);
+
         apimlInstanceRegistry = spy(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
             serverCodecs,
             eurekaClient,
             instanceRegistryProperties,
-            appCntx,tuple));
+            appCntx,
+            tuple,
+            metadataFilterService));
 
         MethodHandle methodHandle = mock(MethodHandle.class);
 
@@ -115,7 +121,10 @@ class ApimlInstanceRegistryTest {
             serverCodecs,
             eurekaClient,
             instanceRegistryProperties,
-            appCntx,new EurekaConfig.Tuple(tuple)));
+            appCntx,
+            new EurekaConfig.Tuple(tuple),
+            metadataFilterService)
+        );
         MethodHandle methodHandle = mock(MethodHandle.class);
         ReflectionTestUtils.setField(apimlInstanceRegistry,"register2ArgsMethodHandle",methodHandle);
         ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
@@ -132,7 +141,10 @@ class ApimlInstanceRegistryTest {
             serverCodecs,
             eurekaClient,
             instanceRegistryProperties,
-            appCntx,new EurekaConfig.Tuple(tuple)));
+            appCntx,
+            new EurekaConfig.Tuple(tuple),
+            metadataFilterService)
+        );
         MethodHandle methodHandle = mock(MethodHandle.class);
         ReflectionTestUtils.setField(apimlInstanceRegistry,"register3ArgsMethodHandle",methodHandle);
         ReflectionTestUtils.setField(apimlInstanceRegistry,"handleRegistrationMethod",methodHandle);
@@ -153,7 +165,10 @@ class ApimlInstanceRegistryTest {
                     serverCodecs,
                     eurekaClient,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple(tuple)));
+                    appCntx,
+                    new EurekaConfig.Tuple(tuple),
+                    metadataFilterService)
+                );
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(exception);
@@ -170,7 +185,10 @@ class ApimlInstanceRegistryTest {
                     serverCodecs,
                     eurekaClient,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple("service*,hello")));
+                    appCntx,
+                    new EurekaConfig.Tuple("service*,hello"),
+                    metadataFilterService)
+                );
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register2ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());
@@ -188,7 +206,10 @@ class ApimlInstanceRegistryTest {
                     serverCodecs,
                     eurekaClient,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple(tuple)));
+                    appCntx,
+                    new EurekaConfig.Tuple(tuple),
+                    metadataFilterService)
+                );
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any(), any())).thenThrow(exception);
@@ -205,7 +226,10 @@ class ApimlInstanceRegistryTest {
                     serverCodecs,
                     eurekaClient,
                     instanceRegistryProperties,
-                    appCntx,new EurekaConfig.Tuple("service*,hello")));
+                    appCntx,
+                    new EurekaConfig.Tuple("service*,hello"),
+                    metadataFilterService)
+                );
                 MethodHandle methodHandle = mock(MethodHandle.class);
                 ReflectionTestUtils.setField(apimlInstanceRegistry, "register3ArgsMethodHandle", methodHandle);
                 when(methodHandle.invokeWithArguments(any(), any(), any())).thenThrow(new RuntimeException());

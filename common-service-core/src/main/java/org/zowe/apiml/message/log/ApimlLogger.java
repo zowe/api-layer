@@ -26,7 +26,7 @@ import org.slf4j.MarkerFactory;
  * ApimlLogger logger = ApimlLogger.of(SampleClass.cass, messageService)
  * }
  */
-public final class ApimlLogger {
+public class ApimlLogger {
 
     private final MessageService messageService;
     private final Logger logger;

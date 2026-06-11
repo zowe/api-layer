@@ -10,28 +10,29 @@
 
 package org.zowe.apiml.client.api;
 
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.client.service.ApiMediationClientService;
 
+import java.util.Collections;
+
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {ApiMediationClientTestController.class})
 @Import(SecurityConfiguration.class)
 class ApiMediationClientTestControllerTest {
+
     private static final String MEDIATION_CLIENT_URI = "/api/v1/apiMediationClient";
 
     @Autowired
@@ -49,7 +50,7 @@ class ApiMediationClientTestControllerTest {
 
     @Test
     void unregisterTest_successful() throws Exception {
-        apiMediationClientService.register();
+        apiMediationClientService.register(Collections.emptyMap());
         this.mockMvc.perform(
             delete(MEDIATION_CLIENT_URI))
             .andExpect(status().isOk());
@@ -67,4 +68,5 @@ class ApiMediationClientTestControllerTest {
     void isRegisteredTestService_notRegistered() {
         assertFalse(apiMediationClientService.isRegistered());
     }
+
 }

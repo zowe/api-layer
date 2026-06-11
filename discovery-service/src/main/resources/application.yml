@@ -38,7 +38,8 @@ apiml:
         allPeersUrls: 'http://#{("${apiml.discovery.userid:}".isEmpty() or "${apiml.discovery.password:}".isEmpty()) ? "" : "${apiml.discovery.userid:}:${apiml.discovery.password:}@"}${apiml.service.hostname}:${apiml.service.port}/eureka/'
     health:
         protected: false
-
+    security:
+        allowedDomains: localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com
 spring:
     config:
         useLegacyProcessing: true
