@@ -10,7 +10,7 @@ dependencyResolutionManagement {
             version('springCloudNetflix', '4.3.3')
             version('springCloudCommons', '4.3.3')
             version('springCloudCB', '3.3.3')
-            version('springCloudGateway', '4.3.5')
+            version('springCloudGateway', '4.3.4')
             version('springFramework', '6.2.19')
             version('springRetry', '2.0.13')
 
