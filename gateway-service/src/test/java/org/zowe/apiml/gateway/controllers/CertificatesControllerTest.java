@@ -10,12 +10,17 @@
 
 package org.zowe.apiml.gateway.controllers;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.security.HttpsConfig;
 
 import java.io.ByteArrayInputStream;
@@ -23,12 +28,32 @@ import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 
-import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@SpringBootTest(
+    classes = CertificatesControllerTest.MinimalApp.class,
+    webEnvironment = SpringBootTest.WebEnvironment.MOCK
+)
+@AutoConfigureMockMvc(addFilters = false)
 class CertificatesControllerTest {
+
+    /**
+     * Minimal Spring Boot application that scans only CertificatesController,
+     * avoiding the security-common component scan that causes BeanPostProcessor
+     * timing issues with unresolved @Value placeholders.
+     */
+    @SpringBootApplication
+    @ComponentScan(
+        basePackageClasses = CertificatesController.class,
+        useDefaultFilters = false,
+        includeFilters = @ComponentScan.Filter(
+            type = FilterType.ASSIGNABLE_TYPE,
+            classes = CertificatesController.class
+        )
+    )
+    static class MinimalApp {}
 
     private static final String CERT_PEM = "-----BEGIN CERTIFICATE-----\n" +
         "MIICUTCCAfugAwIBAgIBADANBgkqhkiG9w0BAQQFADBXMQswCQYDVQQGEwJDTjEL\n" +
@@ -77,20 +102,23 @@ class CertificatesControllerTest {
         "            Wm7DCfrPNGVwFWUQOmsPue9rZBgO\n" +
         "            -----END CERTIFICATE-----";
 
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private CertificatesController controller;
+
+    /**
+     * Provided as a @MockBean so the @PostConstruct loadCertChain() succeeds:
+     * Mockito returns null for getKeyStore(), causing SecurityUtils.loadCertificateChain
+     * to short-circuit and return an empty array instead of touching the filesystem.
+     */
+    @MockBean
+    private HttpsConfig httpsConfig;
+
     private static Certificate loadCertificate(String cert) throws Exception {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         return cf.generateCertificate(new ByteArrayInputStream(cert.getBytes(StandardCharsets.UTF_8)));
-    }
-
-    private MockMvc mockMvc;
-    HttpsConfig config;
-    CertificatesController cc;
-
-    @BeforeEach
-    void setUp() {
-        config = mock(HttpsConfig.class);
-        cc = new CertificatesController(config);
-        mockMvc = MockMvcBuilders.standaloneSetup(cc).build();
     }
 
     @Nested
@@ -98,9 +126,10 @@ class CertificatesControllerTest {
 
         @Test
         void thenResponseIsEmpty() throws Exception {
-            ReflectionTestUtils.setField(cc, "certificates", new Certificate[0]);
-            mockMvc.perform(get(CertificatesController.CONTROLLER_PATH)
-            ).andExpect(status().isOk()).andExpect(content().string(""));
+            ReflectionTestUtils.setField(controller, "certificates", new Certificate[0]);
+            mockMvc.perform(get(CertificatesController.CONTROLLER_PATH))
+                .andExpect(status().isOk())
+                .andExpect(content().string(""));
         }
     }
 
@@ -110,9 +139,10 @@ class CertificatesControllerTest {
         @Test
         void thenResponseContainsOneCertificate() throws Exception {
             Certificate cert = loadCertificate(CERT_PEM);
-            ReflectionTestUtils.setField(cc, "certificates", new Certificate[]{cert});
-            mockMvc.perform(get(CertificatesController.CONTROLLER_PATH)
-            ).andExpect(status().isOk()).andExpect(content().string(cc.getCertificatesInPEMFormat()));
+            ReflectionTestUtils.setField(controller, "certificates", new Certificate[]{cert});
+            mockMvc.perform(get(CertificatesController.CONTROLLER_PATH))
+                .andExpect(status().isOk())
+                .andExpect(content().string(controller.getCertificatesInPEMFormat()));
         }
     }
 
@@ -122,9 +152,10 @@ class CertificatesControllerTest {
         @Test
         void thenResponseContainsAllCertificates() throws Exception {
             Certificate cert = loadCertificate(CERTIFICATE_CHAIN);
-            ReflectionTestUtils.setField(cc, "certificates", new Certificate[]{cert, cert});
-            mockMvc.perform(get(CertificatesController.CONTROLLER_PATH)
-            ).andExpect(status().isOk()).andExpect(content().string(cc.getCertificatesInPEMFormat()));
+            ReflectionTestUtils.setField(controller, "certificates", new Certificate[]{cert, cert});
+            mockMvc.perform(get(CertificatesController.CONTROLLER_PATH))
+                .andExpect(status().isOk())
+                .andExpect(content().string(controller.getCertificatesInPEMFormat()));
         }
     }
 }
