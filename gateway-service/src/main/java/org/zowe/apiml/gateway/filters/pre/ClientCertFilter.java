@@ -19,6 +19,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.gateway.security.service.schema.RoutingConstants;
 import org.zowe.apiml.gateway.services.ServiceInstancesUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -84,6 +85,7 @@ public class ClientCertFilter extends PreZuulFilter {
             try {
                 String encodedCert = Base64.getEncoder().encodeToString(certs[0].getEncoded());
                 context.addZuulRequestHeader(CLIENT_CERT_HEADER, encodedCert);
+                context.set(RoutingConstants.FORCE_CLIENT_WITH_APIML_CERT_KEY);
                 log.debug("Incoming client certificate has been added to the {} header.", CLIENT_CERT_HEADER);
             } catch (CertificateEncodingException e) {
                 log.debug("Failed to encode the incoming client certificate. Error message: {}", e.getMessage());
