@@ -109,11 +109,9 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, certsFromTls);
                 log.debug("Retaining full TLS certificate chain in attribute {}: {}", ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(certsFromTls));
 
-                var sslInfo = SimpleSslInfo.builder()
-                    .sessionId(originalSslInfo != null ? originalSslInfo.getSessionId() : null)
-                    .peerCertificates(clientAuthCerts)
-                    .build();
-                requestBuilder.sslInfo(sslInfo);
+                requestBuilder.sslInfo(
+                    buildSslInfo(clientAuthCerts, originalSslInfo)
+                );
             } else {
                 X509Certificate[] clientAuthCerts = selectCerts(certsFromTls, certificateForClientAuth);
 
@@ -126,12 +124,9 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
                 X509Certificate[] apimlFilteredCerts = selectCerts(certsFromTls, apimlCertificate);
                 exchange.getAttributes().put(ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, apimlFilteredCerts);
                 log.debug(LOG_FORMAT_FILTERING_CERTIFICATES, ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE, Arrays.toString(apimlFilteredCerts));
-                var sslInfo = SimpleSslInfo.builder()
-                    .sessionId(originalSslInfo != null ? originalSslInfo.getSessionId() : null)
-                    .peerCertificates(clientAuthCerts)
-                    .build();
-                requestBuilder.sslInfo(sslInfo);
-
+                requestBuilder.sslInfo(
+                    buildSslInfo(clientAuthCerts, originalSslInfo)
+                );
             }
 
         });
@@ -140,6 +135,16 @@ public class CategorizeCertsWebFilter implements WebFilter, Ordered {
             log.debug("No TLS peer certificates found in the request.");
         }
         return exchange.mutate().request(requestBuilder.build()).build();
+    }
+
+    /*
+     * Copy original SSL Information and add the correct peer certificates. 
+     */
+    private SimpleSslInfo buildSslInfo(X509Certificate[] clientAuthCerts, SslInfo originalSslInfo) {
+        return SimpleSslInfo.builder()
+                    .sessionId(originalSslInfo != null ? originalSslInfo.getSessionId() : null)
+                    .peerCertificates(clientAuthCerts)
+                    .build();
     }
 
     void logSerialNumber(String msg, X509Certificate... clientAuthCerts) {
