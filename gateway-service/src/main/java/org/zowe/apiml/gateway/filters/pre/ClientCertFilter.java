@@ -52,7 +52,7 @@ public class ClientCertFilter extends PreZuulFilter {
 
     @Override
     public int filterOrder() {
-        return PRE_DECORATION_FILTER_ORDER + 5;
+        return PRE_DECORATION_FILTER_ORDER + 6;
     }
 
     @Override
