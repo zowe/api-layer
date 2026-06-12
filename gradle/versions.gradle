@@ -7,14 +7,14 @@ dependencyResolutionManagement {
 
             version('springBoot', '3.5.15')
             version('springBootGraphQl', '3.5.15')
-            version('springCloudNetflix', '4.3.2')
-            version('springCloudCommons', '4.3.2')
-            version('springCloudCB', '3.3.2')
+            version('springCloudNetflix', '4.3.3')
+            version('springCloudCommons', '4.3.3')
+            version('springCloudCB', '3.3.3')
             version('springCloudGateway', '4.3.4')
             version('springFramework', '6.2.19')
             version('springRetry', '2.0.13')
 
-            version('modulith', '1.4.11')
+            version('modulith', '1.4.12')
             version('jmolecules', '2023.3.4')
 
             version('glassfishHk2', '3.1.1')
