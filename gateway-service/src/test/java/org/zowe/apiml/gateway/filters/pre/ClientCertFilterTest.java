@@ -46,7 +46,7 @@ class ClientCertFilterTest {
     private MockHttpServletRequest request;
 
     @BeforeEach
-    void setup() throws Exception {
+    void setup() {
         context = spy(new RequestContext());
         RequestContext.testSetCurrentContext(context);
 
@@ -163,7 +163,7 @@ class ClientCertFilterTest {
     class GivenForwardingClientCertDisabled {
 
         @BeforeEach
-        void setup() throws Exception {
+        void setup() {
             metadata.put(EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING, "true");
             ReflectionTestUtils.setField(underTest, "forwardingClientCertEnabled", false);
         }
