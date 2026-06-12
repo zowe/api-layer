@@ -5,16 +5,16 @@ dependencyResolutionManagement {
             version('projectNode', '24.10.0')
             version('projectNpm', '10.9.0')
 
-            version('springBoot', '3.5.14')
-            version('springBootGraphQl', '3.5.14')
-            version('springCloudNetflix', '4.3.2')
-            version('springCloudCommons', '4.3.2')
-            version('springCloudCB', '3.3.2')
+            version('springBoot', '3.5.15')
+            version('springBootGraphQl', '3.5.15')
+            version('springCloudNetflix', '4.3.3')
+            version('springCloudCommons', '4.3.3')
+            version('springCloudCB', '3.3.3')
             version('springCloudGateway', '4.3.4')
             version('springFramework', '6.2.19')
             version('springRetry', '2.0.13')
 
-            version('modulith', '1.4.11')
+            version('modulith', '1.4.12')
             version('jmolecules', '2023.3.4')
 
             version('glassfishHk2', '3.1.1')
@@ -32,7 +32,7 @@ dependencyResolutionManagement {
             version('eureka', '2.0.6')
             version('fileupload', '1.6.0')
             version('netflixServo', '0.13.2')
-            version('googleErrorprone', '2.49.0')
+            version('googleErrorprone', '2.50.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.14.0')
             version('guava', '33.6.0-jre')
@@ -97,7 +97,7 @@ dependencyResolutionManagement {
             version('thymeleaf', '3.1.5.RELEASE')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.1')
-            version('jgit', '7.6.0.202603022253-r')
+            version('jgit', '7.7.0.202606012155-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.3.1.8318')
             version('gradleRelease', '3.1.0')
@@ -118,7 +118,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.81.0')
+            version('ioGrpc', '1.82.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
