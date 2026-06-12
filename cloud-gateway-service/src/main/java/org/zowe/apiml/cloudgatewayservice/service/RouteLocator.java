@@ -176,9 +176,6 @@ public class RouteLocator implements RouteDefinitionLocator {
         AtomicInteger order = new AtomicInteger();
         // iterate over services
         return getServiceInstances().flatMap(Flux::fromIterable).map(serviceInstance -> {
-            // configure CORS for the service (if necessary)
-            setCors(serviceInstance);
-
             // generate route definition per services and its routing rules
             return getAuthFilterPerRoute(order, serviceInstance, getPostRoutingFilters(serviceInstance));
         })

@@ -48,4 +48,5 @@ public class CorsMetadataProcessor extends MetadataProcessor {
             corsUtils.setCorsConfiguration(instanceInfo.getVIPAddress().toLowerCase(), metadata, (entry, serviceId, config) -> cors.registerCorsConfiguration("/" + entry + "/" + serviceId + "/**", config));
         }
     }
+
 }

@@ -11,8 +11,6 @@
 package org.zowe.apiml.gateway.security.config;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
-import lombok.extern.log4j.Log4j;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
@@ -65,19 +63,17 @@ public class CorsBeans {
 
     List<String> getDefaultAllowedOrigins( // TODO: this method is a hotfix for AT-TLS, but it could be a breaking change, verify no-ATTLS configuration in v3
         Environment environment,
-        String externalUrl,
+        List<String> externalUrls,
         String hostname,
         int port
     ) throws URISyntaxException {
         boolean isClientAttlsEnabled = Arrays.asList(environment.getActiveProfiles()).contains("attlsClient");
         if (corsEnabled || !isClientAttlsEnabled) {
-            return null; // NOSONAR
+            return null;
         }
 
         Set<String> gatewayOrigins = new HashSet<>();
-        if (StringUtils.isNotBlank(externalUrl)) {
-            gatewayOrigins.add(externalUrl);
-        }
+        externalUrls.stream().filter(StringUtils::isNotBlank).forEach(gatewayOrigins::add);
         gatewayOrigins.add(new URIBuilder()
             .setScheme("https")
             .setHost(hostname)
@@ -90,10 +86,16 @@ public class CorsBeans {
     @Bean
     CorsUtils corsUtils(
         Environment environment,
-        @Value("${apiml.service.externalUrl:}") String externalUrl,
+        @Value("${apiml.service.externalUrl:}") String externalUrl, // FIXME Should support multiple external URLs
         @Value("${server.hostname:${apiml.service.hostname}}") String hostname,
         @Value("${server.port}") int port
     ) throws URISyntaxException {
-        return new CorsUtils(corsEnabled, corsAllowedMethods, getDefaultAllowedOrigins(environment, externalUrl, hostname, port));
+        return new CorsUtils(
+            corsEnabled,
+            corsAllowedMethods,
+            getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList(externalUrl)),
+            hostname,
+            port));
     }
+
 }

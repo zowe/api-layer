@@ -29,6 +29,13 @@ services:
       customMetadata:
             apiml:
                 okToRetryOnAllOperations: true
+                corsEnabled: true
+                corsAllowedOrigins: https://localhost:10010
+                # corsAllowedMethods: GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS
+                # corsAllowedHeaders: Content-Type,Authorization
+                # corsExposedHeaders: Content-Type,Authorization
+                # corsMaxAge: 3600
+                # corsAllowCredentials: true
 
     - serviceId: staticclient2  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
@@ -54,6 +61,9 @@ services:
         - apiId: zowe.apiml.discoverableclient
           gatewayUrl: api/v1
           version: 1.0.0
+      customMetadata:
+        apiml:
+          corsEnabled: false
 
     - serviceId: zowejwt  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)

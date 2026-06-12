@@ -26,6 +26,8 @@ import org.zowe.apiml.util.CorsUtils;
 
 import java.lang.reflect.Field;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,7 +49,7 @@ class CorsBeanTest {
             CorsBeans corsBeans = new CorsBeans(new ZuulProperties());
             when(environment.getActiveProfiles()).thenReturn(new String[]{ "attlsServer", "attlsClient" });
 
-            List<String> allowedOrigins = corsBeans.getDefaultAllowedOrigins(environment, "https://dvipahost:10010", "lparhost", 10010);
+            List<String> allowedOrigins = corsBeans.getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList("https://dvipahost:10010")), "lparhost", 10010);
             assertEquals(2, allowedOrigins.size());
             assertTrue(allowedOrigins.contains("https://dvipahost:10010"));
             assertTrue(allowedOrigins.contains("https://lparhost:10010"));
@@ -100,6 +102,9 @@ class CorsBeanTest {
                 assertEquals("POST", corsAllowedMethods.get(1));
                 assertEquals("PATCH", corsAllowedMethods.get(2));
             }
+
         }
+
     }
+
 }

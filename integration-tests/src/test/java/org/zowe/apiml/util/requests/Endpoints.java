@@ -70,6 +70,8 @@ public class Endpoints {
     public final static String SAF_IDT_REQUEST = "/dcsafidt/api/v1/request";
     public final static String ZOSMF_REQUEST = "/dczosmf/api/v1/request";
     public final static String ZOWE_JWT_REQUEST = "/zowejwt/api/v1/request";
+    public final static String STATIC_CLIENT_2_REQUEST = "/staticclient2/api/v1/request";
+    public final static String STATIC_CLIENT_1_REQUEST = "/staticclient/api/v1/request";
 
     public final static String DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
     public final static String DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";

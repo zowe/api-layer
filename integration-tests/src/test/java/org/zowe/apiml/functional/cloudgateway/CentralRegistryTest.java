@@ -165,4 +165,5 @@ class CentralRegistryTest implements TestWithStartedInstances {
         return new URL(conf.getScheme(), conf.getHost(), conf.getPort(), CENTRAL_REGISTRY_PATH)
             .toURI().resolve(query);
     }
+
 }

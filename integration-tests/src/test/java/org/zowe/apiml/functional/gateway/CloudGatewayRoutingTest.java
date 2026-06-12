@@ -12,7 +12,11 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
@@ -28,6 +32,7 @@ import static org.zowe.apiml.util.requests.Endpoints.DISCOVERABLE_GREET;
 
 @DiscoverableClientDependentTest
 @Tag("CloudGatewayServiceRouting")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CloudGatewayRoutingTest implements TestWithStartedInstances {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
@@ -38,7 +43,7 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
     private static final CloudGatewayConfiguration conf = ConfigReader.environmentConfiguration().getCloudGatewayConfiguration();
 
     @BeforeAll
-    static void setup() {
+    void setup() {
         RestAssured.useRelaxedHTTPSValidation();
     }
 
@@ -102,6 +107,23 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
     void testWrongRoutingWithBasePath(String basePath) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
         given().get(new URI(scgUrl)).then().statusCode(404);
+    }
+
+    @Nested
+    class WhenCorsIsEnabled {
+// Using staticclient, try preflight request and simple request
+// Using staticclient2
+
+        @BeforeEach
+        void setUp() {
+
+        }
+
+        @Test
+        void givenServiceHasCorsConfiguration_whenPreflightRequestArrives_thenCorsHeadersAreSet() {
+
+        }
+
     }
 
 }

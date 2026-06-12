@@ -12,13 +12,10 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.NestedTestConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
@@ -28,7 +25,9 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayWithSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
 @ActiveProfiles("test")
