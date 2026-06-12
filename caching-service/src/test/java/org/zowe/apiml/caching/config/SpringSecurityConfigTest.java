@@ -35,7 +35,7 @@ import static org.mockito.Mockito.when;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class SpringSecurityConfigTest {
+class SpringSecurityConfigTest {
 
     @Value("${apiml.service.hostname:localhost}")
     String hostname;

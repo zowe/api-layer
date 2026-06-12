@@ -31,7 +31,7 @@ import static io.restassured.RestAssured.given;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ActiveProfiles({"https"})
-public class SecurityConfigTest {
+class SecurityConfigTest {
 
     @Value("${apiml.service.hostname:localhost}")
     String hostname;
