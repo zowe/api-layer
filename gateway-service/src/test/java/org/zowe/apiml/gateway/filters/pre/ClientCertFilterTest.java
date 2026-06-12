@@ -14,6 +14,10 @@ import com.netflix.zuul.context.RequestContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -29,9 +33,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.SERVICE_ID_KEY;
 
+@ExtendWith(MockitoExtension.class)
 class ClientCertFilterTest {
 
     private static final String SERVICE_ID = "testservice";
@@ -39,23 +45,23 @@ class ClientCertFilterTest {
     private static final String ENCODED_CERT = "QUJDREVGR0hJSktMTU5PUFFSU1RVVldYWVo="; // Base64(CERTIFICATE_BYTES)
 
     private ClientCertFilter underTest;
-    private final DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
-    private final ServiceInstance instance = mock(ServiceInstance.class);
+    @Mock
+    private DiscoveryClient discoveryClient;
+    @Mock
+    private ServiceInstance instance;
     private final Map<String, String> metadata = new HashMap<>();
-    private RequestContext context;
+    @Spy
+    private RequestContext context = new RequestContext();
     private MockHttpServletRequest request;
 
     @BeforeEach
     void setup() {
-        context = spy(new RequestContext());
         RequestContext.testSetCurrentContext(context);
 
         request = new MockHttpServletRequest();
         context.setRequest(request);
         context.set(SERVICE_ID_KEY, SERVICE_ID);
 
-        when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(instance));
-        when(instance.getMetadata()).thenReturn(metadata);
 
         underTest = new ClientCertFilter(discoveryClient);
         ReflectionTestUtils.setField(underTest, "forwardingClientCertEnabled", true);
@@ -71,6 +77,8 @@ class ClientCertFilterTest {
 
         @Test
         void shouldFilterReturnsTrue() {
+            when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(Collections.singletonList(instance));
+            when(instance.getMetadata()).thenReturn(metadata);
             assertTrue(underTest.shouldFilter());
         }
 
