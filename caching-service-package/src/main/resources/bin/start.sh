@@ -256,7 +256,7 @@ fi
 
 
 CERTIFICATES_URL=${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/gateway/certificates
-CERTIFICATES_URL=${ZWE_configs_apiml_security_x509_certificatesUrl:-${ZWE_components_gateway_apiml_security_x509_certificatesUrl:-${CERTIFICATES_URL}}}
+CERTIFICATES_URL=${ZWE_configs_apiml_security_x509_certificatesUrl:-${CERTIFICATES_URL}}
 
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
