@@ -41,6 +41,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     static final String INVALID_TOKENS_KEY = "invalidTokens";
     static final String INVALID_USERS_KEY = "invalidUsers";
     static final String INVALID_SCOPES_KEY = "invalidScopes";
+    private static final int SALT_LENGTH = 16;
 
     private final CachingClient cachingServiceClient;
     private final AuthenticationService authenticationService;
@@ -156,7 +157,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             return false;
         }
         try {
-            return Base64.getDecoder().decode(value).length == 16;
+            return Base64.getDecoder().decode(value).length == SALT_LENGTH;
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -236,7 +237,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public static byte[] generateSalt() {
-        byte[] salt = new byte[16];
+        byte[] salt = new byte[SALT_LENGTH];
         try {
             SecureRandom.getInstanceStrong().nextBytes(salt);
             return salt;
