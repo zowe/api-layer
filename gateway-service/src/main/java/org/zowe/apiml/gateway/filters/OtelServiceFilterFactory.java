@@ -33,7 +33,9 @@ public class OtelServiceFilterFactory extends AbstractGatewayFilterFactory<OtelS
             OtelRequestContext.of(exchange)
                 .authMethod(AuthenticationScheme.BYPASS)
                 .serviceId(config.serviceId)
-                .instanceId(config.instanceId);
+                .instanceId(config.instanceId)
+                .anonymousUserId()
+                .authenticationSuccess();
             return chain.filter(exchange);
         };
     }
