@@ -227,7 +227,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             cachingServiceClient.create(new CachingServiceClient.KeyValue("salt", salt));
         } catch (CachingServiceClientException e) {
             if (e.isKeyCollision()) {
-                log.warn("Salt initialization encountered a 409 Conflict. Verify your configuration (property 'jgroups.tcpping.initial_hosts') and using '/cachingservice/application/health' endpoint verify that your clustering/JGroups cluster members are properly joined.");
+                log.warn("Salt initialization encountered a 409 Conflict. Verify your configuration (property 'jgroups.tcpping.initial_hosts') and using caching service '/application/health' endpoint verify that your clustering/JGroups cluster members are properly joined.");
             } else {
                 log.error("Failed to store salt due to a cache infrastructure error.", e);
             }
