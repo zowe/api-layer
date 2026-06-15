@@ -141,6 +141,23 @@ class OtelRequestContextTest {
     }
 
     @Test
+    void givenAnonymousUserIdConstant_whenRead_thenEqualsAnonymous() {
+        assertEquals("anonymous", OtelRequestContext.ANONYMOUS_USER_ID);
+    }
+
+    @Test
+    void givenOtelContext_whenSetAnonymousUserId_thenStoreLowerCaseAnonymous() {
+        OtelRequestContext.of(exchange).anonymousUserId();
+        assertEquals("anonymous", getValue("user.id"));
+    }
+
+    @Test
+    void givenOtelContext_whenSetAnonymousUserId_thenNotUppercase() {
+        OtelRequestContext.of(exchange).anonymousUserId();
+        assertNotEquals("ANONYMOUS", getValue("user.id"));
+    }
+
+    @Test
     void givenOtelContext_whenSetAuthSourceType_thenStoreIt() {
         OtelRequestContext.of(exchange).authSourceType("JWT");
         assertEquals("JWT", getValue("auth.method"));

@@ -41,6 +41,8 @@ class OtelServiceFilterFactoryTest {
         assertEquals("bypass", attributes.get(AttributeKey.stringKey("auth.service.auth.method")));
         assertEquals(SERVICE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.id")));
         assertEquals(INSTANCE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.instance.id")));
+        assertEquals("anonymous", attributes.get(AttributeKey.stringKey("user.id")));
+        assertEquals("OK", attributes.get(AttributeKey.stringKey("auth.status")));
     }
 
 }
