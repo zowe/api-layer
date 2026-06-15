@@ -392,6 +392,11 @@ public class EurekaRestController {
         }
 
         @Override
+        public String getMatchedResourceTemplate() {
+            return null;
+        }
+
+        @Override
         public URI resolve(URI uri) {
             return uri;
         }

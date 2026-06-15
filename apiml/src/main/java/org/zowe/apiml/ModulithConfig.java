@@ -373,9 +373,9 @@ public class ModulithConfig {
                 super.configureContext(context);
             }
         };
-        factory.getTomcatConnectorCustomizers().addAll(connectorCustomizers.orderedStream().toList());
-        factory.getTomcatContextCustomizers().addAll(contextCustomizers.orderedStream().toList());
-        factory.getTomcatProtocolHandlerCustomizers().addAll(protocolHandlerCustomizers.orderedStream().toList());
+        factory.addConnectorCustomizers(connectorCustomizers.orderedStream().toArray(TomcatConnectorCustomizer[]::new));
+        factory.addContextCustomizers(contextCustomizers.orderedStream().toArray(TomcatContextCustomizer[]::new));
+        factory.addProtocolHandlerCustomizers(protocolHandlerCustomizers.orderedStream().toArray(TomcatProtocolHandlerCustomizer[]::new));
         return factory;
     }
 

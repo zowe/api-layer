@@ -61,6 +61,23 @@ dependencies {
     api project(":caching-service")
     api project(":api-catalog-services")
 
+    // Force Jersey/HK2 versions compatible with Java 17
+    configurations.all {
+        resolutionStrategy {
+            force 'org.glassfish.jersey.core:jersey-common:3.1.9'
+            force 'org.glassfish.jersey.core:jersey-client:3.1.9'
+            force 'org.glassfish.jersey.core:jersey-server:3.1.9'
+            force 'org.glassfish.jersey.inject:jersey-hk2:3.1.9'
+            force 'org.glassfish.jersey.media:jersey-media-jaxb:3.1.9'
+            force 'org.glassfish.jersey.containers:jersey-container-servlet:3.1.9'
+            force 'org.glassfish.hk2:hk2-locator:3.1.1'
+            force 'org.glassfish.hk2:hk2-api:3.1.1'
+            force 'org.glassfish.hk2:hk2-utils:3.1.1'
+            force 'org.glassfish.hk2:spring-bridge:3.1.1'
+            force 'org.glassfish.hk2.external:aopalliance-repackaged:3.1.1'
+        }
+    }
+
     implementation libs.bundles.modulith
     implementation libs.spring.boot.starter.web
     implementation libs.swagger2.parser
