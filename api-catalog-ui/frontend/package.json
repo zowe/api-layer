@@ -32,7 +32,7 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "5.0.0",
-        "react-hook-form": "7.78.0",
+        "react-hook-form": "7.79.0",
         "react-redux": "9.3.0",
         "react-router": "7.17.0",
         "react-toastify": "10.0.6",
@@ -154,8 +154,8 @@
         "lodash": "4.18.1",
         "semver": "7.8.4",
         "@babel/traverse": "7.29.7",
-        "axios": "1.17.0",
-        "form-data": "3.0.4",
+        "axios": "1.18.0",
+        "form-data": "3.0.5",
         "sha.js": "2.4.12",
         "swagger-ui-react": {
             "react-syntax-highlighter": {
