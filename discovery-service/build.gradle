@@ -37,6 +37,7 @@ configurations.all {
         force 'org.glassfish.jersey.core:jersey-server:3.1.9'
         force 'org.glassfish.jersey.inject:jersey-hk2:3.1.9'
         force 'org.glassfish.jersey.media:jersey-media-jaxb:3.1.9'
+        force 'org.glassfish.jersey.containers:jersey-container-servlet:3.1.9'
     }
 }
 
@@ -81,6 +82,8 @@ dependencies {
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.rest.assured
     testImplementation libs.netflix.servo
+
+    testImplementation libs.apache.commons.logging
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
