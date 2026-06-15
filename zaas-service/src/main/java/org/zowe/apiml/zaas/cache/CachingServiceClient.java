@@ -13,6 +13,7 @@ package org.zowe.apiml.zaas.cache;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -61,14 +62,11 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
 
+    @Getter
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
 
     static {
         defaultHeaders.add("Content-Type", "application/json");
-    }
-
-    public static HttpHeaders getDefaultHeaders() {
-        return defaultHeaders;
     }
 
     public CachingServiceClient(RestTemplate restTemplate, GatewayClient gatewayClient) {
@@ -105,7 +103,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
      * @param kv {@link KeyValue} to store
      * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or cache conflict
      */
-
     public void create(KeyValue kv) throws CachingServiceClientException {
         try {
             restTemplate.exchange(getGatewayAddress() + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<>(kv, defaultHeaders), String.class);
@@ -181,7 +178,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
             ResponseEntity<KeyValue> response = restTemplate.exchange(getGatewayAddress() + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
-            if (response != null && response.hasBody()) { //NOSONAR tests return null
+            if (response.hasBody()) { //NOSONAR tests return null
                 return response.getBody();
             }
         } catch (RestClientException e) {
@@ -194,7 +191,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         }
 
         // record not found
-        throw new CachingServiceClientException("Unable to read key: " + key + ", caused by response from caching service is null or has no body");
+        throw new CachingServiceClientException("Key '" + key + "' was not found in caching service or the response body was empty");
     }
 
     /**

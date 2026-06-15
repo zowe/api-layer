@@ -31,10 +31,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -155,10 +152,12 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     String initializeSalt() throws CachingServiceClientException, SecureTokenInitializationException {
-        String localSalt;
+        String localSalt = null;
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
-            localSalt = keyValue.getValue();
+            if (keyValue != null) {
+                localSalt = keyValue.getValue();
+            }
         } catch (CachingServiceClientException | StorageException e) {
             log.debug("Cannot read salt.", e);
             if (e.getCause() != null) {
@@ -166,9 +165,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
                 throw e;
             }
             // a null value was returned
-            byte[] newSalt = generateSalt();
+        }
+        if (localSalt == null || localSalt.isEmpty()) {
+            String newSalt = Base64.getEncoder().encodeToString(generateSalt());
             storeSalt(newSalt);
-            localSalt = new String(newSalt);
+            localSalt = newSalt;
         }
 
         return localSalt;
@@ -193,11 +194,29 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
-        return initializeSalt().getBytes();
+        String saltStr = initializeSalt();
+        if (saltStr == null) {
+            return new byte[0];
+        }
+        try {
+            return Base64.getDecoder().decode(saltStr);
+        } catch (IllegalArgumentException e) {
+            // fallback to maintain back compatibility with the old raw format
+            return saltStr.getBytes(StandardCharsets.UTF_8);
+        }
     }
 
-    private void storeSalt(byte[] salt) throws CachingServiceClientException {
-        cachingServiceClient.create(new CachingServiceClient.KeyValue("salt", new String(salt)));
+    private void storeSalt(String salt) throws CachingServiceClientException {
+        try {
+            cachingServiceClient.create(new CachingServiceClient.KeyValue("salt", salt));
+        } catch (CachingServiceClientException e) {
+            if (e.isKeyCollision()) {
+                log.warn("Salt initialization encountered a 409 Conflict. Verify that your clustering/JGroups configuration (initial_hosts) is correct and all cluster members are properly joined");
+            } else {
+                log.error("Failed to store salt due to a cache infrastructure error.", e);
+            }
+            throw e;
+        }
     }
 
     public static byte[] generateSalt() {
