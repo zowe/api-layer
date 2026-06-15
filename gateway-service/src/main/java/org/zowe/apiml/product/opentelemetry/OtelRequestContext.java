@@ -34,6 +34,7 @@ public final class OtelRequestContext {
     private static final String OK = "OK";
     private static final String ERROR = "ERROR";
     public static final String BASIC_AUTH_TYPE = "BASIC";
+    public static final String ANONYMOUS_USER_ID = "anonymous";
 
     private static final String OTEL_ATTRIBUTE_METHOD = "http.request.method";
     private static final String OTEL_ATTRIBUTE_SCHEME = "url.scheme";
@@ -122,6 +123,10 @@ public final class OtelRequestContext {
 
     public OtelRequestContext userId(String userId) {
         return put(OTEL_ATTRIBUTE_USER_ID, StringUtils.upperCase(userId));
+    }
+
+    public OtelRequestContext anonymousUserId() {
+        return put(OTEL_ATTRIBUTE_USER_ID, ANONYMOUS_USER_ID);
     }
 
     public OtelRequestContext distributedIds(List<String> distributedIds) {
