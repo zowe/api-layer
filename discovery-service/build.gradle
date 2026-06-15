@@ -83,7 +83,7 @@ dependencies {
     testImplementation libs.rest.assured
     testImplementation libs.netflix.servo
 
-    testImplementation 'commons-logging:commons-logging:1.3.6'
+    testImplementation libs.apache.commons.logging
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok

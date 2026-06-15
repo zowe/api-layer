@@ -18,7 +18,7 @@ apply plugin: 'org.springframework.boot'
 
 bootJar {
     archiveBaseName.set("enabler-springboot-${libs.versions.springBoot.get()}-sample")
-    // launchScript()  // TODO: SB4 migration — launchScript() removed in Spring Boot 4.x
+    // launchScript()  // TODO: SB4 migration — launchScript() removed in Spring Boot 4.x, tracked in #4719
 }
 
 jar {

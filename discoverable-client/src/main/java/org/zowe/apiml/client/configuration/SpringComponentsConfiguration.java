@@ -12,8 +12,8 @@ package org.zowe.apiml.client.configuration;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.jackson2.autoconfigure.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 
 /**
@@ -24,8 +24,8 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 public class SpringComponentsConfiguration {
 
     @Bean
-    Jackson2ObjectMapperBuilderCustomizer failOnUnknownProperties() {
-        return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
+    Jackson2ObjectMapperBuilder failOnUnknownProperties() {
+        return new Jackson2ObjectMapperBuilder()
             .featuresToEnable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 

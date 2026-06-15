@@ -149,7 +149,7 @@ public class NewSecurityConfiguration {
 
                 .logout(logout -> logout
                     .logoutRequestMatcher(PathPatternRequestMatcher.pathPattern(
-                        authConfigurationProperties.getZaasLogoutEndpoint(), HttpMethod.POST.name()
+                        HttpMethod.POST, authConfigurationProperties.getZaasLogoutEndpoint()
                     ))
                     .addLogoutHandler(logoutHandler())
                     .logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT)))

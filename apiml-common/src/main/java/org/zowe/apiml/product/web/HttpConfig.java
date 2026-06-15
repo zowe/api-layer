@@ -246,6 +246,12 @@ public class HttpConfig implements InitializingBean {
      *
      * @return RestTemplate, which uses certificate from keystore to authenticate
      */
+    /**
+     * Note: Connection timeouts are configured at the HttpClient/ConnectionManager level
+     * (see HttpsFactory.buildHttpClient() for RequestConfig.setConnectionRequestTimeout and
+     * getConnectionManager() for ConnectionConfig.setConnectTimeout/setSocketTimeout),
+     * not on HttpComponentsClientHttpRequestFactory. This is the correct HC5 approach.
+     */
     @Bean
     @Primary
     RestTemplate restTemplateWithKeystore() {
