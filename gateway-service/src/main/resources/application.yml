@@ -50,6 +50,7 @@ apiml:
         preferIpAddress: false
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         additionalRegistration: # List of additional Apiml Discovery Services metadata to register with
+        forwardClientCertEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
 
     httpclient:
@@ -72,7 +73,7 @@ apiml:
         timeoutMillis: 30000  # Timeout for connection to the services
     security:
         filterChainConfiguration: new
-        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName,Client-Cert
         allowTokenRefresh: false
         jwtInitializerTimeout: 5
         personalAccessToken:
@@ -99,7 +100,7 @@ apiml:
             provider: zosmf
         x509:
             enabled: false
-            acceptForwardedCert: false
+            acceptForwardedCert: true
             certificatesUrl:
             externalMapperUrl:
         saf:

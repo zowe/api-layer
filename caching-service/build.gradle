@@ -53,6 +53,7 @@ dependencies {
     api project(':common-service-core')
     api project(':apiml-tomcat-common')
     api project(':onboarding-enabler-spring')
+    api project(':apiml-security-common')
 
     implementation libs.jjwt
     implementation libs.jjwt.impl

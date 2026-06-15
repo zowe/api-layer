@@ -123,6 +123,7 @@ public class HttpConfig implements InitializingBean {
     private final Timer connectionManagerTimer = new Timer("ApimlHttpClientConfiguration.connectionManagerTimer", true);
 
     private Set<String> publicKeyCertificatesBase64;
+    private HttpsConfig httpsConfig;
 
     @Resource
     private AbstractDiscoveryClientOptionalArgs<?> optionalArgs;
@@ -158,16 +159,16 @@ public class HttpConfig implements InitializingBean {
                     .idleConnTimeoutSeconds(idleConnTimeoutSeconds).requestConnectionTimeout(requestConnectionTimeout)
                     .timeToLive(timeToLive);
 
-            HttpsConfig httpsConfig = httpsConfigSupplier.get()
+            HttpsConfig localHttpsConfig = httpsConfigSupplier.get()
                 .keyAlias(keyAlias).keyStore(keyStore).keyPassword(keyPassword)
                 .keyStorePassword(keyStorePassword).keyStoreType(keyStoreType)
                 .build();
-
+            this.httpsConfig = localHttpsConfig;
             HttpsConfig httpsConfigWithoutKeystore = httpsConfigSupplier.get().build();
 
-            log.info("Using HTTPS configuration: {}", httpsConfig.toString());
+            log.info("Using HTTPS configuration: {}", localHttpsConfig.toString());
 
-            factory = new HttpsFactory(httpsConfig);
+            factory = new HttpsFactory(localHttpsConfig);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(factory);
             secureHttpClient = factory.createSecureHttpClient(secureConnectionManager);
             secureSslContext = factory.getSslContext();
@@ -178,7 +179,7 @@ public class HttpConfig implements InitializingBean {
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.createSecureHttpClient(connectionManagerWithoutKeystore);
             secureSslContextWithoutKeystore = factoryWithoutKeystore.getSslContext();
 
-            publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(httpsConfig);
+            publicKeyCertificatesBase64 = SecurityUtils.loadCertificateChainBase64(localHttpsConfig);
         } catch (HttpsConfigError e) {
             log.error("Invalid configuration of HTTPs: {}", e.getMessage());
             System.exit(1);
@@ -307,6 +308,11 @@ public class HttpConfig implements InitializingBean {
     @Bean
     public Supplier<EurekaJerseyClientBuilder> eurekaJerseyClientBuilder() {
         return () -> factory.createEurekaJerseyClientBuilder(eurekaServerUrl, serviceId, isClientAttlsEnabled);
+    }
+
+    @Bean
+    public HttpsConfig httpsConfig() {
+        return httpsConfig;
     }
 
 }

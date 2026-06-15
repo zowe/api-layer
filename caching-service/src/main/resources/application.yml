@@ -45,10 +45,18 @@ logging:
         javax.net.ssl: ERROR # For running with java 17
 eureka:
     client:
+        enabled: false
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
         instanceInfoReplicationIntervalSeconds: 30
         registryFetchIntervalSeconds: 30
 apiml:
     enabled: true
+
+    security:
+        x509:
+            certificatesUrl: https://localhost:10010/gateway/certificates
+            acceptForwardedCert: true
     service:
         preferIpAddress: false
 
@@ -68,9 +76,7 @@ apiml:
         homePageRelativeUrl: ${apiml.service.contextPath}
         statusPageRelativeUrl: ${apiml.service.contextPath}/application/info
         healthCheckRelativeUrl: ${apiml.service.contextPath}/application/health
-        authentication:
-            scheme: x509
-            headers: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+
         routes:
             -   gateway-url: "/api/v1"
                 service-url: ${apiml.service.contextPath}/api/v1
@@ -105,6 +111,8 @@ apiml:
                 gatewayPort: 10010
                 gatewayAuthEndpoint: /gateway/api/v1/auth
                 corsEnabled: false
+                service:
+                    supportClientCertForwarding: true
 
 spring:
     config:
@@ -171,7 +179,9 @@ logging:
         org.zowe.apiml: DEBUG
         org.zowe.apiml.enable: DEBUG
         org.zowe.apiml.caching: DEBUG
-        org.springframework: INFO
+        org.springframework: DEBUG
+        org.springframework.context: DEBUG
+        org.springframework.beans: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
