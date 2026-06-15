@@ -151,12 +151,28 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return getSecurePassword(token, getSalt());
     }
 
+    private boolean isBase64EncodedSalt(String value) {
+        if (value == null || value.isEmpty()) {
+            return false;
+        }
+        try {
+            return Base64.getDecoder().decode(value).length == 16;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     String initializeSalt() throws CachingServiceClientException, SecureTokenInitializationException {
         String localSalt = null;
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
-            if (keyValue != null) {
+            if (keyValue != null && keyValue.getValue() != null) {
                 localSalt = keyValue.getValue();
+                if (!isBase64EncodedSalt(localSalt)) {
+                    // the salt is stored in the old way, transform to base64 value
+                    localSalt = Base64.getEncoder().encodeToString(localSalt.getBytes());
+                    cachingServiceClient.update(new CachingServiceClient.KeyValue("salt", localSalt));
+                }
             }
         } catch (CachingServiceClientException | StorageException e) {
             log.debug("Cannot read salt.", e);
@@ -202,7 +218,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             return Base64.getDecoder().decode(saltStr);
         } catch (IllegalArgumentException e) {
             // fallback to maintain back compatibility with the old raw format
-            return saltStr.getBytes(StandardCharsets.UTF_8);
+            return saltStr.getBytes();
         }
     }
 
@@ -211,7 +227,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             cachingServiceClient.create(new CachingServiceClient.KeyValue("salt", salt));
         } catch (CachingServiceClientException e) {
             if (e.isKeyCollision()) {
-                log.warn("Salt initialization encountered a 409 Conflict. Verify that your clustering/JGroups configuration (initial_hosts) is correct and all cluster members are properly joined");
+                log.warn("Salt initialization encountered a 409 Conflict. Verify your configuration (property 'jgroups.tcpping.initial_hosts') and using '/application/health' endpoint verify that your clustering/JGroups cluster members are properly joined.");
             } else {
                 log.error("Failed to store salt due to a cache infrastructure error.", e);
             }

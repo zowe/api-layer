@@ -12,6 +12,7 @@ package org.zowe.apiml.zaas.cache;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +63,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
 
-    @Getter
+    @Getter(AccessLevel.PACKAGE)
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
 
     static {
@@ -178,7 +179,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
             ResponseEntity<KeyValue> response = restTemplate.exchange(getGatewayAddress() + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
-            if (response.hasBody()) { //NOSONAR tests return null
+            if (response.hasBody()) {
                 return response.getBody();
             }
         } catch (RestClientException e) {
