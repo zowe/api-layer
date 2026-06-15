@@ -13,10 +13,10 @@ package org.zowe.apiml.discovery.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.web.error.ErrorProperties;
-import org.springframework.boot.webmvc.error.BasicErrorController;
-import org.springframework.boot.webmvc.error.ErrorViewResolver;
-import org.springframework.boot.web.error.ErrorAttributes;
+import org.springframework.boot.autoconfigure.web.WebProperties;
+import org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController;
+import org.springframework.boot.webmvc.autoconfigure.error.ErrorViewResolver;
+import org.springframework.boot.webmvc.error.ErrorAttributes;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +32,8 @@ import java.util.Map;
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class DiscoveryErrorController extends BasicErrorController {
 
-    public DiscoveryErrorController(ErrorAttributes errorAttributes, ErrorProperties errorProperties, List<ErrorViewResolver> errorViewResolvers) {
-        super(errorAttributes, errorProperties, errorViewResolvers);
+    public DiscoveryErrorController(ErrorAttributes errorAttributes, WebProperties webProperties, List<ErrorViewResolver> errorViewResolvers) {
+        super(errorAttributes, webProperties.getError(), errorViewResolvers);
     }
 
     @Override
