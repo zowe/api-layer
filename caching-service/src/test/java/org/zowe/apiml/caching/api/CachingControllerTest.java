@@ -26,7 +26,9 @@ import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 
+import javax.security.auth.x500.X500Principal;
 import javax.servlet.http.HttpServletRequest;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -38,7 +40,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class CachingControllerTest {
-    private static final String SERVICE_ID = "test-service";
+    private static final String SERVICE_ID = "CN=test-service";
     private static final String KEY = "key";
     private static final String VALUE = "value";
     private static final String MAP_KEY = "map-key";
@@ -53,10 +55,13 @@ class CachingControllerTest {
     @BeforeEach
     void setUp() {
         mockRequest = mock(HttpServletRequest.class);
-        when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(SERVICE_ID);
-        when(mockRequest.getHeader("X-CS-Service-ID")).thenReturn(null);
         mockStorage = mock(Storage.class);
         underTest = new CachingController(mockStorage, messageService);
+
+        X509Certificate mockCert = mock(X509Certificate.class);
+        when(mockCert.getSubjectX500Principal()).thenReturn(new X500Principal(SERVICE_ID));
+        when(mockRequest.getAttribute("client.auth.X509Certificate")).thenReturn(new X509Certificate[]{mockCert});
+        when(mockRequest.getHeader("X-CS-Service-ID")).thenReturn(null);
     }
 
     @Nested
@@ -264,7 +269,7 @@ class CachingControllerTest {
     @Test
     void givenNoCertificateInformationInHeader_whenGetAllValues_thenReturnUnauthorized() {
         when(mockStorage.read(SERVICE_ID, KEY)).thenReturn(KEY_VALUE);
-        when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+        when(mockRequest.getAttribute("client.auth.X509Certificate")).thenReturn(null);
         ResponseEntity<?> response = underTest.getAllValues(mockRequest);
 
         assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
@@ -281,27 +286,26 @@ class CachingControllerTest {
         }
 
         @Test
-        void givenServiceIdHeader_thenReturnProperValues() {
-            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+        void givenServiceIdHeader_thenReturnUnauthorized() {
+            when(mockRequest.getAttribute("client.auth.X509Certificate")).thenReturn(null);
 
             Map<String, KeyValue> values = new HashMap<>();
             values.put(KEY, new KeyValue("key2", VALUE));
             when(mockStorage.readForService(SERVICE_ID)).thenReturn(values);
 
             ResponseEntity<?> response = underTest.getAllValues(mockRequest);
-            assertThat(response.getStatusCode(), is(HttpStatus.OK));
-
-            Map<String, KeyValue> result = (Map<String, KeyValue>) response.getBody();
-            assertThat(result, is(values));
+            assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));
         }
 
         @Test
         void givenServiceIdHeaderAndCertificateHeaderForReadForService_thenReturnProperValues() {
-            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn("certificate");
+            X509Certificate certWithDn = mock(X509Certificate.class);
+            when(certWithDn.getSubjectX500Principal()).thenReturn(new X500Principal("CN=certificate"));
+            when(mockRequest.getAttribute("client.auth.X509Certificate")).thenReturn(new X509Certificate[]{certWithDn});
 
             Map<String, KeyValue> values = new HashMap<>();
             values.put(KEY, new KeyValue("key2", VALUE));
-            when(mockStorage.readForService("certificate, SERVICE=" + SERVICE_ID)).thenReturn(values);
+            when(mockStorage.readForService("CN=certificate, SERVICE=" + SERVICE_ID)).thenReturn(values);
 
             ResponseEntity<?> response = underTest.getAllValues(mockRequest);
             assertThat(response.getStatusCode(), is(HttpStatus.OK));
@@ -381,7 +385,7 @@ class CachingControllerTest {
         @Test
         void givenNoCertificateInformation_thenReturnUnauthorized() throws StorageException {
             when(mockStorage.getAllMapItems(any(), any())).thenReturn(any());
-            when(mockRequest.getHeader("X-Certificate-DistinguishedName")).thenReturn(null);
+            when(mockRequest.getAttribute("client.auth.X509Certificate")).thenReturn(null);
             ResponseEntity<?> response = underTest.getAllMapItems(any(), mockRequest);
 
             assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED));

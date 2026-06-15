@@ -17,11 +17,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
+import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.product.web.TomcatAcceptFixConfig;
 import org.zowe.apiml.product.web.TomcatKeyringFix;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
+import org.zowe.apiml.security.common.verify.TrustedCertificatesProvider;
 
 @Configuration
-@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class, ApimlTomcatCustomizer.class})
+@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class, ApimlTomcatCustomizer.class, HttpConfig.class, CertificateValidator.class, TrustedCertificatesProvider.class})
 @Data
 @ToString
 public class GeneralConfig implements WebMvcConfigurer {

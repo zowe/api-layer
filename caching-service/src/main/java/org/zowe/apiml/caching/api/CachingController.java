@@ -27,6 +27,7 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 
 import javax.servlet.http.HttpServletRequest;
+import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 @Slf4j
@@ -293,16 +294,22 @@ public class CachingController {
     }
 
     private Optional<String> getServiceId(HttpServletRequest request) {
-        Optional<String> certificateServiceId = getHeader(request, "X-Certificate-DistinguishedName");
+        Optional<String> certificateServiceId = getCertificatePrincipal(request);
         Optional<String> specificServiceId = getHeader(request, "X-CS-Service-ID");
 
         if (certificateServiceId.isPresent() && specificServiceId.isPresent()) {
             return Optional.of(certificateServiceId.get() + ", SERVICE=" + specificServiceId.get());
-        } else if (!specificServiceId.isPresent()) {
-            return certificateServiceId;
         } else {
-            return specificServiceId;
+            return certificateServiceId;
         }
+    }
+
+    private Optional<String> getCertificatePrincipal(HttpServletRequest request) {
+        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("client.auth.X509Certificate");
+        if (certs == null || certs.length == 0) {
+            return Optional.empty();
+        }
+        return Optional.of(certs[0].getSubjectX500Principal().getName());
     }
 
     private Optional<String> getHeader(HttpServletRequest request, String headerName) {

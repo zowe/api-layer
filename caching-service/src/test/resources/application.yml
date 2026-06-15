@@ -97,6 +97,12 @@ server:
         trustStore: ../keystore/localhost/localhost.truststore.p12
         trustStorePassword: password
 
+eureka:
+    client:
+        enabled: false
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
+
 logging:
     level:
         ROOT: DEBUG

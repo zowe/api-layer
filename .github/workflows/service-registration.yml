@@ -20,7 +20,7 @@ jobs:
         timeout-minutes: 35
 
         steps:
-            -   uses: actions/checkout@v3
+            -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -29,14 +29,41 @@ jobs:
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean build --info --scan
-            -   name: Run startup check
-                run: >
-                    ./gradlew runStartUpCheck --info --scan
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
                 with:
                     name: BuildAndTest-${{ env.JOB_ID }}
+                    path: |
+                        */build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    Register:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew clean build -x test -x npmTest -x npmInstall -x npmBuild --info --scan
+
+            -   name: Run startup check
+                run: >
+                    ./gradlew runStartUpCheck --info --scan
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: Register-${{ env.JOB_ID }}
                     path: |
                         */build/reports/**
 
