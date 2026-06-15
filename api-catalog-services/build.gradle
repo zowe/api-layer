@@ -65,7 +65,7 @@ dependencies {
     api project(':apiml-tomcat-common')
     api project(':security-service-client-spring')
 
-    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.aspectj
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.web

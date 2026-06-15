@@ -38,7 +38,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -148,7 +148,7 @@ public class NewSecurityConfiguration {
                         .anyRequest().permitAll())
 
                 .logout(logout -> logout
-                    .logoutRequestMatcher(new AntPathRequestMatcher(
+                    .logoutRequestMatcher(PathPatternRequestMatcher.pathPattern(
                         authConfigurationProperties.getZaasLogoutEndpoint(), HttpMethod.POST.name()
                     ))
                     .addLogoutHandler(logoutHandler())
