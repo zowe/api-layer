@@ -95,11 +95,11 @@ class CachingServiceClientTest {
 
         @Test
         void readWithNullResponseOrNullBody() {
-            assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
-            verify(restTemplate).exchange(eq(urlBase + "/" + keyToRead), eq(HttpMethod.GET), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
             ResponseEntity<CachingServiceClient.KeyValue> responseEntity = mock(ResponseEntity.class);
             doReturn(false).when(responseEntity).hasBody();
             doReturn(responseEntity).when(restTemplate).exchange(eq(urlBase + "/" + keyToRead), eq(HttpMethod.GET), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
+            assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
+            verify(restTemplate).exchange(eq(urlBase + "/" + keyToRead), eq(HttpMethod.GET), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
             assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
         }
 
@@ -114,7 +114,7 @@ class CachingServiceClientTest {
 
         @Test
         void readWithExceptionFromRestTemplateThrowsDefined() {
-            doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
+            doThrow(new RestClientException("oops")).when(restTemplate).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
             assertThrows(CachingServiceClientException.class, () -> underTest.read(keyToRead));
         }
 
