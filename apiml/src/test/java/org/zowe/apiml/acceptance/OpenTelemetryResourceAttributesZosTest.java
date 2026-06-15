@@ -538,10 +538,10 @@ class OpenTelemetryResourceAttributesZosTest {
                 assertAttributesBase(logRecord.getResource().getAttributes(), port);
                 @SuppressWarnings("null")
                 var logBody = logRecord.getBodyValue().asString();
-                assertNull(getAttribute(logBody, "user.id"));
+                assertEquals("anonymous", getAttribute(logBody, "user.id"));
                 assertEquals("testservicebp", getAttribute(logBody, "service.id"));
                 assertEquals("GET", getAttribute(logBody, "http.request.method"));
-                assertNull(getAttribute(logBody, "auth.status"));
+                assertEquals("OK", getAttribute(logBody, "auth.status"));
                 assertEquals("localhost:testservicebp:" + mockServiceBypass.getPort(), getAttribute(logBody, "service.instance.id"));
                 assertEquals("200", getAttribute(logBody, "service.response_code"));
                 assertEquals("/testservicebp/api/v1/200", getAttribute(logBody, "url.path"));
