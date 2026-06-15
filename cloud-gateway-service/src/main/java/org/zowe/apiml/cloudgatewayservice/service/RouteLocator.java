@@ -95,10 +95,9 @@ public class RouteLocator implements RouteDefinitionLocator {
 
     void setCors(ServiceInstance serviceInstance) {
         corsUtils.setCorsConfiguration(
-            serviceInstance.getServiceId().toLowerCase(),
             serviceInstance.getMetadata(),
-            (prefix, serviceId, config) -> {
-                serviceId = serviceInstance.getMetadata().getOrDefault(APIML_ID, serviceInstance.getServiceId().toLowerCase());
+            (prefix, config) -> {
+                String serviceId = serviceInstance.getMetadata().getOrDefault(APIML_ID, serviceInstance.getServiceId().toLowerCase());
                 getCorsConfigurationSource().registerCorsConfiguration("/" + serviceId + "/**", config);
             });
     }

@@ -36,13 +36,13 @@ public class CorsUtils {
         return Boolean.parseBoolean(isCorsEnabledForService);
     }
 
-    public void setCorsConfiguration(String serviceId, Map<String, String> metadata, TriConsumer<String, String, CorsConfiguration> entryMapper) {
+    public void setCorsConfiguration(Map<String, String> metadata, BiConsumer<String, CorsConfiguration> entryMapper) {
         if (gatewayCorsEnabled) {
             CorsConfiguration corsConfiguration = setCorsHeadersForService(metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
-                    entryMapper.accept(entry.getValue(), serviceId, corsConfiguration));
+                    entryMapper.accept(entry.getValue(), corsConfiguration));
         } else {
             log.debug("CORS is not enabled in Gateway");
         }

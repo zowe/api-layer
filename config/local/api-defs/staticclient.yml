@@ -30,7 +30,7 @@ services:
             apiml:
                 okToRetryOnAllOperations: true
                 corsEnabled: true
-                corsAllowedOrigins: https://foo.bar:10010
+                corsAllowedOrigins: https://localhost2:10010
                 # corsAllowedMethods: GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS
                 # corsAllowedHeaders: Content-Type,Authorization
                 # corsExposedHeaders: Content-Type,Authorization

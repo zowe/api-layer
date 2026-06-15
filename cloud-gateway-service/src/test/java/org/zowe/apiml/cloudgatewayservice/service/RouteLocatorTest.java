@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.cloudgatewayservice.service;
 
-import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -32,12 +31,28 @@ import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
 
@@ -163,31 +178,31 @@ class RouteLocatorTest {
             verify(SCHEME_HANDLER_FILTERS[0]).apply(MOCK_SERVICE, routeDefinition, authentication);
         }
 
-        private TriConsumer<String, String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
+        private BiConsumer<String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
             ServiceInstance serviceInstance = createServiceInstance("myservice", "api/v1");
             metadataProcessor.accept(serviceInstance.getMetadata());
 
             routeLocator.setCors(serviceInstance);
-            ArgumentCaptor<TriConsumer<String, String, CorsConfiguration>> lambdaCaptor = ArgumentCaptor.forClass(TriConsumer.class);
-            verify(corsUtils).setCorsConfiguration(anyString(), any(), lambdaCaptor.capture());
+            ArgumentCaptor<BiConsumer<String, CorsConfiguration>> lambdaCaptor = ArgumentCaptor.forClass(BiConsumer.class);
+            verify(corsUtils).setCorsConfiguration(any(), lambdaCaptor.capture());
 
             return lambdaCaptor.getValue();
         }
 
         @Test
         void givenApimlId_whenSetCors_thenServiceIdIsReplacedWithApimlId() {
-            TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> md.put(APIML_ID, "apimlid"));
+            BiConsumer<String, CorsConfiguration> corsLambda = getCorsLambda(md -> md.put(APIML_ID, "apimlid"));
 
-            corsLambda.accept(null, "myservice", null);
+            corsLambda.accept("myservice", null);
 
             verify(urlBasedCorsConfigurationSource).registerCorsConfiguration("/apimlid/**", null);
         }
 
         @Test
         void givenNoApimlId_whenSetCors_thenServiceIdIsUsed() {
-            TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> {});
+            BiConsumer<String, CorsConfiguration> corsLambda = getCorsLambda(md -> {});
 
-            corsLambda.accept(null, "myservice", null);
+            corsLambda.accept("myservice", null);
 
             verify(urlBasedCorsConfigurationSource).registerCorsConfiguration("/myservice/**", null);
         }
@@ -245,7 +260,7 @@ class RouteLocatorTest {
 
             int index = 0;
             for (String serviceId : new String[] {"service1", "service2"}) {
-                verify(corsUtils).setCorsConfiguration(eq(serviceId), any(), any());
+                verify(corsUtils).setCorsConfiguration(any(), any());
 
                 for (String gatewayUrl : new String[] {"a/b", ""}) {
                     for (String producerId : new String[] {"id0", "id5", "id10"}) {

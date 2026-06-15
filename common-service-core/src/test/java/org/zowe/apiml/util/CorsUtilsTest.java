@@ -55,7 +55,7 @@ class CorsUtilsTest {
         @Test
         void registerConfigForService() {
 
-            corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
+            corsUtils.setCorsConfiguration(metadata, (path, configuration) -> {
                     assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
                     assertNotNull(configuration.getAllowedHeaders());
                     assertEquals(1, configuration.getAllowedHeaders().size());
@@ -68,7 +68,7 @@ class CorsUtilsTest {
         @Test
         void registerDefaultConfigForService() {
             metadata.remove("apiml.corsEnabled");
-            corsUtils.setCorsConfiguration("dclient", metadata, (path, serviceId, configuration) -> {
+            corsUtils.setCorsConfiguration(metadata, (path, configuration) -> {
                     assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
                     assertNull(configuration.getAllowedMethods());
                 }
@@ -79,7 +79,7 @@ class CorsUtilsTest {
         void registerConfigForServiceWithCustomOrigins() {
             Map<String, String> customMetadata = new HashMap<>(metadata);
             customMetadata.put("apiml.corsAllowedOrigins", "https://localhost:3000,http://hostname.com,https://anothehostname:3040");
-            corsUtils.setCorsConfiguration("dclient", customMetadata, (path, serviceId, configuration) -> {
+            corsUtils.setCorsConfiguration(customMetadata, (path, configuration) -> {
                     assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
                     assertNotNull(configuration.getAllowedHeaders());
                     assertTrue(configuration.getAllowedOrigins().contains("https://localhost:3000"));
@@ -107,7 +107,7 @@ class CorsUtilsTest {
 
         @Test
         void registerEmptyConfigForService() {
-            corsUtils.setCorsConfiguration("dcclient", metadata, (path, serviceId, configuration) -> {
+            corsUtils.setCorsConfiguration(metadata, (path, configuration) -> {
                     assertNull(configuration.getAllowedHeaders());
                     assertNull(configuration.getAllowedMethods());
                 }

@@ -55,7 +55,7 @@ class CorsMetadataProcessorTest {
             metadata.put("apiml.corsEnabled", "true");
             metadata.put("apiml.corsAllowedOrigins", "http://local1,http://local2");
             metadata.put("apiml.routes.0.gateway", "gateway");
-            corsUtils.setCorsConfiguration("cors-enabled-origins-allowed", metadata, (entry, serviceId, config) -> configurationSource.registerCorsConfiguration("/" + entry + "/" + serviceId + "/**", config));
+            corsUtils.setCorsConfiguration(metadata, (entry, config) -> configurationSource.registerCorsConfiguration("/cors-enabled-origins-allowed/" + entry + "/**", config));
 
             verify(configurationSource).registerCorsConfiguration(any(), configurationCaptor.capture());
 
@@ -72,7 +72,7 @@ class CorsMetadataProcessorTest {
             Map<String, String> metadata = new HashMap<>();
             metadata.put("apiml.corsEnabled", "true");
             metadata.put("apiml.routes.0.gateway", "gateway");
-            corsUtils.setCorsConfiguration("cors-enabled-all-origins", metadata, (entry, serviceId, config) -> configurationSource.registerCorsConfiguration("/" + entry + "/" + serviceId + "/**", config));
+            corsUtils.setCorsConfiguration(metadata, (entry, config) -> configurationSource.registerCorsConfiguration("/cors-enabled-all-origins/" + entry + "/**", config));
 
             verify(configurationSource).registerCorsConfiguration(any(), configurationCaptor.capture());
 
@@ -93,15 +93,18 @@ class CorsMetadataProcessorTest {
 
     @Nested
     class GivenCorsDisabled {
+
         @Test
         void corsIsDisabledPerService() {
 
             Map<String, String> metadata = new HashMap<>();
             metadata.put("apiml.corsEnabled", "false");
             metadata.put("apiml.routes.0.gateway", "gateway");
-            corsUtils.setCorsConfiguration("cors-disabled", metadata, (entry, serviceId, config) -> configurationSource.registerCorsConfiguration("/" + entry + "/" + serviceId + "/**", config));
+            corsUtils.setCorsConfiguration(metadata, (entry, config) -> configurationSource.registerCorsConfiguration("/cors-disabled/" + entry + "/**", config));
             verify(configurationSource).registerCorsConfiguration(any(), configurationCaptor.capture());
 
         }
+
     }
+
 }

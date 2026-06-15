@@ -304,18 +304,18 @@ management:
 logging:
     level:
         ROOT: INFO
-        org.zowe.apiml: DEBUG
-        org.springframework: INFO
+        com.netflix: INFO
+        com.netflix.discovery.shared.transport.decorator: DEBUG
         org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        com.netflix: INFO
-        org.hibernate: INFO
-        org.springframework.web.servlet.PageNotFound: WARN
         org.ehcache: INFO
+        org.hibernate: INFO
+        org.springframework: INFO
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.springframework.web.servlet.PageNotFound: WARN
         org.springframework.web.socket: DEBUG
+        org.zowe.apiml: DEBUG
         org.zowe.apiml.gateway.ws: DEBUG
 
 ---

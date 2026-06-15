@@ -47,8 +47,10 @@ class CorsEnabledTest implements TestWithStartedInstances {
 
         @ParameterizedTest
         @CsvSource({
-            "https://foo.bar.org, 200",
-            "https://localhost:10010, 403"
+            "https://localhost2:10010, 200",
+            "https://localhost:10010, 200",
+            "https://foo.bar:10010, 403",
+            "https://localhost:10011, 403"
         })
         void test1(String origin, int statusCode) {
             given()
