@@ -10,13 +10,20 @@
 
 package org.zowe.apiml.integration.proxy;
 
+import io.restassured.RestAssured;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.DiscoverableClientDependentTest;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.GatewayServiceConfiguration;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 import org.zowe.apiml.util.requests.Endpoints;
 
@@ -27,53 +34,41 @@ import static org.apache.http.HttpStatus.SC_OK;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CorsEnabledTest implements TestWithStartedInstances {
 
-    // // Need to login to get a token and try credentials config.
-    // private final GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-
-    // private String gatewayScheme;
-    // private String gatewayHost;
-    // private int gatewayPort;
+    private final GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
     @BeforeAll
-    void init() {
-        // gatewayScheme = gatewayServiceConfiguration.getScheme();
-        // gatewayHost = gatewayServiceConfiguration.getHost();
-        // gatewayPort = gatewayServiceConfiguration.getPort();
+    void init() throws Exception {
+        RestAssured.useRelaxedHTTPSValidation();
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
     }
 
     @Nested
-    class WhenCorsIsEnabled {
+    class WhenCorsIsEnabledInService {
 
-        @Test
-        void givenServiceHasCorsConfiguration_whenPreflightRequestArrives_thenCorsHeadersAreSet() {
+        @ParameterizedTest
+        @CsvSource({
+            "https://foo.bar.org, 200",
+            "https://localhost:10010, 403"
+        })
+        void test1(String origin, int statusCode) {
             given()
-                .header("Origin", "https://foo.bar.org")
+                .log().all()
+                .header("Origin", origin)
+                .header("Access-Control-Request-Method", "GET")
+                .header("Access-Control-Request-Headers", "Origin")
             .when()
-                .get(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_1_REQUEST))
+                .options(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_1_REQUEST))
             .then()
                 .log().all()
-                .statusCode(SC_OK)
-                .header("Access-Control-Allow-Origin", "https://foo.bar.org");
+                .statusCode(statusCode);
         }
 
         @Test
-        void givenServiceHasCorsConfiguration_whenSimpleRequestArrives_thenCorsHeadersAreSet() {
+        void test3() {
             given()
                 .header("Origin", "https://foo.bar.org")
             .when()
-                .get(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_1_REQUEST))
-            .then()
-                .log().all()
-                .statusCode(SC_OK)
-                .header("Access-Control-Allow-Origin", "https://foo.bar.org");
-        }
-
-        @Test
-        void givenServiceDoesNotHaveCorsConfiguration_whenPreflightRequestArrives_thenCorsHeadersAreNotSet() {
-            given()
-                .header("Origin", "https://foo.bar.org")
-            .when()
-                .options(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_2_REQUEST))
+                .options(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_1_REQUEST))
             .then()
                 .log().all()
                 .statusCode(SC_OK)
@@ -81,14 +76,14 @@ class CorsEnabledTest implements TestWithStartedInstances {
         }
 
         @Test // TODO check names
-        void givenServiceHasIncompleteCorsConfiguration_whenPreflightRequestArrives_thenCorsHeadersAreNotSet() {
+        void test4() {
 
         }
 
     }
 
     @Nested
-    class WhenCorsIsDisabled {
+    class WhenCorsIsDisabledInService {
 
         // preflight (should not be forwarded to service)
         @Test

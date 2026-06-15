@@ -50,7 +50,8 @@ public class ConfigReader {
                     } catch (URISyntaxException exception) {
                         log.error("Incorrect environment-configuration.yml location: " + exception.getMessage(), exception);
                         configFile = new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile());
-
+                    } catch (NullPointerException exception) {
+                        configFile = new File("src/test/resources/" + configFileName);
                     }
                     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                     EnvironmentConfiguration configuration;

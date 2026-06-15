@@ -27,6 +27,7 @@ import java.util.Optional;
 
 @Slf4j
 public class FullApiMediationLayer {
+
     private RunningService discoveryService;
     private RunningService gatewayService;
     private RunningService apiCatalogService;

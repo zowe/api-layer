@@ -25,7 +25,12 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.util.CorsUtils;
 
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Externalized configuration of CORS behavior
@@ -37,18 +42,22 @@ import java.util.*;
 public class CorsBeans {
 
     @Value("${apiml.service.corsEnabled:false}")
-    private boolean corsEnabled;
+    private boolean gatewayCorsEnabled;
+    @Value("${apiml.service.corsDefaultAllowedOrigins:#{null}}")
+    private String corsDefaultAllowedOrigins;
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
-    private List<String> corsAllowedMethods;
-    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
+    private List<String> corsDefaultAllowedMethods;
+    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}") // Used by cloud gateway?
     private String ignoredHeadersWhenCorsEnabled;
+    @Value("${apiml.service.port}")
+    private String port;
 
     private final ZuulProperties zuulProperties;
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(CorsUtils corsUtils) {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        if (corsEnabled) {
+        if (gatewayCorsEnabled) {
             addCorsRelatedIgnoredHeaders();
         }
         corsUtils.registerDefaultCorsConfiguration(source::registerCorsConfiguration);
@@ -61,19 +70,24 @@ public class CorsBeans {
         ));
     }
 
-    List<String> getDefaultAllowedOrigins( // TODO: this method is a hotfix for AT-TLS, but it could be a breaking change, verify no-ATTLS configuration in v3
+    List<String> getDefaultAllowedOrigins(
         Environment environment,
-        List<String> externalUrls,
+        List<String> externalDomains,
         String hostname,
         int port
     ) throws URISyntaxException {
+        if (corsDefaultAllowedOrigins != null) {
+            return Arrays.asList(corsDefaultAllowedOrigins.split(","));
+        }
         boolean isClientAttlsEnabled = Arrays.asList(environment.getActiveProfiles()).contains("attlsClient");
-        if (corsEnabled || !isClientAttlsEnabled) {
-            return null;
+        if (gatewayCorsEnabled || !isClientAttlsEnabled) {
+            return externalDomains.stream()
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toList());
         }
 
         Set<String> gatewayOrigins = new HashSet<>();
-        externalUrls.stream().filter(StringUtils::isNotBlank).forEach(gatewayOrigins::add);
+        externalDomains.stream().filter(StringUtils::isNotBlank).forEach(gatewayOrigins::add);
         gatewayOrigins.add(new URIBuilder()
             .setScheme("https")
             .setHost(hostname)
@@ -83,19 +97,19 @@ public class CorsBeans {
 
         return new ArrayList<>(gatewayOrigins);
     }
+
     @Bean
     CorsUtils corsUtils(
         Environment environment,
-        @Value("${apiml.service.externalUrl:}") String externalUrl, // FIXME Should support multiple external URLs
+        @Value("${apiml.service.externalUrl:}") String externalUrl,
         @Value("${server.hostname:${apiml.service.hostname}}") String hostname,
         @Value("${server.port}") int port
     ) throws URISyntaxException {
-        return new CorsUtils(
-            corsEnabled,
-            corsAllowedMethods,
-            getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList(externalUrl)),
-            hostname,
-            port));
+        return CorsUtils.builder()
+            .gatewayCorsEnabled(gatewayCorsEnabled)
+            .defaultAllowedCorsHttpMethods(corsDefaultAllowedMethods)
+            .defaultAllowedOrigins(getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList(externalUrl)), hostname, port)).build();
+
     }
 
 }

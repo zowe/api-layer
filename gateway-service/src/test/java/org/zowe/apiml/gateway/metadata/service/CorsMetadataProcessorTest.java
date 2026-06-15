@@ -18,10 +18,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.util.CorsUtils;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -38,7 +38,11 @@ class CorsMetadataProcessorTest {
     @BeforeEach
     void setUp() {
         configurationSource = mock(UrlBasedCorsConfigurationSource.class);
-        corsUtils = new CorsUtils(true, Stream.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS").collect(Collectors.toList()), null);
+        corsUtils = CorsUtils.builder()
+            .gatewayCorsEnabled(true)
+            .defaultAllowedCorsHttpMethods(Arrays.asList("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"))
+            .defaultAllowedOrigins(Collections.emptyList())
+            .build();
     }
 
     @Nested

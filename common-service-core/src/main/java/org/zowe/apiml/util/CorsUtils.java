@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.util;
 
-import lombok.RequiredArgsConstructor;
+import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.springframework.web.cors.CorsConfiguration;
@@ -19,8 +19,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-@RequiredArgsConstructor
 @Slf4j
+@Builder
 public class CorsUtils {
 
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
@@ -65,8 +65,11 @@ public class CorsUtils {
 
             config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
+
+            log.debug("CORS enabled for service {}: {}", metadata.get("apiml.service.title"), config);
         } else {
             config.setAllowedOrigins(defaultAllowedOrigins);
+            log.debug("CORS is not enabled for service {}. Using defaults {}", metadata.get("apiml.service.title"), defaultAllowedOrigins);
         }
         return config;
     }

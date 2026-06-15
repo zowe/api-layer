@@ -356,7 +356,10 @@ public class ConnectionsConfig {
 
     @Bean
     public CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods, null);
+        return CorsUtils.builder()
+            .gatewayCorsEnabled(corsEnabled)
+            .defaultAllowedCorsHttpMethods(corsAllowedMethods)
+            .build();
     }
 
     @Bean
