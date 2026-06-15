@@ -26,7 +26,6 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.zowe.apiml.discovery.metadata.MetadataFilterService;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -57,8 +56,6 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private final ApplicationContext appCntx;
     private final EurekaConfig.Tuple tuple;
 
-    private final MetadataFilterService metadataFilterService;
-
     private ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>> registry;
     private Set<String> staticRegistrationIds = Collections.synchronizedSet(new HashSet<>());
 
@@ -72,8 +69,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         EurekaServerHttpClientFactory eurekaServerHttpClientFactory,
         InstanceRegistryProperties instanceRegistryProperties,
         ApplicationContext appCntx,
-        EurekaConfig.Tuple tuple,
-        MetadataFilterService metadataFilterService
+        EurekaConfig.Tuple tuple
     ) {
 
         super(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory,
@@ -82,7 +78,6 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         );
         this.appCntx = appCntx;
         this.tuple = tuple;
-        this.metadataFilterService = metadataFilterService;
         init();
     }
 
@@ -199,8 +194,6 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * @param info the instance info
      */
     private void validateInstanceInfo(InstanceInfo info) {
-        metadataFilterService.verifyAllowedDomains(info);
-
         String instanceId = info.getInstanceId();
         String appName = StringUtils.lowerCase(info.getAppName());
 

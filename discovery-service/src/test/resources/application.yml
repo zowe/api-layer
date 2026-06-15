@@ -7,8 +7,6 @@ apiml:
         port: 20011
         ipAddress: 127.0.0.1
         preferIpAddress: false
-    security:
-        allowedDomains: localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com
 
 spring:
     config:

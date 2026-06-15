@@ -15,6 +15,7 @@ dependencies {
 
     implementation libs.apache.commons.lang3
     implementation libs.http.client5
+    implementation libs.jackson.databind
 
     implementation libs.nimbus.jose.jwt // Parsing
 
@@ -27,7 +28,6 @@ dependencies {
 
     testCompileOnly libs.lombok
     testImplementation libs.netty.reactor.http
-    testImplementation libs.reactor.test
     testAnnotationProcessor libs.lombok
 
     testFixturesImplementation libs.nimbus.jose.jwt

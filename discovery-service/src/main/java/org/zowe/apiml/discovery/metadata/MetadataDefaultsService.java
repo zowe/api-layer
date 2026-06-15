@@ -10,8 +10,8 @@
 
 package org.zowe.apiml.discovery.metadata;
 
-import org.springframework.stereotype.Service;
 import org.zowe.apiml.product.discovery.ServiceOverrideData;
+import org.springframework.stereotype.Service;
 
 import java.util.Collections;
 import java.util.Map;

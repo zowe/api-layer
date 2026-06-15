@@ -23,7 +23,7 @@ import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.util.Timeout;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.web.server.autoconfigure.ServerProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -250,8 +250,6 @@ public class HttpConfig implements InitializingBean {
     @Primary
     RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
-        factory.setConnectionRequestTimeout(requestConnectionTimeout);
-        factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
 
@@ -265,8 +263,6 @@ public class HttpConfig implements InitializingBean {
     @Bean
     RestTemplate restTemplateWithoutKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClientWithoutKeystore);
-        factory.setConnectionRequestTimeout(requestConnectionTimeout);
-        factory.setConnectTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
 

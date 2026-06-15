@@ -32,7 +32,6 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.zowe.apiml.discovery.metadata.MetadataFilterService;
 
 import java.lang.invoke.MethodHandle;
 import java.util.HashMap;
@@ -59,7 +58,6 @@ class ApimlInstanceRegistryTest {
     @Mock private ApplicationContext appCntx;
     @Mock private EurekaInstanceConfig eurekaInstanceConfig;
     @Mock private PeerEurekaNodes peerEurekaNodes;
-    @Mock private MetadataFilterService metadataFilterService;
     private InstanceInfo standardInstance;
 
     private EurekaServerConfig serverConfig;
@@ -78,8 +76,7 @@ class ApimlInstanceRegistryTest {
             eurekaServerHttpClientFactory,
             instanceRegistryProperties,
             appCntx,
-            new EurekaConfig.Tuple("service*,hello"),
-            metadataFilterService)));
+            new EurekaConfig.Tuple("service*,hello"))));
 
         doReturn("zowe").when(eurekaInstanceConfig).getNamespace();
         doReturn("discovery").when(eurekaInstanceConfig).getAppname();
@@ -128,8 +125,7 @@ class ApimlInstanceRegistryTest {
                 eurekaServerHttpClientFactory,
                 instanceRegistryProperties,
                 appCntx,
-                new EurekaConfig.Tuple(""),
-                metadataFilterService)));
+                new EurekaConfig.Tuple(""))));
             assertDoesNotThrow( () ->
                 apimlInstanceRegistry.register(wrongInstance, 1, false)
             );
@@ -151,8 +147,7 @@ class ApimlInstanceRegistryTest {
                 eurekaServerHttpClientFactory,
                 instanceRegistryProperties,
                 appCntx,
-                new EurekaConfig.Tuple(null),
-                metadataFilterService)));
+                new EurekaConfig.Tuple(null))));
             assertDoesNotThrow(() -> apimlInstanceRegistry.register(standardInstance, false));
         }
 
@@ -206,8 +201,7 @@ class ApimlInstanceRegistryTest {
             eurekaServerHttpClientFactory,
             instanceRegistryProperties,
             appCntx,
-            new EurekaConfig.Tuple(tuple),
-            metadataFilterService)));
+            new EurekaConfig.Tuple(tuple))));
         apimlInstanceRegistry.register(standardInstance, false);
         assertEquals(expectedServiceIdInResult, standardInstance.getInstanceId());
     }
@@ -223,8 +217,7 @@ class ApimlInstanceRegistryTest {
             eurekaServerHttpClientFactory,
             instanceRegistryProperties,
             appCntx,
-            new EurekaConfig.Tuple(tuple),
-            metadataFilterService)));
+            new EurekaConfig.Tuple(tuple))));
         apimlInstanceRegistry.register(standardInstance, 1, false);
         assertEquals(expectedServiceIdInResult, standardInstance.getInstanceId());
     }
@@ -344,8 +337,7 @@ class ApimlInstanceRegistryTest {
         void setUp() {
             registry = new ApimlInstanceRegistry(
                 serverConfig, clientConfig, serverCodecs, eurekaClient,
-                eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new EurekaConfig.Tuple(""),
-                metadataFilterService
+                eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new EurekaConfig.Tuple("")
             );
             renewCorrection = (ThreadLocal<Integer>) ReflectionTestUtils.getField(registry, "RENEW_CORRECTION");
         }

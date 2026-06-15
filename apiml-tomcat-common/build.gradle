@@ -5,6 +5,9 @@ dependencies {
     api libs.zowe.zos.utils
     implementation libs.netty.reactor.http
     implementation libs.apache.commons.lang3
+    implementation libs.jackson.annotations
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
 
     testImplementation libs.spring.boot.starter.test
 
