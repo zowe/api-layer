@@ -58,6 +58,7 @@ spring:
         gateway:
             server:
                 webflux:
+                    trusted-proxies: "192.168.0.0/16,10.0.0.0/8"
                     x-forwarded:
                         prefix-append: false
                         prefix-enabled: true
@@ -102,7 +103,7 @@ apiml:
         corsAllowedEndpoints: /gateway/**
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
-        forwardClientCertEnabled: true
+        forwardClientCertEnabled: false
         hostname: localhost
         id: ${spring.application.name}
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin

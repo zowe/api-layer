@@ -80,7 +80,7 @@ class WebSocketChaoticTest implements TestWithStartedInstances {
         throws Exception {
         StandardWebSocketClient client = new StandardWebSocketClient();
         client.setSslContext(HttpClientUtils.ignoreSslContext());
-        return client.doHandshake(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
+        return client.execute(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
     }
 
     @Nested

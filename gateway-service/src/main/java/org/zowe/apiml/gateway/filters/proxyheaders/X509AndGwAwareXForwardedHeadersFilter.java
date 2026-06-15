@@ -155,7 +155,7 @@ public class X509AndGwAwareXForwardedHeadersFilter extends XForwardedHeadersFilt
     }
 
     private boolean hasXForwardedHeader(HttpHeaders headers) {
-        return headers.keySet().stream()
+        return headers.toSingleValueMap().keySet().stream()
             .anyMatch(this::isXForwardedHeader);
     }
 }

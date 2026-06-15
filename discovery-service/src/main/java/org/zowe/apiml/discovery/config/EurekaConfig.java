@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
+import org.zowe.apiml.discovery.metadata.MetadataFilterService;
 
 import javax.net.ssl.SSLContext;
 import java.util.Collection;
@@ -80,11 +81,12 @@ public class EurekaConfig {
         EurekaClient eurekaClient,
         EurekaServerHttpClientFactory eurekaServerHttpClientFactory,
         InstanceRegistryProperties instanceRegistryProperties,
-        ApplicationContext appCntx
+        ApplicationContext appCntx,
+        MetadataFilterService metadataFilterService
     ) {
         eurekaClient.getApplications(); // force initialization
 
-        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new Tuple(tuple));
+        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new Tuple(tuple), metadataFilterService);
     }
 
     @Bean
