@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.zowe.apiml.models.AccessTokenContainer;
@@ -285,6 +286,37 @@ class ApimlAccessTokenProviderTest {
             String salt = accessTokenProvider.initializeSalt();
             assertTrue(StringUtils.isNotBlank(salt));
             verify(cachingServiceClient, times(1)).create(any());
+        }
+
+        @Test
+        void testInitializeSalt_WhenOldFormat_ShouldMigrateToBase64() {
+            String oldRawSalt = "legacy_raw_salt_€_!";
+            String expectedBase64 = Base64.getEncoder().encodeToString(oldRawSalt.getBytes());
+            CachingServiceClient.KeyValue mockKeyValue = new CachingServiceClient.KeyValue("salt", oldRawSalt);
+
+            when(cachingServiceClient.read("salt")).thenReturn(mockKeyValue);
+            String salt = accessTokenProvider.initializeSalt();
+            assertEquals(expectedBase64, salt);
+
+            ArgumentCaptor<CachingServiceClient.KeyValue> argumentCaptor = ArgumentCaptor.forClass(CachingServiceClient.KeyValue.class);
+            verify(cachingServiceClient, times(1)).update(argumentCaptor.capture());
+
+            assertEquals("salt", argumentCaptor.getValue().getKey());
+            assertEquals(expectedBase64, argumentCaptor.getValue().getValue());
+        }
+
+        @Test
+        void testInitializeSalt_WhenAlreadyBase64_ShouldNotMigrate() {
+            byte[] originalBytes = "1234567890abcdef".getBytes();
+            String validBase64Salt = Base64.getEncoder().encodeToString(originalBytes);
+
+            CachingServiceClient.KeyValue mockKeyValue = new CachingServiceClient.KeyValue("salt", validBase64Salt);
+            when(cachingServiceClient.read("salt")).thenReturn(mockKeyValue);
+            String salt = accessTokenProvider.initializeSalt();
+
+            assertEquals(validBase64Salt, salt);
+
+            verify(cachingServiceClient, never()).update(any());
         }
 
     }
