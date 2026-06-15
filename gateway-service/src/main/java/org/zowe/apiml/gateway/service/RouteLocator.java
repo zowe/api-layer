@@ -111,7 +111,7 @@ public class RouteLocator implements RouteDefinitionLocator {
         return output;
     }
 
-    List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance, RoutedService routedService) {
+    List<FilterDefinition> getPostRoutingFilters(ServiceInstance serviceInstance, RoutedService routedService, Authentication auth) {
         List<FilterDefinition> serviceRelated = new LinkedList<>();
         if (forwardingClientCertEnabled
                 && Optional.ofNullable(serviceInstance.getMetadata().get(SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING))
@@ -162,6 +162,9 @@ public class RouteLocator implements RouteDefinitionLocator {
             otelRequestBasicFilter.setName("OtelServiceFilterFactory");
             otelRequestBasicFilter.addArg("serviceId", serviceInstance.getServiceId());
             otelRequestBasicFilter.addArg("instanceId", serviceInstance.getInstanceId());
+            if (auth != null && auth.getScheme() != null) {
+                otelRequestBasicFilter.addArg("authenticationScheme", auth.getScheme().name());
+            }
             serviceRelated.add(otelRequestBasicFilter);
         }
 
@@ -186,7 +189,7 @@ public class RouteLocator implements RouteDefinitionLocator {
                         // generate a new routing rule by a specific produces
                         RouteDefinition routeDefinition = rdp.get(serviceInstance, routedService);
                         routeDefinition.setOrder(orderHolder.getAndIncrement());
-                        routeDefinition.getFilters().addAll(getPostRoutingFilters(serviceInstance, routedService));
+                        routeDefinition.getFilters().addAll(getPostRoutingFilters(serviceInstance, routedService, auth));
                         setAuth(serviceInstance, routeDefinition, auth);
 
                         return routeDefinition;

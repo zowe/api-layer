@@ -30,12 +30,15 @@ public class OtelServiceFilterFactory extends AbstractGatewayFilterFactory<OtelS
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            OtelRequestContext.of(exchange)
+            var ctx = OtelRequestContext.of(exchange)
                 .authMethod(AuthenticationScheme.BYPASS)
                 .serviceId(config.serviceId)
-                .instanceId(config.instanceId)
-                .anonymousUserId()
-                .authenticationSuccess();
+                .instanceId(config.instanceId);
+
+            if (AuthenticationScheme.BYPASS.name().equalsIgnoreCase(config.authenticationScheme)) {
+                ctx.anonymousUserId()
+                   .authenticationSuccess();
+            }
             return chain.filter(exchange);
         };
     }
@@ -46,6 +49,7 @@ public class OtelServiceFilterFactory extends AbstractGatewayFilterFactory<OtelS
 
         private String instanceId;
         private String serviceId;
+        private String authenticationScheme;
 
     }
 

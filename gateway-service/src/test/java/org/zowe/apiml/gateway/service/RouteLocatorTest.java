@@ -269,7 +269,7 @@ class RouteLocatorTest {
                 void givenServiceAllowingCertForwarding_whenGetPostRoutingFilters_thenAddClientCertFilterFactory() {
                     ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE, null, null);
 
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertEquals(3, filterDefinitions.size()); // common filters + PageRedirectionFilterFactory
                     assertEquals("ForwardClientCertFilterFactory", filterDefinitions.get(1).getName());
                 }
@@ -278,7 +278,7 @@ class RouteLocatorTest {
                 void givenServiceNotAllowingCertForwarding_whenGetPostRoutingFilters_thenReturnJustCommon() {
                     ServiceInstance serviceInstance = createServiceInstance(Boolean.FALSE, null, null);
 
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
@@ -289,7 +289,7 @@ class RouteLocatorTest {
                 void givenServiceWithoutCertForwardingConfig_whenGetPostRoutingFilters_thenReturnJustCommon() {
                     ServiceInstance serviceInstance = createServiceInstance(null, null, null);
 
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
@@ -309,7 +309,7 @@ class RouteLocatorTest {
                 void givenAnyService_whenGetPostRoutingFilters_thenReturnJustCommon() {
                     ServiceInstance serviceInstance = createServiceInstance(Boolean.TRUE, null, null);
 
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForwardClientCertFilterFactory".equals(filter.getName())));
@@ -323,7 +323,7 @@ class RouteLocatorTest {
                 @Test
                 void givenServiceAllowingEncodedCharacters_whenGetPostRoutingFilters_thenReturnJustCommon() {
                     ServiceInstance serviceInstance = createServiceInstance(null, Boolean.TRUE, null);
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForbidEncodedCharactersFilterFactory".equals(filter.getName())));
@@ -332,7 +332,7 @@ class RouteLocatorTest {
                 @Test
                 void givenServiceNotAllowingEncodedCharacters_whenGetPostRoutingFilters_thenAddEncodedCharacterFilterFactory() {
                     ServiceInstance serviceInstance = createServiceInstance(null, Boolean.FALSE, null);
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertEquals(3, filterDefinitions.size());
                     assertEquals("ForbidEncodedCharactersFilterFactory", filterDefinitions.get(1).getName());
                 }
@@ -340,7 +340,7 @@ class RouteLocatorTest {
                 @Test
                 void givenServiceWithoutAllowingEncodedCharacters_whenGetPostRoutingFilters_thenAddEncodedCharacterFilterFactory() {
                     ServiceInstance serviceInstance = createServiceInstance(null, null, null);
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "ForbidEncodedCharactersFilterFactory".equals(filter.getName())));
@@ -354,7 +354,7 @@ class RouteLocatorTest {
                 @Test
                 void givenServiceNotAllowingRateLimiter_whenGetPostRoutingFilters_thenReturnJustCommon() {
                     ServiceInstance serviceInstance = createServiceInstance(null, null, Boolean.FALSE);
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "InMemoryRateLimiterFilterFactory".equals(filter.getName())));
@@ -363,7 +363,7 @@ class RouteLocatorTest {
                 @Test
                 void givenServiceAllowingRateLimiter_whenGetPostRoutingFilters_thenAddInMemoryRateLimiterFilterFactory() {
                     ServiceInstance serviceInstance = createServiceInstance(null, null, Boolean.TRUE);
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertEquals(3, filterDefinitions.size());
                     assertEquals("InMemoryRateLimiterFilterFactory", filterDefinitions.get(1).getName());
                 }
@@ -371,7 +371,7 @@ class RouteLocatorTest {
                 @Test
                 void givenServiceWithoutAllowingRateLimiter_whenGetPostRoutingFilters_thenDoNotAddInMemoryRateLimiterFilterFactory() {
                     ServiceInstance serviceInstance = createServiceInstance(null, null, null);
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertTrue(filterDefinitions.containsAll(COMMON_FILTERS), "Not all common filters are defined");
                     assertEquals(2, filterDefinitions.size());
                     assertTrue(filterDefinitions.stream().noneMatch(filter -> "InMemoryRateLimiterFilterFactory".equals(filter.getName())));
@@ -390,7 +390,7 @@ class RouteLocatorTest {
                 @Test
                 void givenEnabledOtel_whenGetPostRoutingFilters_thenOtelServiceFilterFactoryIsCreated() {
                     ServiceInstance serviceInstance = createServiceInstance(null, null, Boolean.TRUE);
-                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, null);
                     assertEquals(4, filterDefinitions.size());
 
                     var filter = filterDefinitions.get(3);

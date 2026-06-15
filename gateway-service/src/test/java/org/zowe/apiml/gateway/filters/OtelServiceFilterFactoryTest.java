@@ -34,6 +34,7 @@ class OtelServiceFilterFactoryTest {
         var config = new OtelServiceFilterFactory.Config();
         config.setServiceId(SERVICE_ID);
         config.setInstanceId(INSTANCE_ID);
+        config.setAuthenticationScheme("BYPASS");
 
         new OtelServiceFilterFactory().apply(config).filter(exchange, e -> Mono.empty().then());
 
