@@ -319,6 +319,56 @@ class ApimlAccessTokenProviderTest {
             verify(cachingServiceClient, never()).update(any());
         }
 
+        @Test
+        void givenKeyCollision_whenStoreSalt_thenLogWarnAndThrowException() throws CachingServiceClientException {
+            when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException("Salt not found"));
+
+            CachingServiceClientException mockCollisionException = mock(CachingServiceClientException.class);
+            when(mockCollisionException.isKeyCollision()).thenReturn(true);
+
+            doThrow(mockCollisionException).when(cachingServiceClient).create(any(CachingServiceClient.KeyValue.class));
+
+            assertThrows(CachingServiceClientException.class, () -> accessTokenProvider.initializeSalt());
+
+            verify(cachingServiceClient, times(1)).create(any(CachingServiceClient.KeyValue.class));
+        }
+
+        @Test
+        void givenGenericCacheError_whenStoreSalt_thenLogErrorAndThrowException() throws CachingServiceClientException {
+            when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException("Salt not found"));
+
+            CachingServiceClientException mockGenericException = mock(CachingServiceClientException.class);
+            when(mockGenericException.isKeyCollision()).thenReturn(false);
+
+            doThrow(mockGenericException).when(cachingServiceClient).create(any(CachingServiceClient.KeyValue.class));
+
+            assertThrows(CachingServiceClientException.class, () -> accessTokenProvider.initializeSalt());
+
+            verify(cachingServiceClient, times(1)).create(any(CachingServiceClient.KeyValue.class));
+        }
+
+        @Test
+        void givenForcedNullInitialization_whenGetSalt_thenReturnEmptyByteArray() throws CachingServiceClientException {
+            ApimlAccessTokenProvider providerSpy = spy(accessTokenProvider);
+
+            doReturn(null).when(providerSpy).initializeSalt();
+            byte[] actualBytes = providerSpy.getSalt();
+
+            assertNotNull(actualBytes);
+            assertEquals(0, actualBytes.length, "The byte array must be empty when saltStr is null");
+        }
+
+        @Test
+        void givenNullOrEmptySaltInCache_whenInitializing_thenFallbackToGenerateNewSalt() throws CachingServiceClientException {
+            when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", ""));
+
+            String resultSalt = accessTokenProvider.initializeSalt();
+
+            assertNotNull(resultSalt);
+            assertFalse(resultSalt.isEmpty());
+            verify(cachingServiceClient, times(1)).create(any());
+        }
+
     }
 
 }
