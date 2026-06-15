@@ -99,7 +99,7 @@ class X509AuthSourceServiceTest {
                 request = mock(HttpServletRequest.class);
                 assertFalse(serviceUnderTest.getAuthSourceFromRequest(request).isPresent());
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
-                verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
+                verify(request, times(0)).getAttribute("jakarta.servlet.request.X509Certificate");
             }
 
             @Test
@@ -154,7 +154,7 @@ class X509AuthSourceServiceTest {
                 Optional<AuthSource> authSource = serviceUnderTest.getAuthSourceFromRequest(request);
 
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
-                verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
+                verify(request, times(0)).getAttribute("jakarta.servlet.request.X509Certificate");
 
                 Assertions.assertTrue(authSource.isPresent());
                 Assertions.assertTrue(authSource.get() instanceof X509AuthSource);
@@ -203,7 +203,7 @@ class X509AuthSourceServiceTest {
                 assertFalse(serviceUnderTest.getAuthSourceFromRequest(request).isPresent());
 
                 verify(request, times(1)).getAttribute("client.auth.X509Certificate");
-                verify(request, times(0)).getAttribute("javax.servlet.request.X509Certificate");
+                verify(request, times(0)).getAttribute("jakarta.servlet.request.X509Certificate");
             }
 
             @Test
