@@ -31,7 +31,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.util.CorsUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -133,10 +132,8 @@ class ConnectionsConfigTest {
             @Test
             void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
                 CorsUtils corsUtils = connectionsConfig.corsUtils();
-
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                @SuppressWarnings("unchecked")
+                List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
                 assertEquals(7, corsAllowedMethods.size());
             }
         }
@@ -155,9 +152,8 @@ class ConnectionsConfigTest {
             void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
                 CorsUtils corsUtils = connectionsConfig.corsUtils();
 
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                @SuppressWarnings("unchecked")
+                List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
                 assertEquals(3, corsAllowedMethods.size());
                 assertEquals("GET", corsAllowedMethods.get(0));
                 assertEquals("POST", corsAllowedMethods.get(1));

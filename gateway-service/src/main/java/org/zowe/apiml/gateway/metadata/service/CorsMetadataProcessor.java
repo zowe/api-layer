@@ -46,7 +46,11 @@ public class CorsMetadataProcessor extends MetadataProcessor {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
             corsUtils.setCorsConfiguration(
                 metadata,
-                (gatewayRoute, config) -> cors.registerCorsConfiguration("/" + instanceInfo.getVIPAddress().toLowerCase() + "/" + gatewayRoute + "/**", config)); // i.e. /staticcors1/api/v1/**
+                (gatewayRoute, config) -> {
+                    cors.registerCorsConfiguration("/" + instanceInfo.getVIPAddress().toLowerCase() + "/" + gatewayRoute + "/**", config); // i.e. /staticcors1/api/v1/**
+                    cors.registerCorsConfiguration("/" + gatewayRoute + "/" + instanceInfo.getVIPAddress().toLowerCase() + "/**", config); // i.e. /api/v1/staticcors1/**
+                }
+            );
         }
 
     }

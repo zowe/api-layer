@@ -12,10 +12,12 @@ package org.zowe.apiml.util;
 
 import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.TriConsumer;
 import org.springframework.web.cors.CorsConfiguration;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 

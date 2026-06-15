@@ -32,7 +32,7 @@ import static org.mockito.Mockito.verify;
 @AcceptanceTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-    "apiml.service.corsAllowedOrigins=https://foo.bar.org"
+    "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org"
 })
 class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
 
@@ -44,9 +44,9 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
             .header(new Header("Origin", "https://foo.bar.org"))
             .header(new Header("Access-Control-Request-Method", "POST"))
             .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-            .when()
+        .when()
             .options(basePath + "/gateway/version")
-            .then()
+        .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin","https://foo.bar.org")
             .header("Access-Control-Allow-Methods", "GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS")
@@ -55,9 +55,9 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
         // Actual request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
-            .when()
+        .when()
             .get(basePath + "/gateway/version")
-            .then()
+        .then()
             .statusCode(is(SC_OK))
             .header("Access-Control-Allow-Origin", "https://foo.bar.org");
     }

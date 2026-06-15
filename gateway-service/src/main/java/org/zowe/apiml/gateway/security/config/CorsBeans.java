@@ -76,26 +76,26 @@ public class CorsBeans {
         String hostname,
         int port
     ) throws URISyntaxException {
+        Set<String> defaultAllowedOrigins = new HashSet<>();
         if (corsDefaultAllowedOrigins != null) {
-            return Arrays.asList(corsDefaultAllowedOrigins.split(","));
+            defaultAllowedOrigins.addAll(Arrays.asList(corsDefaultAllowedOrigins.split(",")));
         }
         boolean isClientAttlsEnabled = Arrays.asList(environment.getActiveProfiles()).contains("attlsClient");
         if (gatewayCorsEnabled || !isClientAttlsEnabled) {
-            return externalDomains.stream()
+            defaultAllowedOrigins.addAll(externalDomains.stream()
                 .filter(StringUtils::isNotBlank)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
         }
 
-        Set<String> gatewayOrigins = new HashSet<>();
-        externalDomains.stream().filter(StringUtils::isNotBlank).forEach(gatewayOrigins::add);
-        gatewayOrigins.add(new URIBuilder()
+        externalDomains.stream().filter(StringUtils::isNotBlank).forEach(defaultAllowedOrigins::add);
+        defaultAllowedOrigins.add(new URIBuilder()
             .setScheme("https")
             .setHost(hostname)
             .setPort(port)
             .build().toString()
         );
 
-        return new ArrayList<>(gatewayOrigins);
+        return new ArrayList<>(defaultAllowedOrigins);
     }
 
     @Bean

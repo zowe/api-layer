@@ -26,31 +26,13 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 
-/*
- * Verify default state
- *    - With pre-flight request
- *       The No Access Control Allow Origin header
- *    - Without pre-flight request
- *       The header for Access Control Allow Origin isn't present
- *  Verify changed state
- *    - With pre-flight request
- *      - Verify that the downstream headers for CORS are ignored
- *    - Without pre-flight request
- *      - Verify that the downstream headers for CORS are ignored
- *
- *  The case for downstream headers will be?
- *     With disabled by default not much.
- *     Is there case when disabled cors would mean that we will have to change it?
- *     When allowed the headers are also irelevant as the headers adds no behavior
- *  What can the headers do?
- *  If the pre-flight request comes and we
- */
 @AcceptanceTest
 @ActiveProfiles("test")
 @TestPropertySource(properties = {
-    "apiml.service.corsAllowedOrigins=https://foo.bar.org"
+    "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org" // TODO This is a defaults list that can be extended in gateway configuration
 })
 class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
+
     @Test
         // Verify the header to allow CORS isn't set
         // Verify there was no call to southbound service
@@ -92,7 +74,6 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
         verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
     }
-
 
     @Test
         // There is no request to the southbound server for preflight
@@ -141,7 +122,7 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
         // Preflight request
         given()
-            .header(new Header("Origin", "https://foo.bar.org"))
+            .header(new Header("Origin", "https://foo.bar.org")) // This can't work anymore with the defaults (cors enabled on gateway + service with cors enabled + default list of origins)
         .when()
             .get(basePath + serviceWithCustomConfiguration.getPath())
         .then()
@@ -151,4 +132,5 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
         // The actual request is passed to the southbound service
         verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
     }
+
 }

@@ -17,6 +17,7 @@ import java.util.Map;
 import static java.util.stream.Collectors.joining;
 
 public class MetadataBuilder {
+
     private Map<String, String> metadata;
 
     public MetadataBuilder() {
@@ -126,4 +127,5 @@ public class MetadataBuilder {
         builder.withCompression(true);
         return builder;
     }
+
 }
