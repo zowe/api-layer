@@ -44,11 +44,11 @@ import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
 class ZosmfLoginTest implements TestWithStartedInstances {
 
     private final static boolean ZOS_TARGET = Boolean.parseBoolean(System.getProperty("environment.zos.target", "false"));
+    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
     private final static String ZOSMF_SERVICE_ID = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId();
     private static final String ZOSMF_CONTEXT_ROOT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getContextRoot();
-    private final static String ZOSMF_ENDPOINT_GW = "/" + ZOSMF_SERVICE_ID + "/api/v1/" + (StringUtils.hasText(ZOSMF_CONTEXT_ROOT) ? ZOSMF_CONTEXT_ROOT + "/" : "") + "restfiles/ds";
-    private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getClientUser();
-    private final static String ZOSMF_ENDPOINT_MOCK = "/" + ZOSMF_SERVICE_ID + "/api/zosmf/restfiles/ds";
+    private final static String ZOSMF_ENDPOINT_GW = "/" + ZOSMF_SERVICE_ID + "/api/v1/" + (StringUtils.hasText(ZOSMF_CONTEXT_ROOT) ? ZOSMF_CONTEXT_ROOT + "/" : "") + "restfiles/";
+    private final static String ZOSMF_ENDPOINT_MOCK = "/" + ZOSMF_SERVICE_ID + "/api/zosmf/restfiles/";
     private final static String ZOSMF_ENDPOINT = ZOS_TARGET ? ZOSMF_ENDPOINT_GW : ZOSMF_ENDPOINT_MOCK;
 
     @BeforeAll
@@ -66,7 +66,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
             String dsname1 = "SYS1.PARMLIB";
             String dsname2 = "SYS1.PROCLIB";
 
-            URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT, new BasicNameValuePair("dslevel", "sys1.p*"));
+            URI uri = HttpRequestUtils.getUriFromGateway(ZOSMF_ENDPOINT + "ds", new BasicNameValuePair("dslevel", "sys1.p*"));
 
             given()
                 .config(SslContext.clientCertUser)
@@ -81,7 +81,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
 
         @Test
         void givenValidCertificate_whenPathContainsEncodedCharacters_thenReturnBadRequest() {
-            URI uri = HttpRequestUtils.getRawUriFromGateway("/" + ZOSMF_SERVICE_ID + "/api/v1/zosmf/restfiles/fs%2Fc%2Fuser%2Ffile.txt");
+            URI uri = HttpRequestUtils.getRawUriFromGateway(ZOSMF_ENDPOINT + "fs%2Fc%2Fuser%2Ffile.txt");
             RequestSpecification mySpec = new RequestSpecBuilder().setUrlEncodingEnabled(false).build();
             given()
                 .config(SslContext.clientCertUser)
@@ -98,7 +98,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
 
         @Test
         void givenValidCertificate_whenQueryParamsEncoded_thenReturnFile() {
-            URI uri = HttpRequestUtils.getRawUriFromGateway("/" + ZOSMF_SERVICE_ID + "/api/v1/zosmf/restfiles/fs?path=c%2Fuser%2Ffile.txt");
+            URI uri = HttpRequestUtils.getRawUriFromGateway(ZOSMF_ENDPOINT + "fs?path=c%2Fuser%2Ffile.txt");
             RequestSpecification mySpec = new RequestSpecBuilder().setUrlEncodingEnabled(false).build();
             given()
                 .config(SslContext.clientCertUser)
