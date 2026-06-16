@@ -66,6 +66,7 @@ class AttlsConfigTest {
         classes = GatewayApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @TestInstance(Lifecycle.PER_CLASS)
     class GivenAttlsProfile {
 
         @LocalServerPort
@@ -140,6 +141,7 @@ class AttlsConfigTest {
         classes = GatewayApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @TestInstance(Lifecycle.PER_CLASS)
     class GivenSslDisabled {
 
         @LocalServerPort
