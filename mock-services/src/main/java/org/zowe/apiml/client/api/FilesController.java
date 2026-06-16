@@ -34,7 +34,7 @@ public class FilesController {
         return files.process("files", "read", response, headers);
     }
 
-    @GetMapping(value = "/zosmf/restfiles/fs/**", produces = "application/json; charset=utf-8")
+    @GetMapping(value = {"/zosmf/restfiles/fs/**", "/zosmf/restfiles/fs"}, produces = "application/json; charset=utf-8")
     public ResponseEntity<?> readFile(
         HttpServletResponse response,
         @RequestHeader Map<String, String> headers
