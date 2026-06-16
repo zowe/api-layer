@@ -91,6 +91,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                 .when()
                 .get(uri)
                 .then()
+                .log().all()
                 .statusCode(is(SC_BAD_REQUEST))
                 .onFailMessage("Accessing " + uri);
         }
@@ -107,8 +108,8 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                 .when()
                 .get(uri)
                 .then()
-                .statusCode(is(SC_OK))
-                .onFailMessage("Accessing " + uri);
+                .log().all()
+                .statusCode(is(SC_OK));
         }
 
     }
