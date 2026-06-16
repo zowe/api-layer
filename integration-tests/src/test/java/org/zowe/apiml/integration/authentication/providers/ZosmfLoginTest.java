@@ -11,7 +11,9 @@
 package org.zowe.apiml.integration.authentication.providers;
 
 import io.restassured.RestAssured;
+import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.Cookie;
+import io.restassured.specification.RequestSpecification;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -30,8 +32,7 @@ import java.net.URI;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
@@ -74,11 +75,26 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                 .get(uri)
             .then()
                 .statusCode(is(SC_OK))
-                .body(
-                    "items.dsname", hasItems(dsname1, dsname2)
-                )
+                .body("items.dsname", hasItems(dsname1, dsname2))
                 .onFailMessage("Accessing " + uri);
         }
+
+        @Test
+        void givenValidCertificate_thenReturnExistingFile() {
+            URI uri = HttpRequestUtils.getRawUriFromGateway("/" + ZOSMF_SERVICE_ID + "/api/v1/zosmf/restfiles/fs%2Fc%2Fuser%2Ffile.txt");
+            RequestSpecification mySpec = new RequestSpecBuilder().setUrlEncodingEnabled(false).build();
+            given()
+                .config(SslContext.clientCertUser)
+                .log().all()
+                .spec(mySpec)
+                .header("X-CSRF-ZOSMF-HEADER", "")
+            .when()
+                .get(uri)
+            .then()
+                .statusCode(is(SC_BAD_REQUEST))
+                .onFailMessage("Accessing " + uri);
+        }
+
     }
 
     @Nested

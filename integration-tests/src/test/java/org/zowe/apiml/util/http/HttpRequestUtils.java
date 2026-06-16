@@ -123,6 +123,27 @@ public class HttpRequestUtils {
         return getUriFromService(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, arguments);
     }
 
+    /**
+     * Build a gateway URI from a raw (already percent-encoded) path without re-encoding.
+     * Use this instead of {@link #getUriFromGateway} when the path contains encoded characters
+     * like {@code %2F} that must not be double-encoded.
+     */
+    public static URI getRawUriFromGateway(String rawPath) {
+        var config = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
+        var host = config.getHost();
+        var hostnameTokenizer = new StringTokenizer(host, ",");
+        host = hostnameTokenizer.nextToken();
+        if (StringUtils.isNotBlank(config.getDvipaHost())) {
+            host = config.getDvipaHost();
+        }
+        try {
+            return new URI(config.getScheme() + "://" + host + ":" + config.getPort() + rawPath);
+        } catch (URISyntaxException e) {
+            log.error("Can't create raw URI for path '{}'", rawPath);
+            return null;
+        }
+    }
+
     public static URI getUriFromGateway(String endpoint, String gatewayHostname, NameValuePair...arguments) {
         return getUriFromService(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, s -> gatewayHostname, arguments);
     }

@@ -89,7 +89,11 @@ public class FunctionalApar implements Apar {
         }
 
         if (calledService.equals("files")) {
-            result = handleFiles(headers);
+            if ("readFile".equals(calledMethod)) {
+                result = handleFileContent(headers);
+            } else {
+                result = handleFiles(headers);
+            }
         }
 
         if (calledService.equals("jwtKeys")) {
@@ -157,6 +161,13 @@ public class FunctionalApar implements Apar {
      * Override to provide a response entity when the files service is called with proper authorization.
      */
     protected ResponseEntity<?> handleFiles(Map<String, String> headers) {
+        return null;
+    }
+
+    /**
+     * Override to provide a response entity when a specific file content is requested.
+     */
+    protected ResponseEntity<?> handleFileContent(Map<String, String> headers) {
         return null;
     }
 
