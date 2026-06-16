@@ -81,15 +81,15 @@ fi
 
 # In case of HA, construct initial hosts using the ZWE_DISCOVERY_SERVICES_LIST variable
 DISCOVERY_COUNT=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | awk -F',' '{print NF}')
+jgroups_port=${ZWE_configs_storage_infinispan_jgroups_port:-7600}
 
 if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ] && [ -n "${ZWE_DISCOVERY_SERVICES_LIST}" ] && [ "${DISCOVERY_COUNT}" -gt 1 ]; then
-    jgroups_port=${ZWE_configs_storage_infinispan_jgroups_port:-7600}
     # extract only the hostnames and format each host as host[port]
-    INITIAL_HOSTS=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | awk -v port="${jgroups_port}" '
-         BEGIN { RS=","; FS="/" }
+    INITIAL_HOSTS=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | tr ',' '\n' | awk -v port="${jgroups_port}" '
         {
             gsub(/https?:\/\//, "", $0);
-            split($1, host_parts, ":");
+            split($0, url_parts, "/");;
+            split(url_parts[1], host_parts, ":");
             host = host_parts[1];
             gsub(/[ \r\n\t]/, "", host);
             if (host != "") {
@@ -102,7 +102,7 @@ if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ] && [ -n "${ZWE_DISCOV
         INITIAL_HOSTS="localhost[${jgroups_port}]"
     fi
 else
-    INITIAL_HOSTS="${ZWE_configs_storage_infinispan_initialHosts}"
+    INITIAL_HOSTS="${ZWE_configs_storage_infinispan_initialHosts:-localhost[${jgroups_port}]}"
 fi
 
 # migration step of Infinispan since version 3.2 (see #https://github.com/zowe/api-layer/pull/3960)
@@ -161,7 +161,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
   -Djgroups.bind.address=${ZWE_configs_storage_infinispan_jgroups_host:-${ZWE_haInstance_hostname:-localhost}} \
-  -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7600} \
+  -Djgroups.bind.port=${jgroups_port} \
   -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601} \
   -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
   -Djgroups.keyExchange.socketTimeout=${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000} \
