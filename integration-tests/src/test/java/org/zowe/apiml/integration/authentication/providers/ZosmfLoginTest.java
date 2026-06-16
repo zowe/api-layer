@@ -71,16 +71,16 @@ class ZosmfLoginTest implements TestWithStartedInstances {
             given()
                 .config(SslContext.clientCertUser)
                 .header("X-CSRF-ZOSMF-HEADER", "")
-            .when()
+                .when()
                 .get(uri)
-            .then()
+                .then()
                 .statusCode(is(SC_OK))
                 .body("items.dsname", hasItems(dsname1, dsname2))
                 .onFailMessage("Accessing " + uri);
         }
 
         @Test
-        void givenValidCertificate_thenReturnExistingFile() {
+        void givenValidCertificate_whenPathContainsEncodedCharacters_thenReturnBadRequest() {
             URI uri = HttpRequestUtils.getRawUriFromGateway("/" + ZOSMF_SERVICE_ID + "/api/v1/zosmf/restfiles/fs%2Fc%2Fuser%2Ffile.txt");
             RequestSpecification mySpec = new RequestSpecBuilder().setUrlEncodingEnabled(false).build();
             given()
@@ -88,10 +88,26 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                 .log().all()
                 .spec(mySpec)
                 .header("X-CSRF-ZOSMF-HEADER", "")
-            .when()
+                .when()
                 .get(uri)
-            .then()
+                .then()
                 .statusCode(is(SC_BAD_REQUEST))
+                .onFailMessage("Accessing " + uri);
+        }
+
+        @Test
+        void givenValidCertificate_whenQueryParamsEncoded_thenReturnFile() {
+            URI uri = HttpRequestUtils.getRawUriFromGateway("/" + ZOSMF_SERVICE_ID + "/api/v1/zosmf/restfiles/fs?path=c%2Fuser%2Ffile.txt");
+            RequestSpecification mySpec = new RequestSpecBuilder().setUrlEncodingEnabled(false).build();
+            given()
+                .config(SslContext.clientCertUser)
+                .log().all()
+                .spec(mySpec)
+                .header("X-CSRF-ZOSMF-HEADER", "")
+                .when()
+                .get(uri)
+                .then()
+                .statusCode(is(SC_OK))
                 .onFailMessage("Accessing " + uri);
         }
 
@@ -108,9 +124,9 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                     given()
                         .config(SslContext.clientCertValid)
                         .noContentType()
-                    .when()
+                        .when()
                         .post(loginUrl)
-                    .then()
+                        .then()
                         .statusCode(is(SC_NO_CONTENT))
                         .cookie(COOKIE_NAME, not(is(emptyString())))
                         .onFailMessage("Accessing " + loginUrl)
@@ -128,9 +144,9 @@ class ZosmfLoginTest implements TestWithStartedInstances {
                         .config(SslContext.clientCertValid)
                         .auth().basic("Bob", "The Builder")
                         .noContentType()
-                    .when()
+                        .when()
                         .post(loginUrl)
-                    .then()
+                        .then()
                         .statusCode(is(SC_NO_CONTENT))
                         .cookie(COOKIE_NAME, not(is(emptyString())))
                         .onFailMessage("Accessing " + loginUrl)

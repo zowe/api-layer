@@ -23,6 +23,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.HashMap;
 
 @SuppressWarnings({"squid:S1452", "squid:S1172"})
 public class FunctionalApar implements Apar {
@@ -168,7 +169,9 @@ public class FunctionalApar implements Apar {
      * Override to provide a response entity when a specific file content is requested.
      */
     protected ResponseEntity<?> handleFileContent(Map<String, String> headers) {
-        return null;
+        var body = new HashMap<String, String>();
+        body.put("file", "content");
+        return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
     protected boolean noAuthentication(Map<String, String> headers) {
