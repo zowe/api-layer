@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.zaas.cache;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpStatusCodeException;
+
 public class CachingServiceClientException extends RuntimeException {
 
     public CachingServiceClientException(String message, Throwable cause) {
@@ -18,5 +21,10 @@ public class CachingServiceClientException extends RuntimeException {
 
     public CachingServiceClientException(String message) {
         super(message);
+    }
+
+    public boolean isKeyCollision() {
+        return getCause() instanceof HttpStatusCodeException httpException
+            && HttpStatus.CONFLICT.equals(httpException.getStatusCode());
     }
 }
