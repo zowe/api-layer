@@ -113,7 +113,7 @@ class OtelRequestContextTest {
     @Test
     void givenOtelContext_whenAuthenticationFailed_thenStoreFailedStringAsStatus() {
         OtelRequestContext.of(exchange).authenticationFailed();
-        assertEquals("ERROR", getValue("auth.status"));
+        assertEquals(OtelRequestContext.AUTH_STATUS_ERROR, getValue("auth.status"));
     }
 
     @Test
@@ -131,7 +131,7 @@ class OtelRequestContextTest {
     @Test
     void givenOtelContext_whenauthenticationSuccess_thenStoreOkStringAsStatus() {
         OtelRequestContext.of(exchange).authenticationSuccess();
-        assertEquals("OK", getValue("auth.status"));
+        assertEquals(OtelRequestContext.AUTH_STATUS_OK, getValue("auth.status"));
     }
 
     @Test
@@ -149,12 +149,6 @@ class OtelRequestContextTest {
     void givenOtelContext_whenSetAnonymousUserId_thenStoreLowerCaseAnonymous() {
         OtelRequestContext.of(exchange).anonymousUserId();
         assertEquals("anonymous", getValue("user.id"));
-    }
-
-    @Test
-    void givenOtelContext_whenSetAnonymousUserId_thenNotUppercase() {
-        OtelRequestContext.of(exchange).anonymousUserId();
-        assertNotEquals("ANONYMOUS", getValue("user.id"));
     }
 
     @Test

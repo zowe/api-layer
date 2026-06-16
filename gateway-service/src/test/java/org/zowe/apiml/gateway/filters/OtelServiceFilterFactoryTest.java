@@ -19,7 +19,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
 import reactor.core.publisher.Mono;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class OtelServiceFilterFactoryTest {
 
@@ -43,7 +43,28 @@ class OtelServiceFilterFactoryTest {
         assertEquals(SERVICE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.id")));
         assertEquals(INSTANCE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.instance.id")));
         assertEquals("anonymous", attributes.get(AttributeKey.stringKey("user.id")));
-        assertEquals("OK", attributes.get(AttributeKey.stringKey("auth.status")));
+        assertEquals(OtelRequestContext.AUTH_STATUS_OK, attributes.get(AttributeKey.stringKey("auth.status")));
+    }
+
+    @Test
+    void givenConfiguredFilterWithoutBypass_whenApply_thenDoNotSetAnonymousUserAndAuthStatus() {
+        MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        var config = new OtelServiceFilterFactory.Config();
+        config.setServiceId(SERVICE_ID);
+        config.setInstanceId(INSTANCE_ID);
+        // authenticationScheme left unset (null) — not a BYPASS route
+
+        new OtelServiceFilterFactory().apply(config).filter(exchange, e -> Mono.empty().then());
+
+        var attributes = ((AttributesBuilder) ReflectionTestUtils.getField(OtelRequestContext.of(exchange), "attributesBuilder")).build();
+        assertEquals("bypass", attributes.get(AttributeKey.stringKey("auth.service.auth.method")));
+        assertEquals(SERVICE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.id")));
+        assertEquals(INSTANCE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.instance.id")));
+        // user.id and auth.status should remain unset for non-BYPASS routes
+        assertNull(attributes.get(AttributeKey.stringKey("user.id")));
+        assertNull(attributes.get(AttributeKey.stringKey("auth.status")));
     }
 
 }

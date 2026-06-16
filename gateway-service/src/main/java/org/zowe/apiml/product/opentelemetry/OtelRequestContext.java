@@ -31,8 +31,8 @@ public final class OtelRequestContext {
 
     public static final String OTEL_CONTEXT = "otel-context";
 
-    private static final String OK = "OK";
-    private static final String ERROR = "ERROR";
+    public static final String AUTH_STATUS_OK = "OK";
+    public static final String AUTH_STATUS_ERROR = "ERROR";
     public static final String BASIC_AUTH_TYPE = "BASIC";
     public static final String ANONYMOUS_USER_ID = "anonymous";
 
@@ -106,7 +106,7 @@ public final class OtelRequestContext {
     }
 
     public OtelRequestContext authenticationFailed() {
-        return put(OTEL_ATTRIBUTE_AUTH_STATUS, ERROR);
+        return put(OTEL_ATTRIBUTE_AUTH_STATUS, AUTH_STATUS_ERROR);
     }
 
     public OtelRequestContext authErrorType(String authErrorType) {
@@ -118,7 +118,7 @@ public final class OtelRequestContext {
     }
 
     public OtelRequestContext authenticationSuccess() {
-        return put(OTEL_ATTRIBUTE_AUTH_STATUS, OK);
+        return put(OTEL_ATTRIBUTE_AUTH_STATUS, AUTH_STATUS_OK);
     }
 
     public OtelRequestContext userId(String userId) {

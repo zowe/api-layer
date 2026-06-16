@@ -399,6 +399,20 @@ class RouteLocatorTest {
                     assertEquals("dummy:instance:80", filter.getArgs().get("instanceId"));
                 }
 
+                @Test
+                void givenEnabledOtelWithBypassAuth_whenGetPostRoutingFilters_thenIncludeAuthenticationSchemeArg() {
+                    ServiceInstance serviceInstance = createServiceInstance(null, null, Boolean.TRUE);
+                    var auth = new Authentication(AuthenticationScheme.BYPASS, null);
+                    List<FilterDefinition> filterDefinitions = routeLocator.getPostRoutingFilters(serviceInstance, routedService, auth);
+                    assertEquals(4, filterDefinitions.size());
+
+                    var filter = filterDefinitions.get(3);
+                    assertEquals("OtelServiceFilterFactory", filter.getName());
+                    assertEquals("dummy", filter.getArgs().get("serviceId"));
+                    assertEquals("dummy:instance:80", filter.getArgs().get("instanceId"));
+                    assertEquals("BYPASS", filter.getArgs().get("authenticationScheme"));
+                }
+
             }
 
         }
