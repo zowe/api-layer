@@ -79,6 +79,33 @@ if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
     add_profile "attlsClient"
 fi
 
+# In case of HA, construct initial hosts using the discoveryServiceList variable
+DISCOVERY_COUNT=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | awk -F',' '{print NF}')
+
+if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ] && [ -n "${ZWE_DISCOVERY_SERVICES_LIST}" ] && [ "${DISCOVERY_COUNT}" -gt 1 ]; then
+    # get the defined jgroups port (default to 7600)
+    jgroups_port=${ZWE_configs_storage_infinispan_jgroups_port:-7600}
+    # extract only the hostnames and format each host as host[port]
+    INITIAL_HOSTS_VALUE=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | awk -v port="${jgroups_port}" '
+         BEGIN { RS=","; FS="/" }
+        {
+            gsub(/https?:\/\//, "", $0); # Remove protocol
+            split($1, host_parts, ":"); # Split host from its eureka port
+            host = host_parts[1];
+            gsub(/[ \r\n\t]/, "", host); # Clean whitespaces
+            if (host != "") {
+                printf (count++ ? "," : "") host "[" port "]"
+            }
+        }
+    ')
+
+    if [ -z "${INITIAL_HOSTS_VALUE}" ]; then
+        INITIAL_HOSTS_VALUE="localhost[${jgroups_port}]"
+    fi
+else
+    INITIAL_HOSTS_VALUE="${ZWE_configs_storage_infinispan_initialHosts}"
+fi
+
 # migration step of Infinispan since version 3.2 (see #https://github.com/zowe/api-layer/pull/3960)
 original_infinispan_data_location="${ZWE_configs_storage_infinispan_persistence_dataLocation:-${ZWE_zowe_workspaceDirectory:-$(pwd)}}/caching-service/data"
 if [ -d "${original_infinispan_data_location}" ]; then
@@ -139,7 +166,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601} \
   -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
   -Djgroups.keyExchange.socketTimeout=${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000} \
-  -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7600]} \
+  -Dcaching.storage.infinispan.initialHosts=${INITIAL_HOSTS_VALUE} \
   -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
   -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
   -Dserver.ssl.keyStore="${keystore_location}" \
