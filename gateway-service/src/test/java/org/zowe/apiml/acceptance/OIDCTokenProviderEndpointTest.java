@@ -22,8 +22,10 @@ import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -61,6 +63,7 @@ import static org.zowe.apiml.constants.ApimlConstants.HEADER_OIDC_TOKEN;
     OIDCTokenProviderEndpoint.class, OIDCTokenProviderEndpointTest.Config.class
 })
 @ActiveProfiles("OIDCTokenProviderEndpointTest")
+@DirtiesContext
 class OIDCTokenProviderEndpointTest extends AcceptanceTestWithTwoServices {
 
     private static final String MF_USER = "USER";
@@ -169,7 +172,7 @@ class OIDCTokenProviderEndpointTest extends AcceptanceTestWithTwoServices {
     }
 
     @Profile("OIDCTokenProviderEndpointTest")
-    @Configuration
+    @TestConfiguration
     static class Config {
 
         private static boolean mfUserExists;

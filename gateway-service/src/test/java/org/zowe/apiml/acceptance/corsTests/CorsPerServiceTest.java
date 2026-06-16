@@ -27,7 +27,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.*;
 
 @AcceptanceTest
-@ActiveProfiles("test")
+@ActiveProfiles({"CorsPerServiceTest", "test"})
 @TestPropertySource(properties = {
     "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org" // TODO This is a defaults list that can be extended in gateway configuration
 })

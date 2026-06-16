@@ -16,6 +16,7 @@ import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
 import org.zowe.apiml.product.web.HttpConfig;
@@ -28,6 +29,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
+@ActiveProfiles("RefreshEndpointTest")
 public class RefreshEndpointTest extends AcceptanceTestWithBasePath {
 
     private final static String USERNAME = "USER";

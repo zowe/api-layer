@@ -146,6 +146,8 @@ subprojects {
 
     tasks.withType(Test) {
         maxParallelForks = 1
+        maxHeapSize = '2g'
+        systemProperty 'spring.test.context.cache.maxSize', '5'
     }
 }
 

@@ -30,7 +30,6 @@ class CorsUtilsTest {
     Map<String, String> metadata = new HashMap<>();
     List<String> defaultCorsMethods = Stream.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS").collect(Collectors.toList());
 
-
     @BeforeEach
     void setup() {
         metadata.put("apiml.routes.v1.gateway", "api/v1");

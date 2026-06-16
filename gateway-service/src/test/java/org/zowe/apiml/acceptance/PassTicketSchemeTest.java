@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.config.PassTicketFailureConfig;
@@ -27,6 +28,7 @@ import static org.hamcrest.core.Is.is;
  * This test verifies that a REST message is returned in case of failure during generation of PassTicket.
  */
 @AcceptanceTest
+@ActiveProfiles("PassTicketSchemeTest")
 @Import(PassTicketFailureConfig.class)
 public class PassTicketSchemeTest extends AcceptanceTestWithTwoServices {
 

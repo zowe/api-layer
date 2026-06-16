@@ -16,15 +16,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
 import org.zowe.apiml.util.CorsUtils;
 
-import java.lang.reflect.Field;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,53 +57,58 @@ class CorsBeanTest {
         }
     }
 
+}
+
+// @SpringBootTest(
+//     properties = {"apiml.service.corsEnabled=true"}
+// )
+// @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+@TestPropertySource(properties = {"apiml.service.corsEnabled=true"})
+@ActiveProfiles({"test", "GivenCorsEnabled"})
+@AcceptanceTest
+class GivenCorsEnabled extends AcceptanceTestWithBasePath {
+
+    @Mock
+    private Environment environment;
+
     @Nested
-    @SpringBootTest(
-        properties = {"apiml.service.corsEnabled=true"}
-    )
-    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
-    class GivenCorsEnabled {
+    public class WhenCorsAllowedMethodsIsNotSet {
 
-        @Nested
-        public class WhenCorsAllowedMethodsIsNotSet {
+        @Autowired
+        private CorsBeans corsBeans;
 
-            @Autowired
-            private CorsBeans corsBeans;
+        @Test
+        void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
+            CorsUtils corsUtils = corsBeans.corsUtils(environment, "https://dvipahost:10010", "lparhost", 10010);
 
-            @Test
-            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
-                CorsUtils corsUtils = corsBeans.corsUtils(environment, "https://dvipahost:10010", "lparhost", 10010);
-
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
-                assertEquals(7, corsAllowedMethods.size());
-            }
+            @SuppressWarnings("unchecked")
+            List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
+            assertEquals(7, corsAllowedMethods.size());
         }
+    }
 
-        @Nested
-        @TestPropertySource(properties = {
-            "apiml.service.corsAllowedMethods=GET,POST, PATCH"
-        })
-        @DirtiesContext
-        public class WhenCorsAllowedMethodsIsSet {
+    @Nested
+    @TestPropertySource(properties = {
+        "apiml.service.corsEnabled=true",
+        "apiml.service.corsAllowedMethods=GET,POST,PATCH"
+    })
+    @DirtiesContext
+    @AcceptanceTest
+    public class WhenCorsAllowedMethodsIsSet {
 
-            @Autowired
-            private CorsBeans corsBeans;
+        @Autowired
+        private CorsBeans corsBeans;
 
-            @Test
-            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
-                CorsUtils corsUtils = corsBeans.corsUtils(environment, "https://dvipahost:10010", "lparhost", 10010);
+        @Test
+        void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
+            CorsUtils corsUtils = corsBeans.corsUtils(environment, "https://dvipahost:10010", "lparhost", 10010);
 
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
-                assertEquals(3, corsAllowedMethods.size());
-                assertEquals("GET", corsAllowedMethods.get(0));
-                assertEquals("POST", corsAllowedMethods.get(1));
-                assertEquals("PATCH", corsAllowedMethods.get(2));
-            }
-
+            @SuppressWarnings("unchecked")
+            List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
+            assertEquals(3, corsAllowedMethods.size());
+            assertEquals("GET", corsAllowedMethods.get(0));
+            assertEquals("POST", corsAllowedMethods.get(1));
+            assertEquals("PATCH", corsAllowedMethods.get(2));
         }
 
     }

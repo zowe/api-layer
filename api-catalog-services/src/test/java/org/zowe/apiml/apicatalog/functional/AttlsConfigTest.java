@@ -27,7 +27,6 @@ import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.apicatalog.ApiCatalogApplication;
@@ -47,7 +46,6 @@ import static org.mockito.Mockito.*;
 class AttlsConfigTest {
 
     @Nested
-    @DirtiesContext
     @ActiveProfiles({"AttlsConfigTestCatalog", "attlsServer", "attlsClient"})
     class GivenAttlsModeEnabled extends ApiCatalogFunctionalTest {
 
@@ -103,7 +101,6 @@ class AttlsConfigTest {
         }
     )
     @ActiveProfiles({"attlsServer", "attlsClient", "debug"})
-    @DirtiesContext
     @SpringBootTest(
         classes = ApiCatalogApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT

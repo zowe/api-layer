@@ -30,7 +30,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
-@ActiveProfiles("test")
+@ActiveProfiles({"GatewayCorsEnabledTest", "test"})
 @TestPropertySource(properties = {
     "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org"
 })

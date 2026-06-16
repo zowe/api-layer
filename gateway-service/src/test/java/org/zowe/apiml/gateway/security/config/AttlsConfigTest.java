@@ -25,14 +25,15 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.NestedTestConfiguration;
+import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.zowe.apiml.acceptance.common.AcceptanceTest;
+import org.zowe.apiml.acceptance.common.AcceptanceTestWithBasePath;
 import org.zowe.apiml.filter.SecureConnectionFilter;
-import org.zowe.apiml.gateway.GatewayApplication;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 
 import javax.net.ssl.SSLException;
@@ -48,7 +49,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @TestInstance(Lifecycle.PER_CLASS)
-class AttlsConfigTest {
+@NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
+class AttlsConfigTest extends AcceptanceTestWithBasePath {
 
     private String getGatewayUrlWithPath(String hostname, int port, String scheme) {
         return String.format("%s://%s:%d/%s", scheme, hostname, port, "application");
@@ -61,11 +63,7 @@ class AttlsConfigTest {
             "server.internal.enabled=false"
         }
     )
-    @DirtiesContext
-    @SpringBootTest(
-        classes = GatewayApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-    )
+    @AcceptanceTest
     @TestInstance(Lifecycle.PER_CLASS)
     class GivenAttlsProfile {
 
@@ -136,12 +134,8 @@ class AttlsConfigTest {
         }
     )
     @ActiveProfiles({"attlsServer", "attlsClient"})
-    @DirtiesContext
-    @SpringBootTest(
-        classes = GatewayApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-    )
     @TestInstance(Lifecycle.PER_CLASS)
+    @AcceptanceTest
     class GivenSslDisabled {
 
         @LocalServerPort

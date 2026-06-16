@@ -17,6 +17,7 @@ import org.apache.http.message.BasicHeader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
@@ -30,7 +31,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.reset;
 
 @AcceptanceTest
+@ActiveProfiles("AddHeadersPerServiceTest")
 public class AddHeadersPerServiceTest extends AcceptanceTestWithTwoServices {
+
     private static final String HEADER = "my-header";
     private static final String VALUE = "my-value";
 
@@ -100,5 +103,7 @@ public class AddHeadersPerServiceTest extends AcceptanceTestWithTwoServices {
             response.then().statusCode(HttpStatus.SC_OK);
             assertThat(response.getHeader(HEADER)).isNull();
         }
+
     }
+
 }

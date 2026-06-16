@@ -13,6 +13,7 @@ package org.zowe.apiml.acceptance;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
+@ActiveProfiles("RetryPerServiceTest")
 class RetryPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test

@@ -13,18 +13,28 @@ package org.zowe.apiml.acceptance.config.ribbon;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.client.config.IClientConfig;
 import com.netflix.discovery.EurekaClient;
-import com.netflix.loadbalancer.*;
+import com.netflix.loadbalancer.ILoadBalancer;
+import com.netflix.loadbalancer.IPing;
+import com.netflix.loadbalancer.IRule;
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.ServerList;
+import com.netflix.loadbalancer.ServerListFilter;
+import com.netflix.loadbalancer.ServerListUpdater;
 import com.netflix.niws.loadbalancer.DiscoveryEnabledNIWSServerList;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.context.named.NamedContextFactory;
-import org.springframework.cloud.netflix.ribbon.*;
+import org.springframework.cloud.netflix.ribbon.PropertiesFactory;
+import org.springframework.cloud.netflix.ribbon.RibbonClientName;
+import org.springframework.cloud.netflix.ribbon.RibbonLoadBalancerContext;
+import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
+import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.cloud.netflix.ribbon.apache.RibbonLoadBalancingHttpClient;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.MapPropertySource;
 import org.zowe.apiml.gateway.context.ConfigurableNamedContextFactory;
@@ -39,15 +49,17 @@ import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancerRuleAdapter;
 import org.zowe.apiml.gateway.ribbon.loadbalancer.LoadBalancingPredicatesRibbonConfig;
 
 import javax.inject.Provider;
+
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Configuration of client side load balancing with Ribbon
  */
-@Configuration
+@TestConfiguration
 @RequiredArgsConstructor
 public class RibbonTestConfiguration {
+
     private final PropertiesFactory propertiesFactory;
 
     @RibbonClientName

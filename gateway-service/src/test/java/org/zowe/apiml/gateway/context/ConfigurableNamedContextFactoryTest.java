@@ -26,6 +26,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.env.MapPropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -47,6 +48,7 @@ import static org.mockito.Mockito.mock;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 @ContextConfiguration(classes = ConfigurableNamedContextFactoryTest.MainContextConfiguration.class)
 @ActiveProfiles("test")
+@DirtiesContext
 class ConfigurableNamedContextFactoryTest {
 
     //This is here to load context fast by creating just this bean
@@ -285,7 +287,7 @@ class ConfigurableNamedContextFactoryTest {
             assertThat(bean.getDate(), is(not(nullValue())));
             assertThat(bean.getBean(), is(not(nullValue())));
         }
-    }
 
+    }
 
 }

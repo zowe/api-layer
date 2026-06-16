@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.annotation.DirtiesContext;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
 import org.zowe.apiml.acceptance.config.DiscoveryClientTestConfig;
 import org.zowe.apiml.acceptance.config.GatewayOverrideConfig;
@@ -28,7 +29,8 @@ import static org.hamcrest.core.Is.is;
 @SpringBootTest(classes = GatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {"apiml.health.protected=true"})
 @Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
-public class ProtectedHealthEndpointTest {
+@DirtiesContext
+class ProtectedHealthEndpointTest {
 
     protected String basePath;
 
@@ -39,8 +41,10 @@ public class ProtectedHealthEndpointTest {
     public void setBasePath() {
         basePath = String.format("https://localhost:%d", port);
     }
+
     @Nested
     class GivenHealthEndPointProtectionEnabled {
+
         @Test
         void requestFailsWith401() {
             given()
@@ -49,5 +53,7 @@ public class ProtectedHealthEndpointTest {
                 .then()
                 .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
         }
+
     }
+
 }
