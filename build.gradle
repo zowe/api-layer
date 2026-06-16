@@ -102,6 +102,14 @@ allprojects {
     }
 
     configurations.all {
+        resolutionStrategy {
+            // REST Assured 5.5.7 is incompatible with Groovy 5.x — force Groovy 4.0.x
+            // (NullPointerException in Class.isAssignableFrom via ClosureMetaClass)
+            force 'org.apache.groovy:groovy:4.0.28'
+            force 'org.apache.groovy:groovy-bom:4.0.28'
+            force 'org.apache.groovy:groovy-json:4.0.28'
+            force 'org.apache.groovy:groovy-xml:4.0.28'
+        }
         resolutionStrategy.dependencySubstitution {
             substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
 

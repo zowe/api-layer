@@ -15,10 +15,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
+import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
@@ -30,6 +33,18 @@ import static org.hamcrest.core.Is.is;
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
 public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
+
+    @Autowired
+    private Environment environment;
+
+    @Override
+    protected String getProtocol() {
+        if (environment != null && java.util.Arrays.asList(environment.getActiveProfiles()).contains("https")) {
+            return "https";
+        }
+        return "http";
+    }
+
     @Nested
     @ActiveProfiles("http")
     class GivenProtectedHealthEndpointWithHttp {
@@ -48,6 +63,7 @@ public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
     class GivenProtectedHealthEndpointWithHttps {
         @Test
         void applicationHealthEndpointsWhenProtected() {
+            RestAssured.useRelaxedHTTPSValidation();
             given()
                 .when()
                 .get(getDiscoveryUriWithPath("/application/health"))

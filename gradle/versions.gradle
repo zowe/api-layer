@@ -88,6 +88,9 @@ dependencyResolutionManagement {
 
             version('reactor', '3.8.6')
             version('restAssured', '5.5.7')
+            // Force Groovy 4.0.x — REST Assured 5.5.7 is incompatible with Groovy 5.x
+            // (NullPointerException in Class.isAssignableFrom via ClosureMetaClass)
+            version('groovy', '4.0.28')
             version('rhino', '1.9.1')
             version('springDoc', '2.8.17')
             version('swaggerCore', '2.2.51')
