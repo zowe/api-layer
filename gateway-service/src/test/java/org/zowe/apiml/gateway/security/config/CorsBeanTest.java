@@ -59,10 +59,6 @@ class CorsBeanTest {
 
 }
 
-// @SpringBootTest(
-//     properties = {"apiml.service.corsEnabled=true"}
-// )
-// @ComponentScan(basePackages = "org.zowe.apiml.gateway")
 @TestPropertySource(properties = {"apiml.service.corsEnabled=true"})
 @ActiveProfiles({"test", "GivenCorsEnabled"})
 @AcceptanceTest
