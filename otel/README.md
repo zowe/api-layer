@@ -93,3 +93,49 @@ Note that `docker compose` cli arguments override the `command` value in the doc
 ## Local run for development
 
 To run the docker containers locally with the same setup as used in the integration tests, just run `docker compose up` (optionally with `-d`), or the scripts in the [sh](sh) directory, and then start the APIML modulith with the OpenTelemetry enabled. The signals received and exported by the collector are saved to the [otel-golden](otel-golden) folder. The Golden Tester exits after timeout reporting the result of validation in the container console/log. The timeout can be set in the [docker-compose.yml](docker-compose.yml) file.
+
+## HTTP Error Attributes
+
+Starting with issue [#4705](https://github.com/zowe/api-layer/issues/4705), the Gateway's `OtelRequestFilter` emits OpenTelemetry log signals with the following attributes when a routed request results in an error:
+
+| Attribute | Key | Type | Description |
+|-----------|-----|------|-------------|
+| HTTP response status code | `http.response.status_code` | int | The actual HTTP status code returned to the client (e.g., 404, 503) |
+| Error type | `error.type` | string | A short machine-readable string identifying the error category |
+| Error message | `error.message` | string | A human-readable description of the error |
+
+These attributes complement the existing [`service.response_code`] attribute — `http.response.status_code` captures the HTTP status sent to the client, while `service.response_code` reflects the HTTP status from the downstream service call.
+
+### Error Scenarios
+
+Two error paths produce OTel log signals:
+
+1. **Unknown Service ID (404):** When a request targets a Service ID that is not registered in the Discovery Service, the Gateway returns a 404. The OTel signal includes:
+
+   - `http.response.status_code` = `404`
+   - `error.type` = `"Service not onboarded"`
+   - `error.message` = `"Service <serviceId> is not registered in the API ML"`
+
+2. **Service Instances Down (503):** When a request targets a registered Service ID that has no available instances, the Gateway returns a 503. The OTel signal includes:
+
+   - `http.response.status_code` = `503`
+   - `error.type` = `"Service instance not available"`
+   - `error.message` = the exception message from `ServiceNotAccessibleException`
+
+### Monitoring Use
+
+Operators can use these attributes in observability dashboards and alerting rules. Example Prometheus / Alertmanager alert expressions:
+
+```yaml
+# Alert when an unknown service is requested (404)
+- alert: UnknownServiceRequested
+  expr: increase(otel_log_count{error_type="Service not onboarded"}[5m]) > 0
+  annotations:
+    summary: "Requests targeting unknown service ID"
+
+# Alert when a registered service has no available instances (503)
+- alert: ServiceInstancesDown
+  expr: increase(otel_log_count{error_type="Service instance not available"}[5m]) > 0
+  annotations:
+    summary: "Service has no available instances"
+```
