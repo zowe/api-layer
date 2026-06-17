@@ -33,7 +33,7 @@ public final class OtelRequestContext {
 
     public static final String AUTH_STATUS_OK = "OK";
     public static final String AUTH_STATUS_ERROR = "ERROR";
-    public static final String BASIC_AUTH_TYPE = "BASIC";
+    public static final String AUTH_TYPE_BASIC = "BASIC";
     public static final String ANONYMOUS_USER_ID = "anonymous";
 
     private static final String OTEL_ATTRIBUTE_METHOD = "http.request.method";

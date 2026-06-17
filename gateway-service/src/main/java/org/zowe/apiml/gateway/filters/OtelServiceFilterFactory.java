@@ -49,6 +49,7 @@ public class OtelServiceFilterFactory extends AbstractGatewayFilterFactory<OtelS
 
         private String instanceId;
         private String serviceId;
+        /** The {@link AuthenticationScheme#name()} for this route, or null if unavailable. */
         private String authenticationScheme;
 
     }

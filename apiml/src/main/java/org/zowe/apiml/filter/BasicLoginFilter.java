@@ -79,7 +79,7 @@ public class BasicLoginFilter implements WebFilter {
             .switchIfEmpty(Mono.<AbstractAuthenticationToken>defer(() -> chain.filter(exchange).then(Mono.empty())))
             .flatMap(credentials -> {
                 var otelContext = OtelRequestContext.of(exchange);
-                otelContext.authSourceType(OtelRequestContext.BASIC_AUTH_TYPE);
+                otelContext.authSourceType(OtelRequestContext.AUTH_TYPE_BASIC);
                 return authenticationManager.authenticate(credentials)
                     .flatMap(authentication -> chain.filter(exchange)
                         .contextWrite(ReactiveSecurityContextHolder.withAuthentication(authentication)));

@@ -67,4 +67,24 @@ class OtelServiceFilterFactoryTest {
         assertNull(attributes.get(AttributeKey.stringKey("auth.status")));
     }
 
+    @Test
+    void givenConfiguredFilterWithNonBypassAuth_whenApply_thenDoNotSetAnonymousUserAndAuthStatus() {
+        MockServerHttpRequest request = MockServerHttpRequest.get("/aPath").build();
+        MockServerWebExchange exchange = MockServerWebExchange.from(request);
+
+        var config = new OtelServiceFilterFactory.Config();
+        config.setServiceId(SERVICE_ID);
+        config.setInstanceId(INSTANCE_ID);
+        config.setAuthenticationScheme("ZOWE_JWT");  // explicitly non-BYPASS
+
+        new OtelServiceFilterFactory().apply(config).filter(exchange, e -> Mono.empty().then());
+
+        var attributes = ((AttributesBuilder) ReflectionTestUtils.getField(OtelRequestContext.of(exchange), "attributesBuilder")).build();
+        assertEquals("bypass", attributes.get(AttributeKey.stringKey("auth.service.auth.method")));
+        assertEquals(SERVICE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.id")));
+        assertEquals(INSTANCE_ID.toLowerCase(), attributes.get(AttributeKey.stringKey("service.instance.id")));
+        assertNull(attributes.get(AttributeKey.stringKey("user.id")));
+        assertNull(attributes.get(AttributeKey.stringKey("auth.status")));
+    }
+
 }
