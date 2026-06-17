@@ -20,8 +20,10 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -146,6 +148,52 @@ class OtelRequestFilterTest {
             .expectError(RuntimeException.class)
             .verify();
 
+        verify(otelContext, times(1)).issue();
+    }
+
+    @Test
+    void givenUnknownService_whenNoResourceFound_thenSet404AndErrorType() {
+        var filter = new OtelRequestFilter();
+
+        var request = MockServerHttpRequest.get("http://localhost/unknownservice/api/v1/data")
+            .localAddress(InetSocketAddress.createUnresolved("localhost", 10010)).build();
+        var exchange = MockServerWebExchange.from(request);
+        var otelContext = spy(OtelRequestContext.of(exchange));
+        exchange.getAttributes().put(OTEL_CONTEXT, otelContext);
+
+        var chain = (GatewayFilterChain) e -> Mono.error(
+            new NoResourceFoundException(exchange.getRequest().getURI().getPath()));
+
+        StepVerifier.create(filter.filter(exchange, chain))
+            .expectError(NoResourceFoundException.class)
+            .verify();
+
+        verify(otelContext, times(1)).statusCode(404);
+        verify(otelContext, times(1)).errorType("Service not onboarded");
+        verify(otelContext, times(1)).errorMessage("Service unknownservice is not registered in the API ML");
+        verify(otelContext, times(1)).issue();
+    }
+
+    @Test
+    void givenServiceNotAccessible_whenCalled_thenSet503AndErrorType() {
+        var filter = new OtelRequestFilter();
+
+        var request = MockServerHttpRequest.get("http://localhost/discoverable-service/api/v1/data")
+            .localAddress(InetSocketAddress.createUnresolved("localhost", 10010)).build();
+        var exchange = MockServerWebExchange.from(request);
+        var otelContext = spy(OtelRequestContext.of(exchange));
+        exchange.getAttributes().put(OTEL_CONTEXT, otelContext);
+
+        var chain = (GatewayFilterChain) e -> Mono.error(
+            new ServiceNotAccessibleException("Service discoverable-service has no available instances"));
+
+        StepVerifier.create(filter.filter(exchange, chain))
+            .expectError(ServiceNotAccessibleException.class)
+            .verify();
+
+        verify(otelContext, times(1)).statusCode(503);
+        verify(otelContext, times(1)).errorType("Service instance not available");
+        verify(otelContext, times(1)).errorMessage("Service discoverable-service has no available instances");
         verify(otelContext, times(1)).issue();
     }
 

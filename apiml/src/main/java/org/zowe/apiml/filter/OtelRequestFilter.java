@@ -24,7 +24,10 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import org.zowe.apiml.product.opentelemetry.OtelRequestContext;
+import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.springframework.web.reactive.resource.NoResourceFoundException;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.SignalType;
 
 import java.util.*;
 import java.util.function.Function;
@@ -147,15 +150,32 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
         // define default values from request perspective. they could be overwritten then
         setDefaults(exchange, otelContext);
 
+        // capture attempted service for error messages
+        var pathElements = exchange.getRequest().getPath().elements();
+        var attemptedService = pathElements.size() > 1 ? pathElements.get(1).value() : "gateway";
+
         return filter.apply(exchange)
+            // downstream chain: route matching → routing → service call
+            .doOnError(NoResourceFoundException.class, e -> {
+                otelContext.statusCode(404);
+                otelContext.errorType("Service not onboarded");
+                otelContext.errorMessage("Service " + attemptedService + " is not registered in the API ML");
+            })
+            .doOnError(ServiceNotAccessibleException.class, e -> {
+                otelContext.statusCode(503);
+                otelContext.errorType("Service instance not available");
+                otelContext.errorMessage(e.getMessage());
+            })
             // in all cases (success / error) issue the log message
-            .doFinally(signalType -> otelContext.issue())
-            // update response codes
-            .then(Mono.fromRunnable(() -> Optional.ofNullable(exchange.getResponse())
-                .map(ServerHttpResponse::getStatusCode)
-                .map(HttpStatusCode::value)
-                .ifPresent(otelContext::responseCode)
-            ));
+            .doFinally(signalType -> {
+                if (signalType == SignalType.ON_COMPLETE) {
+                    Optional.ofNullable(exchange.getResponse())
+                        .map(ServerHttpResponse::getStatusCode)
+                        .map(HttpStatusCode::value)
+                        .ifPresent(otelContext::responseCode);
+                }
+                otelContext.issue();
+            });
     }
 
     @Override
