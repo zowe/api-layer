@@ -48,6 +48,9 @@ public final class OtelRequestContext {
     private static final String OTEL_ATTRIBUTE_AUTH_ERROR_MESSAGE = "auth.error.message";
     private static final String OTEL_ATTRIBUTE_USER_ID = "user.id";
     private static final String OTEL_ATTRIBUTE_DISTRIBUTED_USER_ID = "user.distributed.id";
+    private static final String OTEL_ATTRIBUTE_STATUS_CODE = "http.response.status_code";
+    private static final String OTEL_ATTRIBUTE_ERROR_TYPE = "error.type";
+    private static final String OTEL_ATTRIBUTE_ERROR_MESSAGE = "error.message";
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -86,6 +89,18 @@ public final class OtelRequestContext {
 
     public OtelRequestContext responseCode(int status) {
         return put(OTEL_ATTRIBUTE_RESPONSE_CODE, String.valueOf(status));
+    }
+
+    public OtelRequestContext statusCode(int status) {
+        return put(OTEL_ATTRIBUTE_STATUS_CODE, String.valueOf(status));
+    }
+
+    public OtelRequestContext errorType(String errorType) {
+        return put(OTEL_ATTRIBUTE_ERROR_TYPE, errorType);
+    }
+
+    public OtelRequestContext errorMessage(String errorMessage) {
+        return put(OTEL_ATTRIBUTE_ERROR_MESSAGE, errorMessage);
     }
 
     public OtelRequestContext serviceId(String serviceId) {

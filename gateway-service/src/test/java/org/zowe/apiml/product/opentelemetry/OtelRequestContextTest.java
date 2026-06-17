@@ -87,6 +87,24 @@ class OtelRequestContextTest {
     }
 
     @Test
+    void givenOtelContext_whenSetStatusCode_thenTransformToString() {
+        OtelRequestContext.of(exchange).statusCode(503);
+        assertEquals("503", getValue("http.response.status_code"));
+    }
+
+    @Test
+    void givenOtelContext_whenSetErrorType_thenStoreIt() {
+        OtelRequestContext.of(exchange).errorType("Service not onboarded");
+        assertEquals("Service not onboarded", getValue("error.type"));
+    }
+
+    @Test
+    void givenOtelContext_whenSetErrorMessage_thenStoreIt() {
+        OtelRequestContext.of(exchange).errorMessage("Service instance not available");
+        assertEquals("Service instance not available", getValue("error.message"));
+    }
+
+    @Test
     void givenOtelContext_whenSetServiceId_thenStoreLowerCase() {
         OtelRequestContext.of(exchange).serviceId("serviceID");
         assertEquals("serviceid", getValue("service.id"));
