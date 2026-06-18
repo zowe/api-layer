@@ -404,11 +404,24 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public void waitUntilReady() {
+            awaitFor(this::areDiscoveryPortsReachable, 2);
             awaitFor(this::areAllInstancesOnboarded, 8);
             awaitFor(this::areDiscoveryInSync, 3);
             awaitFor(this::areAllInstancesRegistryUpToDate, 3);
             awaitFor(this::areAllInstancesAreUp, 3);
             awaitFor(this::isAuthUp, 1);
+        }
+
+        private boolean areDiscoveryPortsReachable() {
+            for (var ds : get(CoreService.DISCOVERY)) {
+                try (var socket = new java.net.Socket()) {
+                    socket.connect(new java.net.InetSocketAddress(ds.getHostname(), ds.getPort()), 5000);
+                } catch (IOException e) {
+                    log.debug("Discovery service {}:{} is not yet reachable: {}", ds.getHostname(), ds.getPort(), e.getMessage());
+                    return false;
+                }
+            }
+            return true;
         }
 
         public List<Instance> get(CoreService type) {
