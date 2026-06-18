@@ -112,7 +112,7 @@ dependencyResolutionManagement {
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.4.2')
             version('checkstyle', '10.17.0')
-            version('jacoco', '0.8.11')
+            version('jacoco', '0.8.14')
             version('gradle', '9.0')
             version('commonsCompress', '1.28.0')
             version('bucket4j', '8.19.0')
