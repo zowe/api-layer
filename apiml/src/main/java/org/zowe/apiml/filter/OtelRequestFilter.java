@@ -164,7 +164,7 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
             .doOnError(ServiceNotAccessibleException.class, e -> {
                 otelContext.statusCode(503);
                 otelContext.errorType("Service instance not available");
-                otelContext.errorMessage(e.getMessage());
+                otelContext.errorMessage(Objects.toString(e.getMessage(), "No available instances"));
             })
             // in all cases (success / error) issue the log message
             .doFinally(signalType -> {
