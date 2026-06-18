@@ -18,7 +18,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.core.env.Environment;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -55,6 +54,7 @@ class CorsBeanTest {
             assertTrue(allowedOrigins.contains("https://dvipahost:10010"));
             assertTrue(allowedOrigins.contains("https://lparhost:10010"));
         }
+
     }
 
 }
@@ -88,7 +88,6 @@ class GivenCorsEnabled extends AcceptanceTestWithBasePath {
         "apiml.service.corsEnabled=true",
         "apiml.service.corsAllowedMethods=GET,POST,PATCH"
     })
-    @DirtiesContext
     @AcceptanceTest
     public class WhenCorsAllowedMethodsIsSet {
 

@@ -12,9 +12,12 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.NestedTestConfiguration;
+import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
@@ -24,13 +27,17 @@ import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
 @ActiveProfiles({"CorsPerServiceTest", "test"})
 @TestPropertySource(properties = {
-    "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org" // TODO This is a defaults list that can be extended in gateway configuration
+    "apiml.service.corsEnabled=true",
+    "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org"
 })
+@NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
 class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test
@@ -131,6 +138,16 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
         // The actual request is passed to the southbound service
         verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
+    }
+
+    @Nested
+    @AcceptanceTest
+    @ActiveProfiles({"CorsPerServiceTestWithDefaults", "test"})
+    @TestPropertySource(properties = {
+        "apiml.service.corsEnabled=true"
+    })
+    class CorsPerServiceTestWithDefaults {
+
     }
 
 }

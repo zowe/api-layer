@@ -12,13 +12,19 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.message.BasicHeader;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.NestedTestConfiguration;
+import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
+
+import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -32,9 +38,11 @@ import static org.mockito.Mockito.verify;
 @AcceptanceTest
 @ActiveProfiles({"GatewayCorsEnabledTest", "test"})
 @TestPropertySource(properties = {
-    "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org"
+    "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org",
+    "apiml.service.corsEnabled=true"
 })
-class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
+@NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
+class GatewayCorsEnabledTestWithProvidedDefault extends AcceptanceTestWithTwoServices {
 
     @Test
     // The CORS headers are properly set on the request
@@ -63,13 +71,27 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
     }
 
     @Test
+    void givenCorsOriginIsNotAllowed_whenPreFlightRequestArrives_thenCorsHeadersAreNotSet() throws Exception {
+        // Origin with other than foo.bar.org should be rejected when cors is enabled
+    }
+
+    private void mockValid200HttpResponseWithAddedCors() throws IOException {
+        mockValid200HttpResponseWithHeaders(new org.apache.http.Header[]{
+            new BasicHeader("Access-Control-Allow-Origin", "test"),
+            new BasicHeader("Access-Control-Allow-Methods", "RANDOM"),
+            new BasicHeader("Access-Control-Allow-Headers", "origin,x-test"),
+            new BasicHeader("Access-Control-Allow-Credentials", "true"),
+        });
+        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
+        discoveryClient.createRefreshCacheEvent();
+    }
+
+    @Test
     // There is request to the southbound server for the request
     // The CORS header is properly set.
     void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSetAndOnlyTheOnesByGateway() throws Exception {
         // There is request to the southbound server and the CORS headers are properly set on the response
         mockValid200HttpResponseWithAddedCors();
-        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        discoveryClient.createRefreshCacheEvent();
 
         // Preflight request
         given()
@@ -89,8 +111,7 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
     // There is request to the southbound server for the second request
     void givenCorsIsAllowedForSpecificService_whenTheServiceIsSet_thenCorsHeadersAreSetAndOnlyTheOnesByGateway() throws Exception {
         mockValid200HttpResponseWithAddedCors();
-        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        discoveryClient.createRefreshCacheEvent();
+
         // Preflight request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
@@ -124,8 +145,6 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
     void givenCorsIsEnabled_whenRequestWithOriginComes_thenOriginIsntPassedToSouthbound() throws Exception {
         // There is request to the southbound server and the CORS headers are properly set on the response
         mockValid200HttpResponseWithAddedCors();
-        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        discoveryClient.createRefreshCacheEvent();
 
         // Simple request
         given()
@@ -146,4 +165,27 @@ class GatewayCorsEnabledTest extends AcceptanceTestWithTwoServices {
         org.apache.http.Header[] originHeaders = toVerify.getHeaders("Origin");
         assertThat(originHeaders, arrayWithSize(0));
     }
+
+    @Nested
+    @AcceptanceTest
+    @ActiveProfiles({"GatewayCorsEnabledTestWithDefaults", "test"})
+    @TestPropertySource(properties = {
+        "apiml.service.corsEnabled=true"
+    })
+    class GatewayCorsEnabledTestWithDefaults {
+        // Gateway uses a default list of origins, does not accept any
+
+    }
+
+    @Nested
+    @AcceptanceTest
+    @ActiveProfiles({"GatewayCorsEnabledTestWithDefaults", "test"})
+    @TestPropertySource(properties = {
+        "apiml.service.corsEnabled=false"
+    })
+    class GatewayCorsDisabled {
+        // Gateway does not interfere, all headers are passed to the southbound service
+
+    }
+
 }

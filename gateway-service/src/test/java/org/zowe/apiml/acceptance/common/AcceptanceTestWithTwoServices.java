@@ -16,7 +16,6 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
@@ -61,6 +60,9 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     protected HttpEntity httpEntity;
 
     protected Service serviceWithDefaultConfiguration = new Service("serviceid2", "/serviceid2/**", "serviceid2");
+    /**
+     * Service with custom configuration, cors enabled
+     */
     protected Service serviceWithCustomConfiguration = new Service("serviceid1", "/serviceid1/**", "serviceid1");
 
     @BeforeEach
@@ -73,16 +75,6 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
     protected void mockValid200HttpResponse() throws IOException {
         mockValid200HttpResponseWithHeaders(new Header[]{});
     }
-
-    protected void mockValid200HttpResponseWithAddedCors() throws IOException {
-        mockValid200HttpResponseWithHeaders(new Header[]{
-            new BasicHeader("Access-Control-Allow-Origin", "test"),
-            new BasicHeader("Access-Control-Allow-Methods", "RANDOM"),
-            new BasicHeader("Access-Control-Allow-Headers", "origin,x-test"),
-            new BasicHeader("Access-Control-Allow-Credentials", "true"),
-        });
-    }
-
 
     protected void mockValid200HttpResponseWithHeaders(org.apache.http.Header[] headers) throws IOException {
         CloseableHttpResponse response = mock(CloseableHttpResponse.class);

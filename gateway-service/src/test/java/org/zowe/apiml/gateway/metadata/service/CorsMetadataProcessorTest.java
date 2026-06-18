@@ -11,10 +11,13 @@
 package org.zowe.apiml.gateway.metadata.service;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.util.CorsUtils;
@@ -27,19 +30,23 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 class CorsMetadataProcessorTest {
 
-    private CorsUtils corsUtils;
+    @Mock
     private UrlBasedCorsConfigurationSource configurationSource;
-    private ArgumentCaptor<CorsConfiguration> configurationCaptor = ArgumentCaptor.forClass(CorsConfiguration.class);
+
+    @Captor
+    private ArgumentCaptor<CorsConfiguration> configurationCaptor;
+
+    private CorsUtils corsUtils;
 
     @BeforeEach
     void setUp() {
-        configurationSource = mock(UrlBasedCorsConfigurationSource.class);
         corsUtils = CorsUtils.builder()
             .gatewayCorsEnabled(true)
             .defaultAllowedCorsHttpMethods(Arrays.asList("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"))
@@ -69,20 +76,19 @@ class CorsMetadataProcessorTest {
         }
 
         @Test
-        @Disabled("TODO CORS enabled now defaults to an allowed list of origins")
+        // southbound service does not provide allowed origins, defaults to allowlist
         void corsIsEnabledPerService_allowedOriginsArentProvided() {
             Map<String, String> metadata = new HashMap<>();
             metadata.put("apiml.corsEnabled", "true");
             metadata.put("apiml.routes.0.gateway", "gateway");
-            corsUtils.setCorsConfiguration(metadata, (entry, config) -> configurationSource.registerCorsConfiguration("/cors-enabled-all-origins/" + entry + "/**", config));
+            corsUtils.setCorsConfiguration(metadata, (routeEntry, config) -> configurationSource.registerCorsConfiguration("/cors-enabled-all-origins/" + routeEntry + "/**", config));
 
             verify(configurationSource).registerCorsConfiguration(any(), configurationCaptor.capture());
 
             CorsConfiguration provided = configurationCaptor.getValue();
             assertDefaultConfiguration(provided);
 
-            assertThat(provided.getAllowedOriginPatterns(), hasSize(1));
-            assertThat(provided.getAllowedOriginPatterns().get(0), is("*"));
+            assertNull(provided.getAllowedOriginPatterns());
         }
 
         private void assertDefaultConfiguration(CorsConfiguration provided) {

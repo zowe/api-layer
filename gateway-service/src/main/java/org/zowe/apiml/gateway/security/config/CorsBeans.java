@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URIBuilder;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
@@ -39,20 +40,37 @@ import java.util.stream.Collectors;
 @Configuration
 @RequiredArgsConstructor
 @Slf4j
-public class CorsBeans {
+public class CorsBeans implements InitializingBean {
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean gatewayCorsEnabled;
+
     @Value("${apiml.service.corsDefaultAllowedOrigins:#{null}}")
     private String corsDefaultAllowedOrigins;
+
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsDefaultAllowedMethods;
-    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}") // Used by cloud gateway?
+
+    @Value("${apiml.service.corsDefaultAllowedHeaders:*}")
+    private String corsDefaultAllowedHeaders;
+
+    @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
     private String ignoredHeadersWhenCorsEnabled;
+
+    @Value("${apiml.service.hostname:localhost}")
+    private String hostname;
+
     @Value("${apiml.service.port}")
     private String port;
 
     private final ZuulProperties zuulProperties;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (corsDefaultAllowedOrigins == null || corsDefaultAllowedOrigins.isEmpty()) {
+            corsDefaultAllowedHeaders = "https://" + hostname + ":" + port;
+        }
+    }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(CorsUtils corsUtils) {

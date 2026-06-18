@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 @Slf4j
 @Builder
 public class CorsUtils {
@@ -31,20 +33,19 @@ public class CorsUtils {
     private final boolean gatewayCorsEnabled;
     private final List<String> defaultAllowedCorsHttpMethods;
     private final List<String> defaultAllowedOrigins;
-    // private final List<String> defaultAllowedHeaders;
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
         String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
         return Boolean.parseBoolean(isCorsEnabledForService);
     }
 
-    public void setCorsConfiguration(Map<String, String> metadata, BiConsumer<String, CorsConfiguration> entryMapper) {
+    public void setCorsConfiguration(Map<String, String> metadata, BiConsumer<String, CorsConfiguration> routeEntryMapper) {
         if (gatewayCorsEnabled) {
             CorsConfiguration corsConfiguration = setCorsHeadersForService(metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
-                    entryMapper.accept(entry.getValue(), corsConfiguration));
+                    routeEntryMapper.accept(entry.getValue(), corsConfiguration));
         } else {
             log.debug("CORS is not enabled in Gateway");
         }
@@ -56,7 +57,7 @@ public class CorsUtils {
         if (isCorsEnabledForService(metadata)) {
             defaultAllowedOrigins.forEach(config::addAllowedOrigin);
             String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
-            if (corsAllowedOriginsForService != null && !corsAllowedOriginsForService.isEmpty()) {
+            if (isNotBlank(corsAllowedOriginsForService)) {
                 // Origins specified: split by comma, add to whitelist
                 // apiml.corsAllowedOrigins = https://www.google.com:443,https://foo.bar:1234,*
                 Arrays.stream(corsAllowedOriginsForService.split(","))
@@ -65,7 +66,13 @@ public class CorsUtils {
             }
             config.setAllowCredentials(true);
 
-            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+            String allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
+            if (isNotBlank(allowedHeadersForService)) {
+                config.setAllowedHeaders(Arrays.asList(allowedHeadersForService.split(",")));
+            } else {
+                config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+            }
+
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
 
             log.debug("CORS enabled for service {}: {}", metadata.get("apiml.service.title"), config);

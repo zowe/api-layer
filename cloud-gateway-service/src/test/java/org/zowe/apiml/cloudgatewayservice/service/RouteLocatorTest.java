@@ -176,6 +176,7 @@ class RouteLocatorTest {
             verify(SCHEME_HANDLER_FILTERS[0]).apply(MOCK_SERVICE, routeDefinition, authentication);
         }
 
+        @SuppressWarnings("unchecked")
         private BiConsumer<String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
             ServiceInstance serviceInstance = createServiceInstance("myservice", "api/v1");
             metadataProcessor.accept(serviceInstance.getMetadata());
@@ -258,7 +259,6 @@ class RouteLocatorTest {
 
             int index = 0;
             for (String serviceId : new String[] {"service1", "service2"}) {
-                // verify(corsUtils).setCorsConfiguration(any(), any()); // TODO CORS not set anymore in SCGW?
 
                 for (String gatewayUrl : new String[] {"a/b", ""}) {
                     for (String producerId : new String[] {"id0", "id5", "id10"}) {
