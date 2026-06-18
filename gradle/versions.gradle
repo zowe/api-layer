@@ -67,7 +67,7 @@ dependencyResolutionManagement {
             version('jersey', '2.48')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '9.4.58.v20250814')
-            version('jettison', '1.5.5')
+            version('jettison', '1.5.6')
             version('jjwt', '0.11.5')
             version('jjwtFull', '0.9.1')
             version('joda', '2.12.7')
