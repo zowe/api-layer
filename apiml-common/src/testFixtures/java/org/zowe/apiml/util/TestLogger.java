@@ -13,9 +13,9 @@ package org.zowe.apiml.util;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
@@ -31,7 +31,7 @@ public class TestLogger extends AppenderBase<ILoggingEvent> implements Recorder<
             listening = lastInstance.get().listening;
             records = lastInstance.get().records;
         } else {
-            records = new LinkedList<>();
+            records = new CopyOnWriteArrayList<>();
         }
         lastInstance.set(this);
     }
