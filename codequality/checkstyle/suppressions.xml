@@ -8,6 +8,5 @@
     />
     <suppress checks="IllegalImport"
               files=".*RefreshablePeerEurekaNodesTest\.java"
-              message="Illegal import - sun.misc.Unsafe."
     />
 </suppressions>
