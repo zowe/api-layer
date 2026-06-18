@@ -13,13 +13,11 @@ package org.zowe.apiml.acceptance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.sdk.logs.data.LogRecordData;
-import io.opentelemetry.sdk.logs.export.LogRecordExporter;
 import io.opentelemetry.sdk.testing.exporter.InMemoryLogRecordExporter;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -35,6 +33,12 @@ import static org.awaitility.Awaitility.await;
 import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Verifies that bypass-authentication routes emit OTel log signals with
+ * {@code user.id=anonymous} and {@code auth.status=OK} instead of null
+ * attributes (see #4704). Covers both successful (200) and downstream
+ * error (500) scenarios.
+ */
 class OpenTelemetryAnonymousBypassTest {
 
     @Nested
@@ -48,12 +52,11 @@ class OpenTelemetryAnonymousBypassTest {
             "otel.logs.exporter=none"
         }
     )
-    @DirtiesContext
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class WhenAnonymousBypassRequest extends AcceptanceTestWithMockServices {
 
         @Autowired
-        private LogRecordExporter logExporter;
+        private InMemoryLogRecordExporter logExporter;
 
         @LocalServerPort
         private int port;
@@ -75,9 +78,7 @@ class OpenTelemetryAnonymousBypassTest {
 
         @BeforeEach
         void setUp() {
-            assertTrue(logExporter instanceof InMemoryLogRecordExporter,
-                "Expected InMemoryLogRecordExporter, got " + logExporter.getClass().getName());
-            ((InMemoryLogRecordExporter) logExporter).reset();
+            logExporter.reset();
         }
 
         private List<LogRecordData> assertLogsExported() {
@@ -85,12 +86,11 @@ class OpenTelemetryAnonymousBypassTest {
             await("Log export")
                 .atMost(Duration.ofSeconds(10))
                 .until(() -> {
-                    var exporter = (InMemoryLogRecordExporter) logExporter;
-                    var l = exporter.getFinishedLogRecordItems();
+                    var l = logExporter.getFinishedLogRecordItems();
                     if (l.size() > 0) {
                         logs.addAll(l);
                     }
-                    exporter.reset();
+                    logExporter.reset();
                     return l.size() > 0;
                 });
             return logs;
@@ -102,9 +102,13 @@ class OpenTelemetryAnonymousBypassTest {
             var logRecord = logs.stream()
                 .filter(log -> log.getBodyValue().asString().contains(expectedUrl))
                 .findFirst()
-                .orElseThrow(() -> new AssertionError(
-                    "Expected log record with URL " + expectedUrl + " not found in logs: "
-                    + logs.stream().map(LogRecordData::getBodyValue).map(String::valueOf).collect(Collectors.joining(", "))));
+                .orElseThrow(() -> {
+                    var availableUrls = logs.stream()
+                        .map(log -> log.getBodyValue().asString())
+                        .collect(Collectors.joining(", "));
+                    return new AssertionError(
+                        "Expected log record with URL " + expectedUrl + " not found in logs: " + availableUrls);
+                });
 
             assertEquals("INFO", logRecord.getSeverityText(),
                 "Expected INFO log level, was " + logRecord.getSeverityText());
@@ -115,13 +119,12 @@ class OpenTelemetryAnonymousBypassTest {
             return logRecord;
         }
 
-        private Object getAttribute(String logBody, String attributeName) {
-            var objectMapper = new ObjectMapper();
+        private Map<String, Object> parseLogBody(String logBody) {
             try {
-                return objectMapper.readValue(logBody, Map.class).get(attributeName);
+                return new ObjectMapper().readValue(logBody, Map.class);
             } catch (JsonProcessingException e) {
-                fail("Invalid JSON", e);
-                return null;
+                fail("Invalid JSON: " + logBody, e);
+                return Map.of();
             }
         }
 
@@ -134,35 +137,35 @@ class OpenTelemetryAnonymousBypassTest {
 
             var logRecord = assertOneLogRecordExported("/testservicebp/api/v1/200");
             @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
+            Map<String, Object> logBody = parseLogBody(logRecord.getBodyValue().asString());
 
             // Full attribute set verification
-            assertEquals("GET", getAttribute(logBody, "http.request.method"),
+            assertEquals("GET", logBody.get("http.request.method"),
                 "http.request.method should be GET");
-            assertEquals("https", getAttribute(logBody, "url.scheme"),
+            assertEquals("https", logBody.get("url.scheme"),
                 "url.scheme should be https");
-            assertEquals("/testservicebp/api/v1/200", getAttribute(logBody, "url.path"),
+            assertEquals("/testservicebp/api/v1/200", logBody.get("url.path"),
                 "url.path should match request path");
-            assertEquals("testservicebp", getAttribute(logBody, "service.id"),
+            assertEquals("testservicebp", logBody.get("service.id"),
                 "service.id should be testservicebp");
             assertEquals("localhost:testservicebp:" + mockServiceBypass.getPort(),
-                getAttribute(logBody, "service.instance.id"),
+                logBody.get("service.instance.id"),
                 "service.instance.id should match mock service");
-            assertEquals("bypass", getAttribute(logBody, "auth.service.auth.method"),
+            assertEquals("bypass", logBody.get("auth.service.auth.method"),
                 "auth.service.auth.method should be bypass");
-            assertEquals("200", getAttribute(logBody, "service.response_code"),
+            assertEquals("200", logBody.get("service.response_code"),
                 "service.response_code should be 200");
 
             // NEW behavior: anonymous user ID and OK auth status
-            assertEquals("anonymous", getAttribute(logBody, "user.id"),
+            assertEquals("anonymous", logBody.get("user.id"),
                 "user.id should be 'anonymous' for bypass routes");
-            assertEquals("OK", getAttribute(logBody, "auth.status"),
+            assertEquals("OK", logBody.get("auth.status"),
                 "auth.status should be 'OK' for bypass routes");
 
             // Error attributes should NOT be present for successful bypass
-            assertNull(getAttribute(logBody, "auth.error.type"),
+            assertNull(logBody.get("auth.error.type"),
                 "auth.error.type should be null for successful bypass");
-            assertNull(getAttribute(logBody, "auth.error.message"),
+            assertNull(logBody.get("auth.error.message"),
                 "auth.error.message should be null for successful bypass");
         }
 
@@ -175,29 +178,29 @@ class OpenTelemetryAnonymousBypassTest {
 
             var logRecord = assertOneLogRecordExported("/testservicebp/api/v1/500");
             @SuppressWarnings("null")
-            var logBody = logRecord.getBodyValue().asString();
+            Map<String, Object> logBody = parseLogBody(logRecord.getBodyValue().asString());
 
             // Standard attributes still present
-            assertEquals("GET", getAttribute(logBody, "http.request.method"));
-            assertEquals("https", getAttribute(logBody, "url.scheme"));
-            assertEquals("/testservicebp/api/v1/500", getAttribute(logBody, "url.path"));
-            assertEquals("testservicebp", getAttribute(logBody, "service.id"));
+            assertEquals("GET", logBody.get("http.request.method"));
+            assertEquals("https", logBody.get("url.scheme"));
+            assertEquals("/testservicebp/api/v1/500", logBody.get("url.path"));
+            assertEquals("testservicebp", logBody.get("service.id"));
             assertEquals("localhost:testservicebp:" + mockServiceBypass.getPort(),
-                getAttribute(logBody, "service.instance.id"));
-            assertEquals("bypass", getAttribute(logBody, "auth.service.auth.method"));
-            assertEquals("500", getAttribute(logBody, "service.response_code"),
+                logBody.get("service.instance.id"));
+            assertEquals("bypass", logBody.get("auth.service.auth.method"));
+            assertEquals("500", logBody.get("service.response_code"),
                 "service.response_code should be 500 for error endpoint");
 
             // Anonymous user ID and OK auth status still apply (bypass auth succeeded)
-            assertEquals("anonymous", getAttribute(logBody, "user.id"),
+            assertEquals("anonymous", logBody.get("user.id"),
                 "user.id should be 'anonymous' for bypass routes even on error");
-            assertEquals("OK", getAttribute(logBody, "auth.status"),
+            assertEquals("OK", logBody.get("auth.status"),
                 "auth.status should be 'OK' for bypass routes even on error");
 
             // Error attributes: service error but auth succeeded, so no auth.error attributes
-            assertNull(getAttribute(logBody, "auth.error.type"),
+            assertNull(logBody.get("auth.error.type"),
                 "auth.error.type should be null — bypass auth always succeeds");
-            assertNull(getAttribute(logBody, "auth.error.message"),
+            assertNull(logBody.get("auth.error.message"),
                 "auth.error.message should be null — bypass auth always succeeds");
         }
     }
