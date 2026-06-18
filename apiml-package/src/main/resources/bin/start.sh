@@ -188,6 +188,32 @@ if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
+# In case of HA, construct initial hosts using the ZWE_DISCOVERY_SERVICES_LIST variable
+DISCOVERY_COUNT=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | awk -F',' '{print NF}')
+jgroups_port=${ZWE_components_caching_service_storage_infinispan_jgroups_port:-${ZWE_configs_storage_infinispan_jgroups_port:-7600}}
+
+if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ] && [ -n "${ZWE_DISCOVERY_SERVICES_LIST}" ] && [ "${DISCOVERY_COUNT}" -gt 1 ]; then
+    # extract only the hostnames and format each host as host[port]
+    INITIAL_HOSTS=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | tr ',' '\n' | awk -v port="${jgroups_port}" '
+        {
+            gsub(/https?:\/\//, "", $0);
+            split($0, url_parts, "/");;
+            split(url_parts[1], host_parts, ":");
+            host = host_parts[1];
+            gsub(/[ \r\n\t]/, "", host);
+            if (host != "") {
+                printf (count++ ? "," : "") host "[" port "]"
+            }
+        }
+    ')
+
+    if [ -z "${INITIAL_HOSTS}" ]; then
+        INITIAL_HOSTS="localhost[${jgroups_port}]"
+    fi
+else
+    INITIAL_HOSTS="${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-localhost[${jgroups_port}]}}"
+fi
+
 # Start OpenTelemetry
 if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
     DISABLE_OTEL=false
@@ -320,7 +346,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dcaching.storage.evictionStrategy=${ZWE_components_caching_service_storage_evictionStrategy:-${ZWE_configs_storage_evictionStrategy:-reject}} \
-    -Dcaching.storage.infinispan.initialHosts=${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-"localhost[7600]"}} \
+    -Dcaching.storage.infinispan.initialHosts=${INITIAL_HOSTS} \
     -Dcaching.storage.mode=${ZWE_components_caching_service_storage_mode:-${ZWE_configs_storage_mode:-infinispan}} \
     -Dcaching.storage.size=${ZWE_components_caching_service_storage_size:-${ZWE_configs_storage_size:-10000}} \
     -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
@@ -333,7 +359,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-${ZWE_components_gateway_sslDebug:-${ZWE_components_discovery_sslDebug:-""}}} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Djgroups.bind.address=${ZWE_components_caching_service_storage_infinispan_jgroups_host:-${ZWE_configs_storage_infinispan_jgroups_host:-${ZWE_haInstance_hostname:-localhost}}} \
-    -Djgroups.bind.port=${ZWE_components_caching_service_storage_infinispan_jgroups_port:-${ZWE_configs_storage_infinispan_jgroups_port:-7600}} \
+    -Djgroups.bind.port=${jgroups_port} \
     -Djgroups.keyExchange.port=${ZWE_components_caching_service_storage_infinispan_jgroups_keyExchange_port:-${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601}} \
     -Djgroups.keyExchange.socketTimeout=${ZWE_components_caching_service_storage_infinispan_jgroups_keyExchange_socketTimeout:-${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000}} \
     -Djgroups.tcp.diag.enabled=${ZWE_components_caching_service_storage_infinispan_jgroups_tcp_diag_enabled:-${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false}} \
