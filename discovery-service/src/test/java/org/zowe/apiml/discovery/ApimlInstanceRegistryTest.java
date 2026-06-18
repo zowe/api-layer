@@ -34,7 +34,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.discovery.metadata.MetadataFilterService;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.HashMap;
