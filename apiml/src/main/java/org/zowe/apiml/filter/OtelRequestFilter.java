@@ -152,7 +152,7 @@ public class OtelRequestFilter implements WebFilter, GlobalFilter, Ordered {
 
         // capture attempted service for error messages
         var pathElements = exchange.getRequest().getPath().elements();
-        var attemptedService = pathElements.size() > 1 ? pathElements.get(1).value() : "gateway";
+        var attemptedService = pathElements.size() > 1 ? pathElements.get(1).value() : SERVICE_GATEWAY;
 
         return filter.apply(exchange)
             // downstream chain: route matching → routing → service call
