@@ -92,7 +92,7 @@
         "ajv": "8.20.0",
         "ansi-regex": "6.2.2",
         "babel-plugin-transform-vite-meta-env": "1.0.3",
-        "body-parser": "2.2.2",
+        "body-parser": "2.3.0",
         "caniuse-lite": "1.0.30001799",
         "concurrently": "9.2.1",
         "cors": "2.8.6",
@@ -139,7 +139,7 @@
     "overrides": {
         "openapi-snippet": {
             "openapi-sampler": {
-                "fast-xml-parser": "5.8.0"
+                "fast-xml-parser": "5.9.0"
             }
         },
         "cosmiconfig": {
