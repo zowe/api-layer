@@ -329,7 +329,8 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
             'SafIdTokenTest',
             'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
             'NonModulithTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
         )
     }
 
@@ -485,7 +486,8 @@ task runContainerModulithTests(type: Test) {
             'ZaasTest',
             'ApiCatalogStandaloneTest',
             'NonModulithTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
         )
     }
 }
@@ -520,7 +522,8 @@ task runContainerTests(type: Test) {
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
             'ZaasTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
         )
     }
 }
