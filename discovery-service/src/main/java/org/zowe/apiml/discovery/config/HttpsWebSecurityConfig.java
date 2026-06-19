@@ -67,6 +67,12 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String eurekaUserid;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] eurekaPassword;
+
     @Bean
     WebSecurityCustomizer httpsWebSecurityCustomizer() {
         String[] noSecurityAntMatchers = {
@@ -135,7 +141,11 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
+            // Without TLS validation the client certificate cannot be trusted, so authentication is
+            // enforced through basic authentication instead. Authentication is never disabled.
+            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword))
+                .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
+                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         }
         return http.build();
     }
@@ -157,6 +167,11 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 http.addFilterBefore(new AttlsFilter(), X509AuthenticationFilter.class);
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
+        } else {
+            // Without TLS validation the client certificate cannot be trusted, so authentication is enforced
+            // through the eureka basic credentials (in addition to the mainframe basic/token credentials above).
+            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword))
+                .authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
         }
 
         return http.with(new CustomSecurityFilters(), t -> {

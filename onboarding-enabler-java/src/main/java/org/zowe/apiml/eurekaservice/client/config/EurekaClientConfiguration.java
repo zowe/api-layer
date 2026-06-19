@@ -11,6 +11,7 @@
 package org.zowe.apiml.eurekaservice.client.config;
 
 import com.netflix.discovery.DefaultEurekaClientConfig;
+import org.zowe.apiml.product.eureka.EurekaServiceUrlUtils;
 
 import java.util.List;
 
@@ -48,7 +49,16 @@ public class EurekaClientConfiguration extends DefaultEurekaClientConfig {
 
     @Override
     public List<String> getEurekaServerServiceUrls(String s) {
-        return config.getDiscoveryServiceUrls();
+        List<String> discoveryServiceUrls = config.getDiscoveryServiceUrls();
+        Ssl ssl = config.getSsl();
+        if (ssl != null && Boolean.TRUE.equals(ssl.getVerifySslCertificatesOfServices())) {
+            // TLS validation is enabled, the service authenticates with its client certificate
+            return discoveryServiceUrls;
+        }
+        // Without TLS validation the client certificate cannot be trusted by the Discovery Service, so fall back to
+        // basic authentication by embedding the configured eureka credentials into the discovery service URLs.
+        String password = (config.getEurekaPassword() == null) ? null : new String(config.getEurekaPassword());
+        return EurekaServiceUrlUtils.addCredentials(discoveryServiceUrls, config.getEurekaUserid(), password);
     }
 
     @Override

@@ -450,5 +450,36 @@ class ConnectionsConfigTest {
         }
     }
 
+    @Nested
+    class AdditionalRegistrationBasicAuthFallback {
+
+        private String withBasicAuthFallback(boolean verify, String url) {
+            HttpConfig httpConfig = mock(HttpConfig.class);
+            doReturn(verify).when(httpConfig).isVerifySslCertificatesOfServices();
+            var connectionsConfig = new ConnectionsConfig(null, httpConfig, Collections.emptyList());
+            ReflectionTestUtils.setField(connectionsConfig, "eurekaUserid", "eureka");
+            ReflectionTestUtils.setField(connectionsConfig, "eurekaPassword", "password".toCharArray());
+            return ReflectionTestUtils.invokeMethod(connectionsConfig, "withBasicAuthFallback", url);
+        }
+
+        @Test
+        void givenVerificationDisabled_thenCredentialsAreEmbedded() {
+            assertEquals("https://eureka:password@localhost:10011/eureka/",
+                withBasicAuthFallback(false, "https://localhost:10011/eureka/"));
+        }
+
+        @Test
+        void givenVerificationDisabledAndMultipleUrls_thenAllAreRewritten() {
+            assertEquals("https://eureka:password@host1:10011/eureka/,https://eureka:password@host2:10011/eureka/",
+                withBasicAuthFallback(false, "https://host1:10011/eureka/,https://host2:10011/eureka/"));
+        }
+
+        @Test
+        void givenVerificationEnabled_thenUrlIsUnchanged() {
+            assertEquals("https://localhost:10011/eureka/",
+                withBasicAuthFallback(true, "https://localhost:10011/eureka/"));
+        }
+    }
+
 }
 

@@ -50,6 +50,9 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
     @Value("${server.attlsServer.enabled:false}")
     private boolean isServerAttlsEnabled;
 
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
+
     private final DiscoveryConfigProperties discoveryConfigProperties;
 
     void setAuthorization(HttpHeaders headers) {
@@ -69,7 +72,10 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .headers(headers -> {
                     boolean isHttp = uri.startsWith("http://");
-                    if (isHttp && !isServerAttlsEnabled) {
+                    // Use basic authentication when the client certificate cannot be used: over plain HTTP, or when
+                    // TLS validation is disabled and the Discovery Service no longer trusts the client certificate.
+                    boolean clientCertificateUnavailable = isHttp || !verifySslCertificatesOfServices;
+                    if (clientCertificateUnavailable && !isServerAttlsEnabled) {
                         setAuthorization(headers);
                     }
                 })

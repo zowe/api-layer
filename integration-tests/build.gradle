@@ -591,6 +591,20 @@ task runRegistrationTests(type: Test) {
     }
 }
 
+task runDiscoveryBasicAuthTests(type: Test) {
+    group "integration tests"
+    description "Run tests verifying discovery service basic auth protection when SSL certificate verification is disabled"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'DiscoveryBasicAuthTest'
+        )
+    }
+}
+
 task runGatewayProxyTest(type: Test) {
     group "integration tests"
     description "Run tests verifying central gateway can route to correct gateway"

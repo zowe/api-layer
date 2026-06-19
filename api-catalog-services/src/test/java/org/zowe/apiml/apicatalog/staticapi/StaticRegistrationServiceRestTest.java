@@ -227,4 +227,57 @@ class StaticRegistrationServiceRestTest {
 
     }
 
+    @Nested
+    class GivenSslVerificationDisabled {
+
+        @BeforeEach
+        void setup() {
+            ReflectionTestUtils.setField(staticServiceRest, "eurekaUserid", "user");
+            ReflectionTestUtils.setField(staticServiceRest, "eurekaPassword", "password");
+            ReflectionTestUtils.setField(staticServiceRest, "verifySslCertificatesOfServices", false);
+            doReturn(Mono.just(clientResponse)).when(exchangeFunction).exchange(any());
+            doReturn(Mono.empty()).when(clientResponse).releaseBody();
+            doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+            doReturn(Mono.just(BODY)).when(clientResponse).bodyToMono(String.class);
+        }
+
+        @Test
+        void whenHttpsDiscoveryService_thenAuthorizationHeaderIsSet() {
+            when(discoveryConfigProperties.getLocations()).thenReturn(new String[] { DISCOVERY_LOCATION });
+
+            var requestCaptor = org.mockito.ArgumentCaptor.forClass(ClientRequest.class);
+            StepVerifier.create(staticServiceRest.refresh()).expectNextCount(1).verifyComplete();
+
+            verify(exchangeFunction).exchange(requestCaptor.capture());
+            assertEquals("Basic dXNlcjpwYXNzd29yZA==",
+                requestCaptor.getValue().headers().getFirst(HttpHeaders.AUTHORIZATION));
+        }
+    }
+
+    @Nested
+    class GivenSslVerificationEnabled {
+
+        @BeforeEach
+        void setup() {
+            ReflectionTestUtils.setField(staticServiceRest, "eurekaUserid", "user");
+            ReflectionTestUtils.setField(staticServiceRest, "eurekaPassword", "password");
+            ReflectionTestUtils.setField(staticServiceRest, "verifySslCertificatesOfServices", true);
+            doReturn(Mono.just(clientResponse)).when(exchangeFunction).exchange(any());
+            doReturn(Mono.empty()).when(clientResponse).releaseBody();
+            doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
+            doReturn(Mono.just(BODY)).when(clientResponse).bodyToMono(String.class);
+        }
+
+        @Test
+        void whenHttpsDiscoveryService_thenNoAuthorizationHeader() {
+            when(discoveryConfigProperties.getLocations()).thenReturn(new String[] { DISCOVERY_LOCATION });
+
+            var requestCaptor = org.mockito.ArgumentCaptor.forClass(ClientRequest.class);
+            StepVerifier.create(staticServiceRest.refresh()).expectNextCount(1).verifyComplete();
+
+            verify(exchangeFunction).exchange(requestCaptor.capture());
+            assertEquals(null, requestCaptor.getValue().headers().getFirst(HttpHeaders.AUTHORIZATION));
+        }
+    }
+
 }

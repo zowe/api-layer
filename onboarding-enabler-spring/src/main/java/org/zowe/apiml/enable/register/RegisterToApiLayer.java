@@ -44,6 +44,12 @@ public class RegisterToApiLayer {
     @Value("${apiml.enabled:true}")
     private boolean apimlEnabled;
 
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String eurekaUserid;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] eurekaPassword;
+
     private static final MessageService messages = new YamlMessageService();
     private static final ApimlLogger logger;
 
@@ -86,6 +92,15 @@ public class RegisterToApiLayer {
     }
 
     private void register(ApiMediationServiceConfig newConfig) {
+
+        // Fall back to the shared Discovery Service credentials when the service does not define its own eureka
+        // credentials. They are used for basic authentication when TLS validation of services is disabled.
+        if (newConfig.getEurekaUserid() == null) {
+            newConfig.setEurekaUserid(eurekaUserid);
+        }
+        if (newConfig.getEurekaPassword() == null) {
+            newConfig.setEurekaPassword(eurekaPassword);
+        }
 
         this.config = newConfig;
 
