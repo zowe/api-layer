@@ -188,7 +188,7 @@ if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
-# In case of HA, construct initial hosts using the ZWE_DISCOVERY_SERVICES_LIST variable
+# In case of HA, if Infinispan initial hosts property is not defined, construct it using the ZWE_DISCOVERY_SERVICES_LIST variable
 DISCOVERY_COUNT=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | awk -F',' '{print NF}')
 jgroups_port=${ZWE_components_caching_service_storage_infinispan_jgroups_port:-${ZWE_configs_storage_infinispan_jgroups_port:-7600}}
 
