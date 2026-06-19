@@ -1047,6 +1047,8 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
+                    -Dapiml.security.ssl.verifySslCertificatesOfServices=false
+                    -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
 
             -   name: Run Discovery Basic Auth Tests
                 run: >
