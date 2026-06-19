@@ -130,7 +130,7 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+            void validateDefaultCorsAllowedMethods()  {
                 CorsUtils corsUtils = connectionsConfig.corsUtils();
                 @SuppressWarnings("unchecked")
                 List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
@@ -149,7 +149,7 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+            void validateCorsAllowedMethods()  {
                 CorsUtils corsUtils = connectionsConfig.corsUtils();
 
                 @SuppressWarnings("unchecked")
@@ -159,7 +159,9 @@ class ConnectionsConfigTest {
                 assertEquals("POST", corsAllowedMethods.get(1));
                 assertEquals("PATCH", corsAllowedMethods.get(2));
             }
+
         }
+
     }
 
 }

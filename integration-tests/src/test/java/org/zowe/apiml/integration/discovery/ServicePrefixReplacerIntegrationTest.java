@@ -34,7 +34,8 @@ import static org.hamcrest.Matchers.is;
 @DiscoverableClientDependentTest
 @ServiceIdPrefixReplacerTest
 class ServicePrefixReplacerIntegrationTest implements TestWithStartedInstances {
-    public final static String GREETING = "/sampleclient/api/v1/greeting";
+
+    public static final String GREETING = "/sampleclient/api/v1/greeting";
 
     private static final URI MEDIATION_CLIENT_URI = HttpRequestUtils.getUriFromGateway(GREETING);
 

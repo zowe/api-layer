@@ -42,11 +42,11 @@ import static org.mockito.Mockito.verify;
     "apiml.service.corsEnabled=true"
 })
 @NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
-class GatewayCorsEnabledTestWithProvidedDefault extends AcceptanceTestWithTwoServices {
+class GatewayCorsEnabledWithProvidedDefaultTest extends AcceptanceTestWithTwoServices {
 
     @Test
     // The CORS headers are properly set on the request
-    void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() throws Exception {
+    void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() {
         // Preflight request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))

@@ -62,7 +62,7 @@ class CorsBeanTest {
 @TestPropertySource(properties = {"apiml.service.corsEnabled=true"})
 @ActiveProfiles({"test", "GivenCorsEnabled"})
 @AcceptanceTest
-class GivenCorsEnabled extends AcceptanceTestWithBasePath {
+class CorsEnabledAcceptanceTest extends AcceptanceTestWithBasePath {
 
     @Mock
     private Environment environment;
@@ -74,7 +74,7 @@ class GivenCorsEnabled extends AcceptanceTestWithBasePath {
         private CorsBeans corsBeans;
 
         @Test
-        void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
+        void validateDefaultCorsAllowedMethods() throws URISyntaxException {
             CorsUtils corsUtils = corsBeans.corsUtils(environment, "https://dvipahost:10010", "lparhost", 10010);
 
             @SuppressWarnings("unchecked")
@@ -95,7 +95,7 @@ class GivenCorsEnabled extends AcceptanceTestWithBasePath {
         private CorsBeans corsBeans;
 
         @Test
-        void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException, URISyntaxException {
+        void validateCorsAllowedMethods() throws URISyntaxException {
             CorsUtils corsUtils = corsBeans.corsUtils(environment, "https://dvipahost:10010", "lparhost", 10010);
 
             @SuppressWarnings("unchecked")
