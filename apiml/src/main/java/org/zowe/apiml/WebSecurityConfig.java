@@ -65,6 +65,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import reactor.core.publisher.Mono;
+
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -107,6 +112,12 @@ public class WebSecurityConfig {
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
+
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String eurekaUserid;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] eurekaPassword;
 
     @Value("${apiml.service.port}")
     private int gatewayPort;
@@ -156,21 +167,17 @@ public class WebSecurityConfig {
                 notInUnauthenticatedPaths,
                 exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch() // Prevents matching /eureka (mapping for homepage in modulith)
             ))
-            .authorizeExchange(authorizeExchangeSpec -> {
-                if (verifySslCertificatesOfServices) {
-                    authorizeExchangeSpec
-                        .anyExchange().authenticated();
-                } else {
-                    authorizeExchangeSpec.anyExchange().permitAll();
-                }
-            })
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().authenticated())
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 
         if (verifySslCertificatesOfServices) {
+            http.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
             return x509SecurityConfig(http).build();
         }
 
+        // Without TLS validation, the client certificate cannot be trusted, so basic authentication with
+        // the configured Eureka credentials is required instead.
+        http.httpBasic(basic -> basic.authenticationManager(eurekaReactiveAuthManager()));
         return http.build();
     }
 
@@ -207,6 +214,22 @@ public class WebSecurityConfig {
     /**
      * Set up the default x509 authentication mode. It verifies only trusted certificates such as server certs, without mapping
      */
+    private ReactiveAuthenticationManager eurekaReactiveAuthManager() {
+        return authentication -> {
+            String principal = authentication.getName();
+            Object credentials = authentication.getCredentials();
+            String password = credentials != null ? credentials.toString() : null;
+            if (eurekaUserid != null && !eurekaUserid.isBlank()
+                    && eurekaPassword != null
+                    && eurekaUserid.equals(principal)
+                    && password != null
+                    && Arrays.equals(eurekaPassword, password.toCharArray())) {
+                return Mono.just(new UsernamePasswordAuthenticationToken(principal, null, List.of()));
+            }
+            return Mono.error(new BadCredentialsException("Invalid Eureka credentials"));
+        };
+    }
+
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http, boolean defaultExceptionHandler) {
         http
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))

@@ -1066,6 +1066,68 @@ jobs:
 
             -   uses: ./.github/actions/teardown
 
+    CITestsDiscoveryBasicAuthModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        container: ubuntu:latest
+        timeout-minutes: 15
+
+        services:
+            apiml:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
+                    APIML_DISCOVERY_USERID: eureka
+                    APIML_DISCOVERY_PASSWORD: password
+            apiml-2:
+                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
+                volumes:
+                    - /api-defs:/api-defs
+                env:
+                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
+                    APIML_DISCOVERY_USERID: eureka
+                    APIML_DISCOVERY_PASSWORD: password
+            discoverable-client:
+                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                env:
+                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
+                    APIML_DISCOVERY_USERID: eureka
+                    APIML_DISCOVERY_PASSWORD: password
+            mock-services:
+                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
+                    -Denvironment.modulith=true
+                    -Dapiml.security.ssl.verifySslCertificatesOfServices=false
+                    -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
+
+            -   name: Run Discovery Basic Auth Tests
+                run: >
+                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker-modulith-ha
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsDiscoveryBasicAuthModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/teardown
     CITestsRegistrationModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
