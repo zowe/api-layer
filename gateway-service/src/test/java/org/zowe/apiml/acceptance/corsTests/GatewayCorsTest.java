@@ -12,21 +12,17 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.message.BasicHeader;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.NestedTestConfiguration;
-import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
-import java.io.IOException;
-
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayWithSize;
@@ -36,12 +32,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @AcceptanceTest
-@ActiveProfiles({"GatewayCorsEnabledTest", "test"})
+@ActiveProfiles({"GatewayCorsEnabledWithProvidedDefaultTest", "test"})
 @TestPropertySource(properties = {
     "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org",
     "apiml.service.corsEnabled=true"
 })
-@NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
 class GatewayCorsEnabledWithProvidedDefaultTest extends AcceptanceTestWithTwoServices {
 
     @Test
@@ -72,18 +67,17 @@ class GatewayCorsEnabledWithProvidedDefaultTest extends AcceptanceTestWithTwoSer
 
     @Test
     void givenCorsOriginIsNotAllowed_whenPreFlightRequestArrives_thenCorsHeadersAreNotSet() throws Exception {
-        // Origin with other than foo.bar.org should be rejected when cors is enabled
-    }
-
-    private void mockValid200HttpResponseWithAddedCors() throws IOException {
-        mockValid200HttpResponseWithHeaders(new org.apache.http.Header[]{
-            new BasicHeader("Access-Control-Allow-Origin", "test"),
-            new BasicHeader("Access-Control-Allow-Methods", "RANDOM"),
-            new BasicHeader("Access-Control-Allow-Headers", "origin,x-test"),
-            new BasicHeader("Access-Control-Allow-Credentials", "true"),
-        });
-        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        discoveryClient.createRefreshCacheEvent();
+        // Preflight request with disallowed origin
+        mockValid200HttpResponseWithAddedCors();
+        given()
+            .header(new Header("Origin", "https://malicious.example.com"))
+            .header(new Header("Access-Control-Request-Method", "POST"))
+            .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
+        .when()
+            .options(basePath + serviceWithCustomConfiguration.getPath())
+        .then()
+            .statusCode(is(SC_FORBIDDEN))
+            .header("Access-Control-Allow-Origin", is((String) null));
     }
 
     @Test
@@ -166,26 +160,50 @@ class GatewayCorsEnabledWithProvidedDefaultTest extends AcceptanceTestWithTwoSer
         assertThat(originHeaders, arrayWithSize(0));
     }
 
-    @Nested
-    @AcceptanceTest
-    @ActiveProfiles({"GatewayCorsEnabledTestWithDefaults", "test"})
-    @TestPropertySource(properties = {
-        "apiml.service.corsEnabled=true"
-    })
-    class GatewayCorsEnabledTestWithDefaults {
-        // Gateway uses a default list of origins, does not accept any
+}
 
+@Nested
+@AcceptanceTest
+@ActiveProfiles({"GatewayCorsEnabledWithDefaultsTest"})
+@TestPropertySource(properties = {
+    "apiml.service.corsEnabled=true"
+})
+class GatewayCorsEnabledWithDefaultsTest extends AcceptanceTestWithTwoServices {
+    // Gateway uses a default list of origins, does not accept any (*)
+
+    @Test
+    void givenCorsIsEnabledWithDefaults_whenPreflightRequestComes_thenPreflightIsRejected() throws Exception {
+        // Preflight request with origin that should be rejected by default CORS policy
+        given()
+            .log().all()
+            .header(new Header("Origin", "https://foo.bar.org"))
+            .header(new Header("Access-Control-Request-Method", "POST"))
+            .header(new Header("Access-Control-Request-Headers", "Content-Type"))
+        .when()
+            .options(basePath + serviceWithCustomConfiguration.getPath())
+        .then()
+            .log().all()
+            .statusCode(is(SC_FORBIDDEN));
+
+        // No request should be passed to the southbound service for preflight
+        verify(mockClient, times(0)).execute(ArgumentMatchers.any(HttpUriRequest.class));
     }
 
-    @Nested
-    @AcceptanceTest
-    @ActiveProfiles({"GatewayCorsEnabledTestWithDefaults", "test"})
-    @TestPropertySource(properties = {
-        "apiml.service.corsEnabled=false"
-    })
-    class GatewayCorsDisabled {
-        // Gateway does not interfere, all headers are passed to the southbound service
+    @Test
+    void givenCorsIsEnabledWithDefaults_whenPreflightRequestWithLocalhostOriginComes_thenPreflightIsAccepted() throws Exception {
+        // Preflight request with localhost origin that should be accepted by default CORS policy
+        given()
+            .header(new Header("Origin", "https://localhost:10010"))
+            .header(new Header("Access-Control-Request-Method", "POST"))
+            .header(new Header("Access-Control-Request-Headers", "Content-Type"))
+        .when()
+            .options(basePath + serviceWithCustomConfiguration.getPath())
+        .then()
+            .statusCode(is(SC_OK))
+            .header("Access-Control-Allow-Origin", is("https://localhost:10010"));
 
+        // No request should be passed to the southbound service for preflight
+        verify(mockClient, times(0)).execute(ArgumentMatchers.any(HttpUriRequest.class));
     }
 
 }

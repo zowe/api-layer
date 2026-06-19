@@ -16,6 +16,7 @@ import org.apache.http.ProtocolVersion;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicStatusLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mock;
@@ -92,6 +93,17 @@ public class AcceptanceTestWithTwoServices extends AcceptanceTestWithBasePath {
         Mockito.when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream("{foo}".getBytes()));
         Mockito.when(response.getLocale()).thenReturn(Locale.US);
         Mockito.when(mockClient.execute(any())).thenReturn(response);
+    }
+
+    protected void mockValid200HttpResponseWithAddedCors() throws IOException {
+        mockValid200HttpResponseWithHeaders(new org.apache.http.Header[]{
+            new BasicHeader("Access-Control-Allow-Origin", "test"),
+            new BasicHeader("Access-Control-Allow-Methods", "RANDOM"),
+            new BasicHeader("Access-Control-Allow-Headers", "origin,x-test"),
+            new BasicHeader("Access-Control-Allow-Credentials", "true"),
+        });
+        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
+        discoveryClient.createRefreshCacheEvent();
     }
 
     protected void assertHeaderNullValue(HttpUriRequest request, String header) {
