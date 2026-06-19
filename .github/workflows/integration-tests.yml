@@ -1045,7 +1045,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
                     -Dapiml.security.ssl.verifySslCertificatesOfServices=false
                     -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
