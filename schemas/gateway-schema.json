@@ -219,6 +219,11 @@
                                                             "type": "boolean",
                                                             "description": "Allow CORS on gateway.",
                                                             "default": true
+                                                        },
+                                                        "corsDefaultAllowedOrigins": {
+                                                            "type": "string",
+                                                            "description": "Default allowed origins for CORS.",
+                                                            "default": ""
                                                         }
                                                     }
                                                 }
