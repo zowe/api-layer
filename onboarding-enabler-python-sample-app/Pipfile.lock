@@ -2003,14 +2003,6 @@
             "index": "pypi",
             "version": "==0.6.3"
         },
-        "starlette": {
-            "hashes": [
-                "sha256:6a4beaf1f81bb472fd19ea9b918b50dc3a77a6f2e190a12954b25e6ed5eea149",
-                "sha256:d3ec55e0bb321692d275455ddfd3df75fff145d009685eb40dc91fc66b03d38b"
-            ],
-            "markers": "python_version >= '3.10'",
-            "version": "==1.0.0"
-        },
         "tinycss2": {
             "hashes": [
                 "sha256:3415ba0f5839c062696996998176c4a3751d18b7edaaeeb658c9ce21ec150661",
