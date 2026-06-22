@@ -53,7 +53,9 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
 
-    private final DiscoveryConfigProperties discoveryConfigProperties;
+    @Value("${apiml.service.discoveryServiceUrls}")
+    private String[] locations;
+
 
     void setAuthorization(HttpHeaders headers) {
         if (StringUtils.isEmpty(eurekaUserid) || StringUtils.isEmpty(eurekaPassword)) {
@@ -90,10 +92,8 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
     }
 
     private List<String> getDiscoveryServiceUrls() {
-        String[] discoveryServiceLocations = discoveryConfigProperties.getLocations();
-
         List<String> discoveryServiceUrls = new ArrayList<>();
-        for (String location : discoveryServiceLocations) {
+        for (String location : locations) {
             location = location.replace("/eureka", "");
             location = location.endsWith("/") ? location : location + "/";
             discoveryServiceUrls.add(location + REFRESH_ENDPOINT);

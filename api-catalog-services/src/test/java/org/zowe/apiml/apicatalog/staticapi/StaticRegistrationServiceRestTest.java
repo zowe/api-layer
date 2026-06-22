@@ -54,13 +54,11 @@ class StaticRegistrationServiceRestTest {
     @Mock
     private ClientResponse clientResponse;
 
-    @Mock
-    private DiscoveryConfigProperties discoveryConfigProperties;
-
     @BeforeEach
     void init() {
         var webCLient = WebClient.builder().exchangeFunction(exchangeFunction).build();
-        staticServiceRest = new StaticRegistrationServiceRest(webCLient, discoveryConfigProperties);
+        staticServiceRest = new StaticRegistrationServiceRest(webCLient);
+
     }
 
     @Nested
@@ -79,8 +77,7 @@ class StaticRegistrationServiceRestTest {
 
             @Test
             void givenRefreshAPIWithSecureDiscoveryService_thenReturnApiResponseCodeWithBody() {
-                when(discoveryConfigProperties.getLocations()).thenReturn(new String[] { DISCOVERY_LOCATION });
-
+                ReflectionTestUtils.setField(staticServiceRest, "locations", new String[]{DISCOVERY_LOCATION});
                 StepVerifier.create(staticServiceRest.refresh())
                     .assertNext(actualResponse -> {
                         StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
@@ -91,7 +88,7 @@ class StaticRegistrationServiceRestTest {
 
             @Test
             void givenRefreshAPIWithUnSecureDiscoveryService_thenReturnApiResponseCodeWithBody() {
-                when(discoveryConfigProperties.getLocations()).thenReturn(new String[] { DISCOVERY_LOCATION_HTTP });
+                ReflectionTestUtils.setField(staticServiceRest, "locations", new String[]{DISCOVERY_LOCATION_HTTP});
 
                 StepVerifier.create(staticServiceRest.refresh())
                     .assertNext(actualResponse -> {
@@ -115,7 +112,7 @@ class StaticRegistrationServiceRestTest {
                     doReturn(Mono.empty()).when(clientResponse).releaseBody();
                     doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
                     doReturn(Mono.just(BODY)).when(clientResponse).bodyToMono(String.class);
-                    when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+                    ReflectionTestUtils.setField(staticServiceRest, "locations", discoveryLocations);
 
                     StepVerifier.create(staticServiceRest.refresh())
                         .assertNext(actualResponse -> {
@@ -145,7 +142,7 @@ class StaticRegistrationServiceRestTest {
                         }
                         return Mono.just(clientResponse);
                     }).when(exchangeFunction).exchange(any());
-                    when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+                    ReflectionTestUtils.setField(staticServiceRest, "locations", discoveryLocations);
 
                     StepVerifier.create(staticServiceRest.refresh())
                         .assertNext(actualResponse -> {
@@ -164,7 +161,7 @@ class StaticRegistrationServiceRestTest {
                 void whenBothFail_thenReturnResponseFromSecond() {
                     doReturn(Mono.just(clientResponse)).when(exchangeFunction).exchange(any());
                     doReturn(Mono.empty()).when(clientResponse).releaseBody();
-                    when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+                    ReflectionTestUtils.setField(staticServiceRest, "locations", discoveryLocations);
                     doReturn(HttpStatusCode.valueOf(SC_NOT_FOUND)).when(clientResponse).statusCode();
                     doReturn(Mono.just(BODY)).when(clientResponse).bodyToMono(String.class);
 
@@ -184,7 +181,7 @@ class StaticRegistrationServiceRestTest {
 
     @Test
     void givenNoDiscoveryLocations_whenAttemptRefresh_thenReturn500() {
-        when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{});
+        ReflectionTestUtils.setField(staticServiceRest, "locations", new String[]{});
 
         StepVerifier.create(staticServiceRest.refresh())
             .assertNext(actualResponse -> {
@@ -199,7 +196,7 @@ class StaticRegistrationServiceRestTest {
 
         @Test
         void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
-            var service = new StaticRegistrationServiceRest(null, null);
+            var service = new StaticRegistrationServiceRest(null);
             ReflectionTestUtils.setField(service, "eurekaUserid", "user");
             ReflectionTestUtils.setField(service, "eurekaPassword", "password");
 
@@ -216,7 +213,7 @@ class StaticRegistrationServiceRestTest {
             ",,"
         })
         void givenIncompleteCredentials_whenSetCredentials_thenDoNotSetAuthorization(String userId, String password) {
-            var service = new StaticRegistrationServiceRest(null, null);
+            var service = new StaticRegistrationServiceRest(null);
             ReflectionTestUtils.setField(service, "eurekaUserid", userId);
             ReflectionTestUtils.setField(service, "eurekaPassword", password);
 
@@ -244,7 +241,7 @@ class StaticRegistrationServiceRestTest {
 
         @Test
         void whenHttpsDiscoveryService_thenAuthorizationHeaderIsSet() {
-            when(discoveryConfigProperties.getLocations()).thenReturn(new String[] { DISCOVERY_LOCATION });
+            ReflectionTestUtils.setField(staticServiceRest, "locations", new String[]{DISCOVERY_LOCATION});
 
             var requestCaptor = forClass(ClientRequest.class);
             StepVerifier.create(staticServiceRest.refresh()).expectNextCount(1).verifyComplete();
@@ -271,7 +268,7 @@ class StaticRegistrationServiceRestTest {
 
         @Test
         void whenHttpsDiscoveryService_thenNoAuthorizationHeader() {
-            when(discoveryConfigProperties.getLocations()).thenReturn(new String[] { DISCOVERY_LOCATION });
+            ReflectionTestUtils.setField(staticServiceRest, "locations", new String[]{DISCOVERY_LOCATION});
 
             var requestCaptor = org.mockito.ArgumentCaptor.forClass(ClientRequest.class);
             StepVerifier.create(staticServiceRest.refresh()).expectNextCount(1).verifyComplete();
