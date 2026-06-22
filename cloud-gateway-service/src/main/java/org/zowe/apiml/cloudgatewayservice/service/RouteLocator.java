@@ -10,33 +10,32 @@
 
 package org.zowe.apiml.cloudgatewayservice.service;
 
-import lombok.AccessLevel;
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinitionLocator;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.cloudgatewayservice.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.cloudgatewayservice.service.scheme.SchemeHandler;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.util.CorsUtils;
 import org.zowe.apiml.util.StringUtils;
 import reactor.core.publisher.Flux;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
 
 @Service
@@ -47,28 +46,18 @@ public class RouteLocator implements RouteDefinitionLocator {
     @Value("${apiml.service.forwardClientCertEnabled:false}")
     private boolean forwardingClientCertEnabled;
 
-    private final ApplicationContext context;
-
-    private final CorsUtils corsUtils;
     private final ReactiveDiscoveryClient discoveryClient;
 
     private final List<FilterDefinition> commonFilters;
     private final List<RouteDefinitionProducer> routeDefinitionProducers;
     private final Map<AuthenticationScheme, SchemeHandler> schemeHandlers = new EnumMap<>(AuthenticationScheme.class);
 
-    @Getter(lazy = true, value = AccessLevel.PRIVATE)
-    private final UrlBasedCorsConfigurationSource corsConfigurationSource = context.getBean(UrlBasedCorsConfigurationSource.class);
-
     public RouteLocator(
-        ApplicationContext context,
-        CorsUtils corsUtils,
         ReactiveDiscoveryClient discoveryClient,
         List<FilterDefinition> commonFilters,
         List<SchemeHandler> schemeHandlersList,
         List<RouteDefinitionProducer> routeDefinitionProducers
     ) {
-        this.context = context;
-        this.corsUtils = corsUtils;
         this.discoveryClient = discoveryClient;
         this.commonFilters = commonFilters;
         this.routeDefinitionProducers = routeDefinitionProducers;
@@ -91,15 +80,6 @@ public class RouteLocator implements RouteDefinitionLocator {
                 schemeHandler.apply(serviceInstance, routeDefinition, auth);
             }
         }
-    }
-
-    void setCors(ServiceInstance serviceInstance) {
-        corsUtils.setCorsConfiguration(
-            serviceInstance.getMetadata(),
-            (prefix, config) -> {
-                String serviceId = serviceInstance.getMetadata().getOrDefault(APIML_ID, serviceInstance.getServiceId().toLowerCase());
-                getCorsConfigurationSource().registerCorsConfiguration("/" + serviceId + "/**", config);
-            });
     }
 
     Stream<RoutedService> getRoutedService(ServiceInstance serviceInstance) {
