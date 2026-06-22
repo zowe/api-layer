@@ -10,9 +10,11 @@
 
 package org.zowe.apiml.product.eureka;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 import static org.apache.commons.lang3.StringUtils.isBlank;
+
 /**
  * Helper for embedding basic authentication credentials into Eureka discovery service URLs.
  * <p>
@@ -71,11 +73,11 @@ public final class EurekaServiceUrlUtils {
      */
     public static List<String> addCredentials(List<String> urls, String userid, String password) {
         if (urls == null) {
-            return null;
+            return new ArrayList<>();
         }
         return urls.stream()
             .map(url -> addCredentials(url, userid, password))
-            .collect(Collectors.toList());
+            .toList();
     }
 
 }

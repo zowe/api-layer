@@ -43,15 +43,14 @@ public class EurekaBasicAuthEnvironmentPostProcessor implements EnvironmentPostP
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        if (environment.getProperty(VERIFY_CERTIFICATES_PROPERTY, Boolean.class, true)) {
-            // certificate authentication is used, no need to fall back to basic authentication
+        if (!"false".equalsIgnoreCase(environment.getProperty(VERIFY_CERTIFICATES_PROPERTY, "true"))) {
             return;
         }
 
         String userid = environment.getProperty(EUREKA_USERID_PROPERTY);
         String password = environment.getProperty(EUREKA_PASSWORD_PROPERTY);
         String defaultZone = environment.getProperty(DEFAULT_ZONE_PROPERTY);
-        if (defaultZone == null || StringUtils.isBlank(userid) || StringUtils.isBlank(password)) {
+        if (StringUtils.isAnyBlank(defaultZone, userid, password)) {
             return;
         }
 
