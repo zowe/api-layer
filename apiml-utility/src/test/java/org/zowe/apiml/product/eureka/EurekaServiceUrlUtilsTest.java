@@ -19,8 +19,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 class EurekaServiceUrlUtilsTest {
 
@@ -110,8 +109,8 @@ class EurekaServiceUrlUtilsTest {
         }
 
         @Test
-        void givenNullList_thenNullIsReturned() {
-            assertNull(EurekaServiceUrlUtils.addCredentials((List<String>) null, "eureka", "password"));
+        void givenNullList_thenEmptyListIsReturned() {
+            assertTrue(EurekaServiceUrlUtils.addCredentials((List<String>) null, "eureka", "password").isEmpty());
         }
     }
 }
