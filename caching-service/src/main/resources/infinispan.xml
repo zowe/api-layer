@@ -38,31 +38,31 @@
             />
             <jgroup:VERIFY_SUSPECT
                 timeout="1000"/>
-            <jgroup:SSL_KEY_EXCHANGE
-                keystore_name="${infinispan.ssl.keyStore}"
-                keystore_type="${infinispan.ssl.keyStoreType}"
-                keystore_password="${infinispan.ssl.keyStorePassword}"
-                truststore_name="${infinispan.ssl.trustStore}"
-                truststore_type="${infinispan.ssl.trustStoreType}"
-                truststore_password="${infinispan.ssl.trustStorePassword}"
-                secret_key_algorithm="AES"
-                port="${jgroups.keyExchange.port}"
-                port_range="0"
-                socket_timeout="${jgroups.keyExchange.socketTimeout:5000}"
-                require_client_authentication="false"
-            />
-            <!-- Configures ASYM_ENCRYPT -->
-            <!-- The use_external_key_exchange = "true" attribute configures nodes to use the `SSL_KEY_EXCHANGE. -->
-            <jgroup:ASYM_ENCRYPT
-                asym_keylength="2048"
-                asym_algorithm="RSA"
-                change_key_on_coord_leave="true"
-                change_key_on_leave="true"
-                use_external_key_exchange="true"
-                sym_keylength="128"
-                sym_algorithm="AES/CBC/PKCS5Padding"
-                sym_iv_length="16"
-            />
+<!--            <jgroup:SSL_KEY_EXCHANGE-->
+<!--                keystore_name="${infinispan.ssl.keyStore}"-->
+<!--                keystore_type="${infinispan.ssl.keyStoreType}"-->
+<!--                keystore_password="${infinispan.ssl.keyStorePassword}"-->
+<!--                truststore_name="${infinispan.ssl.trustStore}"-->
+<!--                truststore_type="${infinispan.ssl.trustStoreType}"-->
+<!--                truststore_password="${infinispan.ssl.trustStorePassword}"-->
+<!--                secret_key_algorithm="AES"-->
+<!--                port="${jgroups.keyExchange.port}"-->
+<!--                port_range="0"-->
+<!--                socket_timeout="${jgroups.keyExchange.socketTimeout:5000}"-->
+<!--                require_client_authentication="false"-->
+<!--            />-->
+<!--            &lt;!&ndash; Configures ASYM_ENCRYPT &ndash;&gt;-->
+<!--            &lt;!&ndash; The use_external_key_exchange = "true" attribute configures nodes to use the `SSL_KEY_EXCHANGE. &ndash;&gt;-->
+<!--            <jgroup:ASYM_ENCRYPT-->
+<!--                asym_keylength="2048"-->
+<!--                asym_algorithm="RSA"-->
+<!--                change_key_on_coord_leave="true"-->
+<!--                change_key_on_leave="true"-->
+<!--                use_external_key_exchange="true"-->
+<!--                sym_keylength="128"-->
+<!--                sym_algorithm="AES/CBC/PKCS5Padding"-->
+<!--                sym_iv_length="16"-->
+<!--            />-->
 
             <jgroup:pbcast.NAKACK2 />
 
