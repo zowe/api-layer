@@ -32,7 +32,7 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "5.0.0",
-        "react-hook-form": "7.79.0",
+        "react-hook-form": "7.80.0",
         "react-redux": "9.3.0",
         "react-router": "7.18.0",
         "react-toastify": "10.0.6",
@@ -139,7 +139,7 @@
     "overrides": {
         "openapi-snippet": {
             "openapi-sampler": {
-                "fast-xml-parser": "5.9.2"
+                "fast-xml-parser": "5.9.3"
             }
         },
         "cosmiconfig": {
@@ -152,7 +152,7 @@
         "@braintree/sanitize-url": "7.1.2",
         "resolve-url-loader": "5.0.0",
         "lodash": "4.18.1",
-        "semver": "7.8.4",
+        "semver": "7.8.5",
         "@babel/traverse": "7.29.7",
         "axios": "1.18.0",
         "form-data": "3.0.5",
