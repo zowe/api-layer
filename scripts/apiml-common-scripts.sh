@@ -40,6 +40,8 @@
 #   - LIBRARY_PATH
 #   - ZWE_DISCOVERY_SERVICES_LIST
 #   - CERTIFICATES_URLS
+#   - eurekaUserId
+#   - eurekaPassword
 
 ################################################################################
 # Function: add_profile
@@ -100,6 +102,20 @@ else
     # default value is STRICT
     verifySslCertificatesOfServices=true
     nonStrictVerifySslCertificatesOfServices=false
+fi
+
+################################################################################
+# Eureka discovery credentials
+# Map from ZWE_configs_apiml_discovery_userid/password; when certificate
+# verification is disabled and no explicit value is set, default to
+# "eureka"/"password" so services can authenticate to the discovery endpoint.
+################################################################################
+eurekaUserId=${ZWE_configs_apiml_discovery_userid:-${ZWE_components_discovery_apiml_discovery_userid:-}}
+eurekaPassword=${ZWE_configs_apiml_discovery_password:-${ZWE_components_discovery_apiml_discovery_password:-}}
+
+if [ "${verifySslCertificatesOfServices}" = "false" ]; then
+    eurekaUserId=${eurekaUserId:-eureka}
+    eurekaPassword=${eurekaPassword:-password}
 fi
 
 ################################################################################

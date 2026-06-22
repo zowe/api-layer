@@ -48,6 +48,8 @@
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
+# - ZWE_configs_apiml_discovery_userid - Userid for Eureka basic auth (defaults to "eureka" when verifyCertificates is DISABLED)
+# - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
 
 # Source common APIML scripts (sets up common variables and functions)
 
@@ -116,8 +118,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.port=${ZWE_configs_port:-7552} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
-    -Dapiml.service.eurekaUserName=${ZWE_configs_apiml_service_http_userId:-} \
-    -Dapiml.service.eurekaUserPassword=${ZWE_configs_apiml_service_http_password:-} \
+    -Dapiml.discovery.userid=${eurekaUserId} \
+    -Dapiml.discovery.password=${eurekaPassword} \
+    -Dapiml.service.eurekaUserName=${eurekaUserId} \
+    -Dapiml.service.eurekaUserPassword=${eurekaPassword} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
