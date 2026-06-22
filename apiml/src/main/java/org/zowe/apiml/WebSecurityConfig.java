@@ -13,6 +13,7 @@ package org.zowe.apiml;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -219,15 +220,19 @@ public class WebSecurityConfig {
             String principal = authentication.getName();
             Object credentials = authentication.getCredentials();
             String password = credentials != null ? credentials.toString() : null;
-            if (eurekaUserid != null && !eurekaUserid.isBlank()
-                    && eurekaPassword != null
-                    && eurekaUserid.equals(principal)
-                    && password != null
-                    && Arrays.equals(eurekaPassword, password.toCharArray())) {
+            if (isValidAuthentication(principal, password)) {
                 return Mono.just(new UsernamePasswordAuthenticationToken(principal, null, List.of()));
             }
             return Mono.error(new BadCredentialsException("Invalid Eureka credentials"));
         };
+    }
+
+    private boolean isValidAuthentication(String principal, String password) {
+        return StringUtils.isNotEmpty(eurekaUserid)
+            && eurekaUserid.equals(principal)
+            && eurekaPassword != null
+            && password != null
+            && Arrays.equals(eurekaPassword, password.toCharArray());
     }
 
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http, boolean defaultExceptionHandler) {
