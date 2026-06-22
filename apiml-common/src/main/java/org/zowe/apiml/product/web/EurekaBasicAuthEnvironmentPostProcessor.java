@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
@@ -50,7 +51,7 @@ public class EurekaBasicAuthEnvironmentPostProcessor implements EnvironmentPostP
         String userid = environment.getProperty(EUREKA_USERID_PROPERTY);
         String password = environment.getProperty(EUREKA_PASSWORD_PROPERTY);
         String defaultZone = environment.getProperty(DEFAULT_ZONE_PROPERTY);
-        if (defaultZone == null || isBlank(userid) || isBlank(password)) {
+        if (defaultZone == null || StringUtils.isBlank(userid) || StringUtils.isBlank(password)) {
             return;
         }
 
@@ -63,10 +64,6 @@ public class EurekaBasicAuthEnvironmentPostProcessor implements EnvironmentPostP
             properties.put(DEFAULT_ZONE_PROPERTY, updatedDefaultZone);
             environment.getPropertySources().addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, properties));
         }
-    }
-
-    private boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
     }
 
     @Override

@@ -34,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentCaptor.forClass;
 
 @ExtendWith(MockitoExtension.class)
 class StaticRegistrationServiceRestTest {
@@ -245,7 +246,7 @@ class StaticRegistrationServiceRestTest {
         void whenHttpsDiscoveryService_thenAuthorizationHeaderIsSet() {
             when(discoveryConfigProperties.getLocations()).thenReturn(new String[] { DISCOVERY_LOCATION });
 
-            var requestCaptor = org.mockito.ArgumentCaptor.forClass(ClientRequest.class);
+            var requestCaptor = forClass(ClientRequest.class);
             StepVerifier.create(staticServiceRest.refresh()).expectNextCount(1).verifyComplete();
 
             verify(exchangeFunction).exchange(requestCaptor.capture());

@@ -168,8 +168,6 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            // Without TLS validation the client certificate cannot be trusted, so authentication is enforced
-            // through the eureka basic credentials (in addition to the mainframe basic/token credentials above).
             http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword))
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
         }

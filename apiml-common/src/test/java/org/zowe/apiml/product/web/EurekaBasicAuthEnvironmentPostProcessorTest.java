@@ -86,7 +86,6 @@ class EurekaBasicAuthEnvironmentPostProcessorTest {
 
         @Test
         void thenDefaultZoneIsUnchanged() {
-            // verifySslCertificatesOfServices defaults to true
             postProcessor.postProcessEnvironment(environment, null);
             assertEquals("https://localhost:10011/eureka/", defaultZone());
             assertFalse(environment.getPropertySources().contains(EurekaBasicAuthEnvironmentPostProcessor.PROPERTY_SOURCE_NAME));

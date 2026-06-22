@@ -72,8 +72,6 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
                 .header(ACCEPT, APPLICATION_JSON_VALUE)
                 .headers(headers -> {
                     boolean isHttp = uri.startsWith("http://");
-                    // Use basic authentication when the client certificate cannot be used: over plain HTTP, or when
-                    // TLS validation is disabled and the Discovery Service no longer trusts the client certificate.
                     boolean clientCertificateUnavailable = isHttp || !verifySslCertificatesOfServices;
                     if (clientCertificateUnavailable && !isServerAttlsEnabled) {
                         setAuthorization(headers);

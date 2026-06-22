@@ -49,14 +49,8 @@ public class EurekaClientConfiguration extends DefaultEurekaClientConfig {
 
     @Override
     public List<String> getEurekaServerServiceUrls(String s) {
-        List<String> discoveryServiceUrls = config.getDiscoveryServiceUrls();
-        // Embed credentials into the discovery URL when they are configured. The Netflix Eureka client
-        // performs basic authentication only when credentials are present in the service URL. Credentials
-        // are set when TLS validation of services is disabled on the Discovery Service side, in which case
-        // the client certificate cannot be trusted and basic authentication is required instead.
-        // EurekaServiceUrlUtils.addCredentials is a no-op when either credential is blank.
         String password = (config.getEurekaPassword() == null) ? null : new String(config.getEurekaPassword());
-        return EurekaServiceUrlUtils.addCredentials(discoveryServiceUrls, config.getEurekaUserid(), password);
+        return EurekaServiceUrlUtils.addCredentials(config.getDiscoveryServiceUrls(), config.getEurekaUserid(), password);
     }
 
     @Override

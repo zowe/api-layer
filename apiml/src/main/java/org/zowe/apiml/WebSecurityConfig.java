@@ -176,8 +176,6 @@ public class WebSecurityConfig {
             return x509SecurityConfig(http).build();
         }
 
-        // Without TLS validation, the client certificate cannot be trusted, so basic authentication with
-        // the configured Eureka credentials is required instead.
         http.httpBasic(basic -> basic.authenticationManager(eurekaReactiveAuthManager()));
         return http.build();
     }
