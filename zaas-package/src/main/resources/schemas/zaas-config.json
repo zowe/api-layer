@@ -433,6 +433,11 @@
                     "description": "Path to custom logback configuration file.",
                     "minLength": 1,
                     "maxLength": 1024
+                },
+                "profile": {
+                    "type": "string",
+                    "description": "A comma-separated list of logging profiles to activate.",
+                    "examples": ["quiet", "info"]
                 }
             }
         }

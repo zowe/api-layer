@@ -102,6 +102,11 @@ if [ -n "${ZWE_ZAAS_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${ZAAS_LOADER_PATH}"
 
+# Logging profiles
+for logging_profile in $(echo "${ZWE_components_apiml_logging_profile:-${ZWE_components_gateway_logging_profile:-info}}" | tr ',' ' '); do
+    add_profile "${logging_profile}"
+done
+
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then
     add_profile "debug"

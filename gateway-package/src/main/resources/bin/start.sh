@@ -70,6 +70,7 @@
 # - ZWE_configs_certificate_truststore_password / ZWE_zowe_certificate_truststore_password
 # - ZWE_configs_certificate_ciphers / ZWE_configs_ciphers
 # - ZWE_configs_debug
+# - ZWE_configs_logging
 # - ZWE_configs_port - the port the api gateway service will use
 # - ZWE_configs_server_maxConnectionsPerRoute
 # - ZWE_configs_server_maxTotalConnections
@@ -79,7 +80,7 @@
 # - ZWE_configs_server_webSocket_asyncWriteTimeout
 # - ZWE_configs_server_webSocket_requestBufferSize
 # - ZWE_configs_spring_profiles_active
-# - ZWE_zowe_network_server_tls_attls
+# - ZWE_zowe_network_server_tls_sattls
 # - ZWE_DISCOVERY_SERVICES_LIST
 # - ZWE_configs_apiml_discovery_userid - Userid for Eureka basic auth (defaults to "eureka" when verifyCertificates is DISABLED)
 # - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
@@ -103,9 +104,21 @@ if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${GATEWAY_LOADER_PATH}"
 
+# Logging profiles
+for logging_profile in $(echo "${ZWE_components_apiml_logging_profile:-${ZWE_components_gateway_logging_profile:-info}}" | tr ',' ' '); do
+    add_profile "${logging_profile}"
+done
+
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then
     add_profile "debug"
+fi
+
+# Logging config
+if [ -n "${ZWE_configs_logging}" ]; then
+    add_profile "${ZWE_configs_logging}"
+else
+    add_profile "info"
 fi
 
 # Cookie name for unique cookie support
@@ -142,6 +155,8 @@ fi
 if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
+
+echo $ZWE_configs_spring_profiles_active
 
 GATEWAY_CODE=AG
 _BPXK_AUTOCVT=OFF

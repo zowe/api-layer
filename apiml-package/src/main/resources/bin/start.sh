@@ -77,7 +77,8 @@
 # - ZWE_configs_certificate_truststore_password / ZWE_zowe_certificate_truststore_password
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
-# - ZWE_configs_debug
+# - ZWE_configs_debug - (deprecated) set to "true" to activate the debug logging profile; use ZWE_configs_logging instead
+# - ZWE_configs_logging_profile - logging profile(s) to activate (default: info); comma-separated for multiple, e.g. "info,debug"
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
 # - ZWE_configs_port - the port the api discovery service will use
@@ -141,6 +142,11 @@ if [ -n "${ZWE_DISCOVERY_SHARED_LIBS}" ]; then
     APIML_LOADER_PATH=${ZWE_DISCOVERY_SHARED_LIBS},${APIML_LOADER_PATH}
 fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
+
+# Logging profiles
+for logging_profile in $(echo "${ZWE_components_apiml_logging_profile:-${ZWE_components_gateway_logging_profile:-info}}" | tr ',' ' '); do
+    add_profile "${logging_profile}"
+done
 
 # Debug profile
 if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then

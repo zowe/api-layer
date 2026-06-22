@@ -33,29 +33,12 @@ springdoc:
     group-configs:
         - group: apicatalog
           pathsToMatch: /apicatalog/**
+
 logging:
     level:
-        ROOT: INFO
-        org.zowe.apiml: INFO
-        org.springframework: WARN
-        org.springdoc: WARN
-        com.netflix: WARN
-        com.netflix.discovery: ERROR
-        com.netflix.config: ERROR
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
-        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
-        org.ehcache: WARN
-        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        org.springframework.security.web: INFO
-        org.apache.tomcat.util.net.jsse: INFO
-        # New Config
-        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        javax.net.ssl: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+
 
 ##############################################################################################
 # APIML configuration section
@@ -198,6 +181,38 @@ management:
             showDetails: always
 
 logbackServiceName: ZWEAAC1
+
+---
+spring.config.activate.on-profile: quiet
+
+logging:
+    level:
+        ROOT: ERROR
+        org.zowe.apiml: INFO
+
+---
+spring.config.activate.on-profile: info
+
+logging:
+    level:
+        ROOT: INFO
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        javax.net.ssl: ERROR
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.jsse: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.eclipse.jetty: WARN
+        org.ehcache: WARN
+        org.springdoc: WARN
+        org.springframework: WARN
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.security.web: INFO
+        org.zowe.apiml: INFO
 ---
 spring.config.activate.on-profile: debug
 
@@ -211,17 +226,25 @@ management:
 logging:
     level:
         ROOT: INFO
-        org.zowe.apiml: DEBUG
-        org.springframework: INFO
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.netflix.config: ERROR
+        javax.net.ssl: ERROR
         org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        com.netflix: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.eclipse.jetty: WARN
         org.ehcache: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
-        javax.net.ssl: ERROR
+        org.springdoc: WARN
+        org.springframework: INFO
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: INFO
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.security.web: INFO
+        org.zowe.apiml: DEBUG
 
 ---
 spring.config.activate.on-profile: diag
