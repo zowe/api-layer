@@ -25,7 +25,7 @@
         "history": "4.10.1",
         "htmr": "1.0.2",
         "install": "0.13.0",
-        "lodash": "4.17.23",
+        "lodash": "4.18.0",
         "loglevel": "1.9.2",
         "openapi-snippet": "0.14.0",
         "react": "18.3.1",
@@ -161,7 +161,7 @@
         "qs": "6.15.2",
         "minimatch": "7.4.9",
         "picomatch": "2.3.2",
-        "immutable": "^3.8.3"
+        "immutable": "3.8.3"
     },
     "engines": {
         "npm": "=10.9.8",
