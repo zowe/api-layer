@@ -8,7 +8,7 @@
         "@material-ui/icons": "4.11.3",
         "@wojtekmaj/enzyme-adapter-react-17": "0.8.0",
         "history": "4.10.1",
-        "lodash": "4.17.23",
+        "lodash": "4.18.1",
         "loglevel": "1.9.2",
         "react": "17.0.2",
         "react-dom": "17.0.2",
@@ -67,7 +67,7 @@
         "brace-expansion": "2.0.3",
         "nth-check": "2.1.1",
         "jsdom": "16.6.0",
-        "form-data": "3.0.5",
+        "form-data": "4.0.6",
         "got": "12.1.0",
         "tough-cookie": "4.1.4",
         "resolve-url-loader": "5.0.0",
@@ -80,7 +80,7 @@
         "@braintree/sanitize-url": "6.0.4",
         "micromatch": "4.0.8",
         "semver": "7.6.3",
-        "dompurify": "3.3.3",
+        "dompurify": "3.4.0",
         "path-to-regexp": "1.9.0",
         "cookie": "0.7.2",
         "sha.js": "2.4.12",
@@ -91,7 +91,8 @@
         "@babel/runtime-corejs3": "7.28.6",
         "qs": "6.15.2",
         "minimatch": "7.4.9",
-        "picomatch": "2.3.2"
+        "picomatch": "2.3.2",
+        "immutable": "4.3.7"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",
