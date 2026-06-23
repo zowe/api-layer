@@ -91,7 +91,7 @@ dependencyResolutionManagement {
             version('restAssured', '5.5.7')
             version('rhino', '1.9.1')
             version('springDoc', '2.8.17')
-            version('swaggerCore', '2.2.51')
+            version('swaggerCore', '2.2.52')
             version('swaggerInflector', '2.0.17')
             version('swagger2Parser', '1.0.76')
             version('swagger3Parser', '2.1.44')
