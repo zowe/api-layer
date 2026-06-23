@@ -25,6 +25,7 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -46,6 +47,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -251,6 +253,56 @@ class X509FilterFactoryTest {
             verify(otelRequestContext, never()).userId(any());
         }
 
+    }
+
+    @Nested
+    class WhenStrictSchemeEnforcement {
+
+        @Test
+        void givenStrictEnforcementEnabled_whenNoCertificateInRequest_thenBasicAuthorizationStripped() {
+            X509FilterFactory testFactory = new X509FilterFactory(messageService);
+            ReflectionTestUtils.setField(testFactory, "strictSchemeEnforcement", true);
+
+            var request = MockServerHttpRequest.get("/test")
+                .header(HttpHeaders.AUTHORIZATION, "Basic dXNlcjpwYXNz")
+                .build();
+            var exchange = MockServerWebExchange.from(request);
+
+            var capturedExchange = new java.util.concurrent.atomic.AtomicReference<ServerWebExchange>();
+            GatewayFilter filter = testFactory.apply(new X509FilterFactory.Config());
+            filter.filter(exchange, ex -> {
+                capturedExchange.set(ex);
+                return Mono.empty();
+            }).block();
+
+            assertNull(capturedExchange.get().getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION),
+                "Authorization: Basic should be removed under strict enforcement");
+            assertEquals("ZWEAG167E No client certificate provided in the request",
+                capturedExchange.get().getRequest().getHeaders().getFirst(ApimlConstants.AUTH_FAIL_HEADER));
+        }
+
+        @Test
+        void givenStrictEnforcementDisabled_whenNoCertificateInRequest_thenBasicAuthorizationPreserved() {
+            X509FilterFactory testFactory = new X509FilterFactory(messageService);
+            ReflectionTestUtils.setField(testFactory, "strictSchemeEnforcement", false);
+
+            var request = MockServerHttpRequest.get("/test")
+                .header(HttpHeaders.AUTHORIZATION, "Basic dXNlcjpwYXNz")
+                .build();
+            var exchange = MockServerWebExchange.from(request);
+
+            var capturedExchange = new java.util.concurrent.atomic.AtomicReference<ServerWebExchange>();
+            GatewayFilter filter = testFactory.apply(new X509FilterFactory.Config());
+            filter.filter(exchange, ex -> {
+                capturedExchange.set(ex);
+                return Mono.empty();
+            }).block();
+
+            assertNotNull(capturedExchange.get().getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION),
+                "Authorization: Basic should be preserved when strict enforcement is disabled");
+            assertEquals("Basic dXNlcjpwYXNz",
+                capturedExchange.get().getRequest().getHeaders().getFirst(HttpHeaders.AUTHORIZATION));
+        }
     }
 
 }
