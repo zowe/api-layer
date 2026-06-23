@@ -2,7 +2,7 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
-## `2.18.5 (2026-07-14)`
+## `APIML 2.18.22 / Zowe 2.18.5 (2026-07-14)`
 
 * Feature:  implement allowlist for URL domains (v2) (#4689) ([3e17201](https://github.com/zowe/api-layer/commit/3e17201)), closes [#4689](https://github.com/zowe/api-layer/issues/4689)
 
