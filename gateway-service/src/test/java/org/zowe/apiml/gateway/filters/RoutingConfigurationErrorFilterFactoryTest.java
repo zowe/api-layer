@@ -64,7 +64,7 @@ class RoutingConfigurationErrorFilterFactoryTest {
         verify(otelContext).authErrorMessage(MESSAGE);
 
         verify(otelContext).authMethod(AuthenticationScheme.SAF_IDT);
-        verify(underTest).cleanHeadersOnAuthFail(exchange, MESSAGE);
+        verify(underTest).cleanHeadersOnAuthFail(exchange, MESSAGE, null);
     }
 
 }
