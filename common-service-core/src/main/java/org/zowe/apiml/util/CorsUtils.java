@@ -33,6 +33,7 @@ public class CorsUtils {
     private final boolean gatewayCorsEnabled;
     private final List<String> defaultAllowedCorsHttpMethods;
     private final List<String> defaultAllowedOrigins;
+    private final List<String> defaultAllowedHeaders;
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
         String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
@@ -70,7 +71,7 @@ public class CorsUtils {
             if (isNotBlank(allowedHeadersForService)) {
                 config.setAllowedHeaders(Arrays.asList(allowedHeadersForService.split(",")));
             } else {
-                config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+                config.setAllowedHeaders(defaultAllowedHeaders);
             }
 
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
@@ -90,7 +91,7 @@ public class CorsUtils {
         config.setAllowedOrigins(defaultAllowedOrigins);
         if (gatewayCorsEnabled) {
             config.setAllowCredentials(true);
-            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+            config.setAllowedHeaders(defaultAllowedHeaders);
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
             pathsToEnable = CORS_ENABLED_ENDPOINTS;
         } else {

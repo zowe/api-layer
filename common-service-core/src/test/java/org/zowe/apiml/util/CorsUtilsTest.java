@@ -50,7 +50,13 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsEnabled {
-        CorsUtils corsUtils = new CorsUtils(true, defaultCorsMethods, Collections.emptyList());
+
+        private CorsUtils corsUtils;
+
+        @BeforeEach
+        void setUp() {
+            corsUtils = new CorsUtils(true, defaultCorsMethods, Collections.emptyList(), Collections.singletonList("*"));
+        }
 
         @Test
         void registerDefaultConfig() {
@@ -105,7 +111,7 @@ class CorsUtilsTest {
 
     @Nested
     class GivenCorsDisabled {
-        CorsUtils corsUtils = new CorsUtils(false, null, Collections.emptyList());
+        CorsUtils corsUtils = new CorsUtils(false, null, Collections.emptyList(), Collections.emptyList());
 
         @Test
         void registerEmptyDefaultConfig() {
@@ -132,7 +138,7 @@ class CorsUtilsTest {
         @Test
         void setAllowedOrigins() {
             List<String> allowedOrigins = Arrays.asList("a");
-            CorsUtils corsUtils = new CorsUtils(true, defaultCorsMethods, allowedOrigins);
+            CorsUtils corsUtils = new CorsUtils(true, defaultCorsMethods, allowedOrigins, null);
             BiConsumer<String, CorsConfiguration> pathMapper = mock(BiConsumer.class);
             corsUtils.registerDefaultCorsConfiguration(pathMapper);
 

@@ -21,6 +21,7 @@ import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.util.CorsUtils;
@@ -68,7 +69,10 @@ public class CorsBeans implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         if (corsDefaultAllowedOrigins == null || corsDefaultAllowedOrigins.isEmpty()) {
-            corsDefaultAllowedHeaders = "https://" + hostname + ":" + port;
+            corsDefaultAllowedOrigins = "https://" + hostname + ":" + port;
+        }
+        if (corsDefaultAllowedHeaders == null || corsDefaultAllowedHeaders.isEmpty()) {
+            corsDefaultAllowedHeaders = CorsConfiguration.ALL;
         }
     }
 
@@ -126,6 +130,7 @@ public class CorsBeans implements InitializingBean {
         return CorsUtils.builder()
             .gatewayCorsEnabled(gatewayCorsEnabled)
             .defaultAllowedCorsHttpMethods(corsDefaultAllowedMethods)
+            .defaultAllowedHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
             .defaultAllowedOrigins(getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList(externalUrl)), hostname, port)).build();
 
     }

@@ -51,6 +51,7 @@ class CorsMetadataProcessorTest {
             .gatewayCorsEnabled(true)
             .defaultAllowedCorsHttpMethods(Arrays.asList("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"))
             .defaultAllowedOrigins(Collections.emptyList())
+            .defaultAllowedHeaders(Collections.singletonList("*"))
             .build();
     }
 

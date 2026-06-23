@@ -224,6 +224,11 @@
                                                             "type": "string",
                                                             "description": "Default allowed origins for CORS.",
                                                             "default": ""
+                                                        },
+                                                        "corsDefaultAllowedHeaders": {
+                                                            "type": "string",
+                                                            "description": "Default allowed headers for CORS.",
+                                                            "default": "*"
                                                         }
                                                     }
                                                 }
