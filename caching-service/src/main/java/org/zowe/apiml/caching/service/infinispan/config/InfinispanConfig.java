@@ -180,7 +180,7 @@ public class InfinispanConfig implements InitializingBean {
     private ConfigurationBuilder getDistributedCacheConfig() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
-            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
+            .encoding().mediaType(MediaType.APPLICATION_PROTOSTREAM_TYPE)
             .persistence()
             .addSoftIndexFileStore()
             .clustering()
@@ -192,7 +192,7 @@ public class InfinispanConfig implements InitializingBean {
     private ConfigurationBuilder getSimpleCacheConfig(long maxCount, Duration lifeSpan) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
-            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
+            .encoding().mediaType(MediaType.APPLICATION_PROTOSTREAM_TYPE)
             .memory()
             .storage(StorageType.OFF_HEAP)
             .maxCount(maxCount)
