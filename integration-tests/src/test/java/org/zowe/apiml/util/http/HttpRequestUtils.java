@@ -74,7 +74,7 @@ public class HttpRequestUtils {
         return new HttpGet(uri);
     }
 
-    public static URI getUri(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair...arguments) {
+    public static URI getUri(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair... arguments) {
         var host = serviceConfiguration.getHost();
         if (serviceConfiguration instanceof GatewayServiceConfiguration s && StringUtils.isNotBlank(s.getDvipaHost())) {
             host = s.getDvipaHost();
@@ -82,7 +82,7 @@ public class HttpRequestUtils {
         return getUri(serviceConfiguration.getScheme(), host, serviceConfiguration.getPort(), endpoint, arguments);
     }
 
-    public static URI getUri(String scheme, String host, int port, String endpoint, NameValuePair...arguments) {
+    public static URI getUri(String scheme, String host, int port, String endpoint, NameValuePair... arguments) {
         URI uri = null;
         try {
             uri = new URIBuilder()
@@ -100,7 +100,7 @@ public class HttpRequestUtils {
         return uri;
     }
 
-    public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair...arguments) {
+    public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair... arguments) {
         return getUriFromService(serviceConfiguration, endpoint, sc -> {
             var host = sc.getHost();
             var hostnameTokenizer = new StringTokenizer(host, ",");
@@ -112,14 +112,14 @@ public class HttpRequestUtils {
         }, arguments);
     }
 
-    public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, Function<ServiceConfiguration, String> hostSelector, NameValuePair...arguments) {
+    public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, Function<ServiceConfiguration, String> hostSelector, NameValuePair... arguments) {
         var scheme = serviceConfiguration.getScheme();
         var host = hostSelector.apply(serviceConfiguration);
         int port = serviceConfiguration.getPort();
         return getUri(scheme, host, port, endpoint, arguments);
     }
 
-    public static URI getUriFromGateway(String endpoint, NameValuePair...arguments) {
+    public static URI getUriFromGateway(String endpoint, NameValuePair... arguments) {
         return getUriFromService(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, arguments);
     }
 
@@ -140,11 +140,11 @@ public class HttpRequestUtils {
             return new URI(config.getScheme() + "://" + host + ":" + config.getPort() + rawPath);
         } catch (URISyntaxException e) {
             log.error("Can't create raw URI for path '{}'", rawPath);
-            return null;
+            throw new RuntimeException("Invalid raw path: " + rawPath, e);
         }
     }
 
-    public static URI getUriFromGateway(String endpoint, String gatewayHostname, NameValuePair...arguments) {
+    public static URI getUriFromGateway(String endpoint, String gatewayHostname, NameValuePair... arguments) {
         return getUriFromService(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration(), endpoint, s -> gatewayHostname, arguments);
     }
 
@@ -152,16 +152,16 @@ public class HttpRequestUtils {
      * Get a zaas-based URL
      * ZAAS is no longer a separate entity in single-service deployment mode, so the URL is optional
      *
-     * @param endpoint Which zaas endpoint
+     * @param endpoint  Which zaas endpoint
      * @param arguments Arguments
      * @return An optional URI object
      */
-    public static Optional<URI> getUriFromZaas(String endpoint, NameValuePair...arguments) {
+    public static Optional<URI> getUriFromZaas(String endpoint, NameValuePair... arguments) {
         return Optional.ofNullable(ConfigReader.environmentConfiguration().getZaasConfiguration()) // on modulith zaas is not defined
             .map(zaasConfig -> getUriFromService(zaasConfig, endpoint, arguments));
     }
 
-    public static URI getUriFromZaas(String endpoint, String zaasHostname, NameValuePair...arguments) {
+    public static URI getUriFromZaas(String endpoint, String zaasHostname, NameValuePair... arguments) {
         return getUriFromService(ConfigReader.environmentConfiguration().getZaasConfiguration(), endpoint, s -> zaasHostname, arguments);
     }
 
