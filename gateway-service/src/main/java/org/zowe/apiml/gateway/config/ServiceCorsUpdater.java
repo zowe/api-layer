@@ -56,8 +56,8 @@ public class ServiceCorsUpdater implements InitializingBean {
                     corsUtils.setCorsConfiguration(
                         instance.getServiceId().toLowerCase(),
                         instance.getMetadata(),
-                        (prefix, serviceId, config) -> {
-                            serviceId = instance.getMetadata().getOrDefault(APIML_ID, instance.getServiceId().toLowerCase());
+                        (prefix, config) -> {
+                            String serviceId = instance.getMetadata().getOrDefault(APIML_ID, instance.getServiceId().toLowerCase());
                             urlBasedCorsConfigurationSource.registerCorsConfiguration("/" + serviceId + "/**", config);
                         }
                 );
