@@ -4,8 +4,7 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 
 ## `APIML 2.18.22 / Zowe 2.18.5 (2026-07-14)`
 
-* Feature:  implement allowlist for URL domains (v2) (#4689) ([3e17201](https://github.com/zowe/api-layer/commit/3e17201)), closes [#4689](https://github.com/zowe/api-layer/issues/4689)
-
+* Feature:  Implemented allowlist for URL domains (v2). This feature validates all service registration metadata against a trusted domain allowlist, preventing unauthorized endpoints from onboarding onto the API ML while automatically permitting trusted corporate and vendor infrastructure. (#4689) ([3e17201](https://github.com/zowe/api-layer/commit/3e17201)), closes [#4689](https://github.com/zowe/api-layer/issues/4689)
 
 * Bugfix:  cache items only when coming from trusted proxy  (#4706) ([bef7949](https://github.com/zowe/api-layer/commit/bef7949)), closes [#4706](https://github.com/zowe/api-layer/issues/4706)
 * Bugfix:  Fix SSE corrupted data (#4530) ([1809de7](https://github.com/zowe/api-layer/commit/1809de7)), closes [#4530](https://github.com/zowe/api-layer/issues/4530)
