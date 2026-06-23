@@ -53,7 +53,7 @@ public class RoutingConfigurationErrorFilterFactory extends AbstractAuthSchemeFa
         return ((exchange, chain) -> {
             OtelRequestContext.of(exchange).authMethod(authenticationScheme);
 
-            super.cleanHeadersOnAuthFail(exchange, config.getMessage());
+            super.cleanHeadersOnAuthFail(exchange, config.getMessage(), null);
 
             return chain.filter(exchange);
         });

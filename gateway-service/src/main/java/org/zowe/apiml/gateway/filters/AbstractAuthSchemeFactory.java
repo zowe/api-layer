@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -148,6 +149,9 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         this.messageService = messageService;
     }
 
+    @Value("${apiml.security.strictSchemeEnforcement:false}")
+    private boolean strictSchemeEnforcement;
+
     @VisibleForTesting
     AbstractAuthSchemeFactory() {
         this(null, null, null);
@@ -212,6 +216,11 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
      * @return mutated request
      */
     protected ServerHttpRequest cleanHeadersOnAuthFail(ServerWebExchange exchange, String errorMessage) {
+        String serviceId = (String) exchange.getAttribute("apiml.serviceId");
+        return cleanHeadersOnAuthFail(exchange, errorMessage, serviceId);
+    }
+
+    protected ServerHttpRequest cleanHeadersOnAuthFail(ServerWebExchange exchange, String errorMessage, String serviceId) {
         var otelContext = OtelRequestContext.of(exchange);
         otelContext.authenticationFailed();
         otelContext.authErrorMessage(errorMessage);
@@ -220,6 +229,22 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         return exchange.getRequest().mutate().headers(headers -> {
             // update original request - to remove all potential headers and cookies with credentials
             Arrays.stream(CERTIFICATE_HEADERS).forEach(headers::remove);
+
+            // Strict scheme enforcement: strip Authorization: Basic when appropriate
+            if (strictSchemeEnforcement) {
+                AuthenticationScheme scheme = getAuthenticationScheme();
+                if (scheme != null && scheme != AuthenticationScheme.BYPASS) {
+                    List<String> authValues = headers.get(HttpHeaders.AUTHORIZATION);
+                    if (authValues != null) {
+                        boolean hasBasic = authValues.stream()
+                            .anyMatch(v -> v != null && v.regionMatches(true, 0, "Basic ", 0, 6));
+                        if (hasBasic) {
+                            headers.remove(HttpHeaders.AUTHORIZATION);
+                            log.debug("Strict scheme enforcement: stripped Authorization: Basic for service {} (scheme: {})", serviceId, scheme);
+                        }
+                    }
+                }
+            }
 
             // set error header in both side (request to the service, response to the user)
             headers.add(ApimlConstants.AUTH_FAIL_HEADER, errorMessage);
@@ -259,9 +284,12 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
     }
 
     protected GatewayFilter createGatewayFilter(T config) {
-        return (exchange, chain) -> getAuthorizationResponseTransformer(exchange)
-            .apply(createRequestCredentials(exchange, config).build())
-            .flatMap(response -> processResponse(exchange, chain, response));
+        return (exchange, chain) -> {
+            exchange.getAttributes().put("apiml.serviceId", config.getServiceId());
+            return getAuthorizationResponseTransformer(exchange)
+                .apply(createRequestCredentials(exchange, config).build())
+                .flatMap(response -> processResponse(exchange, chain, response));
+        };
     }
 
     protected ServerHttpRequest addRequestHeader(ServerWebExchange exchange, String key, String value) {

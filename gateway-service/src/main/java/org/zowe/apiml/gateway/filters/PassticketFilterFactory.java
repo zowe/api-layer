@@ -108,7 +108,7 @@ public class PassticketFilterFactory extends AbstractAuthSchemeFactory<Passticke
                 }).build();
                 exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, failureHeader);
             } else {
-                request = cleanHeadersOnAuthFail(exchange, failureHeader);
+                request = cleanHeadersOnAuthFail(exchange, failureHeader, (String) exchange.getAttribute("apiml.serviceId"));
             }
         }
 

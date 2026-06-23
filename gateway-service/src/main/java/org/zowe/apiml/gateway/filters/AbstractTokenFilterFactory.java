@@ -107,7 +107,7 @@ public abstract class AbstractTokenFilterFactory<T extends AbstractTokenFilterFa
             }
         }
         if (request == null) {
-            request = cleanHeadersOnAuthFail(exchange, failureHeader.orElse("Invalid or missing authentication"));
+            request = cleanHeadersOnAuthFail(exchange, failureHeader.orElse("Invalid or missing authentication"), (String) exchange.getAttribute("apiml.serviceId"));
             exchange = exchange.mutate().request(request).build();
         }
 
