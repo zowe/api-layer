@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -28,6 +29,7 @@ import javax.naming.ldap.Rdn;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
+import java.util.List;
 
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;
 
@@ -40,6 +42,9 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
     public static final String COMMON_NAME = "X-Certificate-CommonName";
 
     private final MessageService messageService;
+
+    @Value("${apiml.security.strictSchemeEnforcement:false}")
+    private boolean strictSchemeEnforcement;
 
 
     public X509FilterFactory(MessageService messageService) {
@@ -74,8 +79,22 @@ public class X509FilterFactory extends AbstractGatewayFilterFactory<X509FilterFa
 
     private ServerHttpRequest updateHeadersForError(ServerWebExchange exchange) {
         String headerValue = messageService.createMessage("org.zowe.apiml.gateway.security.schema.missingX509Authentication").mapToLogMessage();
-        ServerHttpRequest request = exchange.getRequest().mutate().header(ApimlConstants.AUTH_FAIL_HEADER, headerValue).build();
-        exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, headerValue);
+        ServerHttpRequest request = exchange.getRequest().mutate().headers(headers -> {
+            // Strict scheme enforcement: strip Authorization: Basic
+            if (strictSchemeEnforcement) {
+                List<String> authValues = headers.get(HttpHeaders.AUTHORIZATION);
+                if (authValues != null) {
+                    boolean hasBasic = authValues.stream()
+                        .anyMatch(v -> v != null && v.regionMatches(true, 0, "Basic ", 0, 6));
+                    if (hasBasic) {
+                        headers.remove(HttpHeaders.AUTHORIZATION);
+                        log.debug("Strict scheme enforcement: stripped Authorization: Basic for service (scheme: x509)");
+                    }
+                }
+            }
+            headers.add(ApimlConstants.AUTH_FAIL_HEADER, headerValue);
+            exchange.getResponse().getHeaders().add(ApimlConstants.AUTH_FAIL_HEADER, headerValue);
+        }).build();
         return request;
     }
 
