@@ -12,7 +12,9 @@ package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -104,6 +106,20 @@ class CloudGatewayRoutingTest implements TestWithStartedInstances {
     void testWrongRoutingWithBasePath(String basePath) throws URISyntaxException {
         String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
         given().get(new URI(scgUrl)).then().statusCode(404);
+    }
+
+    @Nested
+    class WhenCorsRequests {
+
+        @Test
+        void test() {
+            // when a request contains CORS headers, they are passed as-is to the southbound service
+
+            // preflight request
+
+            // simple request
+        }
+
     }
 
 }

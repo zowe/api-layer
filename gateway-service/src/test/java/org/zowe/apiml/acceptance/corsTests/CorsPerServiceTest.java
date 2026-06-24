@@ -41,8 +41,8 @@ import static org.mockito.Mockito.verify;
 class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
 
     @Test
-        // Verify the header to allow CORS isn't set
-        // Verify there was no call to southbound service
+    // Verify the header to allow CORS isn't set
+    // Verify there was no call to southbound service
     void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
         applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
         mockValid200HttpResponse();
@@ -62,8 +62,8 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     }
 
     @Test
-        // Verify the header to allow CORS isn't set
-        // Verify there was no call to southbound service
+    // Verify the header to allow CORS isn't set
+    // Verify there was no call to southbound service
     void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
         applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
         mockValid200HttpResponse();
@@ -83,12 +83,13 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     }
 
     @Test
-        // There is no request to the southbound server for preflight
-        // There is request to the southbound server for the second request
+    // There is no request to the southbound server for preflight
+    // There is request to the southbound server for the second request
     void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() throws Exception {
         mockValid200HttpResponse();
         applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
         discoveryClient.createRefreshCacheEvent();
+
         // Preflight request
         given()
             .header(new Header("Origin", "https://foo.bar.org"))
@@ -119,8 +120,8 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
     }
 
     @Test
-        // There is request to the southbound server for the request
-        // The CORS header is properly set.
+    // There is request to the southbound server for the request
+    // The CORS header is properly set.
     void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() throws Exception {
         // There is request to the southbound server and the CORS headers are properly set on the response
         mockValid200HttpResponse();
@@ -147,6 +148,25 @@ class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
         "apiml.service.corsEnabled=true"
     })
     class CorsPerServiceTestWithDefaults {
+
+        @Test
+        void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+            mockValid200HttpResponse();
+            discoveryClient.createRefreshCacheEvent();
+
+            given()
+                .header(new Header("Origin", "https://foo.bar.org"))
+                .header(new Header("Access-Control-Request-Method", "POST"))
+                .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
+            .when()
+                .post(basePath + serviceWithDefaultConfiguration.getPath())
+            .then()
+                .statusCode(is(SC_FORBIDDEN))
+                .header("Access-Control-Allow-Origin", is(nullValue()));
+
+            verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
+        }
 
     }
 
