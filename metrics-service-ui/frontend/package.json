@@ -80,7 +80,7 @@
         "@braintree/sanitize-url": "6.0.4",
         "micromatch": "4.0.8",
         "semver": "7.6.3",
-        "dompurify": "3.4.0",
+        "dompurify": "3.4.11",
         "path-to-regexp": "1.9.0",
         "cookie": "0.7.2",
         "sha.js": "2.4.12",
@@ -92,7 +92,7 @@
         "qs": "6.15.2",
         "minimatch": "7.4.9",
         "picomatch": "2.3.2",
-        "immutable": "4.3.7"
+        "immutable": "4.3.8"
     },
     "scripts": {
         "lint": "eslint \"src/**/*.{js,jsx}\"",

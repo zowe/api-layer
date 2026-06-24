@@ -343,9 +343,6 @@ if [ -n "${externalProtocol}" ] && [ -n "${ZWE_zowe_externalDomains_0}" ] && [ -
     EXTERNAL_URL="-Dapiml.service.externalUrl=${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}"
 fi
 
-# TODO Remove for 2.18.6 release
-ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED=true
-
 GATEWAY_CODE=AG
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \

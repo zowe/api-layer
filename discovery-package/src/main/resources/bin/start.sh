@@ -266,6 +266,9 @@ if [ "${ATTLS_SERVER_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" 
   keystore_location=
 fi
 
+# TODO Remove for 2.18.6 release
+ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED=${ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED:-true}
+
 DISCOVERY_CODE=AD
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
