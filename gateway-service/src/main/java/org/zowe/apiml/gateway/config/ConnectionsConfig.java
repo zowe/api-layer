@@ -86,10 +86,10 @@ public class ConnectionsConfig {
     private String eurekaServerUrl;
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String eurekaUserid;
+    private String discoveryUserid;
 
     @Value("${apiml.discovery.password:#{null}}")
-    private char[] eurekaPassword;
+    private char[] discoveryPassword;
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
@@ -254,9 +254,9 @@ public class ConnectionsConfig {
         if (discoveryServiceUrls == null || config.isVerifySslCertificatesOfServices()) {
             return discoveryServiceUrls;
         }
-        String password = (eurekaPassword == null) ? null : new String(eurekaPassword);
+        String password = (discoveryPassword == null) ? null : new String(discoveryPassword);
         return Arrays.stream(discoveryServiceUrls.split(","))
-            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), eurekaUserid, password))
+            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), discoveryUserid, password))
             .collect(Collectors.joining(","));
     }
 

@@ -103,10 +103,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     ${JVM_SECURITY_PROPERTIES} \
     ${CUSTOM_JVM_OPTS} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.discovery.password=${eurekaPassword} \
+    -Dapiml.discovery.password=${discoveryPassword} \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
-    -Dapiml.discovery.userid=${eurekaUserId} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \

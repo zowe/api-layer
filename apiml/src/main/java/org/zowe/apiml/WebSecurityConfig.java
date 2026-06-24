@@ -115,10 +115,10 @@ public class WebSecurityConfig {
     private boolean verifySslCertificatesOfServices;
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String eurekaUserid;
+    private String discoveryUserid;
 
     @Value("${apiml.discovery.password:#{null}}")
-    private char[] eurekaPassword;
+    private char[] discoveryPassword;
 
     @Value("${apiml.service.port}")
     private int gatewayPort;
@@ -226,11 +226,11 @@ public class WebSecurityConfig {
     }
 
     private boolean isValidAuthentication(String principal, String password) {
-        return StringUtils.isNotEmpty(eurekaUserid)
-            && eurekaUserid.equals(principal)
-            && eurekaPassword != null
+        return StringUtils.isNotEmpty(discoveryUserid)
+            && discoveryUserid.equals(principal)
+            && discoveryPassword != null
             && password != null
-            && Arrays.equals(eurekaPassword, password.toCharArray());
+            && Arrays.equals(discoveryPassword, password.toCharArray());
     }
 
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http, boolean defaultExceptionHandler) {

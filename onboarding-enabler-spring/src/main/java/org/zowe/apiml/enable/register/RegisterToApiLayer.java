@@ -45,10 +45,10 @@ public class RegisterToApiLayer {
     private boolean apimlEnabled;
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String eurekaUserid;
+    private String discoveryUserid;
 
     @Value("${apiml.discovery.password:#{null}}")
-    private char[] eurekaPassword;
+    private char[] discoveryPassword;
 
     private static final MessageService messages = new YamlMessageService();
     private static final ApimlLogger logger;
@@ -92,11 +92,11 @@ public class RegisterToApiLayer {
     }
 
     private void register(ApiMediationServiceConfig newConfig) {
-        if (newConfig.getEurekaUserid() == null) {
-            newConfig.setEurekaUserid(eurekaUserid);
+        if (newConfig.getDiscoveryUserid() == null) {
+            newConfig.setDiscoveryUserid(discoveryUserid);
         }
-        if (newConfig.getEurekaPassword() == null) {
-            newConfig.setEurekaPassword(eurekaPassword);
+        if (newConfig.getDiscoveryPassword() == null) {
+            newConfig.setDiscoveryPassword(discoveryPassword);
         }
 
         this.config = newConfig;

@@ -457,8 +457,8 @@ class ConnectionsConfigTest {
             HttpConfig httpConfig = mock(HttpConfig.class);
             doReturn(verify).when(httpConfig).isVerifySslCertificatesOfServices();
             var connectionsConfig = new ConnectionsConfig(null, httpConfig, Collections.emptyList());
-            ReflectionTestUtils.setField(connectionsConfig, "eurekaUserid", "eureka");
-            ReflectionTestUtils.setField(connectionsConfig, "eurekaPassword", "password".toCharArray());
+            ReflectionTestUtils.setField(connectionsConfig, "discoveryUserid", "eureka");
+            ReflectionTestUtils.setField(connectionsConfig, "discoveryPassword", "password".toCharArray());
             return ReflectionTestUtils.invokeMethod(connectionsConfig, "withBasicAuthFallback", url);
         }
 

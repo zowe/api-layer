@@ -29,8 +29,8 @@ class EurekaClientConfigurationTest {
         ssl = new Ssl();
         config = ApiMediationServiceConfig.builder()
             .discoveryServiceUrls(Collections.singletonList("https://localhost:10011/eureka/"))
-            .eurekaUserid("eureka")
-            .eurekaPassword("password".toCharArray())
+            .discoveryUserid("eureka")
+            .discoveryPassword("password".toCharArray())
             .ssl(ssl)
             .build();
     }
@@ -64,8 +64,8 @@ class EurekaClientConfigurationTest {
 
         @Test
         void givenNoCredentials_thenUrlIsUnchanged() {
-            config.setEurekaUserid(null);
-            config.setEurekaPassword(null);
+            config.setDiscoveryUserid(null);
+            config.setDiscoveryPassword(null);
             assertEquals(Collections.singletonList("https://localhost:10011/eureka/"), serviceUrls());
         }
     }

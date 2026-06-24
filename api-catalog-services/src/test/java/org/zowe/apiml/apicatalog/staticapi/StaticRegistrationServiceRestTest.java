@@ -197,8 +197,8 @@ class StaticRegistrationServiceRestTest {
         @Test
         void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
             var service = new StaticRegistrationServiceRest(null);
-            ReflectionTestUtils.setField(service, "eurekaUserid", "user");
-            ReflectionTestUtils.setField(service, "eurekaPassword", "password");
+            ReflectionTestUtils.setField(service, "discoveryUserid", "user");
+            ReflectionTestUtils.setField(service, "discoveryPassword", "password");
 
             var headers = mock(HttpHeaders.class);
             service.setAuthorization(headers);
@@ -214,8 +214,8 @@ class StaticRegistrationServiceRestTest {
         })
         void givenIncompleteCredentials_whenSetCredentials_thenDoNotSetAuthorization(String userId, String password) {
             var service = new StaticRegistrationServiceRest(null);
-            ReflectionTestUtils.setField(service, "eurekaUserid", userId);
-            ReflectionTestUtils.setField(service, "eurekaPassword", password);
+            ReflectionTestUtils.setField(service, "discoveryUserid", userId);
+            ReflectionTestUtils.setField(service, "discoveryPassword", password);
 
             var headers = mock(HttpHeaders.class);
             service.setAuthorization(headers);
@@ -230,8 +230,8 @@ class StaticRegistrationServiceRestTest {
 
         @BeforeEach
         void setup() {
-            ReflectionTestUtils.setField(staticServiceRest, "eurekaUserid", "user");
-            ReflectionTestUtils.setField(staticServiceRest, "eurekaPassword", "password");
+            ReflectionTestUtils.setField(staticServiceRest, "discoveryUserid", "user");
+            ReflectionTestUtils.setField(staticServiceRest, "discoveryPassword", "password");
             ReflectionTestUtils.setField(staticServiceRest, "verifySslCertificatesOfServices", false);
             doReturn(Mono.just(clientResponse)).when(exchangeFunction).exchange(any());
             doReturn(Mono.empty()).when(clientResponse).releaseBody();
@@ -257,8 +257,8 @@ class StaticRegistrationServiceRestTest {
 
         @BeforeEach
         void setup() {
-            ReflectionTestUtils.setField(staticServiceRest, "eurekaUserid", "user");
-            ReflectionTestUtils.setField(staticServiceRest, "eurekaPassword", "password");
+            ReflectionTestUtils.setField(staticServiceRest, "discoveryUserid", "user");
+            ReflectionTestUtils.setField(staticServiceRest, "discoveryPassword", "password");
             ReflectionTestUtils.setField(staticServiceRest, "verifySslCertificatesOfServices", true);
             doReturn(Mono.just(clientResponse)).when(exchangeFunction).exchange(any());
             doReturn(Mono.empty()).when(clientResponse).releaseBody();

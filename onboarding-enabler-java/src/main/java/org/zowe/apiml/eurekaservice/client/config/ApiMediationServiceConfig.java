@@ -33,13 +33,13 @@ public class ApiMediationServiceConfig {
      * Discovery Service, so the credentials are embedded into the discovery service URLs to authenticate with basic
      * authentication instead. The value has to match the Discovery Service {@code apiml.discovery.userid}.
      */
-    private String eurekaUserid;
+    private String discoveryUserid;
 
     /**
-     * Eureka basic authentication password, see {@link #eurekaUserid}. The value has to match the Discovery Service
+     * Eureka basic authentication password, see {@link #discoveryUserid}. The value has to match the Discovery Service
      * {@code apiml.discovery.password}.
      */
-    private char[] eurekaPassword;
+    private char[] discoveryPassword;
 
     /**
      *     Uniquely identifies instances of a microservice in the API ML.

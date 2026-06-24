@@ -68,10 +68,10 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private boolean verifySslCertificatesOfServices;
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String eurekaUserid;
+    private String discoveryUserid;
 
     @Value("${apiml.discovery.password:#{null}}")
-    private char[] eurekaPassword;
+    private char[] discoveryPassword;
 
     @Bean
     WebSecurityCustomizer httpsWebSecurityCustomizer() {
@@ -143,7 +143,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         } else {
             // Without TLS validation the client certificate cannot be trusted, so authentication is
             // enforced through basic authentication instead. Authentication is never disabled.
-            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword))
+            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword))
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         }
@@ -168,7 +168,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword))
+            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword))
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
         }
 

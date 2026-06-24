@@ -49,8 +49,8 @@ public class EurekaClientConfiguration extends DefaultEurekaClientConfig {
 
     @Override
     public List<String> getEurekaServerServiceUrls(String s) {
-        String password = (config.getEurekaPassword() == null) ? null : new String(config.getEurekaPassword());
-        return EurekaServiceUrlUtils.addCredentials(config.getDiscoveryServiceUrls(), config.getEurekaUserid(), password);
+        String password = (config.getDiscoveryPassword() == null) ? null : new String(config.getDiscoveryPassword());
+        return EurekaServiceUrlUtils.addCredentials(config.getDiscoveryServiceUrls(), config.getDiscoveryUserid(), password);
     }
 
     @Override
