@@ -63,7 +63,7 @@ messages:
       type: ERROR
       reason: "The requested resource URI was not found on the target service."
       action: "Verify that the request URI is correct and that the target service exposes the requested endpoint."
-      text: "The service can not find the requested resource."
+      text: "The service cannot find the requested resource."
 
     - key: org.zowe.apiml.common.methodNotAllowed
       number: ZWEAO405
