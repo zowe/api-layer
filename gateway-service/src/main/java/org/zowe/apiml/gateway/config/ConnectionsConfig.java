@@ -57,6 +57,7 @@ import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGateway
 import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.eureka.EurekaServiceUrlUtils;
 import org.zowe.apiml.product.web.DiscoveryRestTemplateConfig;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
@@ -83,6 +84,12 @@ public class ConnectionsConfig {
 
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
+
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String discoveryUserid;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] discoveryPassword;
 
     @Value("${apiml.service.corsEnabled:false}")
     private boolean corsEnabled;
@@ -219,7 +226,7 @@ public class ConnectionsConfig {
     private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, EurekaFactory eurekaFactory) {
         log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
         Map<String, String> urls = new HashMap<>();
-        urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
+        urls.put(DEFAULT_ZONE, withBasicAuthFallback(apimlRegistration.getDiscoveryServiceUrls()));
 
         EurekaClientConfigBean configBean = new EurekaClientConfigBean();
         BeanUtils.copyProperties(config, configBean);
@@ -235,6 +242,22 @@ public class ConnectionsConfig {
         RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier());
         RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
         return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInfo), newInfo, configBean, context, factories, args1);
+    }
+
+    /**
+     * When TLS validation is disabled the client certificate cannot be trusted by the Discovery Service, so the
+     * additional registration falls back to basic authentication by embedding the configured Discovery Service
+     * credentials into the discovery service URLs. The primary registration is handled by
+     * {@link org.zowe.apiml.product.web.EurekaBasicAuthEnvironmentPostProcessor}.
+     */
+    private String withBasicAuthFallback(String discoveryServiceUrls) {
+        if (discoveryServiceUrls == null || config.isVerifySslCertificatesOfServices()) {
+            return discoveryServiceUrls;
+        }
+        String password = (discoveryPassword == null) ? null : new String(discoveryPassword);
+        return Arrays.stream(discoveryServiceUrls.split(","))
+            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), discoveryUserid, password))
+            .collect(Collectors.joining(","));
     }
 
     private boolean isRouteKey(String key) {
