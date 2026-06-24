@@ -46,7 +46,7 @@
         "rxjs": "7.8.2",
         "sass": "1.101.0",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.32.7",
+        "swagger-ui-react": "5.32.8",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -96,7 +96,7 @@
         "caniuse-lite": "1.0.30001799",
         "concurrently": "9.2.3",
         "cors": "2.8.6",
-        "cypress": "15.17.0",
+        "cypress": "15.18.0",
         "cypress-file-upload": "5.0.8",
         "dotenv": "17.4.2",
         "enzyme": "3.11.0",
@@ -132,7 +132,7 @@
         "start-server-and-test": "2.1.5",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "vite": "8.0.16",
+        "vite": "8.1.0",
         "vite-plugin-node-polyfills": "0.28.0",
         "yaml": "2.9.0"
     },
@@ -171,7 +171,7 @@
     },
     "engines": {
         "npm": "=10.9.8",
-        "node": "=24.17.0"
+        "node": "=24.18.0"
     },
     "notes": {
         "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"
