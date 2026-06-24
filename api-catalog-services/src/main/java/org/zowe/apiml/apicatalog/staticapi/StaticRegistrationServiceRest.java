@@ -54,7 +54,7 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
     private boolean verifySslCertificatesOfServices;
 
     @Value("${apiml.service.discoveryServiceUrls}")
-    private String[] locations;
+    private String[] discoveryUrls;
 
 
     void setAuthorization(HttpHeaders headers) {
@@ -93,7 +93,7 @@ public class StaticRegistrationServiceRest implements StaticRegistrationService 
 
     private List<String> getDiscoveryServiceUrls() {
         List<String> discoveryServiceUrls = new ArrayList<>();
-        for (String location : locations) {
+        for (String location : discoveryUrls) {
             location = location.replace("/eureka", "");
             location = location.endsWith("/") ? location : location + "/";
             discoveryServiceUrls.add(location + REFRESH_ENDPOINT);
