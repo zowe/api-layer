@@ -130,12 +130,12 @@ dependencyResolutionManagement {
                 prefer '1.6.15'
             }
             version('swagger3Core', '2.2.52')
-            version('swagger3Parser', '2.1.44')
+            version('swagger3Parser', '2.1.45')
             version('swaggerCore', '1.6.16')
             version('swaggerInflector', '2.0.17')
             version('swaggerJaxrs2', '2.2.52')
             version('thymeleaf', '3.1.5.RELEASE')
-            version('tomcat', '9.0.118')
+            version('tomcat', '9.0.119')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.1')
             version('woodstoxStax2', '4.3.0')
