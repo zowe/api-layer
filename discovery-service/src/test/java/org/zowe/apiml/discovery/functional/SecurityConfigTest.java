@@ -50,11 +50,16 @@ public class SecurityConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "apiml.security.ssl.verifySslCertificatesOfServices=false"
+            "apiml.security.ssl.verifySslCertificatesOfServices=false",
+            "apiml.discovery.userid=eureka",
+            "apiml.discovery.password=password"
         }
     )
     @DirtiesContext
     class GivenDisabledSSLVerification {
+
+        private static final String EUREKA_USERID = "eureka";
+        private static final String EUREKA_PASSWORD = "password";
 
         @Value("${apiml.service.hostname:localhost}")
         String hostname;
@@ -62,12 +67,47 @@ public class SecurityConfigTest {
         int port;
 
         @Test
-        void thenDoNotRequireAuth() {
+        void whenNoBasicAuth_thenReturnUnauthorized() {
             given()
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
+                .statusCode(HttpStatus.UNAUTHORIZED.value());
+        }
+
+        @Test
+        void whenBasicAuth_thenReturnOk() {
+            given()
+                .auth().basic(EUREKA_USERID, EUREKA_PASSWORD)
+                .get(getUri(hostname, port))
+                .then()
+                .log().ifValidationFails()
                 .statusCode(HttpStatus.OK.value());
+        }
+    }
+
+    @Nested
+    @TestPropertySource(
+        properties = {
+            "apiml.security.ssl.verifySslCertificatesOfServices=false"
+        }
+    )
+    @DirtiesContext
+    class GivenDisabledSSLVerificationWithoutCredentials {
+
+        @Value("${apiml.service.hostname:localhost}")
+        String hostname;
+        @LocalServerPort
+        int port;
+
+        @Test
+        void thenStillRequireAuth() {
+            // Authentication is never disabled: without configured credentials basic auth cannot succeed.
+            given()
+                .get(getUri(hostname, port))
+                .then()
+                .log().ifValidationFails()
+                .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
     }
 
