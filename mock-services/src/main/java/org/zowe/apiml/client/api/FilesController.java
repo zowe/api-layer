@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.client.api;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.client.services.AparBasedService;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 @RestController
@@ -27,11 +27,20 @@ public class FilesController {
     private final AparBasedService files;
 
     @GetMapping(value = "/zosmf/restfiles/ds", produces = "application/json; charset=utf-8")
-    public ResponseEntity<?> readFiles(
+    public ResponseEntity<?> readDatasets(
         HttpServletResponse response,
         @RequestHeader Map<String, String> headers
     ) {
         return files.process("files", "read", response, headers);
     }
+
+    @GetMapping(value = {"/zosmf/restfiles/fs/**", "/zosmf/restfiles/fs"}, produces = "application/json; charset=utf-8")
+    public ResponseEntity<?> readFile(
+        HttpServletResponse response,
+        @RequestHeader Map<String, String> headers
+    ) {
+        return files.process("files", "readFile", response, headers);
+    }
+
 }
 
