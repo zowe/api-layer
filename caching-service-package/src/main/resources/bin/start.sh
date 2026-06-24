@@ -117,6 +117,20 @@ if [ -d "${original_infinispan_index_location}" ]; then
     mv -f "${original_infinispan_index_location}" "${ZWE_zowe_workspaceDirectory:-$(pwd)}/caching-service/${ZWE_haInstance_id:-localhost}/index"
 fi
 
+# Check whether Zowe is running on z/OS and with Java 21.
+# If true, disable virtual threads for both Infinispan and JGroups to prevent cluster communication stalls on z/OS.
+VIRTUAL_THREADS_OPTS=""
+JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
+    | grep "major version" \
+    | cut -d " " -f5)
+INFINISPAN_VTHREADS=${ZWE_configs_storage_infinispan_virtualThreads:-true}
+if [ "${QUICK_START}" = "-Xquickstart" ]; then # z/OS
+    if [ $JAVA_VERSION -eq 65 ]; then # Java 21
+        INFINISPAN_VTHREADS="false"
+    fi
+fi
+VIRTUAL_THREADS_OPTS="-Dorg.infinispan.threads.virtual=${INFINISPAN_VTHREADS} -Djgroups.thread.virtual=${INFINISPAN_VTHREADS}"
+
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
@@ -125,6 +139,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   ${QUICK_START} \
   ${SHARED_CLASSES_OPTS} \
   ${ADD_OPENS} \
+  ${VIRTUAL_THREADS_OPTS} \
   ${LOGBACK} \
   ${JVM_SECURITY_PROPERTIES} \
   ${CUSTOM_JVM_OPTS} \
@@ -170,7 +185,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
   -Djgroups.keyExchange.socketTimeout=${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000} \
   -Dcaching.storage.infinispan.initialHosts=${INITIAL_HOSTS} \
-  -Dorg.infinispan.threads.virtual=${ZWE_configs_storage_infinispan_virtualThreads:-true} \
   -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
   -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
   -Dserver.ssl.keyStore="${keystore_location}" \

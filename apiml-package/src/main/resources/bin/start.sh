@@ -216,6 +216,20 @@ else
     INITIAL_HOSTS="${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-localhost[${jgroups_port}]}}"
 fi
 
+# Check whether Zowe is running on z/OS and with Java 21.
+# If true, disable virtual threads for both Infinispan and JGroups to prevent cluster communication stalls on z/OS.
+VIRTUAL_THREADS_OPTS=""
+JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
+    | grep "major version" \
+    | cut -d " " -f5)
+INFINISPAN_VTHREADS=${ZWE_configs_storage_infinispan_virtualThreads:-true}
+if [ "${QUICK_START}" = "-Xquickstart" ]; then # z/OS
+    if [ $JAVA_VERSION -eq 65 ]; then # Java 21
+        INFINISPAN_VTHREADS="false"
+    fi
+fi
+VIRTUAL_THREADS_OPTS="-Dorg.infinispan.threads.virtual=${INFINISPAN_VTHREADS} -Djgroups.thread.virtual=${INFINISPAN_VTHREADS}"
+
 # Start OpenTelemetry
 if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
     DISABLE_OTEL=false
@@ -251,6 +265,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
+    ${VIRTUAL_THREADS_OPTS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
@@ -365,7 +380,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Djgroups.keyExchange.port=${ZWE_components_caching_service_storage_infinispan_jgroups_keyExchange_port:-${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601}} \
     -Djgroups.keyExchange.socketTimeout=${ZWE_components_caching_service_storage_infinispan_jgroups_keyExchange_socketTimeout:-${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000}} \
     -Djgroups.tcp.diag.enabled=${ZWE_components_caching_service_storage_infinispan_jgroups_tcp_diag_enabled:-${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false}} \
-    -Dorg.infinispan.threads.virtual=${ZWE_configs_storage_infinispan_virtualThreads:-true} \
     -Dloader.path=${APIML_LOADER_PATH} \
     -Dotel.exporter.otlp.endpoint="${ZWE_configs_telemetry_exporter_endpoint:-http://localhost:4318}" \
     -Dotel.exporter.otlp.protocol="${ZWE_configs_telemetry_exporter_protocol:-http/protobuf}" \
