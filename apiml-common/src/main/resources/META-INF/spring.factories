@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+org.zowe.apiml.product.web.EurekaBasicAuthEnvironmentPostProcessor
