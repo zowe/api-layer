@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
  * <p>
  * When TLS validation is enabled (the default) or the credentials are not configured, the environment is left untouched.
  */
+@Slf4j
 public class EurekaBasicAuthEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
     static final String VERIFY_CERTIFICATES_PROPERTY = "apiml.security.ssl.verifySslCertificatesOfServices";
@@ -44,6 +46,7 @@ public class EurekaBasicAuthEnvironmentPostProcessor implements EnvironmentPostP
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
         if (!"false".equalsIgnoreCase(environment.getProperty(VERIFY_CERTIFICATES_PROPERTY, "true"))) {
+            log.debug("TLS certificate verification is enabled; Eureka basic auth credential injection skipped");
             return;
         }
 
@@ -51,6 +54,8 @@ public class EurekaBasicAuthEnvironmentPostProcessor implements EnvironmentPostP
         String password = environment.getProperty(EUREKA_PASSWORD_PROPERTY);
         String defaultZone = environment.getProperty(DEFAULT_ZONE_PROPERTY);
         if (StringUtils.isAnyBlank(defaultZone, userid, password)) {
+            log.debug("Skipping Eureka basic auth credential injection: one or more of {}, {}, {} is not set",
+                DEFAULT_ZONE_PROPERTY, EUREKA_USERID_PROPERTY, EUREKA_PASSWORD_PROPERTY);
             return;
         }
 
@@ -62,6 +67,9 @@ public class EurekaBasicAuthEnvironmentPostProcessor implements EnvironmentPostP
             Map<String, Object> properties = new HashMap<>();
             properties.put(DEFAULT_ZONE_PROPERTY, updatedDefaultZone);
             environment.getPropertySources().addFirst(new MapPropertySource(PROPERTY_SOURCE_NAME, properties));
+            log.debug("Injected basic auth credentials for user '{}' into Eureka service URLs: {}", userid, defaultZone);
+        } else {
+            log.debug("All Eureka service URLs in {} already contain credentials; no update applied", DEFAULT_ZONE_PROPERTY);
         }
     }
 

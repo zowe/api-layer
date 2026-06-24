@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.product.eureka;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +28,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * configured discovery URLs to carry the credentials in that situation.
  */
 public final class EurekaServiceUrlUtils {
-
-    private static final String SCHEME_SEPARATOR = "://";
 
     private EurekaServiceUrlUtils() {
     }
@@ -52,20 +52,15 @@ public final class EurekaServiceUrlUtils {
             return url;
         }
 
-        int schemeIdx = url.indexOf(SCHEME_SEPARATOR);
-        if (schemeIdx < 0) {
+        URI uri = URI.create(url);
+        if (uri.getScheme() == null || uri.getHost() == null || uri.getUserInfo() != null) {
             return url;
         }
-
-        int authorityStart = schemeIdx + SCHEME_SEPARATOR.length();
-        int pathIdx = url.indexOf('/', authorityStart);
-        String authority = (pathIdx < 0) ? url.substring(authorityStart) : url.substring(authorityStart, pathIdx);
-        if (authority.contains("@")) {
-            // URL already carries user information, keep it untouched
-            return url;
+        try {
+            return new URI(uri.getScheme(), userid + ':' + password, uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Failed to construct URL with credentials", e);
         }
-
-        return url.substring(0, authorityStart) + userid + ':' + password + '@' + url.substring(authorityStart);
     }
 
     /**
