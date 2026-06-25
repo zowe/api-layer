@@ -165,6 +165,23 @@ configure(subprojects.findAll {it.name != 'platform'}) {
         testImplementation libs.junit.platform.commons
         testImplementation libs.junit.platform.engine
     }
+
+    sourceSets {
+        main {
+            java { srcDirs = ['src/main/java'] }
+            resources { srcDirs = ['src/main/resources'] }
+        }
+        test {
+            java { srcDirs = ['src/test/java'] }
+            resources { srcDirs = ['src/test/resources'] }
+        }
+    }
+
+    eclipse {
+        classpath {
+            plusConfigurations += [configurations.testImplementation]
+        }
+    }
 }
 
 subprojects {

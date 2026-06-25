@@ -19,9 +19,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +48,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -78,7 +81,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
-public class ConnectionsConfig {
+public class ConnectionsConfig implements InitializingBean {
 
     private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
@@ -92,10 +95,22 @@ public class ConnectionsConfig {
     private char[] discoveryPassword;
 
     @Value("${apiml.service.corsEnabled:false}")
-    private boolean corsEnabled;
+    private boolean gatewayCorsEnabled;
 
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
+
+    @Value("${apiml.service.corsDefaultAllowedOrigins:#{null}}")
+    private String corsDefaultAllowedOrigins;
+
+    @Value("${apiml.service.corsDefaultAllowedHeaders:*}")
+    private String corsDefaultAllowedHeaders;
+
+    @Value("${apiml.service.hostname:localhost}")
+    private String hostname;
+
+    @Value("${apiml.service.port}")
+    private String port;
 
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
@@ -108,6 +123,16 @@ public class ConnectionsConfig {
 
     @Value("${apiml.service.corsAllowedEndpoints:/gateway/**}")
     private final List<String> corsEnabledEndpoints;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        if (corsDefaultAllowedOrigins == null || corsDefaultAllowedOrigins.isEmpty()) {
+            corsDefaultAllowedOrigins = "https://" + hostname + ":" + port;
+        }
+        if (corsDefaultAllowedHeaders == null || corsDefaultAllowedHeaders.isEmpty()) {
+            corsDefaultAllowedHeaders = CorsConfiguration.ALL;
+        }
+    }
 
     /**
      * @param httpClient             default http client
@@ -261,10 +286,10 @@ public class ConnectionsConfig {
     }
 
     private boolean isRouteKey(String key) {
-        return StringUtils.startsWith(key, ROUTES + ".") &&
+        return Strings.CS.startsWith(key, ROUTES + ".") &&
             (
-                StringUtils.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
-                    StringUtils.endsWith(key, "." + ROUTES_SERVICE_URL)
+                Strings.CS.startsWith(key, "." + ROUTES_GATEWAY_URL) ||
+                    Strings.CS.startsWith(key, "." + ROUTES_SERVICE_URL)
             );
     }
 
@@ -299,7 +324,13 @@ public class ConnectionsConfig {
 
     @Bean
     CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods, corsEnabledEndpoints);
+        return CorsUtils.builder()
+            .gatewayCorsEnabled(gatewayCorsEnabled)
+            .corsAllowedEndpoints(corsEnabledEndpoints)
+            .defaultAllowedCorsHttpMethods(corsAllowedMethods)
+            .defaultAllowedCorsOrigins(Arrays.asList(corsDefaultAllowedOrigins.split(",")))
+            .defaultAllowedCorsHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
+            .build();
     }
 
     @Bean

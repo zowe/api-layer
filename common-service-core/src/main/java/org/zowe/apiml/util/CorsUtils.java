@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Builder
@@ -34,12 +34,14 @@ public class CorsUtils {
     private final boolean gatewayCorsEnabled;
     private final List<String> corsAllowedEndpoints;
     private final List<String> defaultAllowedCorsOrigins;
+    private final List<String> defaultAllowedCorsHeaders;
 
-    public CorsUtils(List<String> corsAllowedMethods, boolean corsEnabled, @NonNull List<String> allowedEndpoints, @NonNull List<String> defaultAllowedCorsOrigins) {
+    public CorsUtils(List<String> corsAllowedMethods, boolean corsEnabled, @NonNull List<String> allowedEndpoints, @NonNull List<String> defaultAllowedCorsOrigins, @NonNull List<String> defaultAllowedCorsHeaders) {
         this.defaultAllowedCorsHttpMethods = corsAllowedMethods;
         this.gatewayCorsEnabled = corsEnabled;
         this.corsAllowedEndpoints = allowedEndpoints;
         this.defaultAllowedCorsOrigins = defaultAllowedCorsOrigins;
+        this.defaultAllowedCorsHeaders = defaultAllowedCorsHeaders;
     }
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
@@ -49,7 +51,7 @@ public class CorsUtils {
 
     public void setCorsConfiguration(String serviceId, Map<String, String> metadata, BiConsumer<String, CorsConfiguration> entryMapper) {
         if (gatewayCorsEnabled) {
-            var corsConfiguration = setAllowedOriginsForService(serviceId, metadata);
+            var corsConfiguration = setCorsHeadersForService(serviceId, metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
@@ -59,25 +61,30 @@ public class CorsUtils {
         }
     }
 
-    private CorsConfiguration setAllowedOriginsForService(String serviceId, Map<String, String> metadata) {
+    private CorsConfiguration setCorsHeadersForService(String serviceId, Map<String, String> metadata) {
         // Check if the configuration specifies allowed origins for this service
         var config = new CorsConfiguration();
         if (isCorsEnabledForService(metadata)) {
+            defaultAllowedCorsOrigins.forEach(config::addAllowedOrigin);
             var corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
-            if (isBlank(corsAllowedOriginsForService)) {
-                // Origins not specified: allow everything
-                log.debug("For service {}, set all as allowed origins", serviceId);
-                config.addAllowedOriginPattern(CorsConfiguration.ALL); // FIXME
-            } else {
+            if (isNotBlank(corsAllowedOriginsForService)) {
                 // Origins specified: split by comma, add to whitelist
                 log.debug("For service {}, set [{}] as allowed origins", serviceId, Arrays.toString(corsAllowedOriginsForService.split(",")));
                 Arrays.stream(corsAllowedOriginsForService.split(","))
                     .forEach(config::addAllowedOrigin);
             }
+
             config.setAllowCredentials(true);
-            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+
+            var allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
+            if (isNotBlank(allowedHeadersForService)) {
+                config.setAllowedHeaders(Arrays.asList(allowedHeadersForService.split(",")));
+            } else {
+                config.setAllowedHeaders(defaultAllowedCorsHeaders);
+            }
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
         } else {
+            config.setAllowedOrigins(defaultAllowedCorsOrigins);
             log.debug("CORS is not enabled for service {}, using defaults", serviceId);
         }
         return config;
@@ -90,7 +97,7 @@ public class CorsUtils {
         config.setAllowedOrigins(defaultAllowedCorsOrigins);
         if (gatewayCorsEnabled) {
             config.setAllowCredentials(true);
-            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
+            config.setAllowedHeaders(defaultAllowedCorsHeaders);
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
             pathsToEnable = corsAllowedEndpoints;
         } else {
