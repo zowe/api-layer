@@ -211,6 +211,16 @@ class ZaasClientTest {
     }
 
     @Test
+    void givenEmptyToken_whenLogout_thenThrowsException() {
+        assertThrows(ZaasClientException.class, () -> underTest.logout(""));
+    }
+
+    @Test
+    void givenNullToken_whenLogout_thenThrowsException() {
+        assertThrows(ZaasClientException.class, () -> underTest.logout(null));
+    }
+
+    @Test
     void givenNullKeyStorePath_whenTheClientIsConstructed_thenExceptionIsThrown() {
         ConfigProperties config = new ConfigProperties();
         config.setTrustStorePassword(VALID_PASSWORD);
