@@ -81,32 +81,6 @@ if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
     add_profile "attlsClient"
 fi
 
-# In case of HA, if Infinispan initial hosts property is not defined, construct it using the ZWE_DISCOVERY_SERVICES_LIST variable
-DISCOVERY_COUNT=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | awk -F',' '{print NF}')
-jgroups_port=${ZWE_configs_storage_infinispan_jgroups_port:-7600}
-
-if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ] && [ -n "${ZWE_DISCOVERY_SERVICES_LIST}" ] && [ "${DISCOVERY_COUNT}" -gt 1 ]; then
-    # extract only the hostnames and format each host as host[port]
-    INITIAL_HOSTS=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | tr ',' '\n' | awk -v port="${jgroups_port}" '
-        {
-            gsub(/https?:\/\//, "", $0);
-            split($0, url_parts, "/");
-            split(url_parts[1], host_parts, ":");
-            host = host_parts[1];
-            gsub(/[ \r\n\t]/, "", host);
-            if (host != "") {
-                printf (count++ ? "," : "") host "[" port "]"
-            }
-        }
-    ')
-
-    if [ -z "${INITIAL_HOSTS}" ]; then
-        INITIAL_HOSTS="localhost[${jgroups_port}]"
-    fi
-else
-    INITIAL_HOSTS="${ZWE_configs_storage_infinispan_initialHosts:-localhost[${jgroups_port}]}"
-fi
-
 # migration step of Infinispan since version 3.2 (see #https://github.com/zowe/api-layer/pull/3960)
 original_infinispan_data_location="${ZWE_configs_storage_infinispan_persistence_dataLocation:-${ZWE_zowe_workspaceDirectory:-$(pwd)}}/caching-service/data"
 if [ -d "${original_infinispan_data_location}" ]; then
@@ -129,7 +103,7 @@ if [ "${QUICK_START}" = "-Xquickstart" ]; then # z/OS
         INFINISPAN_VTHREADS="false"
     fi
 fi
-VIRTUAL_THREADS_OPTS="-Dorg.infinispan.threads.virtual=${INFINISPAN_VTHREADS} -Djgroups.thread.virtual=${INFINISPAN_VTHREADS}"
+VIRTUAL_THREADS_OPTS="${VIRTUAL_THREADS_OPTS:--Dorg.infinispan.threads.virtual=${INFINISPAN_VTHREADS} -Djgroups.thread.virtual=${INFINISPAN_VTHREADS}}"
 
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
@@ -180,11 +154,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dcaching.storage.mode=${ZWE_configs_storage_mode:-inMemory} \
   -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
   -Djgroups.bind.address=${ZWE_configs_storage_infinispan_jgroups_host:-${ZWE_haInstance_hostname:-localhost}} \
-  -Djgroups.bind.port=${jgroups_port} \
+  -Djgroups.bind.port=${ZWE_configs_storage_infinispan_jgroups_port:-7600} \
   -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601} \
   -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
   -Djgroups.keyExchange.socketTimeout=${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000} \
-  -Dcaching.storage.infinispan.initialHosts=${INITIAL_HOSTS} \
+  -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7600]} \
   -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
   -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
   -Dserver.ssl.keyStore="${keystore_location}" \

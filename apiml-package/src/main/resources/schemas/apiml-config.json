@@ -722,6 +722,11 @@
                                         }
                                     }
                                 },
+                                "virtualThreads": {
+                                    "type": "boolean",
+                                    "description": "To enable Infinispan virtual threads.",
+                                    "default": true
+                                },
                                 "initialHosts": {
                                     "type": "string",
                                     "description": "Address of the other Caching services. Consists of jgroups port and host in the form of 'host[port]'.",

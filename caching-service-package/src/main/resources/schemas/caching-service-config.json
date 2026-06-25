@@ -210,6 +210,11 @@
                                 }
                             }
                         },
+                        "virtualThreads": {
+                            "type": "boolean",
+                            "description": "To enable Infinispan virtual threads.",
+                            "default": true
+                        },
                         "persistence": {
                             "type": "object",
                             "description": "Where to persistently store caching data.",

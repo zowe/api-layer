@@ -24,7 +24,7 @@
             <jgroup:TCPPING
                 initial_hosts="${jgroups.tcpping.initial_hosts}"
                 port_range="0"
-                num_discovery_runs="20"
+                num_discovery_runs="${jgroups.tcpping.num_discovery_runs}"
             />
 
             <jgroup:pbcast.NAKACK2 />
