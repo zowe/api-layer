@@ -32,9 +32,9 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "5.0.0",
-        "react-hook-form": "7.79.0",
+        "react-hook-form": "7.80.0",
         "react-redux": "9.3.0",
-        "react-router": "7.17.0",
+        "react-router": "7.18.0",
         "react-toastify": "10.0.6",
         "redux": "5.0.1",
         "redux-catch": "1.3.1",
@@ -46,7 +46,7 @@
         "rxjs": "7.8.2",
         "sass": "1.101.0",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.32.6",
+        "swagger-ui-react": "5.32.8",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -94,9 +94,9 @@
         "babel-plugin-transform-vite-meta-env": "1.0.3",
         "body-parser": "2.3.0",
         "caniuse-lite": "1.0.30001799",
-        "concurrently": "9.2.1",
+        "concurrently": "9.2.3",
         "cors": "2.8.6",
-        "cypress": "15.17.0",
+        "cypress": "15.18.0",
         "cypress-file-upload": "5.0.8",
         "dotenv": "17.4.2",
         "enzyme": "3.11.0",
@@ -132,14 +132,14 @@
         "start-server-and-test": "2.1.5",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "vite": "8.0.16",
+        "vite": "8.1.0",
         "vite-plugin-node-polyfills": "0.28.0",
         "yaml": "2.9.0"
     },
     "overrides": {
         "openapi-snippet": {
             "openapi-sampler": {
-                "fast-xml-parser": "5.9.0"
+                "fast-xml-parser": "5.9.3"
             }
         },
         "cosmiconfig": {
@@ -152,9 +152,9 @@
         "@braintree/sanitize-url": "7.1.2",
         "resolve-url-loader": "5.0.0",
         "lodash": "4.18.1",
-        "semver": "7.8.4",
+        "semver": "7.8.5",
         "@babel/traverse": "7.29.7",
-        "axios": "1.18.0",
+        "axios": "1.18.1",
         "form-data": "3.0.5",
         "sha.js": "2.4.12",
         "swagger-ui-react": {
@@ -164,14 +164,14 @@
             "prismjs": "1.30.0"
         },
         "js-yaml": "4.2.0",
-        "qs": "6.15.2",
+        "qs": "6.15.3",
         "path-to-regexp": "8.4.2",
         "minimatch": "3.1.5",
         "brace-expansion": "1.1.15"
     },
     "engines": {
         "npm": "=10.9.8",
-        "node": "=24.16.0"
+        "node": "=24.18.0"
     },
     "notes": {
         "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"

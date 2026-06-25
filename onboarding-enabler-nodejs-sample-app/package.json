@@ -21,7 +21,7 @@
     "overrides": {
         "tough-cookie": "5.1.2",
         "path-to-regexp" : "8.4.2",
-        "qs"  : "6.15.2"
+        "qs"  : "6.15.3"
     },
     "overrides-comments" : {
         "path-to-regexp" : "This should be able to be removed once express is at a higher level than 5.2.1"

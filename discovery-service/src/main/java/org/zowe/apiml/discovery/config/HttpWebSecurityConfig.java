@@ -56,10 +56,10 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String eurekaUserid;
+    private String discoveryUserid;
 
     @Value("${apiml.discovery.password:#{null}}")
-    private char[] eurekaPassword;
+    private char[] discoveryPassword;
 
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
@@ -67,7 +67,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
-        auth.authenticationProvider(new EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword));
+        auth.authenticationProvider(new EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword));
     }
 
     private final HandlerInitializer handlerInitializer;
@@ -119,13 +119,13 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @RequiredArgsConstructor
     static class EurekaBasicAuthenticationProvider implements AuthenticationProvider {
 
-        private final String eurekaUserid;
-        private final char[] eurekaPassword;
+        private final String discoveryUserid;
+        private final char[] discoveryPassword;
 
         private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
         private boolean isCredentialsSet() {
-            if (!StringUtils.isEmpty(eurekaUserid) && !ArrayUtils.isEmpty(eurekaPassword)) {
+            if (!StringUtils.isEmpty(discoveryUserid) && !ArrayUtils.isEmpty(discoveryPassword)) {
                 return true;
             }
 
@@ -151,8 +151,8 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
         public Authentication authenticate(Authentication authentication) throws AuthenticationException {
             if (
                 isCredentialsSet() &&
-                    Strings.CS.equals(eurekaUserid, getUser(authentication)) &&
-                    Arrays.equals(eurekaPassword, getPassword(authentication))
+                    Strings.CS.equals(discoveryUserid, getUser(authentication)) &&
+                    Arrays.equals(discoveryPassword, getPassword(authentication))
             ) {
                 UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
                     authentication.getPrincipal(),

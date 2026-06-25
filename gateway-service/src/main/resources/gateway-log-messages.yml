@@ -9,6 +9,8 @@ messages:
       number: ZWEAG111
       type: ERROR
       text: "The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID"
+      reason: "The Gateway encountered an unexpected error that it cannot handle."
+      action: "Check the Gateway logs for additional details. Use the message instance ID from the log entry to trace the request. If the issue persists, contact support."
 
     # HTTP,Protocol messages
     # 400-499
