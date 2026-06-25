@@ -90,7 +90,7 @@ if [ -z "${ZWE_configs_storage_infinispan_initialHosts}" ] && [ -n "${ZWE_DISCOV
     INITIAL_HOSTS=$(echo "${ZWE_DISCOVERY_SERVICES_LIST}" | tr ',' '\n' | awk -v port="${jgroups_port}" '
         {
             gsub(/https?:\/\//, "", $0);
-            split($0, url_parts, "/");;
+            split($0, url_parts, "/");
             split(url_parts[1], host_parts, ":");
             host = host_parts[1];
             gsub(/[ \r\n\t]/, "", host);
