@@ -13,7 +13,6 @@ import {
     Checkbox,
     FormControl,
     FormControlLabel,
-    FormHelperText,
     InputLabel,
     MenuItem,
     Select,
