@@ -190,7 +190,7 @@ if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
-# Check whether Zowe is running on z/OS and with Java 21.
+# Check whether Zowe is running on z/OS and with Java 21+.
 # If true, disable virtual threads for both Infinispan and JGroups to prevent cluster communication stalls on z/OS.
 JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
     | grep "major version" \
