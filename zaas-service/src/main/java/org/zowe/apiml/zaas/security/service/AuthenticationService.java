@@ -187,6 +187,9 @@ public class AuthenticationService {
      */
     public Boolean invalidateJwtToken(String jwtToken, boolean distribute) {
         log.debug("Invalidating JWT: ...{}", StringUtils.right(jwtToken, 15));
+        if (jwtToken == null || jwtToken.isEmpty()) {
+            throw new TokenNotProvidedException("No JWT token provided for invalidation");
+        }
         if (jwtToken != null && isInvalidated(jwtToken)) {
             return Boolean.TRUE;
         }
@@ -210,6 +213,15 @@ public class AuthenticationService {
     }
 
     private Boolean doInvalidate(String jwtToken, boolean distribute, Application app) {
+        // Validate token format FIRST — before any peer calls
+        // If token is unparseable, throw immediately with descriptive exception
+        final QueryResponse queryResponse;
+        try {
+            queryResponse = parseJwtToken(jwtToken).getQueryResponse();
+        } catch (TokenNotValidException | TokenExpireException | TokenFormatNotValidException e) {
+            throw e; // Always propagate — never suppress based on HA state
+        }
+
         boolean isInvalidatedOnAnotherInstance = false;
         if (distribute) {
             isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken, app);
@@ -218,7 +230,6 @@ public class AuthenticationService {
             }
         }
 
-        final QueryResponse queryResponse = parseJwtToken(jwtToken).getQueryResponse();
         try {
             switch (queryResponse.getSource()) {
                 case ZOWE:
@@ -264,6 +275,9 @@ public class AuthenticationService {
      * @return state of invalidate (true - token was invalidated)
      */
     public Boolean invalidateJwtTokenGateway(String jwtToken, boolean distribute, Application app) {
+        if (jwtToken == null || jwtToken.isEmpty()) {
+            throw new TokenNotProvidedException("No JWT token provided for invalidation");
+        }
         if (jwtToken != null && isInvalidated(jwtToken)) {
             return Boolean.TRUE;
         }

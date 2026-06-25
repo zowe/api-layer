@@ -67,6 +67,19 @@ class HttpUtilsTest {
     }
 
     @Test
+    void shouldReturnEmptyForEmptyCookieValue() {
+        var cookie = new HttpCookie("apimlAuthenticationToken", "");
+        var request = MockServerHttpRequest.get("/logout")
+            .cookie(cookie)
+            .build();
+
+        var exchange = MockServerWebExchange.from(request);
+
+        StepVerifier.create(httpUtils.getTokenFromRequest(exchange))
+            .verifyComplete();
+    }
+
+    @Test
     void shouldExtractTokenFromAuthorizationHeader() {
         var request = MockServerHttpRequest.get("/logout")
             .header(HttpHeaders.AUTHORIZATION, "Bearer test-token")

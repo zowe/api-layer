@@ -56,6 +56,7 @@ import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.security.common.token.TokenNotProvidedException;
 import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.security.common.util.JwtUtils;
 import org.zowe.apiml.util.CacheUtils;
@@ -449,8 +450,11 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenNoInstancesAvailable_thenReturnFalse() {
+            stubJWTSecurityForSign();
+            authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
+            String token = authService.createJwtToken("user", "dom", null);
             when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId())).thenReturn(null);
-            assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
+            assertFalse(authService.invalidateJwtToken(token, true));
         }
 
         @Test
@@ -737,7 +741,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenHttpClientErrorOnInvalidateAnotherInstance_thenReturnFalse() {
-            String token = "jwtToken";
+            stubJWTSecurityForSign();
+            String token = authService.createJwtToken("user", "dom", null);
 
             Application application = mock(Application.class);
             ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
@@ -766,6 +771,71 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertFalse(authService.invalidateJwtToken(token, true));
 
+        }
+    }
+
+    @Nested
+    class GivenTokenInvalidationTokenValidationTest {
+
+        @Test
+        void whenEmptyToken_thenThrowTokenNotProvidedException() {
+            assertThrows(TokenNotProvidedException.class, () ->
+                authService.invalidateJwtToken("", true));
+        }
+
+        @Test
+        void whenNullToken_thenThrowTokenNotProvidedException() {
+            assertThrows(TokenNotProvidedException.class, () ->
+                authService.invalidateJwtToken(null, true));
+        }
+
+        @Test
+        void whenEmptyTokenGateway_thenThrowTokenNotProvidedException() {
+            Application app = mock(Application.class);
+            assertThrows(TokenNotProvidedException.class, () ->
+                authService.invalidateJwtTokenGateway("", true, app));
+        }
+
+        @Test
+        void whenNullTokenGateway_thenThrowTokenNotProvidedException() {
+            Application app = mock(Application.class);
+            assertThrows(TokenNotProvidedException.class, () ->
+                authService.invalidateJwtTokenGateway(null, true, app));
+        }
+
+        @Test
+        void whenUnparseableToken_thenThrowBeforeDistribution() {
+            // A non-empty, non-null token that parseJwtToken cannot parse
+            // Verification: with distribute=true, the distribution should never happen
+            // because parseJwtToken throws TokenNotValidException first
+            assertThrows(TokenNotValidException.class, () ->
+                authService.invalidateJwtToken("not_a_valid_jwt_token", true));
+        }
+
+        @Test
+        void whenValidToken_thenDistributionStillHappens() {
+            Application application = mock(Application.class);
+            ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
+            InstanceInfo instanceInfo = mock(InstanceInfo.class);
+            InstanceInfo otherInstance = mock(InstanceInfo.class);
+
+            stubJWTSecurityForSign();
+            String token = authService.createJwtToken("user", "dom", null);
+
+            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId())).thenReturn(application);
+            when(eurekaClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
+            when(applicationInfoManager.getInfo()).thenReturn(instanceInfo);
+            when(instanceInfo.getInstanceId()).thenReturn("self");
+            when(application.getInstances()).thenReturn(List.of(instanceInfo, otherInstance));
+            when(otherInstance.getInstanceId()).thenReturn("peer");
+            when(otherInstance.getSecurePort()).thenReturn(100);
+            when(otherInstance.getHostName()).thenReturn("localhost");
+            doNothing().when(restTemplate).delete(anyString());
+
+            assertTrue(authService.invalidateJwtToken(token, true));
+
+            // Verify that peer distribution happened (parseJwtToken succeeded first)
+            verify(restTemplate, times(1)).delete(anyString());
         }
     }
 }
