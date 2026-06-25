@@ -1,21 +1,21 @@
 messages:
 
     - key: org.zowe.apiml.enabler.registration.successful
-      number: ZWEA001
+      number: ZWEAO001I
       type: INFO
       text: "Registering to API Mediation Layer: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
       reason: "The service successfully registered with the API Mediation Layer Discovery Service."
       action: "No action required. The service is now registered and discoverable via the Gateway."
 
     - key: org.zowe.apiml.enabler.registration.initial
-      number: ZWEA002
+      number: ZWEAO002I
       type: INFO
       text: "Registering to API Mediation Layer: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
       reason: "The service is attempting to register with the API Mediation Layer Discovery Service for the first time."
       action: "No action required during normal startup. If this message appears repeatedly, check the Discovery Service reachability and certificate configuration."
 
     - key: org.zowe.apiml.enabler.registration.renew
-      number: ZWEA003
+      number: ZWEAO003I
       type: INFO
       text: "Already registered to API Mediation Layer. Will Unregister then register with actual settings: Old values:\
    {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}; New values: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
@@ -23,7 +23,7 @@ messages:
       action: "No action required. The service will unregister its old configuration and register with the new settings. If registration fails after renewal, check the subsequent error messages."
 
     - key: org.zowe.apiml.enabler.registration.fail
-      number: ZWEA004
+      number: ZWEAO004E
       type: ERROR
       text: "Registering to API Mediation Layer failed: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}\
    failed with exception %s"
