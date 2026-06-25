@@ -722,7 +722,7 @@
                                         }
                                     }
                                 },
-                                "virtualThreads": {
+                                "useVirtualThreads": {
                                     "type": "boolean",
                                     "description": "To enable Infinispan virtual threads.",
                                     "default": true
