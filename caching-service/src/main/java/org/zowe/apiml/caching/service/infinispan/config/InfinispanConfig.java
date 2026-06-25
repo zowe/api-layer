@@ -134,7 +134,7 @@ public class InfinispanConfig implements InitializingBean {
             return initialHosts;
         }
 
-        Pattern haHostname = Pattern.compile("^ZWE_haInstances_[0-9a-zA-Z_]+_hostname$");
+        Pattern haHostname = Pattern.compile("^ZWE_haInstances_\\w+_hostname$");
         initialHosts = System.getenv().entrySet().stream()
             .filter(e -> haHostname.matcher(e.getKey()).matches())
             .map(Map.Entry::getValue)
