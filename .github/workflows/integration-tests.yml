@@ -383,6 +383,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
+                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             gateway-service:
@@ -423,7 +424,6 @@ jobs:
                 with:
                     name: CITestsDiscoveryBasicAuth-${{ env.JOB_ID }}
                     path: |
-                        integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
 
@@ -1739,6 +1739,10 @@ jobs:
                 with:
                     name: CloudGatewayServiceRouting-${{ env.JOB_ID }}
                     path: cloudgatewayservicerouting
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: CITestsDiscoveryBasicAuth-${{ env.JOB_ID }}
+                    path: citestsdiscoverybasicauth
 
             -   name: Code coverage and publish results
                 run: |

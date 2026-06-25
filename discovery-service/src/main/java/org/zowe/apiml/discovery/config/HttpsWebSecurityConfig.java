@@ -26,6 +26,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
 import org.zowe.apiml.security.client.EnableApimlAuth;
@@ -80,23 +81,22 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Bean
     public WebSecurityCustomizer httpsWebSecurityCustomizer() {
-        String[] noSecurityAntMatchers = {
-            "/eureka/css/**",
-            "/eureka/js/**",
-            "/eureka/fonts/**",
-            "/eureka/images/**",
-            "/application/info",
-            "/favicon.ico"
-        };
         return web -> {
-            web.ignoring().requestMatchers(noSecurityAntMatchers);
+            web.ignoring().requestMatchers(
+                new AntPathRequestMatcher("/eureka/css/**"),
+                new AntPathRequestMatcher("/eureka/js/**"),
+                new AntPathRequestMatcher("/eureka/fonts/**"),
+                new AntPathRequestMatcher("/eureka/images/**"),
+                new AntPathRequestMatcher("/application/info"),
+                new AntPathRequestMatcher("/favicon.ico")
+            );
 
             if (!isHealthEndpointProtected) {
-                web.ignoring().requestMatchers("/application/health");
+                web.ignoring().requestMatchers(new AntPathRequestMatcher("/application/health"));
             }
 
             if (isMetricsEnabled) {
-                web.ignoring().requestMatchers("/application/hystrixstream");
+                web.ignoring().requestMatchers(new AntPathRequestMatcher("/application/hystrixstream"));
             }
         };
     }
@@ -108,13 +108,13 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Order(3)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
         baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
-            "/application/**",
-            "/*"
+            new AntPathRequestMatcher("/application/**"),
+            new AntPathRequestMatcher("/*")
         )))
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
             .authorizeHttpRequests(requests -> requests
-                .requestMatchers("/**").authenticated())
+                .requestMatchers(new AntPathRequestMatcher("/**")).authenticated())
             .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         if (isServerAttlsEnabled) {
             http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -164,8 +164,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword))
-                .authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
+            http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();
