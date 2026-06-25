@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -39,18 +38,22 @@ public class StaticAPIService {
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String eurekaUserid;
+    private String discoveryUserid;
 
     @Value("${apiml.discovery.password:#{null}}")
-    private String eurekaPassword;
+    private String discoveryPassword;
 
     @Qualifier("secureHttpClientWithKeystore")
     private final CloseableHttpClient httpClient;
 
-    @Value("${server.attlsServer.enabled:false}")
-    private boolean isServerAttlsEnabled;
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
 
-    private final DiscoveryConfigProperties discoveryConfigProperties;
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
+
+    @Value("${apiml.service.discoveryServiceUrls}")
+    private String[] discoveryUrls;
 
     public StaticAPIResponse refresh() {
         List<String> discoveryServiceUrls = getDiscoveryServiceUrls();
@@ -83,10 +86,10 @@ public class StaticAPIService {
     }
 
     void setAuthorization(AbstractHttpMessage request) {
-        if (StringUtils.isEmpty(eurekaUserid) || StringUtils.isEmpty(eurekaPassword)) {
+        if (StringUtils.isEmpty(discoveryUserid) || StringUtils.isEmpty(discoveryPassword)) {
             log.warn("Eureka userid or password not set");
         } else {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString((discoveryUserid + ":" + discoveryPassword).getBytes());
             request.addHeader(HttpHeaders.AUTHORIZATION, basicToken);
         }
     }
@@ -95,18 +98,17 @@ public class StaticAPIService {
         boolean isHttp = discoveryServiceUrl.startsWith("http://");
         HttpPost post = new HttpPost(discoveryServiceUrl);
         post.addHeader("Accept", "application/json");
-        if (isHttp && !isServerAttlsEnabled) {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString((eurekaUserid + ":" + eurekaPassword).getBytes());
-            post.addHeader("Authorization", basicToken);
+        boolean clientCertificateUnavailable = isHttp || !verifySslCertificatesOfServices;
+        if (clientCertificateUnavailable && !isClientAttlsEnabled) {
+            setAuthorization(post);
         }
         return post;
     }
 
     private List<String> getDiscoveryServiceUrls() {
-        String[] discoveryServiceLocations = discoveryConfigProperties.getLocations();
 
         List<String> discoveryServiceUrls = new ArrayList<>();
-        for (String location : discoveryServiceLocations) {
+        for (String location : discoveryUrls) {
             discoveryServiceUrls.add(location.replace("/eureka", "") + REFRESH_ENDPOINT);
         }
         return discoveryServiceUrls;

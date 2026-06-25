@@ -343,6 +343,14 @@ if [ -n "${externalProtocol}" ] && [ -n "${ZWE_zowe_externalDomains_0}" ] && [ -
     EXTERNAL_URL="-Dapiml.service.externalUrl=${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}"
 fi
 
+discoveryUserid=${ZWE_configs_apiml_discovery_userid:-${ZWE_components_discovery_apiml_discovery_userid:-}}
+discoveryPassword=${ZWE_configs_apiml_discovery_password:-${ZWE_components_discovery_apiml_discovery_password:-}}
+
+if [ "${verifySslCertificatesOfServices}" = "false" ]; then
+    discoveryUserid=${discoveryUserid:-eureka}
+    discoveryPassword=${discoveryPassword:-password}
+fi
+
 GATEWAY_CODE=AG
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
@@ -405,6 +413,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
+    -Dapiml.discovery.password=${discoveryPassword} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dfile.encoding=UTF-8 \
     -Dibm.serversocket.recover=true \

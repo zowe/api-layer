@@ -208,6 +208,14 @@ if [ "${ATTLS_SERVER_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" 
   keystore_location=
 fi
 
+discoveryUserid=${ZWE_configs_apiml_discovery_userid:-${ZWE_components_discovery_apiml_discovery_userid:-}}
+discoveryPassword=${ZWE_configs_apiml_discovery_password:-${ZWE_components_discovery_apiml_discovery_password:-}}
+
+if [ "${verifySslCertificatesOfServices}" = "false" ]; then
+    discoveryUserid=${discoveryUserid:-eureka}
+    discoveryPassword=${discoveryPassword:-password}
+fi
+
 CLOUD_GATEWAY_CODE=CG
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
@@ -229,6 +237,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CLOUD_GATEWAY_CODE} java \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_service_forwardClientCertEnabled:-false} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-} \
+    -Dapiml.discovery.password=${discoveryPassword} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \

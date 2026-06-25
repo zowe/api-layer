@@ -269,6 +269,14 @@ fi
 # TODO Remove for 2.18.6 release
 ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED=${ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED:-true}
 
+discoveryUserid=${ZWE_configs_apiml_discovery_userid:-${ZWE_components_discovery_apiml_discovery_userid:-}}
+discoveryPassword=${ZWE_configs_apiml_discovery_password:-${ZWE_components_discovery_apiml_discovery_password:-}}
+
+if [ "${verifySslCertificatesOfServices}" = "false" ]; then
+    discoveryUserid=${discoveryUserid:-eureka}
+    discoveryPassword=${discoveryPassword:-password}
+fi
+
 DISCOVERY_CODE=AD
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
@@ -285,8 +293,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
-    -Dapiml.discovery.userid=${ZWE_configs_apiml_service_http_userId:-} \
-    -Dapiml.discovery.password=${ZWE_configs_apiml_service_http_password:-} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
+    -Dapiml.discovery.password=${discoveryPassword} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \

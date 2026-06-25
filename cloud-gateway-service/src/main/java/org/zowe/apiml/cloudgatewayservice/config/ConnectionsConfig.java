@@ -63,6 +63,7 @@ import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.eureka.EurekaServiceUrlUtils;
 import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
@@ -77,6 +78,7 @@ import javax.net.ssl.TrustManagerFactory;
 import java.security.KeyStore;
 import java.time.Duration;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
@@ -141,6 +143,12 @@ public class ConnectionsConfig {
 
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
+
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String discoveryUserid;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] discoveryPassword;
 
     private final ApplicationContext context;
 
@@ -307,7 +315,7 @@ public class ConnectionsConfig {
 
         log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
         Map<String, String> urls = new HashMap<>();
-        urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
+        urls.put(DEFAULT_ZONE, withBasicAuthFallback(apimlRegistration.getDiscoveryServiceUrls()));
 
         EurekaClientConfigBean configBean = new EurekaClientConfigBean();
         BeanUtils.copyProperties(config, configBean);
@@ -321,6 +329,21 @@ public class ConnectionsConfig {
         InstanceInfo newInfo = eurekaFactory.createInstanceInfo(eurekaInstanceConfig);
 
         return eurekaFactory.createCloudEurekaClient(eurekaInstanceConfig, newInfo, configBean, args, context);
+    }
+
+    /**
+     * When TLS validation is disabled the client certificate cannot be trusted by the Discovery Service, so the
+     * additional registration falls back to basic authentication by embedding the configured Discovery Service
+     * credentials into the discovery service URLs.
+     */
+    private String withBasicAuthFallback(String discoveryServiceUrls) {
+        if (discoveryServiceUrls == null || verifySslCertificatesOfServices) {
+            return discoveryServiceUrls;
+        }
+        String password = (discoveryPassword == null) ? null : new String(discoveryPassword);
+        return Arrays.stream(discoveryServiceUrls.split(","))
+            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), discoveryUserid, password))
+            .collect(Collectors.joining(","));
     }
 
     @Bean

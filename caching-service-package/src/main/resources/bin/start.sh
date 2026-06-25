@@ -258,6 +258,14 @@ fi
 CERTIFICATES_URL=${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/gateway/certificates
 CERTIFICATES_URL=${ZWE_configs_apiml_security_x509_certificatesUrl:-${CERTIFICATES_URL}}
 
+discoveryUserid=${ZWE_configs_apiml_discovery_userid:-${ZWE_components_discovery_apiml_discovery_userid:-}}
+discoveryPassword=${ZWE_configs_apiml_discovery_password:-${ZWE_components_discovery_apiml_discovery_password:-}}
+
+if [ "${verifySslCertificatesOfServices}" = "false" ]; then
+    discoveryUserid=${discoveryUserid:-eureka}
+    discoveryPassword=${discoveryPassword:-password}
+fi
+
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
@@ -280,6 +288,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} java \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+  -Dapiml.discovery.userid=${discoveryUserid} \
+  -Dapiml.discovery.password=${discoveryPassword} \
   -Dapiml.security.x509.certificatesUrls=${CERTIFICATES_URL} \
   -Dcaching.storage.evictionStrategy=${ZWE_configs_storage_evictionStrategy:-reject} \
   -Dcaching.storage.size=${ZWE_configs_storage_size:-10000} \
