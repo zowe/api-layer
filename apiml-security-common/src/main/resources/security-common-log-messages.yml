@@ -191,6 +191,7 @@ messages:
       type: WARNING
       text: "Mapping between distributed and mainframe identity failed. Reason: %s"
       reason: "Mapping between distributed and mainframe identity failed."
+      action: "Verify the OIDC identity mapping configuration. Ensure that `components.gateway.apiml.security.oidc.registry` is correctly set in `zowe.yaml`. Check that the configured identity mapper class is available and correctly configured. If the mapping failure is transient, it may resolve on the next authentication attempt."
 
     - key: org.zowe.apiml.security.common.OIDCConfigError
       number: ZWEAT610

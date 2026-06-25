@@ -81,6 +81,8 @@
 # - ZWE_configs_spring_profiles_active
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_configs_apiml_discovery_userid - Userid for Eureka basic auth (defaults to "eureka" when verifyCertificates is DISABLED)
+# - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
 
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -192,8 +194,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
-    -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-} \
-    -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-} \
+    -Dapiml.discovery.password=${discoveryPassword} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
+    -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-${discoveryPassword}} \
+    -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-${discoveryUserid}} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
     -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
     -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \

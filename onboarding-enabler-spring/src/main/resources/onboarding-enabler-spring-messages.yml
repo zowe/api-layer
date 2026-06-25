@@ -4,20 +4,28 @@ messages:
       number: ZWEA001
       type: INFO
       text: "Registering to API Mediation Layer: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
+      reason: "The service successfully registered with the API Mediation Layer Discovery Service."
+      action: "No action required. The service is now registered and discoverable via the Gateway."
 
     - key: org.zowe.apiml.enabler.registration.initial
       number: ZWEA002
       type: INFO
       text: "Registering to API Mediation Layer: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
+      reason: "The service is attempting to register with the API Mediation Layer Discovery Service for the first time."
+      action: "No action required during normal startup. If this message appears repeatedly, check the Discovery Service reachability and certificate configuration."
 
     - key: org.zowe.apiml.enabler.registration.renew
       number: ZWEA003
       type: INFO
       text: "Already registered to API Mediation Layer. Will Unregister then register with actual settings: Old values:\
    {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}; New values: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}"
+      reason: "The service is re-registering with updated configuration settings."
+      action: "No action required. The service will unregister its old configuration and register with the new settings. If registration fails after renewal, check the subsequent error messages."
 
     - key: org.zowe.apiml.enabler.registration.fail
       number: ZWEA004
       type: ERROR
       text: "Registering to API Mediation Layer failed: {baseUrl=%s, ipAddress=%s, discoveryServiceUrls=%s}\
    failed with exception %s"
+      reason: "The service failed to register with the API Mediation Layer Discovery Service."
+      action: "Check that the Discovery Service is running and reachable at the configured URL. Verify your SSL/TLS certificate configuration. Ensure network connectivity between this service and the Discovery Service. Check the exception message in the log for specific details."

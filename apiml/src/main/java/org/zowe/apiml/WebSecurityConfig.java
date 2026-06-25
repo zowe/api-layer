@@ -13,6 +13,7 @@ package org.zowe.apiml;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -65,6 +66,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import reactor.core.publisher.Mono;
+
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -107,6 +113,12 @@ public class WebSecurityConfig {
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
+
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String discoveryUserid;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] discoveryPassword;
 
     @Value("${apiml.service.port}")
     private int gatewayPort;
@@ -156,21 +168,15 @@ public class WebSecurityConfig {
                 notInUnauthenticatedPaths,
                 exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch() // Prevents matching /eureka (mapping for homepage in modulith)
             ))
-            .authorizeExchange(authorizeExchangeSpec -> {
-                if (verifySslCertificatesOfServices) {
-                    authorizeExchangeSpec
-                        .anyExchange().authenticated();
-                } else {
-                    authorizeExchangeSpec.anyExchange().permitAll();
-                }
-            })
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().authenticated())
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 
         if (verifySslCertificatesOfServices) {
+            http.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
             return x509SecurityConfig(http).build();
         }
 
+        http.httpBasic(basic -> basic.authenticationManager(eurekaReactiveAuthManager()));
         return http.build();
     }
 
@@ -207,6 +213,26 @@ public class WebSecurityConfig {
     /**
      * Set up the default x509 authentication mode. It verifies only trusted certificates such as server certs, without mapping
      */
+    private ReactiveAuthenticationManager eurekaReactiveAuthManager() {
+        return authentication -> {
+            String principal = authentication.getName();
+            Object credentials = authentication.getCredentials();
+            String password = credentials != null ? credentials.toString() : null;
+            if (isValidAuthentication(principal, password)) {
+                return Mono.just(new UsernamePasswordAuthenticationToken(principal, null, List.of()));
+            }
+            return Mono.error(new BadCredentialsException("Invalid Eureka credentials"));
+        };
+    }
+
+    private boolean isValidAuthentication(String principal, String password) {
+        return StringUtils.isNotEmpty(discoveryUserid)
+            && discoveryUserid.equals(principal)
+            && discoveryPassword != null
+            && password != null
+            && Arrays.equals(discoveryPassword, password.toCharArray());
+    }
+
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http, boolean defaultExceptionHandler) {
         http
             .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))

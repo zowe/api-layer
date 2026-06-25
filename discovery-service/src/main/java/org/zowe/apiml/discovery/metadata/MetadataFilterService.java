@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 public class MetadataFilterService implements InitializingBean {
 
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
-    private static final String[] DEFAULT_ALLOWED_DOMAINS = { "www.ibm.com", "zowe.github.io", "www.zowe.org" };
+    private static final String[] DEFAULT_ALLOWED_DOMAINS = { "www.ibm.com", "zowe.github.io", "www.zowe.org", "techdocs.broadcom.com" };
 
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
     private String allowedDomains;

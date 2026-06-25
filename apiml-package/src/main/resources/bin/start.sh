@@ -40,6 +40,8 @@
 # - ZWE_configs_apiml_connection_timeout
 # - ZWE_configs_apiml_connection_timeToLive
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
+# - ZWE_configs_apiml_discovery_userid - Userid for Eureka basic auth (defaults to "eureka" when verifyCertificates is DISABLED)
+# - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
 # - ZWE_configs_apiml_gateway_registry_cachePeriodSec
 # - ZWE_configs_apiml_gateway_registry_enabled
 # - ZWE_configs_apiml_gateway_registry_maxSimultaneousRequests
@@ -241,10 +243,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.connection.timeout=${ZWE_components_gateway_apiml_connection_timeout:-${ZWE_configs_apiml_connection_timeout:-60000}} \
     -Dapiml.connection.timeToLive=${ZWE_components_gateway_apiml_connection_timeToLive:-${ZWE_configs_apiml_connection_timeToLive:-10000}} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.discovery.password=${ZWE_components_gateway_configs_apiml_service_http_password:-${ZWE_configs_apiml_service_http_password:-}} \
+    -Dapiml.discovery.password=${discoveryPassword} \
     -Dapiml.discovery.serviceIdPrefixReplacer=${ZWE_components_discovery_apiml_discovery_serviceIdPrefixReplacer:-${ZWE_configs_apiml_discovery_serviceIdPrefixReplacer}} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR:-} \
-    -Dapiml.discovery.userid=${ZWE_components_gateway_configs_apiml_service_http_userId:-${ZWE_configs_apiml_service_http_userId:-}} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
     -Dapiml.gateway.cachePeriodSec=${ZWE_components_gateway_apiml_gateway_registry_cachePeriodSec:-${ZWE_configs_apiml_gateway_registry_cachePeriodSec:-120}} \
     -Dapiml.gateway.cookieNameForRateLimit=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.gateway.maxSimultaneousRequests=${ZWE_components_gateway_gateway_registry_maxSimultaneousRequests:-${ZWE_configs_gateway_registry_maxSimultaneousRequests:-20}} \
