@@ -2,6 +2,17 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## `APIML 2.18.22 / Zowe 2.18.5 (2026-07-14)`
+
+* Feature:  Implemented the `zowe.network.allowedDomains` allowlist property for URL domains (v2). This feature validates all service registration metadata against a trusted domain allowlist. Current feature implementation in version 2.18.5 only issues warnings for unlisted domains by default. Full feature implementation is scheduled for subsequent v2.18.x versions to prevent unauthorized services from onboarding. (#4689) ([3e17201](https://github.com/zowe/api-layer/commit/3e17201)), closes [#4689](https://github.com/zowe/api-layer/issues/4689)
+
+* Bugfix:  cache items only when coming from trusted proxy  (#4706) ([bef7949](https://github.com/zowe/api-layer/commit/bef7949)), closes [#4706](https://github.com/zowe/api-layer/issues/4706)
+* Bugfix:  Fix SSE corrupted data (#4530) ([1809de7](https://github.com/zowe/api-layer/commit/1809de7)), closes [#4530](https://github.com/zowe/api-layer/issues/4530)
+* Bugfix:  Fix writting all headers in HTTP responses (#4522) ([2e229ed](https://github.com/zowe/api-layer/commit/2e229ed)), closes [#4522](https://github.com/zowe/api-layer/issues/4522)
+* Bugfix:  only warning by default for domain allow list in 2.18.5 (#4733) ([868718a](https://github.com/zowe/api-layer/commit/868718a)), closes [#4733](https://github.com/zowe/api-layer/issues/4733)
+* Bugfix:  Use relaxed firewall only for routed request (v2) (#4666) ([08cfc87](https://github.com/zowe/api-layer/commit/08cfc87)), closes [#4666](https://github.com/zowe/api-layer/issues/4666)
+* Bugfix:  Use the same hostverification scheme as in the rest of Gateway (#4667) ([b94a48d](https://github.com/zowe/api-layer/commit/b94a48d)), closes [#4667](https://github.com/zowe/api-layer/issues/4667)
+
 ## `APIML 2.18.20 / Zowe 2.18.4 (2026-01-29)`
 
 * Bugfix: expect 401 status code (#4465) ([768f66a](https://github.com/zowe/api-layer/commit/768f66a3407bef90c08030e98c1da775934de967)), closes [#4465](https://github.com/zowe/api-layer/pull/4465)
