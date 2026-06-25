@@ -724,8 +724,8 @@
                                 },
                                 "useVirtualThreads": {
                                     "type": "boolean",
-                                    "description": "To enable Infinispan virtual threads.",
-                                    "default": true
+                                    "description": "To enable Infinispan virtual threads available from JDK21+.",
+                                    "default": false
                                 },
                                 "initialHosts": {
                                     "type": "string",
