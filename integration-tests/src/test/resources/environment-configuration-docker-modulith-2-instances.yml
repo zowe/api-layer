@@ -1,0 +1,64 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: USER
+    password: validPassword
+    clientUser: APIMTST
+gatewayServiceConfiguration:
+    scheme: https
+    host: apiml,apiml-2
+    port: 10010
+    internalPorts: 10010
+    externalPort: 10010
+    instances: 2
+    servicesEndpoint: gateway/api/v1/services
+    bucketCapacity: 40
+    authProvider: zosmf
+discoveryServiceConfiguration:
+    scheme: https
+    user: user
+    password: pass
+    host: apiml
+    additionalHost: apiml-2
+    additionalPort: 10011
+    port: 10011
+    instances: 2
+discoverableClientConfiguration:
+    scheme: https
+    port: 10012
+    applId: ZOWEAPPL
+    host: discoverable-client
+    instances: 1
+apiCatalogServiceConfiguration:
+    scheme: https
+    url:
+    host: apiml,apiml-2
+    port: 10010
+    instances: 2
+cachingServiceConfiguration:
+    url:
+    scheme: https
+    host: apiml,apiml-2
+    port: 10010
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/docker/client-cert.p12
+    serverKeyStore: ../keystore/docker/server-only.p12
+    clientKeystore: ../keystore/client_cert/client-certs.p12
+    clientCN: APIMTST
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/docker/all-services.truststore.p12
+    trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: mock-services
+    port: 10013
+    serviceId: mockzosmf
+auxiliaryUserList:
+    value: 'unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
+oidcConfiguration:
+    providerName: auth0
+safIdtConfiguration:
+    enabled: true
