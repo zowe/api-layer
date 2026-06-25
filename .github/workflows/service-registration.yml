@@ -21,7 +21,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                javaVersion: ['17', '25']
+                javaVersion: ['17', '21', '25']
 
         steps:
             -   uses: actions/checkout@v4
