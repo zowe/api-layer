@@ -137,6 +137,7 @@ jobs:
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    APIML_SERVICE_CORSENABLED: true
                     APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 #The memory is constrained to test large file upload memory issues (#4265)
                 #If the container runs oom, it is hard killed without printing any reasonable message in the log
@@ -477,6 +478,7 @@ jobs:
                     EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS: 1
                     EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: 1
                     logbackService: ZWEAGW1
+                    APIML_SERVICE_CORSENABLED: true
                     APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 options: --memory 640m --memory-swap 640m
             zaas-service:
@@ -501,6 +503,8 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
+                    APIML_SERVICE_CORSENABLED: true
+                    APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 options: --memory 640m --memory-swap 640m
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
