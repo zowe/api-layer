@@ -101,6 +101,17 @@ allprojects {
         }
     }
 
+    sourceSets {
+        main {
+            java { srcDirs = ['src/main/java'] }
+            resources { srcDirs = ['src/main/resources'] }
+        }
+        test {
+            java { srcDirs = ['src/test/java'] }
+            resources { srcDirs = ['src/test/resources'] }
+        }
+    }
+
     configurations.all {
         resolutionStrategy.dependencySubstitution {
             substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
@@ -166,22 +177,6 @@ configure(subprojects.findAll {it.name != 'platform'}) {
         testImplementation libs.junit.platform.engine
     }
 
-    sourceSets {
-        main {
-            java { srcDirs = ['src/main/java'] }
-            resources { srcDirs = ['src/main/resources'] }
-        }
-        test {
-            java { srcDirs = ['src/test/java'] }
-            resources { srcDirs = ['src/test/resources'] }
-        }
-    }
-
-    eclipse {
-        classpath {
-            plusConfigurations += [configurations.testImplementation]
-        }
-    }
 }
 
 subprojects {
