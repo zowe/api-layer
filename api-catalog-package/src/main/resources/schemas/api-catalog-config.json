@@ -233,7 +233,7 @@
             }
         },
         "logging": {
-            "type": "string",
+            "type": "object",
             "description": "Logging configuration for API Catalog service.",
             "properties": {
                 "config": {

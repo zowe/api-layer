@@ -425,7 +425,7 @@
             }
         },
         "logging": {
-            "type": "string",
+            "type": "object",
             "description": "Logging configuration for Gateway service.",
             "properties": {
                 "config": {

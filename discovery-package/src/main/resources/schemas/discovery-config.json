@@ -172,7 +172,7 @@
             }
         },
         "logging": {
-            "type": "string",
+            "type": "object",
             "description": "Logging configuration for Discovery service.",
             "properties": {
                 "config": {

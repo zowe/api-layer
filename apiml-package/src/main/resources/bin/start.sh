@@ -49,7 +49,6 @@
 # - ZWE_configs_apiml_gateway_registry_refreshIntervalMs
 # - ZWE_configs_apiml_health_protected
 # - ZWE_configs_apiml_security_auth_jwt_customAuthHeader
-# - ZWE_configs_apiml_security_auth_passticket_customAuthHeader
 # - ZWE_configs_apiml_security_auth_passticket_customUserHeader
 # - ZWE_configs_apiml_security_authorization_endpoint_enabled
 # - ZWE_configs_apiml_security_authorization_endpoint_url
@@ -77,8 +76,8 @@
 # - ZWE_configs_certificate_truststore_password / ZWE_zowe_certificate_truststore_password
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
-# - ZWE_configs_debug - (deprecated) set to "true" to activate the debug logging profile; use ZWE_configs_logging instead
-# - ZWE_configs_logging_profile - logging profile(s) to activate (default: info); comma-separated for multiple, e.g. "info,debug"
+# - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
 # - ZWE_configs_port - the port the api discovery service will use
@@ -143,10 +142,8 @@ if [ -n "${ZWE_DISCOVERY_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
 
-# Logging profiles
-for logging_profile in $(echo "${ZWE_components_apiml_logging_profile:-${ZWE_components_gateway_logging_profile:-info}}" | tr ',' ' '); do
-    add_profile "${logging_profile}"
-done
+# Logging level
+add_profile "${ZWE_configs_logging_level:-${ZWE_components_gateway_logging_level:-info}}"
 
 # Debug profile
 if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then
@@ -222,7 +219,7 @@ if [ -n "${ZWE_configs_telemetry_attributes_mainframe_lpar_name}" ]; then
     OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.mainframe.lpar.name=${ZWE_configs_telemetry_attributes_mainframe_lpar_name}"
 fi
 # End OpenTelemetry
-
+echo "${ZWE_configs_spring_profiles_active:-}"
 APIML_CODE=AG
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \

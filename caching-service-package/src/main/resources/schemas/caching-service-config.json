@@ -294,7 +294,7 @@
             }
         },
         "logging": {
-            "type": "string",
+            "type": "object",
             "description": "Logging configuration for Caching service.",
             "properties": {
                 "config": {
