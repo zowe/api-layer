@@ -190,16 +190,9 @@ if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
-# Check whether Zowe is running on z/OS and with Java 21+.
-# If true, disable virtual threads for both Infinispan and JGroups to prevent cluster communication stalls on z/OS.
-JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
-    | grep "major version" \
-    | cut -d " " -f5)
 INFINISPAN_VTHREADS=${ZWE_components_caching_service_storage_infinispan_useVirtualThreads:-${ZWE_configs_storage_infinispan_useVirtualThreads:-false}}
-if [ "$(uname)" = "OS/390" ]; then # z/OS
-    if [ $JAVA_VERSION -ge 65 ]; then # since Java 21
-        INFINISPAN_VTHREADS="false"
-    fi
+if [ "${INFINISPAN_VTHREADS}" = "true" ] && [ "$(uname)" = "OS/390" ]; then
+    echo "Warning: Virtual Threads enabled can result to not working Caching Service"
 fi
 VIRTUAL_THREADS_OPTS="${VIRTUAL_THREADS_OPTS:--Dorg.infinispan.threads.virtual=${INFINISPAN_VTHREADS} -Djgroups.thread.virtual=${INFINISPAN_VTHREADS}}"
 
