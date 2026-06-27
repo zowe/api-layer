@@ -5,8 +5,8 @@ dependencyResolutionManagement {
             version('projectNode', '24.10.0')
             version('projectNpm', '10.9.0')
 
-            version('springBoot', '3.5.15')
-            version('springBootGraphQl', '3.5.15')
+            version('springBoot', '3.5.16')
+            version('springBootGraphQl', '3.5.16')
             version('springCloudNetflix', '4.3.3')
             version('springCloudCommons', '4.3.3')
             version('springCloudCB', '3.3.3')
@@ -297,7 +297,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.35')
+            version('logback', '1.5.36')
             version('mockitoCore', '5.23.0')
             version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')
