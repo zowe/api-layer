@@ -71,7 +71,7 @@ public class InfinispanConfig implements InitializingBean {
     private static final long SMALL_CACHE_SIZE = 10;
     private static final long BIG_CACHE_SIZE = 1000;
 
-    @Value("${caching.storage.infinispan.initialHosts}")
+    @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;
 
     @Value("${server.ssl.keyStoreType}")
