@@ -83,13 +83,6 @@ messages:
       reason: "Probably an issue while reading JWK from external source."
       action: "Check application logs for more information."
 
-#    - key: org.zowe.apiml.zaas.auth.provider
-#      number: ZWEAG718
-#      type: INFO
-#      text: "Using authentication provider: %s"
-#      reason: "Information messages about the currently active authorization provider, either z/OSMF or SAF."
-#      action: "No action required."
-
     # Legacy messages
 
     - key: org.zowe.apiml.security.generic
