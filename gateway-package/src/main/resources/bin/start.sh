@@ -70,7 +70,7 @@
 # - ZWE_configs_certificate_truststore_password / ZWE_zowe_certificate_truststore_password
 # - ZWE_configs_certificate_ciphers / ZWE_configs_ciphers
 # - ZWE_configs_debug
-# - ZWE_configs_logging
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_port - the port the api gateway service will use
 # - ZWE_configs_server_maxConnectionsPerRoute
 # - ZWE_configs_server_maxTotalConnections
@@ -104,10 +104,8 @@ if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${GATEWAY_LOADER_PATH}"
 
-# Logging profiles
-for logging_profile in $(echo "${ZWE_components_apiml_logging_profile:-${ZWE_components_gateway_logging_profile:-info}}" | tr ',' ' '); do
-    add_profile "${logging_profile}"
-done
+# Logging level
+add_profile "${ZWE_configs_logging_level:-info}"
 
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then

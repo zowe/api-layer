@@ -434,10 +434,14 @@
                     "minLength": 1,
                     "maxLength": 1024
                 },
-                "profile": {
+                "level": {
                     "type": "string",
-                    "description": "A comma-separated list of logging profiles to activate.",
-                    "examples": ["quiet", "info"]
+                    "description": "Logging level to activate, default info",
+                    "enum": [
+                        "quiet",
+                        "info",
+                        "debug"
+                    ]
                 }
             }
         }
