@@ -1218,7 +1218,7 @@ jobs:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service"
                     JGROUPS_BIND_PORT: "7600"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]
+                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]"
             central-gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
