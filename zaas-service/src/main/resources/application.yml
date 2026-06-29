@@ -211,7 +211,6 @@ logging:
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.web.servlet.PageNotFound: ERROR
         org.springframework.web.socket: WARN
-        org.zowe.apiml: INFO
 
 ---
 spring:
@@ -232,9 +231,10 @@ logging:
         com.netflix.config: ERROR
         javax.net.ssl: ERROR
         org.apache.http: DEBUG
+        org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.eclipse.jetty: WARN
         org.eclipse.jetty.util.ssl: ERROR
         org.ehcache: DEBUG

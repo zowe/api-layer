@@ -189,7 +189,6 @@ logging:
         org.springframework.cloud.gateway.route: WARN
         org.springframework.context.support: WARN
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
-        org.zowe.apiml: INFO
 
 ---
 spring.config.activate.on-profile: debug
@@ -203,9 +202,7 @@ logging:
         io.netty.resolver.dns: WARN
         io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
         javax.net.ssl: ERROR
-        org.apache: INFO
         org.apache.http: DEBUG
-        org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.springframework.beans: WARN

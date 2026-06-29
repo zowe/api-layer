@@ -212,7 +212,6 @@ logging:
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.security.web: INFO
-        org.zowe.apiml: INFO
 ---
 spring.config.activate.on-profile: debug
 
@@ -231,17 +230,14 @@ logging:
         com.netflix.discovery.shared.transport.decorator: DEBUG
         com.netflix.config: ERROR
         javax.net.ssl: ERROR
-        org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.eclipse.jetty: WARN
-        org.ehcache: INFO
         org.springdoc: WARN
-        org.springframework: INFO
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.security.web: INFO
         org.zowe.apiml: DEBUG

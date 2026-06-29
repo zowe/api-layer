@@ -335,14 +335,13 @@ logging:
         reactor.netty.http.client: INFO
         org.infinispan: ERROR
         org.jgroups: ERROR
-        org.zowe.apiml: INFO
+
 ---
 spring.config.activate.on-profile: debug
 
 logging:
     level:
         ROOT: INFO
-        com.netflix: INFO
         com.netflix.config: ERROR
         com.netflix.discovery: ERROR
         com.netflix.discovery.shared.transport.decorator: DEBUG
@@ -351,18 +350,16 @@ logging:
         io.netty.resolver.dns: WARN
         io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
         javax.net.ssl: ERROR
-        org.apache: INFO
         org.apache.http: DEBUG
         org.apache.http.conn.ssl.DefaultHostnameVerifier: WARN #logs only SSLException
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.eclipse.jetty: WARN
-        org.ehcache: INFO
         org.infinispan: DEBUG
         org.jgroups: TRACE
         org.jgroups.protocols: ERROR
-        org.jgroups.protocols.pbcast.GMS: DEBUG
+        org.jgroups.protocols.pbcast.GMS: DEBUG  # prints infinispan cluster info
         org.springdoc.core: DEBUG
         org.springframework: WARN
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO

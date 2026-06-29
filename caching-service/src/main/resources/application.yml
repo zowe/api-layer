@@ -178,7 +178,6 @@ spring.config.activate.on-profile: info
 logging:
     level:
         ROOT: WARN
-        com.netflix: WARN
         com.netflix.config: ERROR
         com.netflix.discovery: ERROR
         javax.net.ssl: ERROR
@@ -186,8 +185,6 @@ logging:
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.infinispan: ERROR
         org.jgroups: ERROR
-        org.springdoc: WARN
-        org.springframework: WARN
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.zowe.apiml: INFO
@@ -200,25 +197,21 @@ spring.config.activate.on-profile: debug
 logging:
     level:
         ROOT: INFO
-        com.netflix: INFO
         com.netflix.config: ERROR
         com.netflix.discovery: ERROR
         com.netflix.discovery.shared.transport.decorator: DEBUG
         javax.net.ssl: ERROR
-        org.apache: INFO
         org.apache.catalina: DEBUG
         org.apache.coyote.http11.Http11InputBuffer: TRACE
         org.apache.http: DEBUG
         org.apache.tomcat: DEBUG
-        org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.ehcache: INFO
-        org.hibernate: INFO
         org.infinispan: DEBUG
         org.jgroups: TRACE
+        org.jgroups.protocols: ERROR
+        org.jgroups.protocols.pbcast.GMS: DEBUG # prints infinispan cluster info
         org.springdoc: WARN
-        org.springframework: INFO
         org.springframework.web.servlet.PageNotFound: WARN
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.springframework.security.web: DEBUG
