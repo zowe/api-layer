@@ -40,7 +40,6 @@ public class DiscoverableClientSampleApplication implements ApplicationListener<
         SpringApplication app = new SpringApplication(DiscoverableClientSampleApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
-        new BuildInfo().logBuildInfo();
         app.run(args);
     }
 
