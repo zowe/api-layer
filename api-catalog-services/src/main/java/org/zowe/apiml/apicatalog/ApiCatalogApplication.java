@@ -23,7 +23,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.zowe.apiml.product.config.ServerAddressPropertiesUpdater;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
-import org.zowe.apiml.product.version.BuildInfo;
 
 @SpringBootApplication(
     exclude = {

@@ -1,6 +1,8 @@
 # for back-compatibility
 spring.profiles.group.attls: attlsServer,attlsClient
 
+logbackServiceName: ZWEAZS1
+
 # This section contains only logging levels configuration common to all profiles.
 # Use a dedicated profile below or create a new one to configure logging levels.
 logging:
@@ -260,11 +262,6 @@ management:
 
 server:
     max-http-request-header-size: 40000
-
----
-spring.config.activate.on-profile: dev
-
-logbackServiceName: ZWEAZS1
 
 ---
 spring.config.activate.on-profile: attlsServer

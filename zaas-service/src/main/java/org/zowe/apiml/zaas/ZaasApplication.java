@@ -22,7 +22,6 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.zowe.apiml.extension.ExtensionConfigReader;
 import org.zowe.apiml.extension.ExtensionsLoader;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
-import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 
 import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;

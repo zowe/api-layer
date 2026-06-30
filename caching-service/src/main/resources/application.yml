@@ -1,6 +1,5 @@
 # for back-compatibility
 spring.profiles.group.attls: attlsServer,attlsClient
-spring.profiles.group.dev: debug,diag
 
 caching:
     storage:
@@ -25,6 +24,8 @@ caching:
             initialHosts: localhost[7600]
             persistence:
                 dataLocation: data
+
+logbackServiceName: ZWEACS1
 
 # This section contains only logging levels configuration common to all profiles.
 # Use a dedicated profile below or create a new one to configure logging levels.
@@ -224,10 +225,6 @@ management:
             base-path: /cachingservice/application
             exposure:
                 include: health,info,loggers
----
-spring.config.activate.on-profile: dev
-
-logbackServiceName: ZWEACS1
 
 ---
 spring.config.activate.on-profile: attlsServer

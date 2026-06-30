@@ -1,4 +1,5 @@
-spring.profiles.include: diag, debug
+spring.profiles.active: debug,diag
+
 apiml:
     service:
         hostname: localhost
@@ -63,6 +64,9 @@ management:
         web:
             exposure:
                 include: "*"
+
+logging:
+    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr<${logbackServiceName}:%thread:${PID:}> %magenta(%X{userid:-}) %cyan(%-5level) %clr(\(%logger{15}\)) %msg%n'
 
 ---
 spring.config.activate.on-profile: attls

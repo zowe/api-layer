@@ -1,6 +1,8 @@
 # for back-compatibility
 spring.profiles.group.attls: attlsServer,attlsClient
 
+logbackServiceName: ZWEADC1
+
 logging:
     level:
         ROOT: INFO
@@ -207,20 +209,6 @@ spring.config.activate.on-profile: debug
 logging:
     level:
         ROOT: DEBUG
-
----
-spring.config.activate.on-profile: dev
-
-logging:
-    level:
-        ROOT: INFO
-        org.zowe.apiml: DEBUG
-        org.springframework: INFO
-        org.apache.catalina: INFO
-        com.netflix: INFO
-        javax.net.ssl: INFO
-
-logbackServiceName: ZWEADC1
 
 ---
 spring.config.activate.on-profile: attlsServer

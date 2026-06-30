@@ -269,6 +269,7 @@ jgroups:
     bind:
         port: 7600
         address: localhost
+
 logbackServiceName: ZWEAGW1
 
 # This section contains only logging levels configuration common to all profiles.
@@ -425,14 +426,3 @@ apiml:
         nonSecurePortEnabled: true
         securePortEnabled: false
 
----
-spring.config.activate.on-profile: dev
-
-logging:
-    level:
-        org.springframework: DEBUG
-        org.infinispan: DEBUG
-        reactor.netty: DEBUG
-        reactor.netty.http.client: DEBUG
-        reactor.netty.http.client.HttpClient: DEBUG
-        reactor.netty.http.client.HttpClientConnect: DEBUG

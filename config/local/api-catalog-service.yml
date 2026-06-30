@@ -1,6 +1,7 @@
 spring.profiles.active: debug,diag
 
 logging:
+    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr<${logbackServiceName}:%thread:${PID:}> %magenta(%X{userid:-}) %cyan(%-5level) %clr(\(%logger{15}\)) %msg%n'
     level:
         web: debug
 
