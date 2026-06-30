@@ -61,16 +61,22 @@ messages:
     - key: org.zowe.apiml.common.notFound
       number: ZWEAO404
       type: ERROR
-      text: "The service can not find the requested resource."
+      reason: "The requested resource URI was not found on the target service."
+      action: "Verify that the request URI is correct and that the target service exposes the requested endpoint."
+      text: "The service cannot find the requested resource."
 
     - key: org.zowe.apiml.common.methodNotAllowed
       number: ZWEAO405
       type: ERROR
+      reason: "The HTTP method used in the request (e.g., POST, PUT) is not supported by the target resource."
+      action: "Check the API documentation for the target service to determine which HTTP methods are supported for this endpoint, and correct the request."
       text: "The request method has been disabled and cannot be used for the requested resource."
 
     - key: org.zowe.apiml.common.unsupportedMediaType
       number: ZWEAO415
       type: ERROR
+      reason: "The Content-Type header in the request specifies a media type that is not supported by the target service."
+      action: "Check the API documentation for the target service to determine which media types are accepted, and set the Content-Type header accordingly."
       text: "The media format of the requested data is not supported by the service, so the service has rejected the request."
 
     # TLS,Certificate messages
@@ -79,6 +85,8 @@ messages:
     - key: org.zowe.apiml.common.internalServerError
       number: ZWEAO500
       type: ERROR
+      reason: "An unexpected error occurred in the upstream service while processing the request."
+      action: "Check the upstream service logs for details. Use the message instance ID from the log entry to correlate the error across services. If the issue persists, contact support."
       text: "The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID"
 
     - key: org.zowe.apiml.common.serviceUnavailable

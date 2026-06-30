@@ -56,6 +56,11 @@ import java.util.regex.Pattern;
 @Slf4j
 public class X509AndGwAwareXForwardedHeadersFilter extends XForwardedHeadersFilter {
 
+    // Order must be higher than RemoveXForwardedHeadersFilter (0) so this filter
+    // runs AFTER SCG has stripped untrusted headers — allowing trust evaluation
+    // on the original request headers and emitting the final header set.
+    public static final int ORDER_AFTER_REMOVE_XFW_HEADERS = 1;
+
     // Generic all-in-one Forwarded header not handled by the default spring filter
     public static final String FORWARDED_HEADER = "Forwarded";
 
@@ -94,8 +99,16 @@ public class X509AndGwAwareXForwardedHeadersFilter extends XForwardedHeadersFilt
     }
 
     @Override
+    public int getOrder() {
+        return ORDER_AFTER_REMOVE_XFW_HEADERS;
+    }
+
+    @Override
     public HttpHeaders filter(HttpHeaders input, ServerWebExchange exchange) {
-        if (!hasXForwardedHeader(input)) return super.filter(input, exchange);
+        // SCG 4.3.5+ introduces RemoveXForwardedHeadersFilter which strips
+        // X-Forwarded headers from 'input' before this filter runs.
+        // Check the original request headers to detect incoming X-Forwarded headers.
+        if (!hasXForwardedHeader(exchange.getRequest().getHeaders())) return super.filter(input, exchange);
 
         boolean trustedSourceByX509 = Optional.ofNullable(exchange.getRequest().getSslInfo())
             .map(SslInfo::getPeerCertificates)
@@ -132,7 +145,9 @@ public class X509AndGwAwareXForwardedHeadersFilter extends XForwardedHeadersFilt
                 return super.filter(removeXForwardHttpHeaders(input), sanitizedExchange);
             }
         }
-        return super.filter(input, exchange);
+        // Trusted — use the original request headers to preserve X-Forwarded info
+        // that RemoveXForwardedHeadersFilter may have stripped from 'input'
+        return super.filter(exchange.getRequest().getHeaders(), exchange);
     }
 
     private HttpHeaders removeXForwardHttpHeaders(HttpHeaders input) {
