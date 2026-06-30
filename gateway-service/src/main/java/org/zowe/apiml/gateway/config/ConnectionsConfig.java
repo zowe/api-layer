@@ -288,8 +288,8 @@ public class ConnectionsConfig implements InitializingBean {
     private boolean isRouteKey(String key) {
         return Strings.CS.startsWith(key, ROUTES + ".") &&
             (
-                Strings.CS.startsWith(key, "." + ROUTES_GATEWAY_URL) ||
-                    Strings.CS.startsWith(key, "." + ROUTES_SERVICE_URL)
+                Strings.CS.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
+                    Strings.CS.endsWith(key, "." + ROUTES_SERVICE_URL)
             );
     }
 

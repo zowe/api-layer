@@ -433,7 +433,7 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+            void validateDefaultCorsAllowedMethods() {
                 var corsUtils = connectionsConfig.corsUtils();
 
                 @SuppressWarnings("unchecked")
@@ -453,7 +453,7 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+            void validateCorsAllowedMethods() {
                 var corsUtils = connectionsConfig.corsUtils();
 
                 @SuppressWarnings("unchecked")

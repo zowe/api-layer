@@ -51,7 +51,7 @@ public class CorsUtils {
 
     public void setCorsConfiguration(String serviceId, Map<String, String> metadata, BiConsumer<String, CorsConfiguration> entryMapper) {
         if (gatewayCorsEnabled) {
-            var corsConfiguration = setCorsHeadersForService(serviceId, metadata);
+            var corsConfiguration = createCorsConfigurationForService(serviceId, metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
@@ -61,7 +61,7 @@ public class CorsUtils {
         }
     }
 
-    private CorsConfiguration setCorsHeadersForService(String serviceId, Map<String, String> metadata) {
+    private CorsConfiguration createCorsConfigurationForService(String serviceId, Map<String, String> metadata) {
         // Check if the configuration specifies allowed origins for this service
         var config = new CorsConfiguration();
         if (isCorsEnabledForService(metadata)) {

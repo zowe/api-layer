@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.config;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
@@ -57,7 +58,7 @@ public class ServiceCorsUpdater implements InitializingBean {
                         instance.getServiceId().toLowerCase(),
                         instance.getMetadata(),
                         (prefix, config) -> {
-                            String serviceId = instance.getMetadata().getOrDefault(APIML_ID, instance.getServiceId().toLowerCase());
+                            String serviceId = StringUtils.lowerCase(instance.getMetadata().getOrDefault(APIML_ID, instance.getServiceId()));
                             urlBasedCorsConfigurationSource.registerCorsConfiguration("/" + serviceId + "/**", config);
                         }
                 );
