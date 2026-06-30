@@ -111,4 +111,4 @@ management:
                 include: "*"
 
 logging:
-    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} %clr<${logbackServiceName}:%thread:${PID:}> %magenta(%X{userid:-}) %cyan(%-5level) %clr(\(%logger{15}\)) %msg%n'
+    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} <%blue(${logbackServiceName}):%magenta(%thread):${PID:}> %X{userid:-} %clr(%-5level) %cyan(\(%logger{15}\)) %msg%n'
