@@ -1,4 +1,4 @@
-spring.profiles.active: debug,diag
+spring.profiles.active: https,debug,diag
 
 apiml:
     health.protected: true
