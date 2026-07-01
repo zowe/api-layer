@@ -25,7 +25,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
-import org.zowe.apiml.product.version.BuildInfo;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 
 @EnableEurekaServer
@@ -55,7 +54,6 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
         SpringApplication app = new SpringApplication(DiscoveryServiceApplication.class);
         app.addInitializers(new LatencyUtilsConfigInitializer());
         app.setLogStartupInfo(false);
-        new BuildInfo().logBuildInfo();
         app.run(args);
     }
 

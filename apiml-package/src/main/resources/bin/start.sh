@@ -49,7 +49,6 @@
 # - ZWE_configs_apiml_gateway_registry_refreshIntervalMs
 # - ZWE_configs_apiml_health_protected
 # - ZWE_configs_apiml_security_auth_jwt_customAuthHeader
-# - ZWE_configs_apiml_security_auth_passticket_customAuthHeader
 # - ZWE_configs_apiml_security_auth_passticket_customUserHeader
 # - ZWE_configs_apiml_security_authorization_endpoint_enabled
 # - ZWE_configs_apiml_security_authorization_endpoint_url
@@ -78,6 +77,7 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
 # - ZWE_configs_port - the port the api discovery service will use
@@ -141,6 +141,9 @@ if [ -n "${ZWE_DISCOVERY_SHARED_LIBS}" ]; then
     APIML_LOADER_PATH=${ZWE_DISCOVERY_SHARED_LIBS},${APIML_LOADER_PATH}
 fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
+
+# Logging level
+add_profile "${ZWE_configs_logging_level:-${ZWE_components_gateway_logging_level:-info}}"
 
 # Debug profile
 if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then

@@ -64,6 +64,7 @@
 # - ZWE_configs_certificate_truststore_file
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_port - the port the ZAAS will use
 # - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_spring_profiles_active
@@ -101,6 +102,9 @@ if [ -n "${ZWE_ZAAS_SHARED_LIBS}" ]; then
     ZAAS_LOADER_PATH=${ZWE_ZAAS_SHARED_LIBS},${ZAAS_LOADER_PATH}
 fi
 echo "Setting loader path: ${ZAAS_LOADER_PATH}"
+
+# Logging level
+add_profile "${ZWE_configs_logging_level:-info}"
 
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then

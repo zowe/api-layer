@@ -1,4 +1,4 @@
-spring.profiles.active: diag
+spring.profiles.active: https,debug,diag
 
 apiml:
     health.protected: true
@@ -20,6 +20,9 @@ management:
         web:
             exposure:
                 include: "*"
+
+logging:
+    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} <%blue(${logbackServiceName}):%magenta(%thread):${PID:}> %X{userid:-} %clr(%-5level) %cyan(\(%logger{15}\)) %msg%n'
 
 ---
 spring.config.activate.on-profile: https
