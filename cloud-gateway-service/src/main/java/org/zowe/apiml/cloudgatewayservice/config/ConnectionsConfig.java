@@ -274,7 +274,13 @@ public class ConnectionsConfig {
         AbstractDiscoveryClientOptionalArgs<?> args = new MutableDiscoveryClientOptionalArgs();
         args.setEurekaJerseyClient(eurekaJerseyClient);
 
-        final CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, config, args, this.context);
+        EurekaClientConfigBean configBean = new EurekaClientConfigBean();
+        BeanUtils.copyProperties(config, configBean);
+        Map<String, String> urls = new HashMap<>();
+        urls.put(DEFAULT_ZONE, withBasicAuthFallback(eurekaServerUrl));
+        configBean.setServiceUrl(urls);
+
+        final CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, configBean, args, this.context);
         cloudEurekaClient.registerHealthCheck(healthCheckHandler);
         return cloudEurekaClient;
     }
