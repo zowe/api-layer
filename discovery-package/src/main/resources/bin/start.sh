@@ -267,7 +267,7 @@ if [ "${ATTLS_SERVER_ENABLED}" = "true" -a "${APIML_ATTLS_LOAD_KEYRING:-false}" 
 fi
 
 # TODO Remove for 2.18.6 release
-ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED=${ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED:-true}
+export ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED=${ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED:-true}
 
 discoveryUserid=${ZWE_configs_apiml_discovery_userid:-${ZWE_components_discovery_apiml_discovery_userid:-}}
 discoveryPassword=${ZWE_configs_apiml_discovery_password:-${ZWE_components_discovery_apiml_discovery_password:-}}
