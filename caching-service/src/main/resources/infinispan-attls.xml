@@ -57,7 +57,7 @@
             />
 
             <jgroup:pbcast.GMS
-                print_local_addr="true"
+                print_local_addr="false"
                 join_timeout="15000"
                 max_join_attempts="0"
             />
