@@ -722,6 +722,11 @@
                                         }
                                     }
                                 },
+                                "useVirtualThreads": {
+                                    "type": "boolean",
+                                    "description": "To enable Infinispan virtual threads available from JDK21+.",
+                                    "default": false
+                                },
                                 "initialHosts": {
                                     "type": "string",
                                     "description": "Address of the other Caching services. Consists of jgroups port and host in the form of 'host[port]'.",

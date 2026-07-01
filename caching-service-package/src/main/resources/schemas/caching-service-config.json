@@ -210,6 +210,11 @@
                                 }
                             }
                         },
+                        "useVirtualThreads": {
+                            "type": "boolean",
+                            "description": "To enable Infinispan virtual threads available from JDK21+.",
+                            "default": false
+                        },
                         "persistence": {
                             "type": "object",
                             "description": "Where to persistently store caching data.",
