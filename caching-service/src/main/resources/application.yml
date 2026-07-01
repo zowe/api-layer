@@ -22,7 +22,6 @@ caching:
                 trustStore: ${server.ssl.trustStore}
                 trustStorePassword: ${server.ssl.trustStorePassword}
         infinispan:
-            initialHosts: localhost[7600]
             persistence:
                 dataLocation: data
 logging:
