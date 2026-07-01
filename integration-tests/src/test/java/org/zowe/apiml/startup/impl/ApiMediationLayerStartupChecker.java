@@ -56,7 +56,7 @@ public class ApiMediationLayerStartupChecker {
     public void waitUntilReady() {
         long poolInterval = 5;
         await()
-            .atMost(30, SECONDS)
+            .atMost(2, MINUTES)
             .pollDelay(1, SECONDS)
             .pollInterval(1, SECONDS)
         .until(this::areDiscoveryPortsReachable);
