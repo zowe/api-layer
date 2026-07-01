@@ -35,17 +35,25 @@ public class CorsUtils {
     private final List<String> corsAllowedEndpoints;
     private final List<String> defaultAllowedCorsOrigins;
     private final List<String> defaultAllowedCorsHeaders;
+    private final boolean defaultAllowCredentials;
 
-    public CorsUtils(List<String> corsAllowedMethods, boolean corsEnabled, @NonNull List<String> allowedEndpoints, @NonNull List<String> defaultAllowedCorsOrigins, @NonNull List<String> defaultAllowedCorsHeaders) {
+    public CorsUtils(
+            List<String> corsAllowedMethods,
+            boolean corsEnabled,
+            @NonNull List<String> allowedEndpoints,
+            @NonNull List<String> defaultAllowedCorsOrigins,
+            @NonNull List<String> defaultAllowedCorsHeaders,
+            boolean defaultAllowCredentials) {
         this.defaultAllowedCorsHttpMethods = corsAllowedMethods;
         this.gatewayCorsEnabled = corsEnabled;
         this.corsAllowedEndpoints = allowedEndpoints;
         this.defaultAllowedCorsOrigins = defaultAllowedCorsOrigins;
         this.defaultAllowedCorsHeaders = defaultAllowedCorsHeaders;
+        this.defaultAllowCredentials = defaultAllowCredentials;
     }
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
-        String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
+        var isCorsEnabledForService = metadata.get("apiml.corsEnabled");
         return Boolean.parseBoolean(isCorsEnabledForService);
     }
 
@@ -65,8 +73,14 @@ public class CorsUtils {
         // Check if the configuration specifies allowed origins for this service
         var config = new CorsConfiguration();
         if (isCorsEnabledForService(metadata)) {
+
             defaultAllowedCorsOrigins.forEach(config::addAllowedOrigin);
+
             var corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
+            var allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
+            var allowedCredentialsForService = metadata.get("");
+            var allowedMethodsForService = metadata.get("");
+
             if (isNotBlank(corsAllowedOriginsForService)) {
                 // Origins specified: split by comma, add to whitelist
                 log.debug("For service {}, set [{}] as allowed origins", serviceId, Arrays.toString(corsAllowedOriginsForService.split(",")));
@@ -74,15 +88,23 @@ public class CorsUtils {
                     .forEach(config::addAllowedOrigin);
             }
 
-            config.setAllowCredentials(true);
+            if (isNotBlank(allowedCredentialsForService)) {
+                config.setAllowCredentials(Boolean.parseBoolean(allowedCredentialsForService));
+            } else {
+                config.setAllowCredentials(defaultAllowCredentials);
+            }
 
-            var allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
+            if (isNotBlank(allowedMethodsForService)) {
+                config.setAllowedMethods(Arrays.asList(allowedMethodsForService.split(",")));
+            } else {
+                config.setAllowedMethods(defaultAllowedCorsHttpMethods);
+            }
+
             if (isNotBlank(allowedHeadersForService)) {
                 config.setAllowedHeaders(Arrays.asList(allowedHeadersForService.split(",")));
             } else {
                 config.setAllowedHeaders(defaultAllowedCorsHeaders);
             }
-            config.setAllowedMethods(defaultAllowedCorsHttpMethods);
         } else {
             config.setAllowedOrigins(defaultAllowedCorsOrigins);
             log.debug("CORS is not enabled for service {}, using defaults", serviceId);

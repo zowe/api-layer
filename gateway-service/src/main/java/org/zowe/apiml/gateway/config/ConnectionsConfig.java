@@ -10,7 +10,11 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.*;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.HealthCheckHandler;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -23,7 +27,6 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,7 +51,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -71,17 +73,25 @@ import reactor.netty.http.client.HttpClient;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
-public class ConnectionsConfig implements InitializingBean {
+public class ConnectionsConfig {
 
     private static final ApimlLogger apimlLog = ApimlLogger.of(ConnectionsConfig.class, YamlMessageServiceInstance.getInstance());
 
@@ -100,7 +110,7 @@ public class ConnectionsConfig implements InitializingBean {
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
 
-    @Value("${apiml.service.corsDefaultAllowedOrigins:#{null}}")
+    @Value("${apiml.service.corsDefaultAllowedOrigins:#{'https://${apiml.service.hostname:localhost}:${apiml.service.port}'}}")
     private String corsDefaultAllowedOrigins;
 
     @Value("${apiml.service.corsDefaultAllowedHeaders:*}")
@@ -123,16 +133,6 @@ public class ConnectionsConfig implements InitializingBean {
 
     @Value("${apiml.service.corsAllowedEndpoints:/gateway/**}")
     private final List<String> corsEnabledEndpoints;
-
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        if (corsDefaultAllowedOrigins == null || corsDefaultAllowedOrigins.isEmpty()) {
-            corsDefaultAllowedOrigins = "https://" + hostname + ":" + port;
-        }
-        if (corsDefaultAllowedHeaders == null || corsDefaultAllowedHeaders.isEmpty()) {
-            corsDefaultAllowedHeaders = CorsConfiguration.ALL;
-        }
-    }
 
     /**
      * @param httpClient             default http client

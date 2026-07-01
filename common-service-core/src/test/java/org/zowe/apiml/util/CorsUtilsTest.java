@@ -13,6 +13,8 @@ package org.zowe.apiml.util;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -22,15 +24,17 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(MockitoExtension.class)
 class CorsUtilsTest {
 
-    Map<String, String> metadata = new HashMap<>();
-    List<String> defaultCorsMethods = List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS");
+    private Map<String, String> metadata = new HashMap<>();
+    private List<String> defaultCorsMethods = List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS");
 
-    List<String> allowedEndpoints = List.of("/gateway/**");
+    private List<String> allowedEndpoints = List.of("/gateway/**");
 
     @BeforeEach
     void setup() {
+        metadata.clear();
         metadata.put("apiml.routes.v1.gateway", "api/v1");
         metadata.put("apiml.corsEnabled", "true");
     }
@@ -102,6 +106,7 @@ class CorsUtilsTest {
                     }
                 );
             }
+
         }
 
     }
