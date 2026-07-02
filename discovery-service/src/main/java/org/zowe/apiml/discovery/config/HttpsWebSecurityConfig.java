@@ -73,7 +73,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private boolean isHealthEndpointProtected;
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String discoveryUserid;
+    private String discoveryUserId;
 
     @Value("${apiml.discovery.password:#{null}}")
     private char[] discoveryPassword;
@@ -138,7 +138,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword))
+            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserId, discoveryPassword))
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
 

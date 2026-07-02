@@ -43,9 +43,9 @@ class EurekaClientConfigurationTest {
     class GivenSslVerificationEnabled {
 
         @Test
-        void thenCredentialsAreStillEmbedded() {
+        void thenCredentialsAreNotEmbedded() {
             ssl.setVerifySslCertificatesOfServices(true);
-            assertEquals(Collections.singletonList("https://eureka:password@localhost:10011/eureka/"), serviceUrls());
+            assertEquals(Collections.singletonList("https://localhost:10011/eureka/"), serviceUrls());
         }
     }
 
@@ -74,9 +74,9 @@ class EurekaClientConfigurationTest {
     class GivenNoSslConfiguration {
 
         @Test
-        void thenCredentialsAreEmbedded() {
+        void thenCredentialsAreNotEmbedded() {
             config.setSsl(null);
-            assertEquals(Collections.singletonList("https://eureka:password@localhost:10011/eureka/"), serviceUrls());
+            assertEquals(Collections.singletonList("https://localhost:10011/eureka/"), serviceUrls());
         }
     }
 }

@@ -38,7 +38,7 @@ public class StaticAPIService {
     private static final String REFRESH_ENDPOINT = "discovery/api/v1/staticApi";
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String discoveryUserid;
+    private String discoveryUserId;
 
     @Value("${apiml.discovery.password:#{null}}")
     private String discoveryPassword;
@@ -86,10 +86,10 @@ public class StaticAPIService {
     }
 
     void setAuthorization(AbstractHttpMessage request) {
-        if (StringUtils.isEmpty(discoveryUserid) || StringUtils.isEmpty(discoveryPassword)) {
+        if (StringUtils.isEmpty(discoveryUserId) || StringUtils.isEmpty(discoveryPassword)) {
             log.warn("Eureka userid or password not set");
         } else {
-            String basicToken = "Basic " + Base64.getEncoder().encodeToString((discoveryUserid + ":" + discoveryPassword).getBytes());
+            String basicToken = "Basic " + Base64.getEncoder().encodeToString((discoveryUserId + ":" + discoveryPassword).getBytes());
             request.addHeader(HttpHeaders.AUTHORIZATION, basicToken);
         }
     }

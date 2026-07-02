@@ -78,7 +78,7 @@ public class DiscoveryClientConfig {
     private boolean verifySslCertificatesOfServices;
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String discoveryUserid;
+    private String discoveryUserId;
 
     @Value("${apiml.discovery.password:#{null}}")
     private char[] discoveryPassword;
@@ -161,7 +161,7 @@ public class DiscoveryClientConfig {
         }
         String password = (discoveryPassword == null) ? null : new String(discoveryPassword);
         return Arrays.stream(discoveryServiceUrls.split(","))
-            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), discoveryUserid, password))
+            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), discoveryUserId, password))
             .collect(Collectors.joining(","));
     }
 

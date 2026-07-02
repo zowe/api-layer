@@ -46,7 +46,7 @@ public class RegisterToApiLayer {
     private boolean apimlEnabled;
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String discoveryUserid;
+    private String discoveryUserId;
 
     @Value("${apiml.discovery.password:#{null}}")
     private char[] discoveryPassword;
@@ -89,7 +89,7 @@ public class RegisterToApiLayer {
 
     private void register(ApiMediationServiceConfig newConfig) {
         if (newConfig.getDiscoveryUserid() == null) {
-            newConfig.setDiscoveryUserid(discoveryUserid);
+            newConfig.setDiscoveryUserid(discoveryUserId);
         }
         if (newConfig.getDiscoveryPassword() == null) {
             newConfig.setDiscoveryPassword(discoveryPassword);

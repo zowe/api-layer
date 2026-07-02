@@ -63,12 +63,12 @@ public class ApiMediationLayerStartupChecker {
     }
 
     private static String buildEurekaCredentialsHeader() {
-        String userid = System.getProperty("apiml.discovery.userid");
+        String userId = System.getProperty("apiml.discovery.userid");
         String password = System.getProperty("apiml.discovery.password");
-        if (StringUtils.isAnyBlank(userid, password)) {
+        if (StringUtils.isAnyBlank(userId, password)) {
             return null;
         }
-        return "Basic " + Base64.getEncoder().encodeToString((userid + ":" + password).getBytes());
+        return "Basic " + Base64.getEncoder().encodeToString((userId + ":" + password).getBytes());
     }
 
     public void waitUntilReady() {

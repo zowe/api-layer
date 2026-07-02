@@ -196,7 +196,7 @@ class StaticAPIServiceTest {
         @Test
         void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
             StaticAPIService service = new StaticAPIService(null);
-            ReflectionTestUtils.setField(service, "discoveryUserid", "user");
+            ReflectionTestUtils.setField(service, "discoveryUserId", "user");
             ReflectionTestUtils.setField(service, "discoveryPassword", "password");
 
             AbstractHttpMessage request = mock(AbstractHttpMessage.class);
@@ -213,7 +213,7 @@ class StaticAPIServiceTest {
         })
         void givenIncompleteCredentials_whenSetCredentials_thenDoNotSetAuthorization(String userId, String password) {
             StaticAPIService service = new StaticAPIService(null);
-            ReflectionTestUtils.setField(service, "discoveryUserid", userId);
+            ReflectionTestUtils.setField(service, "discoveryUserId", userId);
             ReflectionTestUtils.setField(service, "discoveryPassword", password);
 
             AbstractHttpMessage request = mock(AbstractHttpMessage.class);
