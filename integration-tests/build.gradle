@@ -231,7 +231,8 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'GatewayCentralRegistry',
             'SafIdTokenTest',
             'InfinispanJGroupStabilityTest',
-            'DiscoveryBasicAuthTest'
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -280,7 +281,8 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'RateLimitTest',
             'GraphQLTest',
             'InfinispanJGroupStabilityTest',
-            'DiscoveryBasicAuthTest'
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -332,7 +334,8 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
             'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
             'NonModulithTest',
             'InfinispanJGroupStabilityTest',
-            'DiscoveryBasicAuthTest'
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -385,7 +388,8 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'NonModulithTest',
             'InfinispanJGroupStabilityTest',
             'RateLimitTest',
-            'DiscoveryBasicAuthTest'
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
