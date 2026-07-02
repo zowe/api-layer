@@ -13,6 +13,7 @@ package org.zowe.apiml.passticket;
 import lombok.AllArgsConstructor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 import org.zowe.apiml.util.ObjectUtil;
@@ -54,10 +55,11 @@ public class PassTicketService {
             log.debug("Generating PassTicket for user: {} and applid: {}", userId, applId);
             validateUserIdAndApplId(userId, applId);
             var passTicket = irrPassTicket.generate(userId.toUpperCase(), applId.toUpperCase());
-            log.debug("Generated PassTicket: {}", passTicket);
+            log.debug("PassTicket generated. Last 15 characters of hash: {}",
+                StringUtils.right(DigestUtils.sha256Hex(passTicket.substring(4)),15));
             return passTicket;
         } catch (RuntimeException e) {
-            log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e);
+            log.debug("Error during pass ticket generation, userId={}, applid={}, exception={}", userId, applId, e.getMessage(), e);
             throw e;
         }
     }
