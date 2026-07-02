@@ -47,8 +47,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.zowe.apiml.security.SecurityUtils.formatKeyringUrl;
 import static org.zowe.apiml.security.SecurityUtils.isKeyring;
@@ -68,7 +71,7 @@ public class InfinispanConfig implements InitializingBean {
     private static final long SMALL_CACHE_SIZE = 10;
     private static final long BIG_CACHE_SIZE = 1000;
 
-    @Value("${caching.storage.infinispan.initialHosts}")
+    @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;
 
     @Value("${server.ssl.keyStoreType}")
@@ -104,6 +107,9 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${jgroups.tcp.diag.enabled:false}")
     private String tcpDiagEnabled;
 
+    @Value("${jgroups.tcpping.num_discovery_runs:20}")
+    private int discoveryRuns;
+
     @Value("${attlsEnabledOnInfinispanTest:${server.attlsServer.enabled:false}}")
     private boolean isServerAttlsEnabled;
 
@@ -113,11 +119,33 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${caching.storage.infinispan.numSegments:256}")
     private int numSegments;
 
+    @Value("${apiml.service.hostname:localhost}")
+    private String hostname;
+
     private final AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
 
     @Override
     public void afterPropertiesSet() {
         updateKeyring();
+    }
+
+    private String getInitialHosts() {
+        if (StringUtils.isNotEmpty(initialHosts)) {
+            return initialHosts;
+        }
+
+        Pattern haHostname = Pattern.compile("^ZWE_haInstances_\\w+_hostname$");
+        initialHosts = System.getenv().entrySet().stream()
+            .filter(e -> haHostname.matcher(e.getKey()).matches())
+            .map(Map.Entry::getValue)
+            .map(h -> String.format("%s[%s]", h, port))
+            .collect(Collectors.joining(","));
+
+        if (StringUtils.isBlank(initialHosts)) {
+            initialHosts = String.format("%s[%s]", hostname, port);
+        }
+
+        return initialHosts;
     }
 
     @PostConstruct
@@ -204,7 +232,8 @@ public class InfinispanConfig implements InitializingBean {
 
     @Bean(destroyMethod = "stop")
     LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
-        System.setProperty("jgroups.tcpping.initial_hosts", initialHosts);
+        System.setProperty("jgroups.tcpping.initial_hosts", getInitialHosts());
+        System.setProperty("jgroups.tcpping.num_discovery_runs", String.valueOf(discoveryRuns));
         System.setProperty("jgroups.bind.port", port);
         System.setProperty("jgroups.bind.address", address);
         System.setProperty("jgroups.keyExchange.socketTimeout", keyExchangeSocketTimeout);

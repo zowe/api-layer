@@ -38,6 +38,7 @@
 # - ZWE_configs_certificate_truststore_file
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_port - the port the caching service will use
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
@@ -45,6 +46,8 @@
 # - ZWE_haInstance_hostname
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
+# - ZWE_configs_apiml_discovery_userid - Userid for Eureka basic auth (defaults to "eureka" when verifyCertificates is DISABLED)
+# - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
 
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -57,6 +60,9 @@ else
     . "$(pwd)/bin/parse_jvm_args.sh"
 fi
 echo "jar file: ${JAR_FILE}"
+
+# Logging level
+add_profile "${ZWE_configs_logging_level:-info}"
 
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then
@@ -89,6 +95,12 @@ if [ -d "${original_infinispan_index_location}" ]; then
     mv -f "${original_infinispan_index_location}" "${ZWE_zowe_workspaceDirectory:-$(pwd)}/caching-service/${ZWE_haInstance_id:-localhost}/index"
 fi
 
+INFINISPAN_VTHREADS=${ZWE_configs_storage_infinispan_useVirtualThreads:-false}
+if [ "${INFINISPAN_VTHREADS}" = "true" ] && [ "$(uname)" = "OS/390" ]; then
+    echo "Warning: Virtual Threads enabled can result to not working Caching Service"
+fi
+VIRTUAL_THREADS_OPTS="${VIRTUAL_THREADS_OPTS:--Dorg.infinispan.threads.virtual=${INFINISPAN_VTHREADS} -Djgroups.thread.virtual=${INFINISPAN_VTHREADS}}"
+
 CACHING_CODE=CS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
@@ -97,6 +109,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   ${QUICK_START} \
   ${SHARED_CLASSES_OPTS} \
   ${ADD_OPENS} \
+  ${VIRTUAL_THREADS_OPTS} \
   ${LOGBACK} \
   ${JVM_SECURITY_PROPERTIES} \
   ${CUSTOM_JVM_OPTS} \
@@ -124,8 +137,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
   -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
   -Dapiml.security.x509.certificatesUrls=${CERTIFICATES_URLS} \
-  -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-} \
-  -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-} \
+  -Dapiml.discovery.userid=${discoveryUserid} \
+  -Dapiml.discovery.password=${discoveryPassword} \
+  -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-${discoveryUserid}} \
+  -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-${discoveryPassword}} \
   -Djdk.tls.client.cipherSuites=${client_ciphers} \
   -Dserver.ssl.ciphers=${server_ciphers} \
   -Dserver.ssl.protocol=${server_protocol} \
@@ -139,7 +154,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Djgroups.keyExchange.port=${ZWE_configs_storage_infinispan_jgroups_keyExchange_port:-7601} \
   -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
   -Djgroups.keyExchange.socketTimeout=${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000} \
-  -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-localhost[7600]} \
+  -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-} \
   -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
   -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
   -Dserver.ssl.keyStore="${keystore_location}" \

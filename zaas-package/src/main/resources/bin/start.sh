@@ -64,6 +64,7 @@
 # - ZWE_configs_certificate_truststore_file
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_port - the port the ZAAS will use
 # - ZWE_configs_server_ssl_enabled
 # - ZWE_configs_spring_profiles_active
@@ -73,6 +74,8 @@
 # - ZWE_zowe_network_client_tls_attls
 # - ZWE_zowe_certificate_keystore_type - The default keystore type to use for SSL certificates
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
+# - ZWE_configs_apiml_discovery_userid - Userid for Eureka basic auth (defaults to "eureka" when verifyCertificates is DISABLED)
+# - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
 
 
 # JAR file location
@@ -99,6 +102,9 @@ if [ -n "${ZWE_ZAAS_SHARED_LIBS}" ]; then
     ZAAS_LOADER_PATH=${ZWE_ZAAS_SHARED_LIBS},${ZAAS_LOADER_PATH}
 fi
 echo "Setting loader path: ${ZAAS_LOADER_PATH}"
+
+# Logging level
+add_profile "${ZWE_configs_logging_level:-info}"
 
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then
@@ -175,8 +181,10 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
     -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
     -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
-    -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-} \
-    -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
+    -Dapiml.discovery.password=${discoveryPassword} \
+    -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-${discoveryUserid}} \
+    -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-${discoveryPassword}} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Dserver.ssl.ciphers=${server_ciphers} \
     -Dserver.ssl.protocol=${server_protocol} \

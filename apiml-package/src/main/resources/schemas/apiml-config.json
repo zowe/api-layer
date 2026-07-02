@@ -722,6 +722,11 @@
                                         }
                                     }
                                 },
+                                "useVirtualThreads": {
+                                    "type": "boolean",
+                                    "description": "To enable Infinispan virtual threads available from JDK21+.",
+                                    "default": false
+                                },
                                 "initialHosts": {
                                     "type": "string",
                                     "description": "Address of the other Caching services. Consists of jgroups port and host in the form of 'host[port]'.",
@@ -916,7 +921,7 @@
             "description": "Specifies identifier of the domain APIML for routing purpose in the central APIML."
         },
         "logging": {
-            "type": "string",
+            "type": "object",
             "description": "Logging configuration for APIML single-service.",
             "properties": {
                 "config": {
@@ -924,6 +929,16 @@
                     "description": "Path to custom logback configuration file.",
                     "minLength": 1,
                     "maxLength": 1024
+                },
+                "level": {
+                    "type": "string",
+                    "description": "Logging level to activate",
+                    "default": "info",
+                    "enum": [
+                        "quiet",
+                        "info",
+                        "debug"
+                    ]
                 }
             }
         }
