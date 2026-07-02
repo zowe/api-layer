@@ -28,7 +28,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -66,9 +65,6 @@ class StaticAPIServiceTest {
     private StatusLine notFoundStatusLine;
     @Mock
     private HttpEntity entity;
-
-    @Mock
-    private DiscoveryConfigProperties discoveryConfigProperties;
 
     private final String[] discoveryLocations = {DISCOVERY_LOCATION, DISCOVERY_LOCATION_2};
     private static final String BODY = "This is body";
