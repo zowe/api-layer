@@ -8,12 +8,6 @@
       </param>
     </additionalParameters>
     <option name="ALTERNATIVE_JRE_PATH" value="1.8 (2)" />
-    <envs>
-      <env name="APIML_DISCOVERY_PASSWORD" value="password" />
-      <env name="APIML_DISCOVERY_USERID" value="eureka" />
-      <env name="APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES" value="false" />
-      <env name="APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES" value="true" />
-    </envs>
     <module name="api-layer.gateway-service.main" />
     <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="org.zowe.apiml.gateway.GatewayApplication" />
