@@ -22,11 +22,14 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
@@ -70,6 +73,12 @@ public class ApiMediationLayerStartupChecker {
 
     public void waitUntilReady() {
         long poolInterval = 5;
+        await()
+            .atMost(2, MINUTES)
+            .pollDelay(1, SECONDS)
+            .pollInterval(1, SECONDS)
+        .until(this::areDiscoveryPortsReachable);
+
         await()
             .atMost(10, MINUTES)
             .pollDelay(0, SECONDS)
@@ -158,6 +167,17 @@ public class ApiMediationLayerStartupChecker {
 
     private void logDebug(String logMessage, boolean state) {
         log.debug(logMessage, state ? "UP" : "DOWN");
+    }
+
+    private boolean areDiscoveryPortsReachable() {
+        DiscoveryServiceConfiguration discoveryConfig = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(discoveryConfig.getHost(), discoveryConfig.getPort()), 5000);
+        } catch (IOException e) {
+            log.debug("Discovery service {}:{} is not yet reachable: {}", discoveryConfig.getHost(), discoveryConfig.getPort(), e.getMessage());
+            return false;
+        }
+        return true;
     }
 
     @AllArgsConstructor
