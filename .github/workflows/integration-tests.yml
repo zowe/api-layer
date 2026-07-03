@@ -395,7 +395,7 @@ jobs:
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
+                    APIML_SERVICE_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             cloud-gateway-service:
