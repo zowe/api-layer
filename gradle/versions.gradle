@@ -82,7 +82,7 @@ dependencyResolutionManagement {
             version('jxpath', '1.4.0')
             version('lettuce', '6.8.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
-            version('log4j', '2.26.0')
+            version('log4j', '2.26.1')
             version('logback') {
                 // 1.3+ versions doesn't contain Slf4J package
                 // 1.4+ versions requires JDK 11
