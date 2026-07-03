@@ -77,7 +77,7 @@ dependencyResolutionManagement {
             version('jxpath', '1.4.0')
             version('lettuce', '6.8.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
-            version('log4j', '2.26.0')
+            version('log4j', '2.26.1')
             version('lombok', '1.18.46')
             version('mailapi', '1.6.8')
             version('netty', '4.2.15.Final')
