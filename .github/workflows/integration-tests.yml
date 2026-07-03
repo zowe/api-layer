@@ -416,7 +416,7 @@ jobs:
 
             -   name: Run Discovery Basic Auth Tests
                 run: >
-                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
+                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests --info -Denvironment.config=-docker -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
