@@ -23,6 +23,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
+import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
@@ -124,6 +126,16 @@ class ApimlAccessTokenProviderTest {
         doNothing().when(cachingServiceClient).create(any());
         byte[] salt = accessTokenProvider.getSalt();
         assertNotNull(salt);
+    }
+
+    @Test
+    void givenSaltResolved_whenGetSaltCalledAgain_thenReuseCachedValueWithoutRereading() throws CachingServiceClientException {
+        byte[] first = accessTokenProvider.getSalt();
+        byte[] second = accessTokenProvider.getSalt();
+
+        assertArrayEquals(first, second);
+        // the salt is resolved once and memoized, so the caching service is not hit again
+        verify(cachingServiceClient, times(1)).read("salt");
     }
 
     @Test
@@ -320,15 +332,62 @@ class ApimlAccessTokenProviderTest {
         }
 
         @Test
-        void givenKeyCollision_whenStoreSalt_thenLogWarnAndThrowException() throws CachingServiceClientException {
+        void givenKeyCollision_whenStoreSalt_thenAdoptExistingSharedSalt() throws CachingServiceClientException {
+            String winningSalt = Base64.getEncoder().encodeToString(ApimlAccessTokenProvider.generateSalt());
+            // the initial lookup misses, and the re-read after the collision returns the salt stored by the winner
+            when(cachingServiceClient.read("salt"))
+                .thenThrow(new CachingServiceClientException("Salt not found"))
+                .thenReturn(new CachingServiceClient.KeyValue("salt", winningSalt));
+
+            CachingServiceClientException mockCollisionException = mock(CachingServiceClientException.class);
+            when(mockCollisionException.isKeyCollision()).thenReturn(true);
+            doThrow(mockCollisionException).when(cachingServiceClient).create(any(CachingServiceClient.KeyValue.class));
+
+            String salt = accessTokenProvider.initializeSalt();
+
+            assertEquals(winningSalt, salt);
+            verify(cachingServiceClient, times(1)).create(any(CachingServiceClient.KeyValue.class));
+            verify(cachingServiceClient, times(2)).read("salt");
+        }
+
+        @Test
+        void givenKeyCollisionButSaltStillMissingOnReread_whenStoreSalt_thenThrowException() throws CachingServiceClientException {
             when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException("Salt not found"));
 
             CachingServiceClientException mockCollisionException = mock(CachingServiceClientException.class);
             when(mockCollisionException.isKeyCollision()).thenReturn(true);
-
             doThrow(mockCollisionException).when(cachingServiceClient).create(any(CachingServiceClient.KeyValue.class));
 
             assertThrows(CachingServiceClientException.class, () -> accessTokenProvider.initializeSalt());
+
+            verify(cachingServiceClient, times(1)).create(any(CachingServiceClient.KeyValue.class));
+        }
+
+        @Test
+        void givenStorageKeyCollision_whenStoreSalt_thenAdoptExistingSharedSalt() throws CachingServiceClientException {
+            String winningSalt = Base64.getEncoder().encodeToString(ApimlAccessTokenProvider.generateSalt());
+            // the embedded LocalCachingClient surfaces cache errors as StorageException, not CachingServiceClientException:
+            // the initial lookup misses, and the re-read after the collision returns the salt stored by the winner
+            when(cachingServiceClient.read("salt"))
+                .thenThrow(new StorageException("org.zowe.apiml.cache.keyNotInCache", HttpStatus.NOT_FOUND))
+                .thenReturn(new CachingServiceClient.KeyValue("salt", winningSalt));
+            doThrow(new StorageException("org.zowe.apiml.cache.keyCollision", HttpStatus.CONFLICT))
+                .when(cachingServiceClient).create(any(CachingServiceClient.KeyValue.class));
+
+            String salt = accessTokenProvider.initializeSalt();
+
+            assertEquals(winningSalt, salt);
+            verify(cachingServiceClient, times(1)).create(any(CachingServiceClient.KeyValue.class));
+            verify(cachingServiceClient, times(2)).read("salt");
+        }
+
+        @Test
+        void givenGenericStorageError_whenStoreSalt_thenThrowException() {
+            when(cachingServiceClient.read("salt")).thenThrow(new StorageException("org.zowe.apiml.cache.keyNotInCache", HttpStatus.NOT_FOUND));
+            doThrow(new StorageException("org.zowe.apiml.cache.insufficientStorage", HttpStatus.INSUFFICIENT_STORAGE))
+                .when(cachingServiceClient).create(any(CachingServiceClient.KeyValue.class));
+
+            assertThrows(StorageException.class, () -> accessTokenProvider.initializeSalt());
 
             verify(cachingServiceClient, times(1)).create(any(CachingServiceClient.KeyValue.class));
         }

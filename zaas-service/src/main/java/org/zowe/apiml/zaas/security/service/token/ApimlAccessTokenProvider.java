@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.models.AccessTokenContainer;
@@ -32,6 +33,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -47,6 +49,15 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private final AuthenticationService authenticationService;
     @Qualifier("oidcJwkMapper")
     private final ObjectMapper objectMapper;
+
+    /**
+     * The salt is a deployment-wide, immutable value stored in the shared caching service. Once resolved it is
+     * memoized here so that the hot path ({@link #isInvalidated(String)}) does not read it from the caching service
+     * on every request. The cached value is always the one confirmed present in the shared store, which keeps every
+     * instance hashing tokens identically.
+     */
+    private final AtomicReference<byte[]> cachedSalt = new AtomicReference<>();
+    private final Object saltLock = new Object();
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
         String hashedValue = getHash(token);
@@ -185,8 +196,21 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
         if (localSalt == null || localSalt.isEmpty()) {
             String newSalt = Base64.getEncoder().encodeToString(generateSalt());
-            storeSalt(newSalt);
-            localSalt = newSalt;
+            try {
+                storeSalt(newSalt);
+                localSalt = newSalt;
+            } catch (CachingServiceClientException | StorageException e) {
+                if (!isKeyCollision(e)) {
+                    throw e;
+                }
+                // Another instance stored the salt first. Adopt the shared value so that all instances
+                // hash tokens identically, instead of failing this request with the collision error.
+                CachingServiceClient.KeyValue keyValue = cachingServiceClient.read("salt");
+                if (keyValue == null || keyValue.getValue() == null || keyValue.getValue().isEmpty()) {
+                    throw e;
+                }
+                localSalt = keyValue.getValue();
+            }
         }
 
         return localSalt;
@@ -211,10 +235,27 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public byte[] getSalt() throws CachingServiceClientException {
-        String saltStr = initializeSalt();
-        if (saltStr == null) {
-            return new byte[0];
+        byte[] salt = cachedSalt.get();
+        if (salt != null) {
+            return salt.clone();
         }
+        synchronized (saltLock) {
+            salt = cachedSalt.get();
+            if (salt == null) {
+                String saltStr = initializeSalt();
+                if (saltStr == null || saltStr.isEmpty()) {
+                    // Initialization did not yield a salt (e.g. a transient cache error); do not memoize
+                    // so the next call retries instead of freezing an empty salt.
+                    return new byte[0];
+                }
+                salt = decodeSalt(saltStr);
+                cachedSalt.set(salt);
+            }
+            return salt.clone();
+        }
+    }
+
+    private byte[] decodeSalt(String saltStr) {
         try {
             return Base64.getDecoder().decode(saltStr);
         } catch (IllegalArgumentException e) {
@@ -223,17 +264,32 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
     }
 
-    private void storeSalt(String salt) throws CachingServiceClientException {
+    private void storeSalt(String salt) {
         try {
             cachingServiceClient.create(new CachingServiceClient.KeyValue("salt", salt));
-        } catch (CachingServiceClientException e) {
-            if (e.isKeyCollision()) {
+        } catch (CachingServiceClientException | StorageException e) {
+            if (isKeyCollision(e)) {
                 log.warn("Salt initialization encountered a 409 Conflict. Verify your configuration (property 'jgroups.tcpping.initial_hosts') and using caching service '/application/health' endpoint verify that your clustering/JGroups cluster members are properly joined.");
             } else {
                 log.error("Failed to store salt due to a cache infrastructure error.", e);
             }
             throw e;
         }
+    }
+
+    /**
+     * Detects a key-collision (409 Conflict) regardless of the active {@link CachingClient} implementation:
+     * the REST {@code CachingServiceClient} reports it as a {@link CachingServiceClientException}, while the
+     * embedded {@code LocalCachingClient} propagates the underlying {@link StorageException} from the storage layer.
+     */
+    private boolean isKeyCollision(RuntimeException e) {
+        if (e instanceof CachingServiceClientException cse) {
+            return cse.isKeyCollision();
+        }
+        if (e instanceof StorageException se) {
+            return HttpStatus.CONFLICT.equals(se.getStatus());
+        }
+        return false;
     }
 
     public static byte[] generateSalt() {
