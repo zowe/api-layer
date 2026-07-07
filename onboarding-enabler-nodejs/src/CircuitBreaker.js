@@ -48,6 +48,7 @@
  * SOFTWARE.
  */
 
+/* eslint-disable no-underscore-dangle */
 import { EventEmitter } from 'events';
 
 const STATES = {
