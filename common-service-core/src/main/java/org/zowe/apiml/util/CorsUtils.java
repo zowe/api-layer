@@ -78,7 +78,7 @@ public class CorsUtils {
 
             var corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
             var allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
-            var allowedCredentialsForService = metadata.get("apiml.corsAllowedCredentials");
+            var allowedCredentialsForService = metadata.get("apiml.corsAllowCredentials");
             var allowedMethodsForService = metadata.get("apiml.corsAllowedMethods");
 
             if (isNotBlank(corsAllowedOriginsForService)) {
@@ -107,6 +107,9 @@ public class CorsUtils {
             }
         } else {
             config.setAllowedOrigins(defaultAllowedCorsOrigins);
+            config.setAllowedHeaders(defaultAllowedCorsHeaders);
+            config.setAllowCredentials(defaultAllowCredentials);
+            config.setAllowedMethods(defaultAllowedCorsHttpMethods);
             log.debug("CORS is not enabled for service {}, using defaults", serviceId);
         }
         return config;

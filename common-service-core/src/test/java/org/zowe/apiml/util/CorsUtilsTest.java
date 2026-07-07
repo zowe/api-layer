@@ -55,6 +55,7 @@ class CorsUtilsTest {
                     .defaultAllowedCorsHttpMethods(defaultCorsMethods)
                     .defaultAllowedCorsOrigins(Collections.emptyList())
                     .defaultAllowedCorsHeaders(List.of("*"))
+                    .defaultAllowCredentials(true)
                     .build();
             }
 
@@ -87,7 +88,8 @@ class CorsUtilsTest {
                 metadata.remove("apiml.corsEnabled");
                 corsUtils.setCorsConfiguration("dclient", metadata, (path, configuration) -> {
                         assertEquals(metadata.get("apiml.routes.v1.gateway"), path);
-                        assertNull(configuration.getAllowedMethods());
+                        assertTrue(configuration.getAllowCredentials());
+                        assertEquals(List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"), configuration.getAllowedMethods());
                     }
                 );
             }

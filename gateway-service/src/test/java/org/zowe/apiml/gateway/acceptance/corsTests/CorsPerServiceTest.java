@@ -8,17 +8,13 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.acceptance;
+package org.zowe.apiml.gateway.acceptance.corsTests;
 
 import com.google.common.net.HttpHeaders;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import io.restassured.http.Header;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.NestedTestConfiguration;
-import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService.MockServiceBuilder;
 import org.zowe.apiml.gateway.MockService.Scope;
@@ -33,10 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -46,7 +40,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
     "apiml.service.corsEnabled=true",
     "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org"
 })
-@NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
 class CorsPerServiceTest extends AcceptanceTestWithMockServices {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
@@ -89,7 +82,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     @Test
     // Verify the header to allow CORS isn't set
     // Verify there was no call to southbound service
-    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenPreflightRequestArrives_thenDefaultCorsHeadersIsSet() throws Exception {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
@@ -107,8 +100,11 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
         .when()
             .options(basePath + "/servicecors1/api/v1/fullheaders")
         .then()
-            .statusCode(is(SC_FORBIDDEN))
-            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is(nullValue()));
+            .statusCode(is(SC_OK))
+            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://foo.bar.org")
+            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_HEADERS, "origin, x-requested-with")
+            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, "GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS");
+
 
         assertFalse(called.get());
     }
@@ -116,7 +112,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     @Test
     // Verify the header to allow CORS isn't set
     // Verify there was no call to southbound service
-    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenDefaultCorsHeadersIsSet() throws Exception {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
@@ -134,10 +130,10 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
         .when()
             .post(basePath + "/servicecors2/api/v1/fullheaders")
         .then()
-            .statusCode(is(SC_FORBIDDEN))
-            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is(nullValue()));
+            .statusCode(is(SC_OK))
+            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "https://foo.bar.org");
 
-        assertFalse(called.get());
+        assertTrue(called.get());
     }
 
     @Test
@@ -159,9 +155,11 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
             .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
             .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
             .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "origin, x-requested-with"))
+            .log().all()
         .when()
             .options(basePath + "/servicecors3/api/v1/fullheaders")
         .then()
+            .log().all()
             .statusCode(is(SC_OK))
             .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is("https://foo.bar.org"))
             .header(HttpHeaders.ACCESS_CONTROL_ALLOW_METHODS, is("GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"))
@@ -209,53 +207,6 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
 
         // The actual request is passed to the southbound service
         assertTrue(called.get() );
-    }
-
-    @Nested
-    @MicroservicesAcceptanceTest
-    @ActiveProfiles({"CorsPerServiceTestWithDefaults", "test"})
-    @TestPropertySource(properties = {
-        "apiml.service.corsEnabled=true"
-    })
-    class CorsPerServiceTestWithDefaults {
-
-        @Test
-        void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
-            var headers = new Headers();
-            var called = new AtomicBoolean(false);
-            List<Consumer<HttpExchange>> assertions = List.of(
-                    httpExchange -> {
-                        assertNull(httpExchange.getRequestHeaders().get(HttpHeaders.ORIGIN));
-                        called.set(true);
-                    }
-                );
-            mockCorsService("servicecors5", headers, Map.of("apiml.corsEnabled", "false"), assertions).start();
-
-            given()
-                .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
-                .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
-                .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "origin, x-requested-with"))
-            .when()
-                .post(basePath + "/servicecors5/api/v1/fullheaders")
-            .then()
-                .statusCode(is(SC_FORBIDDEN))
-                .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is(nullValue()));
-
-            assertFalse(called.get());
-        }
-
-    }
-
-    @Nested
-    @MicroservicesAcceptanceTest
-    @ActiveProfiles({"CorsPerServiceTestWithDefaults", "test"})
-    @TestPropertySource(properties = {
-        "apiml.service.corsEnabled=false"
-    })
-    class CorsPerServiceTestWithDisabled {
-
-        // the service should not receive the Origin header
-
     }
 
 }
