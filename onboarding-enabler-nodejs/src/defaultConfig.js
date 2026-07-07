@@ -68,6 +68,12 @@ export default {
     registerWithEureka: true,
     useLocalMetadata: false,
     preferIpAddress: false,
+    circuitBreaker: {
+      enabled: true,
+      maxFailures: 5,
+      cooldownTime: 60000,
+      backoffMax: 300000,
+    },
   },
   instance: {},
 };

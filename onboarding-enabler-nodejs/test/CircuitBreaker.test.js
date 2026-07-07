@@ -48,7 +48,7 @@
  * SOFTWARE.
  */
 
-/* eslint-disable no-unused-expressions, max-len */
+/* eslint-disable no-unused-expressions, max-len, no-underscore-dangle */
 import sinon from 'sinon';
 import * as chai from 'chai';
 

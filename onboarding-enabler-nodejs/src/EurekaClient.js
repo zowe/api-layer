@@ -48,6 +48,7 @@
  * SOFTWARE.
  */
 
+/* eslint-disable no-underscore-dangle */
 import fs from 'fs';
 import yaml from 'js-yaml';
 import lodash from 'lodash';
@@ -58,6 +59,7 @@ import { series, waterfall } from 'async';
 import { EventEmitter } from 'events';
 
 import AwsMetadata from './AwsMetadata.js';
+import CircuitBreaker from './CircuitBreaker.js';
 import ConfigClusterResolver from './ConfigClusterResolver.js';
 import DnsClusterResolver from './DnsClusterResolver.js';
 import Logger from './Logger.js';
@@ -138,6 +140,28 @@ export default class Eureka extends EventEmitter {
       app: {},
       vip: {},
     };
+
+    // Initialize circuit breaker
+    const cbConfig = this.config.eureka.circuitBreaker || {};
+    this.circuitBreaker = new CircuitBreaker({
+      maxFailures: cbConfig.maxFailures,
+      cooldownTime: cbConfig.cooldownTime,
+      backoffMax: cbConfig.backoffMax,
+    });
+
+    this.circuitBreaker.on('circuitOpen', ({ from, to }) => {
+      this.logger.warn(`Circuit breaker transition: ${from} → ${to}. Eureka requests suspended.`);
+    });
+    this.circuitBreaker.on('circuitHalfOpen', ({ from, to }) => {
+      this.logger.info(`Circuit breaker transition: ${from} → ${to}. Probing Eureka server.`);
+    });
+    this.circuitBreaker.on('circuitClose', ({ from, to }) => {
+      this.logger.info(`Circuit breaker transition: ${from} → ${to}. Eureka requests resumed.`);
+    });
+
+    // Timeout tracking for setTimeout-based scheduling
+    this._heartbeatTimeout = null;
+    this._registryFetchTimeout = null;
   }
 
   /*
@@ -217,6 +241,11 @@ export default class Eureka extends EventEmitter {
     De-registers instance with Eureka, stops heartbeats / registry fetches.
   */
   stop(callback = noop) {
+    clearTimeout(this._registryFetchTimeout);
+    this._registryFetchTimeout = null;
+    clearTimeout(this._heartbeatTimeout);
+    this._heartbeatTimeout = null;
+    // Clear legacy interval IDs for backward compatibility
     clearInterval(this.registryFetch);
     if (this.config.eureka.registerWithEureka) {
       clearInterval(this.heartbeat);
@@ -307,16 +336,50 @@ export default class Eureka extends EventEmitter {
   }
 
   /*
-    Sets up heartbeats on interval for the life of the application.
+    Sets up heartbeats using setTimeout-based scheduling with circuit breaker.
     Heartbeat interval by setting configuration property: eureka.heartbeatInterval
+    When circuit breaker is enabled, each tick checks allowRequest() before
+    making the HTTP call and adjusts scheduling based on success/failure.
   */
   startHeartbeats() {
-    this.heartbeat = setInterval(() => {
-      this.renew();
-    }, this.config.eureka.heartbeatInterval);
+    const cbEnabled = this.config.eureka.circuitBreaker &&
+      this.config.eureka.circuitBreaker.enabled !== false;
+
+    if (!cbEnabled) {
+      // Fallback: legacy setInterval behavior
+      this.heartbeat = setInterval(() => {
+        this.renew();
+      }, this.config.eureka.heartbeatInterval);
+      return;
+    }
+
+    const schedule = () => {
+      if (!this.circuitBreaker.allowRequest()) {
+        // Circuit is OPEN — skip HTTP call, wait for cooldown
+        this._heartbeatTimeout = setTimeout(schedule, this.circuitBreaker.getNextCooldown());
+        return;
+      }
+
+      this.renew((err) => {
+        if (err) {
+          const result = this.circuitBreaker.recordFailure();
+          this._heartbeatTimeout = setTimeout(schedule,
+            result.delay || this.config.eureka.heartbeatInterval);
+        } else {
+          this.circuitBreaker.recordSuccess();
+          this._heartbeatTimeout = setTimeout(schedule, this.config.eureka.heartbeatInterval);
+        }
+      });
+    };
+
+    this._heartbeatTimeout = setTimeout(schedule, this.config.eureka.heartbeatInterval);
   }
 
-  renew() {
+  /*
+    Sends a heartbeat renewal to Eureka. Optionally accepts a callback for
+    success/failure notification (used by circuit breaker scheduling).
+  */
+  renew(callback = noop) {
     this.eurekaRequest({
       method: 'PUT',
       uri: `${this.config.instance.app}/${this.instanceId}`,
@@ -324,9 +387,11 @@ export default class Eureka extends EventEmitter {
       if (!error && response.statusCode === 200) {
         this.logger.debug('eureka heartbeat success');
         this.emit('heartbeat');
+        callback(null);
       } else if (!error && response.statusCode === 404) {
         this.logger.warn('eureka heartbeat FAILED, Re-registering app');
         this.register();
+        callback(new Error('Heartbeat returned 404'));
       } else {
         if (error) {
           this.logger.error('An error in the request occured.', error);
@@ -336,20 +401,54 @@ export default class Eureka extends EventEmitter {
           `statusCode: ${response ? response.statusCode : 'unknown'}` +
           `body: ${body} ${error | ''} `
         );
+        callback(error || new Error(
+          `Heartbeat failed: status ${response ? response.statusCode : 'unknown'}`
+        ));
       }
     });
   }
 
   /*
-    Sets up registry fetches on interval for the life of the application.
+    Sets up registry fetches using setTimeout-based scheduling with circuit breaker.
     Registry fetch interval setting configuration property: eureka.registryFetchInterval
   */
   startRegistryFetches() {
-    this.registryFetch = setInterval(() => {
-      this.fetchRegistry(err => {
-        if (err) this.logger.warn('Error fetching registry', err);
+    const cbEnabled = this.config.eureka.circuitBreaker &&
+      this.config.eureka.circuitBreaker.enabled !== false;
+
+    if (!cbEnabled) {
+      // Fallback: legacy setInterval behavior
+      this.registryFetch = setInterval(() => {
+        this.fetchRegistry(err => {
+          if (err) this.logger.warn('Error fetching registry', err);
+        });
+      }, this.config.eureka.registryFetchInterval);
+      return;
+    }
+
+    const schedule = () => {
+      if (!this.circuitBreaker.allowRequest()) {
+        // Circuit is OPEN — skip HTTP call, wait for cooldown
+        this._registryFetchTimeout = setTimeout(schedule, this.circuitBreaker.getNextCooldown());
+        return;
+      }
+
+      this.fetchRegistry((err) => {
+        if (err) {
+          const result = this.circuitBreaker.recordFailure();
+          this._registryFetchTimeout = setTimeout(schedule,
+            result.delay || this.config.eureka.registryFetchInterval);
+        } else {
+          this.circuitBreaker.recordSuccess();
+          this._registryFetchTimeout = setTimeout(
+            schedule,
+            this.config.eureka.registryFetchInterval
+          );
+        }
       });
-    }, this.config.eureka.registryFetchInterval);
+    };
+
+    this._registryFetchTimeout = setTimeout(schedule, this.config.eureka.registryFetchInterval);
   }
 
   /*
