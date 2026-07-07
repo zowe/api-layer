@@ -35,6 +35,12 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.*;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -426,6 +432,128 @@ class ApimlAccessTokenProviderTest {
             assertNotNull(resultSalt);
             assertFalse(resultSalt.isEmpty());
             verify(cachingServiceClient, times(1)).create(any());
+        }
+
+    }
+
+    /**
+     * Focused coverage for the salt cache introduced to keep {@link ApimlAccessTokenProvider#getSalt()} off the
+     * caching service on every request: it must resolve the salt exactly once (even under concurrent access),
+     * hand every caller the same value, never leak the cached array, and recover from a cold-start collision by
+     * adopting the salt another instance won the race to store.
+     */
+    @Nested
+    class SaltCachingAndConcurrency {
+
+        private String freshBase64Salt() {
+            return Base64.getEncoder().encodeToString(ApimlAccessTokenProvider.generateSalt());
+        }
+
+        @Test
+        void givenNoSaltInCache_whenGetSalt_thenNewSaltIsCreatedAndReturnedValueMatchesStored() throws CachingServiceClientException {
+            // no salt exists yet (a bare "not found" without a cause is swallowed by initializeSalt)
+            when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException("no record"));
+
+            byte[] salt = accessTokenProvider.getSalt();
+
+            // exactly one salt is created and it is what callers receive: the persisted value decodes to the returned bytes
+            ArgumentCaptor<CachingServiceClient.KeyValue> captor = ArgumentCaptor.forClass(CachingServiceClient.KeyValue.class);
+            verify(cachingServiceClient, times(1)).create(captor.capture());
+            assertEquals("salt", captor.getValue().getKey());
+            assertArrayEquals(Base64.getDecoder().decode(captor.getValue().getValue()), salt);
+            assertEquals(16, salt.length);
+        }
+
+        @Test
+        void givenManyConcurrentCallers_whenGetSalt_thenSaltResolvedOnceAndAllSeeSameValue() throws Exception {
+            String base64Salt = freshBase64Salt();
+            AtomicInteger reads = new AtomicInteger();
+            when(cachingServiceClient.read("salt")).thenAnswer(invocation -> {
+                reads.incrementAndGet();
+                return new CachingServiceClient.KeyValue("salt", base64Salt);
+            });
+
+            int threadCount = 32;
+            ExecutorService pool = Executors.newFixedThreadPool(threadCount);
+            // a barrier releases every thread at the same instant, so they genuinely race into getSalt()
+            CyclicBarrier startGate = new CyclicBarrier(threadCount);
+            List<Future<byte[]>> results = new ArrayList<>();
+            try {
+                for (int i = 0; i < threadCount; i++) {
+                    results.add(pool.submit(() -> {
+                        startGate.await();
+                        return accessTokenProvider.getSalt();
+                    }));
+                }
+
+                byte[] expected = Base64.getDecoder().decode(base64Salt);
+                for (Future<byte[]> result : results) {
+                    assertArrayEquals(expected, result.get(10, TimeUnit.SECONDS));
+                }
+            } finally {
+                pool.shutdownNow();
+            }
+
+            // double-checked locking must ensure the salt is resolved once regardless of how many callers race
+            assertEquals(1, reads.get());
+            verify(cachingServiceClient, times(1)).read("salt");
+            verify(cachingServiceClient, never()).create(any());
+        }
+
+        @Test
+        void givenResolvedSalt_whenCallerMutatesReturnedArray_thenCachedSaltIsNotCorrupted() throws CachingServiceClientException {
+            String base64Salt = freshBase64Salt();
+            when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", base64Salt));
+
+            byte[] first = accessTokenProvider.getSalt();
+            Arrays.fill(first, (byte) 0); // a caller tampering with its copy must not poison the shared cache
+
+            byte[] second = accessTokenProvider.getSalt();
+
+            assertArrayEquals(Base64.getDecoder().decode(base64Salt), second);
+            // the salt is memoized, so the caching service is read only on the first resolution
+            verify(cachingServiceClient, times(1)).read("salt");
+        }
+
+        @Test
+        void givenCollisionDuringInit_whenGetSalt_thenAdoptSharedSaltAndMemoize() throws CachingServiceClientException {
+            String winningSalt = freshBase64Salt();
+            // first read misses, the create loses the race with a 409, and the re-read returns the winner's salt
+            when(cachingServiceClient.read("salt"))
+                .thenThrow(new CachingServiceClientException("Salt not found"))
+                .thenReturn(new CachingServiceClient.KeyValue("salt", winningSalt));
+            CachingServiceClientException collision = mock(CachingServiceClientException.class);
+            when(collision.isKeyCollision()).thenReturn(true);
+            doThrow(collision).when(cachingServiceClient).create(any(CachingServiceClient.KeyValue.class));
+
+            byte[] first = accessTokenProvider.getSalt();
+            byte[] second = accessTokenProvider.getSalt();
+
+            // the adopted shared salt is returned and then memoized (no further reads on the second call)
+            assertArrayEquals(Base64.getDecoder().decode(winningSalt), first);
+            assertArrayEquals(first, second);
+            verify(cachingServiceClient, times(2)).read("salt");
+            verify(cachingServiceClient, times(1)).create(any(CachingServiceClient.KeyValue.class));
+        }
+
+        @Test
+        void givenTransientInitFailure_whenGetSaltCalledAgain_thenRetriesUntilResolvedAndThenMemoizes() throws CachingServiceClientException {
+            ApimlAccessTokenProvider providerSpy = spy(accessTokenProvider);
+            byte[] realSalt = ApimlAccessTokenProvider.generateSalt();
+            String base64Salt = Base64.getEncoder().encodeToString(realSalt);
+            // a transient failure yields no salt, a later attempt succeeds
+            doReturn("").doReturn(base64Salt).when(providerSpy).initializeSalt();
+
+            byte[] firstAttempt = providerSpy.getSalt();
+            assertEquals(0, firstAttempt.length, "a transient failure must not be memoized as an empty salt");
+
+            byte[] secondAttempt = providerSpy.getSalt();
+            byte[] thirdAttempt = providerSpy.getSalt();
+
+            assertArrayEquals(realSalt, secondAttempt);
+            assertArrayEquals(realSalt, thirdAttempt);
+            // initialization is retried after the empty result, then memoized once resolved: 2 inits for 3 calls
+            verify(providerSpy, times(2)).initializeSalt();
         }
 
     }
