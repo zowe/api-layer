@@ -271,6 +271,9 @@ if [ -z $ZWE_GATEWAY_HOST ]; then
     ZWE_GATEWAY_HOST="$ZWE_haInstance_hostname:$ZWE_components_gateway_port"
 fi
 
+discoveryUserid=${ZWE_configs_apiml_discovery_userid:-${ZWE_components_discovery_apiml_discovery_userid:-}}
+discoveryPassword=${ZWE_configs_apiml_discovery_password:-${ZWE_components_discovery_apiml_discovery_password:-}}
+
 CATALOG_CODE=AC
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
@@ -292,6 +295,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} java \
     -Dapiml.service.eurekaUserName=${ZWE_configs_apiml_service_http_userId:-} \
     -Dapiml.service.eurekaUserPassword=${ZWE_configs_apiml_service_http_password:-} \
     -Dapiml.service.internalProtocol=${internalProtocol:-https} \
+    -Dapiml.discovery.password=${discoveryPassword} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
     -Dapiml.service.externalUrl="${externalProtocol}://${ZWE_zowe_externalDomains_0}:${ZWE_zowe_externalPort}" \

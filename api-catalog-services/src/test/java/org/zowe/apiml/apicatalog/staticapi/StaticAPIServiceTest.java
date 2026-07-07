@@ -28,7 +28,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.apicatalog.discovery.DiscoveryConfigProperties;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -67,9 +66,6 @@ class StaticAPIServiceTest {
     @Mock
     private HttpEntity entity;
 
-    @Mock
-    private DiscoveryConfigProperties discoveryConfigProperties;
-
     private final String[] discoveryLocations = {DISCOVERY_LOCATION, DISCOVERY_LOCATION_2};
     private static final String BODY = "This is body";
 
@@ -92,7 +88,8 @@ class StaticAPIServiceTest {
             @Test
             void givenRefreshAPIWithSecureDiscoveryService_thenReturnApiResponseCodeWithBody() throws IOException {
 
-                when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION});
+                ReflectionTestUtils.setField(staticAPIService, "discoveryUrls", new String[]{DISCOVERY_LOCATION});
+
                 mockRestTemplateExchange(DISCOVERY_URL);
 
                 StaticAPIResponse actualResponse = staticAPIService.refresh();
@@ -102,7 +99,8 @@ class StaticAPIServiceTest {
 
             @Test
             void givenRefreshAPIWithUnSecureDiscoveryService_thenReturnApiResponseCodeWithBody() throws IOException {
-                when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{DISCOVERY_LOCATION_HTTP});
+
+                ReflectionTestUtils.setField(staticAPIService, "discoveryUrls", new String[]{DISCOVERY_LOCATION_HTTP});
 
                 mockRestTemplateExchange(DISCOVERY_URL_HTTP);
                 StaticAPIResponse actualResponse = staticAPIService.refresh();
@@ -127,7 +125,8 @@ class StaticAPIServiceTest {
 
                 @Test
                 void whenFirstSucceeds_thenReturnResponseFromFirst() throws IOException {
-                    when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+
+                    ReflectionTestUtils.setField(staticAPIService, "discoveryUrls", discoveryLocations);
                     mockRestTemplateExchange(DISCOVERY_LOCATION);
                     StaticAPIResponse actualResponse = staticAPIService.refresh();
                     StaticAPIResponse expectedResponse = new StaticAPIResponse(200, BODY);
@@ -136,7 +135,7 @@ class StaticAPIServiceTest {
 
                 @Test
                 void whenFirstFails_thenReturnResponseFromSecond() throws IOException {
-                    when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+                    ReflectionTestUtils.setField(staticAPIService, "discoveryUrls", discoveryLocations);
                     when(notFoundResponse.getStatusLine()).thenReturn(notFoundStatusLine);
                     when(notFoundStatusLine.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND.value());
                     mockRestTemplateExchange(DISCOVERY_LOCATION_2);
@@ -150,7 +149,7 @@ class StaticAPIServiceTest {
             class WhenBothFailsTest {
                 @Test
                 void whenBothFail_thenReturnResponseFromSecond() throws IOException {
-                    when(discoveryConfigProperties.getLocations()).thenReturn(discoveryLocations);
+                    ReflectionTestUtils.setField(staticAPIService, "discoveryUrls", discoveryLocations);
                     when(notFoundResponse.getStatusLine()).thenReturn(notFoundStatusLine);
                     when(notFoundStatusLine.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND.value());
                     when(notFoundResponse.getEntity()).thenReturn(entity);
@@ -168,7 +167,8 @@ class StaticAPIServiceTest {
 
     @Test
     void givenNoDiscoveryLocations_whenAttemptRefresh_thenReturn500() {
-        when(discoveryConfigProperties.getLocations()).thenReturn(new String[]{});
+
+        ReflectionTestUtils.setField(staticAPIService, "discoveryUrls", new String[]{});
 
         StaticAPIResponse actualResponse = staticAPIService.refresh();
         StaticAPIResponse expectedResponse = new StaticAPIResponse(500, "Error making static API refresh request to the Discovery Service");
@@ -195,9 +195,9 @@ class StaticAPIServiceTest {
 
         @Test
         void givenCredentials_whenSetCredentials_thenSetAuthorizationHeader() {
-            StaticAPIService service = new StaticAPIService(null, null);
-            ReflectionTestUtils.setField(service, "eurekaUserid", "user");
-            ReflectionTestUtils.setField(service, "eurekaPassword", "password");
+            StaticAPIService service = new StaticAPIService(null);
+            ReflectionTestUtils.setField(service, "discoveryUserId", "user");
+            ReflectionTestUtils.setField(service, "discoveryPassword", "password");
 
             AbstractHttpMessage request = mock(AbstractHttpMessage.class);
             service.setAuthorization(request);
@@ -212,9 +212,9 @@ class StaticAPIServiceTest {
             ",,"
         })
         void givenIncompleteCredentials_whenSetCredentials_thenDoNotSetAuthorization(String userId, String password) {
-            StaticAPIService service = new StaticAPIService(null, null);
-            ReflectionTestUtils.setField(service, "eurekaUserid", userId);
-            ReflectionTestUtils.setField(service, "eurekaPassword", password);
+            StaticAPIService service = new StaticAPIService(null);
+            ReflectionTestUtils.setField(service, "discoveryUserId", userId);
+            ReflectionTestUtils.setField(service, "discoveryPassword", password);
 
             AbstractHttpMessage request = mock(AbstractHttpMessage.class);
             service.setAuthorization(request);

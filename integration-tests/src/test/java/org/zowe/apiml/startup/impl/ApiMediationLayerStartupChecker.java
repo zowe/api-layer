@@ -15,6 +15,8 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -44,6 +47,12 @@ public class ApiMediationLayerStartupChecker {
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
 
+    private static final boolean VERIFY_SSL_CERTIFICATES = Boolean.parseBoolean(
+        System.getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true")
+    );
+    private static final String EUREKA_CREDENTIALS_HEADER = buildEurekaCredentialsHeader();
+
+
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
@@ -51,6 +60,15 @@ public class ApiMediationLayerStartupChecker {
         servicesToCheck.add(new Service("Api Catalog", "$.components.gateway.details.apicatalog"));
         servicesToCheck.add(new Service("Discovery Service", "$.components.gateway.details.discovery"));
         servicesToCheck.add(new Service("Authentication Service", "$.components.gateway.details.auth"));
+    }
+
+    private static String buildEurekaCredentialsHeader() {
+        String userId = System.getProperty("apiml.discovery.userid");
+        String password = System.getProperty("apiml.discovery.password");
+        if (StringUtils.isAnyBlank(userId, password)) {
+            return null;
+        }
+        return "Basic " + Base64.getEncoder().encodeToString((userId + ":" + password).getBytes());
     }
 
     public void waitUntilReady() {
@@ -68,9 +86,12 @@ public class ApiMediationLayerStartupChecker {
         .until(this::areAllServicesUp);
     }
 
-    private DocumentContext getDocumentAsContext() {
+    private DocumentContext getDocumentAsContext(String authorizationHeader) {
         try {
             HttpGet request = HttpRequestUtils.getRequest(healthEndpoint);
+            if (authorizationHeader != null) {
+                request.addHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
+            }
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 log.warn("Unexpected HTTP status code: {}", response.getStatusLine().getStatusCode());
@@ -88,7 +109,10 @@ public class ApiMediationLayerStartupChecker {
 
     private boolean areAllServicesUp() {
         try {
-            DocumentContext context = getDocumentAsContext();
+            String header = VERIFY_SSL_CERTIFICATES
+                ? null
+                : EUREKA_CREDENTIALS_HEADER;
+            DocumentContext context = getDocumentAsContext(header);
             if (context == null) {
                 return false;
             }

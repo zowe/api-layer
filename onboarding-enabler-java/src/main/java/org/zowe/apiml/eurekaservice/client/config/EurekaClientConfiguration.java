@@ -11,6 +11,7 @@
 package org.zowe.apiml.eurekaservice.client.config;
 
 import com.netflix.discovery.DefaultEurekaClientConfig;
+import org.zowe.apiml.product.eureka.EurekaServiceUrlUtils;
 
 import java.util.List;
 
@@ -48,7 +49,11 @@ public class EurekaClientConfiguration extends DefaultEurekaClientConfig {
 
     @Override
     public List<String> getEurekaServerServiceUrls(String s) {
-        return config.getDiscoveryServiceUrls();
+        String password = null;
+        if (config.getSsl() != null && !config.getSsl().getVerifySslCertificatesOfServices()) {
+            password = (config.getDiscoveryPassword() == null) ? null : new String(config.getDiscoveryPassword());
+        }
+        return EurekaServiceUrlUtils.addCredentials(config.getDiscoveryServiceUrls(), config.getDiscoveryUserid(), password);
     }
 
     @Override
