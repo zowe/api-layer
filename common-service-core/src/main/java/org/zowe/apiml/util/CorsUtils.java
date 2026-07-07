@@ -78,8 +78,8 @@ public class CorsUtils {
 
             var corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
             var allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
-            var allowedCredentialsForService = metadata.get("");
-            var allowedMethodsForService = metadata.get("");
+            var allowedCredentialsForService = metadata.get("apiml.corsAllowedCredentials");
+            var allowedMethodsForService = metadata.get("apiml.corsAllowedMethods");
 
             if (isNotBlank(corsAllowedOriginsForService)) {
                 // Origins specified: split by comma, add to whitelist
