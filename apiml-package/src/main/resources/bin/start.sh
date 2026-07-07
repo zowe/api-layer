@@ -49,7 +49,6 @@
 # - ZWE_configs_apiml_gateway_registry_refreshIntervalMs
 # - ZWE_configs_apiml_health_protected
 # - ZWE_configs_apiml_security_auth_jwt_customAuthHeader
-# - ZWE_configs_apiml_security_auth_passticket_customAuthHeader
 # - ZWE_configs_apiml_security_auth_passticket_customUserHeader
 # - ZWE_configs_apiml_security_authorization_endpoint_enabled
 # - ZWE_configs_apiml_security_authorization_endpoint_url
@@ -81,6 +80,7 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
 # - ZWE_configs_port - the port the api discovery service will use
@@ -145,6 +145,9 @@ if [ -n "${ZWE_DISCOVERY_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
 
+# Logging level
+add_profile "${ZWE_configs_logging_level:-${ZWE_components_gateway_logging_level:-info}}"
+
 # Debug profile
 if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then
     if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}" ]; then
@@ -193,6 +196,12 @@ if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
+INFINISPAN_VTHREADS=${ZWE_components_caching_service_storage_infinispan_useVirtualThreads:-${ZWE_configs_storage_infinispan_useVirtualThreads:-false}}
+if [ "${INFINISPAN_VTHREADS}" = "true" ] && [ "$(uname)" = "OS/390" ]; then
+    echo "Warning: Virtual Threads enabled can result to not working Caching Service"
+fi
+VIRTUAL_THREADS_OPTS="${VIRTUAL_THREADS_OPTS:--Dorg.infinispan.threads.virtual=${INFINISPAN_VTHREADS} -Djgroups.thread.virtual=${INFINISPAN_VTHREADS}}"
+
 # Start OpenTelemetry
 if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
     DISABLE_OTEL=false
@@ -228,6 +237,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
+    ${VIRTUAL_THREADS_OPTS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
@@ -327,7 +337,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dcaching.storage.evictionStrategy=${ZWE_components_caching_service_storage_evictionStrategy:-${ZWE_configs_storage_evictionStrategy:-reject}} \
-    -Dcaching.storage.infinispan.initialHosts=${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-"localhost[7600]"}} \
+    -Dcaching.storage.infinispan.initialHosts=${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-}} \
     -Dcaching.storage.mode=${ZWE_components_caching_service_storage_mode:-${ZWE_configs_storage_mode:-infinispan}} \
     -Dcaching.storage.size=${ZWE_components_caching_service_storage_size:-${ZWE_configs_storage_size:-10000}} \
     -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \

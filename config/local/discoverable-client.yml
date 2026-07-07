@@ -1,6 +1,5 @@
 spring:
-    profiles:
-        include: diag
+    profiles.active: debug,diag
     output:
         ansi:
             enabled: always

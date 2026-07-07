@@ -40,6 +40,7 @@
 # - ZWE_configs_certificate_truststore_file
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_port - the port the api catalog service will use
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
@@ -64,6 +65,9 @@ else
     . "$(pwd)/bin/parse_jvm_args.sh"
 fi
 echo "jar file: ${JAR_FILE}"
+
+# Logging level
+add_profile "${ZWE_configs_logging_level:-info}"
 
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then
