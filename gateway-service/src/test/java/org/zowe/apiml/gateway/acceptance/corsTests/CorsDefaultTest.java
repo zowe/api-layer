@@ -36,12 +36,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @MicroservicesAcceptanceTest
-@ActiveProfiles({"CorsPerServiceTestWithDefaults", "test"})
+@ActiveProfiles({"CorsPerServiceWithDefaultsTest", "test"})
 @TestPropertySource(properties = {
     "apiml.service.corsEnabled=true",
     "apiml.service.corsDefaultAllowedOrigins="
 })
-class CorsPerServiceTestWithDefaults extends AcceptanceTestWithMockServices {
+class CorsPerServiceWithDefaultsTest extends AcceptanceTestWithMockServices {
 
     private MockServiceBuilder mockCorsService(String serviceId, Headers responseHeaders, Map<String, String> metadata, Collection<Consumer<HttpExchange>> assertions) {
         var builder = mockService(serviceId);
@@ -63,7 +63,7 @@ class CorsPerServiceTestWithDefaults extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenReject() throws Exception {
+    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenReject() {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(

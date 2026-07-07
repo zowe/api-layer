@@ -97,7 +97,7 @@ class GatewayCorsTest {
         }
 
         @Test
-        void givenCorsOriginIsNotAllowed_whenPreFlightRequestArrives_thenCorsHeadersAreNotSet() throws Exception {
+        void givenCorsOriginIsNotAllowed_whenPreFlightRequestArrives_thenCorsHeadersAreNotSet() {
             mockCorsService("servicecors1", null, Map.of("apiml.corsEnabled", "true"), null).start();
 
             // Preflight request with disallowed origin
@@ -115,7 +115,7 @@ class GatewayCorsTest {
         @Test
         // There is request to the southbound server for the request
         // The CORS header is properly set.
-        void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSetAndOnlyTheOnesByGateway() throws Exception {
+        void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSetAndOnlyTheOnesByGateway() {
             var headers = new Headers();
             var called = new AtomicBoolean(false);
             List<Consumer<HttpExchange>> assertions = List.of(
@@ -142,7 +142,7 @@ class GatewayCorsTest {
         @Test
         // There is no request to the southbound server for preflight
         // There is request to the southbound server for the second request
-        void givenCorsIsAllowedForSpecificService_whenTheServiceIsSet_thenCorsHeadersAreSetAndOnlyTheOnesByGateway() throws Exception {
+        void givenCorsIsAllowedForSpecificService_whenTheServiceIsSet_thenCorsHeadersAreSetAndOnlyTheOnesByGateway() {
             var headers = new Headers();
 
             var called = new AtomicBoolean(false);
@@ -184,7 +184,7 @@ class GatewayCorsTest {
         }
 
         @Test
-        void givenCorsIsEnabled_whenRequestWithOriginComes_thenOriginIsntPassedToSouthbound() throws Exception {
+        void givenCorsIsEnabled_whenRequestWithOriginComes_thenOriginIsntPassedToSouthbound() {
             // There is request to the southbound server and the CORS headers are properly set on the response
             var headers = new Headers();
 
@@ -242,7 +242,7 @@ class GatewayCorsTest {
         // Gateway uses a default list of origins, does not accept any (*)
 
         @Test
-        void givenCorsIsEnabledWithDefaults_whenPreflightRequestComes_thenPreflightIsRejected() throws Exception {
+        void givenCorsIsEnabledWithDefaults_whenPreflightRequestComes_thenPreflightIsRejected() {
             var headers = new Headers();
 
             var called = new AtomicBoolean(false);
@@ -272,7 +272,7 @@ class GatewayCorsTest {
         }
 
         @Test
-        void givenCorsIsEnabledWithDefaults_whenPreflightRequestWithLocalhostOriginComes_thenPreflightIsAccepted() throws Exception {
+        void givenCorsIsEnabledWithDefaults_whenPreflightRequestWithLocalhostOriginComes_thenPreflightIsAccepted() {
             var headers = new Headers();
 
             var called = new AtomicBoolean(false);

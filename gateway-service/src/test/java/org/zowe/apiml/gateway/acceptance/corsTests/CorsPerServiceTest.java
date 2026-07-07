@@ -82,7 +82,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     @Test
     // Verify the header to allow CORS isn't set
     // Verify there was no call to southbound service
-    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenPreflightRequestArrives_thenDefaultCorsHeadersIsSet() throws Exception {
+    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenPreflightRequestArrives_thenDefaultCorsHeadersIsSet() {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
@@ -112,7 +112,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     @Test
     // Verify the header to allow CORS isn't set
     // Verify there was no call to southbound service
-    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenDefaultCorsHeadersIsSet() throws Exception {
+    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenDefaultCorsHeadersIsSet() {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
@@ -139,7 +139,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     @Test
     // There is no request to the southbound server for preflight
     // There is request to the southbound server for the second request
-    void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() throws Exception {
+    void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
@@ -184,7 +184,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     @Test
     // There is request to the southbound server for the request
     // The CORS header is properly set.
-    void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() throws Exception {
+    void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() {
         // There is request to the southbound server and the CORS headers are properly set on the response
         var headers = new Headers();
         var called = new AtomicBoolean(false);
