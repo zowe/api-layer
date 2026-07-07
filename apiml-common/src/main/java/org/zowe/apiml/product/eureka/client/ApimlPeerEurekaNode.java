@@ -364,7 +364,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
             final AtomicInteger counter = new AtomicInteger(0);
 
-            private String getCountText() {
+            String getCountText() {
                 int count = counter.get();
 
                 StringBuilder sb = new StringBuilder();
@@ -418,6 +418,10 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             } catch (Throwable e) {
                 networkIssueCounter.fail(e.getLocalizedMessage());
                 if (maybeReadTimeOut(e)) {
+                    if (networkIssueCounter.hasReachedMax()) {
+                        log.error("Socket read timeout has occurred repeatedly and reached the maximum retry count ({}). The replication task will be dropped as a permanent error and the peer will catch up via periodic registry sync.", networkIssueCounter.getCountText());
+                        return ProcessingResult.PermanentError;
+                    }
                     log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
                     //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
@@ -455,6 +459,10 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             } catch (Throwable e) {
                 networkIssueCounter.fail(e.getLocalizedMessage());
                 if (maybeReadTimeOut(e)) {
+                    if (networkIssueCounter.hasReachedMax()) {
+                        log.error("Socket read timeout has occurred repeatedly and reached the maximum retry count ({}). Batch replication tasks will be dropped as a permanent error and the peer will catch up via periodic registry sync.", networkIssueCounter.getCountText());
+                        return ProcessingResult.PermanentError;
+                    }
                     log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
                     //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
                     return ProcessingResult.Congestion;
