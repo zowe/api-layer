@@ -10,7 +10,9 @@
 
 package org.zowe.apiml.message.yaml;
 
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.error.YAMLException;
 import org.zowe.apiml.message.core.AbstractMessageService;
 import org.zowe.apiml.message.core.DuplicateMessageException;
@@ -55,7 +57,7 @@ public class YamlMessageService extends AbstractMessageService {
     @Override
     public void loadMessages(String messagesFilePath) {
         try (InputStream in = YamlMessageService.class.getResourceAsStream(messagesFilePath)) {
-            Yaml yaml = new Yaml();
+            Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
             MessageTemplates messageTemplates = yaml.loadAs(in, MessageTemplates.class);
             if (messageTemplates.getMessages() != null && !messageTemplates.getMessages().isEmpty()) {
                 super.addMessageTemplates(messageTemplates);
