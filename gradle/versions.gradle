@@ -42,9 +42,9 @@ dependencyResolutionManagement {
             version('httpClient5', '5.6.2')
             version('infinispan', '16.2.1')
             version('jacksonAnnotations', '2.22')
-            version('jacksonCore', '2.22.0')
-            version('jacksonDatabind', '2.22.0')
-            version('jacksonDataformatYaml', '2.22.0')
+            version('jacksonCore', '2.22.1')
+            version('jacksonDatabind', '2.22.1')
+            version('jacksonDataformatYaml', '2.22.1')
             version('janino', '3.1.12')
             version('jakartaValidation', '3.1.1')
             version('jakartaInject', '2.0.1')
@@ -64,7 +64,7 @@ dependencyResolutionManagement {
             }
             version('jbossLogging', '3.6.3.Final')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '12.1.10')
+            version('jettyWebSocketClient', '12.1.11')
             version('jettison', '1.5.6')
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
