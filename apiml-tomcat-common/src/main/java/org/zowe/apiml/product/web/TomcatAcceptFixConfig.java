@@ -30,6 +30,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
@@ -281,16 +282,23 @@ public class TomcatAcceptFixConfig {
             // obtain current state of rebinding to detection parallel actions
             final int stateBefore = state.get();
             try {
-                return socket.accept();
+                return wrapIfEnabled(socket.accept());
             } catch (IOException ioe) {
                 if (TomcatAcceptFixConfig.isTcpStackRestarted(ioe)) {
                     // the fix solve just one issue about stopped TCP/IP stack
                     log.debug("The TCP/IP stack was probably restarted. The socket of Tomcat will rebind.");
                     rebind(stateBefore);
-                    return socket.accept();
+                    return wrapIfEnabled(socket.accept());
                 }
                 throw ioe;
             }
+        }
+
+        private SocketChannel wrapIfEnabled(SocketChannel socketChannel) {
+            if (tcpStackAwareSocketChannelEnabled) {
+                return new TcpStackAwareSocketChannel(socketChannel);
+            }
+            return socketChannel;
         }
 
     }
@@ -314,6 +322,134 @@ public class TomcatAcceptFixConfig {
         SelectionKey register(Selector sel, int ops) throws ClosedChannelException;
         void close() throws IOException;
         boolean isOpen();
+
+    }
+
+    /**
+     * The list of methods excluded from Lombok @Delegate for TcpStackAwareSocketChannel.
+     * First 14 are final methods on SocketChannel; last 6 are manually overridden.
+     */
+    private interface ExcludedSocketOps {
+
+        SelectorProvider provider();
+        boolean isRegistered();
+        SelectionKey keyFor(Selector sel);
+        SelectionKey register(Selector sel, int ops, Object att);
+        SelectionKey register(Selector sel, int ops) throws ClosedChannelException;
+        boolean isBlocking();
+        Object blockingLock();
+        SelectableChannel configureBlocking(boolean block) throws IOException;
+        void implCloseChannel() throws IOException;
+        void close() throws IOException;
+        boolean isOpen();
+        int validOps();
+        long read(ByteBuffer[] dsts) throws IOException;
+        long write(ByteBuffer[] srcs) throws IOException;
+        int read(ByteBuffer dst) throws IOException;
+        long read(ByteBuffer[] dsts, int offset, int length) throws IOException;
+        int write(ByteBuffer src) throws IOException;
+        long write(ByteBuffer[] srcs, int offset, int length) throws IOException;
+        void implCloseSelectableChannel() throws IOException;
+        void implConfigureBlocking(boolean block) throws IOException;
+
+    }
+
+    /**
+     * SocketChannel wrapper that detects z/OS TCP/IP stack restarts during I/O operations.
+     * When EDC5122I or NetworkRecycledException is caught on read/write, the underlying
+     * socket is closed and the exception is re-thrown so Tomcat can discard the connection.
+     */
+    class TcpStackAwareSocketChannel extends SocketChannel {
+
+        @Delegate(excludes = ExcludedSocketOps.class)
+        private final SocketChannel delegate;
+
+        TcpStackAwareSocketChannel(SocketChannel delegate) {
+            super(delegate.provider());
+            this.delegate = delegate;
+        }
+
+        @Override
+        public int read(ByteBuffer dst) throws IOException {
+            try {
+                return delegate.read(dst);
+            } catch (IOException e) {
+                if (TomcatAcceptFixConfig.isTcpStackRestarted(e)) {
+                    log.debug("TCP/IP stack restart detected during read on client socket; closing connection", e);
+                    safeClose(delegate);
+                }
+                throw e;
+            }
+        }
+
+        @Override
+        public long read(ByteBuffer[] dsts, int offset, int length) throws IOException {
+            try {
+                return delegate.read(dsts, offset, length);
+            } catch (IOException e) {
+                if (TomcatAcceptFixConfig.isTcpStackRestarted(e)) {
+                    log.debug("TCP/IP stack restart detected during scatter read on client socket; closing connection", e);
+                    safeClose(delegate);
+                }
+                throw e;
+            }
+        }
+
+        @Override
+        public int write(ByteBuffer src) throws IOException {
+            try {
+                return delegate.write(src);
+            } catch (IOException e) {
+                if (TomcatAcceptFixConfig.isTcpStackRestarted(e)) {
+                    log.debug("TCP/IP stack restart detected during write on client socket; closing connection", e);
+                    safeClose(delegate);
+                }
+                throw e;
+            }
+        }
+
+        @Override
+        public long write(ByteBuffer[] srcs, int offset, int length) throws IOException {
+            try {
+                return delegate.write(srcs, offset, length);
+            } catch (IOException e) {
+                if (TomcatAcceptFixConfig.isTcpStackRestarted(e)) {
+                    log.debug("TCP/IP stack restart detected during scatter write on client socket; closing connection", e);
+                    safeClose(delegate);
+                }
+                throw e;
+            }
+        }
+
+        @Override
+        protected void implCloseSelectableChannel() throws IOException {
+            try {
+                IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE.invoke(delegate);
+            } catch (IOException | RuntimeException e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new IllegalStateException(t);
+            }
+        }
+
+        @Override
+        protected void implConfigureBlocking(boolean block) throws IOException {
+            try {
+                IMPL_CONFIGURE_BLOCKING.invoke(delegate, block);
+            } catch (IOException | RuntimeException e) {
+                throw e;
+            } catch (Throwable t) {
+                throw new IllegalStateException(t);
+            }
+        }
+
+        private static void safeClose(SocketChannel ch) {
+            try {
+                ch.close();
+            } catch (IOException ignored) {
+                // best-effort close
+            }
+        }
 
     }
 
