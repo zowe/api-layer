@@ -116,7 +116,7 @@
         "jest-environment-enzyme": "7.1.2",
         "jest-environment-jsdom": "29.7.0",
         "jest-enzyme": "7.1.2",
-        "jest-fetch-mock": "3.0.3",
+        "jest-fetch-mock": "3.2.0",
         "jest-html-reporter": "3.10.2",
         "jest-junit": "16.0.0",
         "jest-mock": "29.7.0",
@@ -167,7 +167,7 @@
         "qs": "6.15.3",
         "path-to-regexp": "8.4.2",
         "minimatch": "3.1.5",
-        "brace-expansion": "1.1.15"
+        "brace-expansion": "1.1.16"
     },
     "engines": {
         "npm": "=10.9.8",
