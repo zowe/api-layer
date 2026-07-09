@@ -1,0 +1,15 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation("org.infinispan:infinispan-tools:16.2.1")
+}
+
+test {
+    useJUnitPlatform()
+}
