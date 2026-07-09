@@ -11,10 +11,14 @@
 package org.zowe.apiml.eurekaservice.client.config;
 
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import jakarta.annotation.PostConstruct;
+import org.zowe.apiml.security.SecurityUtils;
+
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +26,10 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder(toBuilder = true)
+@Slf4j
 public class ApiMediationServiceConfig {
+
+    public static final char[] DEFAULT_ZOS_KEYRING_PASSWORD = "password".toCharArray();
 
     @Singular
     private List<String> discoveryServiceUrls;
@@ -251,5 +258,35 @@ public class ApiMediationServiceConfig {
     @PostConstruct
     public void setIpAddressIfNotPresents ()throws ServiceDefinitionException {
         ApiMediationServiceConfigReader.setServiceIpAddress(this);
+    }
+
+    /**
+     * Formats the keyring url and applies default password if missing for z/OS keyring.
+     */
+    @PostConstruct
+    public void formatKeyringUrlAndSetPasswordIfNotPresent() {
+        if (ssl == null) {
+            log.debug("No ssl configuration present, skipping the url formatting and keyring password defaulting");
+            return;
+        }
+
+        if (SecurityUtils.isKeyring(ssl.getKeyStore())) {
+            log.debug("Keystore is a z/OS keyring. Formatting the url and defaulting the key and keystore password if needed");
+            ssl.setKeyStore(SecurityUtils.formatKeyringUrl(ssl.getKeyStore()));
+            if (ArrayUtils.isEmpty(ssl.getKeyStorePassword())) {
+                ssl.setKeyStorePassword(DEFAULT_ZOS_KEYRING_PASSWORD);
+            }
+            if (ArrayUtils.isEmpty(ssl.getKeyPassword())) {
+                ssl.setKeyPassword(DEFAULT_ZOS_KEYRING_PASSWORD);
+            }
+        }
+
+        if (SecurityUtils.isKeyring(ssl.getTrustStore())) {
+            log.debug("Truststore is a z/OS keyring. Formatting the url and defaulting the password if needed");
+            ssl.setTrustStore(SecurityUtils.formatKeyringUrl(ssl.getTrustStore()));
+            if (ArrayUtils.isEmpty(ssl.getTrustStorePassword())) {
+                ssl.setTrustStorePassword(DEFAULT_ZOS_KEYRING_PASSWORD);
+            }
+        }
     }
 }
