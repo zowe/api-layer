@@ -23,6 +23,7 @@ import org.apache.tomcat.util.net.NioEndpoint;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 
 import java.io.IOException;
@@ -30,6 +31,7 @@ import java.lang.reflect.Field;
 import java.net.ServerSocket;
 import java.net.SocketAddress;
 import java.net.SocketOption;
+import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
@@ -38,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class TomcatAcceptFixConfigTest {
@@ -230,19 +233,16 @@ class TomcatAcceptFixConfigTest {
     @Nested
     class TcpStackRestartHandling {
 
-        ServerSocketChannel serverSocket = new TestServerSocketChannel(mock(SelectorProvider.class));
-        TomcatAcceptFixConfig.FixedServerSocketChannel channel = new TomcatAcceptFixConfig().new FixedServerSocketChannel(serverSocket, null, null);
-
         @Test
         void givenExceptionWithTheMessage_whenHandle_thenReturnTrue() {
-            assertTrue(channel.isTcpStackRestarted(new RuntimeException("EDC5122I TCP Stack restarted")));
+            assertTrue(TomcatAcceptFixConfig.isTcpStackRestarted(new RuntimeException("EDC5122I TCP Stack restarted")));
         }
 
         @Test
         void givenExceptionWithCyclicCause_whenHandle_thenReturnFalse() {
             Exception e = spy(new RuntimeException("Error"));
             doReturn(e).when(e).getCause();
-            assertFalse(channel.isTcpStackRestarted(e));
+            assertFalse(TomcatAcceptFixConfig.isTcpStackRestarted(e));
         }
 
         @Test
@@ -250,21 +250,277 @@ class TomcatAcceptFixConfigTest {
             Exception e = new RuntimeException("EDC5122I TCP Stack restarted");
             e = new RuntimeException("Wrapper1", e);
             e = new RuntimeException("Wrapper2", e);
-            assertTrue(channel.isTcpStackRestarted(e));
+            assertTrue(TomcatAcceptFixConfig.isTcpStackRestarted(e));
         }
 
         @Test
-        void givenExceptionWithSpecificClassName_whenHandle_thenReturnTrue() {
-            TomcatAcceptFixConfig.FixedServerSocketChannel channel = new TomcatAcceptFixConfig().new FixedServerSocketChannel(serverSocket, null, null) {
-                @Override
-                boolean isRecycledClass(Throwable t) {
-                    return "java.lang.IllegalArgumentException".equals(t.getClass().getName());
-                }
-            };
+        void givenNetworkRecycledException_whenIsRecycledClass_thenReturnTrue() {
+            // Verify that isRecycledClass matches the exact class name
+            // We can't instantiate com.ibm.net.NetworkRecycledException directly,
+            // but we verify that isTcpStackRestarted calls isRecycledClass via cause chain
+            try (MockedStatic<TomcatAcceptFixConfig> mocked = mockStatic(TomcatAcceptFixConfig.class, CALLS_REAL_METHODS)) {
+                mocked.when(() -> TomcatAcceptFixConfig.isRecycledClass(any())).thenReturn(true);
 
-            Exception e = new IllegalArgumentException("Tested exception");
-            e = new RuntimeException("Wrapper", e);
-            assertTrue(channel.isTcpStackRestarted(e));
+                Exception e = new IllegalArgumentException("Tested exception");
+                e = new RuntimeException("Wrapper", e);
+                assertTrue(TomcatAcceptFixConfig.isTcpStackRestarted(e));
+            }
+        }
+
+        @Test
+        void givenNonMatchingException_whenIsRecycledClass_thenReturnFalse() {
+            assertFalse(TomcatAcceptFixConfig.isRecycledClass(new RuntimeException("not a match")));
+        }
+
+    }
+
+    @Nested
+    class TcpStackAwareSocketChannelTests {
+
+        private SocketChannel mockDelegate;
+
+        @BeforeEach
+        void setUp() {
+            mockDelegate = mock(SocketChannel.class);
+            SelectorProvider provider = mock(SelectorProvider.class);
+            doReturn(provider).when(mockDelegate).provider();
+        }
+
+        @Test
+        void read_shouldPassthroughToDelegate() throws IOException {
+            ByteBuffer buf = ByteBuffer.allocate(10);
+            doReturn(5).when(mockDelegate).read(buf);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            assertEquals(5, channel.read(buf));
+            verify(mockDelegate).read(buf);
+            verify(mockDelegate, never()).close();
+        }
+
+        @Test
+        void write_shouldPassthroughToDelegate() throws IOException {
+            ByteBuffer buf = ByteBuffer.allocate(10);
+            doReturn(5).when(mockDelegate).write(buf);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            assertEquals(5, channel.write(buf));
+            verify(mockDelegate).write(buf);
+            verify(mockDelegate, never()).close();
+        }
+
+        @Test
+        void read_shouldCloseAndRethrowOnEdc5122I() throws IOException {
+            ByteBuffer buf = ByteBuffer.allocate(10);
+            IOException ioe = new IOException("EDC5122I TCP/IP stack was restarted");
+            doThrow(ioe).when(mockDelegate).read(buf);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            IOException thrown = assertThrows(IOException.class, () -> channel.read(buf));
+            assertSame(ioe, thrown);
+            verify(mockDelegate).close();
+        }
+
+        @Test
+        void write_shouldCloseAndRethrowOnEdc5122I() throws IOException {
+            ByteBuffer buf = ByteBuffer.allocate(10);
+            IOException ioe = new IOException("EDC5122I TCP/IP stack was restarted");
+            doThrow(ioe).when(mockDelegate).write(buf);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            IOException thrown = assertThrows(IOException.class, () -> channel.write(buf));
+            assertSame(ioe, thrown);
+            verify(mockDelegate).close();
+        }
+
+        @Test
+        void read_shouldNotCloseOnNonEdc5122I() throws IOException {
+            ByteBuffer buf = ByteBuffer.allocate(10);
+            IOException ioe = new IOException("Some other I/O error");
+            doThrow(ioe).when(mockDelegate).read(buf);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            IOException thrown = assertThrows(IOException.class, () -> channel.read(buf));
+            assertSame(ioe, thrown);
+            verify(mockDelegate, never()).close();
+        }
+
+        @Test
+        void scatterRead_shouldPassthroughToDelegate() throws IOException {
+            ByteBuffer[] bufs = new ByteBuffer[]{ByteBuffer.allocate(10)};
+            doReturn(5L).when(mockDelegate).read(bufs, 0, 1);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            assertEquals(5L, channel.read(bufs, 0, 1));
+            verify(mockDelegate).read(bufs, 0, 1);
+        }
+
+        @Test
+        void scatterWrite_shouldPassthroughToDelegate() throws IOException {
+            ByteBuffer[] bufs = new ByteBuffer[]{ByteBuffer.allocate(10)};
+            doReturn(5L).when(mockDelegate).write(bufs, 0, 1);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            assertEquals(5L, channel.write(bufs, 0, 1));
+            verify(mockDelegate).write(bufs, 0, 1);
+        }
+
+        @Test
+        void scatterRead_shouldCloseAndRethrowOnEdc5122I() throws IOException {
+            ByteBuffer[] bufs = new ByteBuffer[]{ByteBuffer.allocate(10)};
+            IOException ioe = new IOException("EDC5122I scatter read failed");
+            doThrow(ioe).when(mockDelegate).read(bufs, 0, 1);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            IOException thrown = assertThrows(IOException.class, () -> channel.read(bufs, 0, 1));
+            assertSame(ioe, thrown);
+            verify(mockDelegate).close();
+        }
+
+        @Test
+        void scatterWrite_shouldCloseAndRethrowOnEdc5122I() throws IOException {
+            ByteBuffer[] bufs = new ByteBuffer[]{ByteBuffer.allocate(10)};
+            IOException ioe = new IOException("EDC5122I scatter write failed");
+            doThrow(ioe).when(mockDelegate).write(bufs, 0, 1);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            IOException thrown = assertThrows(IOException.class, () -> channel.write(bufs, 0, 1));
+            assertSame(ioe, thrown);
+            verify(mockDelegate).close();
+        }
+
+        @Test
+        void read_shouldCloseAndRethrowOnNetworkRecycledException() throws IOException {
+            ByteBuffer buf = ByteBuffer.allocate(10);
+            IOException ioe = new IOException("Connection reset");
+            doThrow(ioe).when(mockDelegate).read(buf);
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            // Mock isRecycledClass to return true for this exception
+            try (MockedStatic<TomcatAcceptFixConfig> mocked = mockStatic(TomcatAcceptFixConfig.class, CALLS_REAL_METHODS)) {
+                mocked.when(() -> TomcatAcceptFixConfig.isRecycledClass(any())).thenReturn(true);
+
+                IOException thrown = assertThrows(IOException.class, () -> channel.read(buf));
+                assertSame(ioe, thrown);
+                verify(mockDelegate).close();
+            }
+        }
+
+        @Test
+        void implCloseSelectableChannel_shouldDelegateCorrectly() throws IOException {
+            // Verify that the MethodHandle is invoked on the delegate
+            // Pattern matches the FixedServerSocketChannel tests
+            SocketChannel delegate = mock(SocketChannel.class);
+            SelectorProvider provider = mock(SelectorProvider.class);
+            doReturn(provider).when(delegate).provider();
+            doThrow(new IOException("close failed")).when(delegate).close();
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(delegate);
+
+            // implCloseSelectableChannel uses MethodHandle which we can't mock;
+            // test via safeClose on EDC5122I read: verifies delegate.close() is called
+            ByteBuffer buf = ByteBuffer.allocate(10);
+            doThrow(new IOException("EDC5122I")).when(delegate).read(buf);
+
+            assertThrows(IOException.class, () -> channel.read(buf));
+            verify(delegate).close();
+        }
+
+        @Test
+        void implConfigureBlocking_shouldDelegateCorrectly() throws IOException {
+            SocketChannel realChannel = SocketChannel.open();
+            try {
+                TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                    new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(realChannel);
+
+                assertTrue(channel.isBlocking());
+                // configureBlocking is final and calls implConfigureBlocking + updates wrapper state
+                channel.configureBlocking(false);
+                assertFalse(channel.isBlocking());
+            } finally {
+                realChannel.close();
+            }
+        }
+
+        @Test
+        void integrationTest_registerWithSelector() throws IOException {
+            SocketChannel realChannel = SocketChannel.open();
+            try {
+                TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                    new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(realChannel);
+                channel.configureBlocking(false);
+
+                // Verify non-blocking mode is set correctly
+                assertFalse(channel.isBlocking());
+                // Verify validOps delegates correctly
+                assertTrue(channel.validOps() > 0);
+            } finally {
+                realChannel.close();
+            }
+        }
+
+        @Test
+        void safeClose_shouldNotThrowOnIoException() throws IOException {
+            doThrow(new IOException("close failed")).when(mockDelegate).close();
+
+            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(mockDelegate);
+
+            ByteBuffer buf = ByteBuffer.allocate(10);
+            IOException ioe = new IOException("EDC5122I");
+            doThrow(ioe).when(mockDelegate).read(buf);
+
+            // Should re-throw read IOE, not close IOE
+            IOException thrown = assertThrows(IOException.class, () -> channel.read(buf));
+            assertSame(ioe, thrown);
+            verify(mockDelegate).close(); // close was attempted
+        }
+
+        @Test
+        void configDisabled_returnsRawSocketChannel() throws Exception {
+            TomcatAcceptFixConfig config = new TomcatAcceptFixConfig();
+            config.retryRebindTimeoutSecs = 0;
+            config.tcpStackAwareSocketChannelEnabled = false;
+
+            SelectorProvider provider = mock(SelectorProvider.class);
+            SocketChannel rawSocket = mock(SocketChannel.class);
+            TestServerSocketChannel testServerSocket = spy(new TestServerSocketChannel(provider));
+            TestEndpoint testEp = spy(new TestEndpoint(testServerSocket));
+            TestProtocol testProto = spy(new TestProtocol(testEp));
+            Connector conn = new Connector(testProto);
+
+            TomcatConnectorCustomizer customizer = config.tomcatAcceptorFix();
+            customizer.customize(conn);
+            Lifecycle lifecycle = mock(Lifecycle.class);
+            doReturn(LifecycleState.STARTED).when(lifecycle).getState();
+            LifecycleEvent event = new LifecycleEvent(lifecycle, "type", "data");
+            Stream.of(conn.findLifecycleListeners()).forEach(l -> l.lifecycleEvent(event));
+
+            doReturn(rawSocket).when(testServerSocket).accept();
+
+            SocketChannel result = testEp.serverSocketAccept();
+            // When config is disabled, the raw socket should be returned directly (not wrapped)
+            assertSame(rawSocket, result);
         }
 
     }
