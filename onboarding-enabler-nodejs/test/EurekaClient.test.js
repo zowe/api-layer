@@ -8,46 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/*
- * Copyright 2026 Contributors to the Zowe Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/**
- * The MIT License (MIT)
- *
- * Copyright (c) 2015 Jacob Quatier
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 /* eslint-disable no-unused-expressions, max-len, no-underscore-dangle */
 import sinon from 'sinon';
 import * as chai from 'chai';
@@ -1480,12 +1440,12 @@ describe('Eureka client', () => {
 
       client.startHeartbeats();
 
-      // Base backoff delay: baseCooldown * 2^(failure-1), starting at 30000ms.
-      // Failure 1 after 5000ms initial, failure 2 after 30000ms backoff,
-      // failure 3 after 60000ms backoff → circuit opens.
+      // Exponential backoff with cooldownTime=10000 base:
+      // Failure 1 after 5000ms initial, failure 2 after 10000ms backoff,
+      // failure 3 after 20000ms backoff → circuit opens.
       clock.tick(5000); // failure 1
-      clock.tick(30000); // failure 2
-      clock.tick(60000); // failure 3 → OPEN
+      clock.tick(10000); // failure 2
+      clock.tick(20000); // failure 3 → OPEN
 
       expect(warnSpy).to.have.been.calledWithMatch(/Circuit breaker transition.*CLOSED.*OPEN/);
       expect(client.circuitBreaker.isOpen()).to.be.true;
@@ -1500,8 +1460,8 @@ describe('Eureka client', () => {
       // Open the circuit by causing failures
       client.startHeartbeats();
       clock.tick(5000); // failure 1
-      clock.tick(30000); // failure 2
-      clock.tick(60000); // failure 3 → OPEN
+      clock.tick(10000); // failure 2
+      clock.tick(20000); // failure 3 → OPEN
 
       renewSpy.resetHistory();
 
@@ -1522,8 +1482,8 @@ describe('Eureka client', () => {
       // Open the circuit
       client.startHeartbeats();
       clock.tick(5000); // failure 1
-      clock.tick(30000); // failure 2
-      clock.tick(60000); // failure 3 → OPEN
+      clock.tick(10000); // failure 2
+      clock.tick(20000); // failure 3 → OPEN
 
       expect(client.circuitBreaker.isOpen()).to.be.true;
 
@@ -1544,8 +1504,8 @@ describe('Eureka client', () => {
       sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
       client.startHeartbeats();
       clock.tick(5000);
-      clock.tick(30000);
-      clock.tick(60000); // OPEN
+      clock.tick(10000);
+      clock.tick(20000); // OPEN
       client.renew.restore();
 
       expect(client.circuitBreaker.isOpen()).to.be.true;
@@ -1571,8 +1531,8 @@ describe('Eureka client', () => {
       sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
       client.startHeartbeats();
       clock.tick(5000);
-      clock.tick(30000);
-      clock.tick(60000); // OPEN
+      clock.tick(10000);
+      clock.tick(20000); // OPEN
 
       expect(client.circuitBreaker.isOpen()).to.be.true;
 
@@ -1584,23 +1544,23 @@ describe('Eureka client', () => {
       client.renew.restore();
     });
 
-    // AC7: Exponential backoff between cycles, capped at 300s
+    // AC7: Exponential backoff in CLOSED state, capped at backoffMax
     it('should use exponential backoff capped at backoffMax (AC7)', () => {
       sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
       client.startHeartbeats();
 
-      // After 1 failure: backoff = baseCooldown * 2^0 = 30000
+      // After 1 failure: backoff = cooldownTime * 2^0 = 10000
       clock.tick(5000);
       expect(client.circuitBreaker.failureCount).to.equal(1);
-      expect(client.circuitBreaker.getNextCooldown()).to.equal(30000);
+      expect(client.circuitBreaker.getNextCooldown()).to.equal(10000);
 
-      // After 2 failures: backoff = 30000 * 2^1 = 60000
-      clock.tick(30000);
+      // After 2 failures: backoff = 10000 * 2^1 = 20000
+      clock.tick(10000);
       expect(client.circuitBreaker.failureCount).to.equal(2);
-      expect(client.circuitBreaker.getNextCooldown()).to.equal(60000);
+      expect(client.circuitBreaker.getNextCooldown()).to.equal(20000);
 
-      // After 3 failures: circuit opens, cooldownTime = 10000
-      clock.tick(60000);
+      // After 3 failures: circuit opens, openCycleCount=1, cooldown = 10000
+      clock.tick(20000);
       expect(client.circuitBreaker.isOpen()).to.be.true;
       expect(client.circuitBreaker.getNextCooldown()).to.equal(client.config.eureka.circuitBreaker.cooldownTime);
 
@@ -1625,7 +1585,7 @@ describe('Eureka client', () => {
 
       // Now succeed
       sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(null); });
-      clock.tick(30000); // after backoff, renew succeeds
+      clock.tick(10000); // after backoff (cooldownTime * 2^0), renew succeeds
 
       expect(client.circuitBreaker.failureCount).to.equal(0);
       expect(client.circuitBreaker.state).to.equal('CLOSED');
