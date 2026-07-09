@@ -14,8 +14,16 @@ import Logger from './Logger.js';
 const logger = new Logger();
 
 const ENV_MAP = [
-  { env: 'EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS',          key: 'registryFetchInterval',  unit: 'seconds' },
-  { env: 'EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS', key: 'heartbeatInterval',      unit: 'seconds' },
+  {
+    env: 'EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS',
+    key: 'registryFetchInterval',
+    unit: 'seconds',
+  },
+  {
+    env: 'EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS',
+    key: 'heartbeatInterval',
+    unit: 'seconds',
+  },
   // Future: add entries here for circuit breaker properties (#4775)
   // { env: 'EUREKA_CLIENT_MAXFAILURES',   key: 'maxFailures',   unit: 'milliseconds' },
   // { env: 'EUREKA_CLIENT_COOLDOWNTIME',  key: 'cooldownTime',  unit: 'seconds' },
@@ -27,7 +35,9 @@ function parsePositiveInt(envName) {
   if (raw === undefined || raw === '') return undefined;
   const parsed = parseInt(raw, 10);
   if (isNaN(parsed) || parsed <= 0) {
-    logger.warn(`Invalid value for ${envName}: "${raw}". Expected a positive integer. Using default.`);
+    const msg = `Invalid value for ${envName}: "${raw}". `
+      + 'Expected a positive integer. Using default.';
+    logger.warn(msg);
     return undefined;
   }
   return parsed;
