@@ -29,9 +29,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -85,6 +87,33 @@ class CorsPerServiceWithDisabledTest extends AcceptanceTestWithMockServices {
         .log().all()
             .statusCode(is(SC_FORBIDDEN))
             .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is(nullValue()));
+
+        assertFalse(called.get());
+    }
+
+    @Test
+    void givenCorsIsDisabledInGateway_whenPreflightRequestArrives_thenUseDefaults() {
+        var headers = new Headers();
+        var called = new AtomicBoolean(false);
+        List<Consumer<HttpExchange>> assertions = List.of(
+                httpExchange -> {
+                    assertNull(httpExchange.getRequestHeaders().get(HttpHeaders.ORIGIN));
+                    called.set(true);
+                }
+            );
+        mockCorsService("servicecors7", headers, Map.of("apiml.corsEnabled", "false"), assertions).start();
+
+        given()
+            .header(new Header(HttpHeaders.ORIGIN, "https://localhost:10010"))
+            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "origin, x-requested-with"))
+            .log().all()
+        .when()
+            .options(basePath + "/servicecors7/api/v1/fullheaders")
+        .then()
+            .log().all()
+            .statusCode(SC_OK)
+            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, notNullValue());
 
         assertFalse(called.get());
     }

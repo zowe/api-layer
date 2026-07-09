@@ -123,16 +123,18 @@ class CorsUtilsTest {
             corsUtils = CorsUtils.builder()
                 .gatewayCorsEnabled(false)
                 .corsAllowedEndpoints(Arrays.asList("/gateway/**", "/api-docs"))
-                .defaultAllowedCorsOrigins(Collections.emptyList())
+                .defaultAllowedCorsOrigins(List.of("https://localhost3:10010"))
                 .defaultAllowedCorsHeaders(List.of("*"))
+                .defaultAllowedCorsHttpMethods(List.of("GET", "HEAD"))
                 .build();
         }
 
         @Test
         void registerEmptyDefaultConfig() {
             corsUtils.registerDefaultCorsConfiguration((path, configuration) -> {
-                    assertNull(configuration.getAllowedHeaders());
-                    assertNull(configuration.getAllowedMethods());
+                    assertEquals(List.of("https://localhost3:10010"), configuration.getAllowedOrigins());
+                    assertEquals(List.of("*"), configuration.getAllowedHeaders());
+                    assertEquals(List.of("GET", "HEAD"), configuration.getAllowedMethods());
                 }
             );
         }

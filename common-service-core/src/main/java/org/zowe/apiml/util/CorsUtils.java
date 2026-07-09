@@ -120,12 +120,15 @@ public class CorsUtils {
         List<String> pathsToEnable;
 
         config.setAllowedOrigins(defaultAllowedCorsOrigins);
+        config.setAllowCredentials(true);
+        config.setAllowedHeaders(defaultAllowedCorsHeaders);
+        config.setAllowedMethods(defaultAllowedCorsHttpMethods);
+
         if (gatewayCorsEnabled) {
-            config.setAllowCredentials(true);
-            config.setAllowedHeaders(defaultAllowedCorsHeaders);
-            config.setAllowedMethods(defaultAllowedCorsHttpMethods);
+            // When gateway has CORS handling enabled, defaults go to the /gateway/** endpoints plus any routes that southbound services register. If a service does not register its routes with apiml.corsEnabled metadata entry, the behaviour is really not recommended as there is no CORS configuration set for the service (if the service receives requests with Origin header)
             pathsToEnable = corsAllowedEndpoints;
         } else {
+            // When gateway has CORS handling disabled, all endpoints use Gateway defaults.
             pathsToEnable = Collections.singletonList("/**");
         }
         pathsToEnable.forEach(path -> pathMapper.accept(path, config));

@@ -110,10 +110,10 @@ public class ConnectionsConfig {
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
 
-    @Value("${apiml.service.corsDefaultAllowedOrigins:#{'https://${apiml.service.hostname:localhost}:${apiml.service.port}'}}")
+    @Value("#{T(org.springframework.util.StringUtils).hasText('${apiml.service.corsDefaultAllowedOrigins:}') ? '${apiml.service.corsDefaultAllowedOrigins:}' : 'https://${apiml.service.hostname:localhost}:${apiml.service.port}'}")
     private String corsDefaultAllowedOrigins;
 
-    @Value("${apiml.service.corsDefaultAllowedHeaders:*}")
+    @Value("#{T(org.springframework.util.StringUtils).hasText('${apiml.service.corsDefaultAllowedHeaders:}') ? '${apiml.service.corsDefaultAllowedHeaders:}' : '*'}")
     private String corsDefaultAllowedHeaders;
 
     @Value("${apiml.service.hostname:localhost}")
