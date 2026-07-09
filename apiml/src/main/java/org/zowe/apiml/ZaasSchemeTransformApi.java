@@ -126,7 +126,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
 
     private <R> Mono<AuthorizationResponse<R>> handleMissingApplicationName(String serviceId, OtelRequestContext context) {
         context.authErrorType(ApplicationNameNotProvidedException.class.getName());
-        log.warn("Service '{}' is missing APPLID set", serviceId);
+        log.debug("Service '{}' is missing APPLID set", serviceId);
         return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."),null);
     }
 
