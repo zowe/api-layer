@@ -51,6 +51,9 @@ public class TomcatAcceptFixConfig {
     @Value("${server.tomcat.retryRebindTimeoutSecs:10}")
     int retryRebindTimeoutSecs;
 
+    @Value("${apiml.tcpStackAwareSocketChannel.enabled:true}")
+    boolean tcpStackAwareSocketChannelEnabled;
+
     private static final Field ENDPOINT_FIELD;
     private static final Field NIO_SOCKET_FIELD;
 
@@ -141,6 +144,27 @@ public class TomcatAcceptFixConfig {
     @PreDestroy
     public void stopping() {
         running.set(false);
+    }
+
+    static boolean isRecycledClass(Throwable t) {
+        return "com.ibm.net.NetworkRecycledException".equals(t.getClass().getName());
+    }
+
+    static boolean isTcpStackRestarted(Throwable t) {
+        if ((t.getMessage() != null) && t.getMessage().contains("EDC5122I")) {
+            return true;
+        }
+
+        if (isRecycledClass(t)) {
+            return true;
+        }
+
+        Throwable cause = t.getCause();
+        if ((cause != null) && (cause != t)) {
+            return isTcpStackRestarted(cause);
+        }
+
+        return false;
     }
 
     /**
@@ -249,25 +273,8 @@ public class TomcatAcceptFixConfig {
             }
         }
 
-        boolean isRecycledClass(Throwable t) {
-            return NETWORK_RECYCLED_EXCEPTION_CLASS.equals(t.getClass().getName());
-        }
-
         boolean isTcpStackRestarted(Throwable t) {
-            if ((t.getMessage() != null) && t.getMessage().contains("EDC5122I")) {
-                return true;
-            }
-
-            if (isRecycledClass(t)) {
-                return true;
-            }
-
-            Throwable cause = t.getCause();
-            if ((cause != null) && (cause != t)) {
-                return isTcpStackRestarted(cause);
-            }
-
-            return false;
+            return TomcatAcceptFixConfig.isTcpStackRestarted(t);
         }
 
         public SocketChannel accept() throws IOException {
@@ -276,7 +283,7 @@ public class TomcatAcceptFixConfig {
             try {
                 return socket.accept();
             } catch (IOException ioe) {
-                if (isTcpStackRestarted(ioe)) {
+                if (TomcatAcceptFixConfig.isTcpStackRestarted(ioe)) {
                     // the fix solve just one issue about stopped TCP/IP stack
                     log.debug("The TCP/IP stack was probably restarted. The socket of Tomcat will rebind.");
                     rebind(stateBefore);
