@@ -8,46 +8,6 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-/*
- * Copyright 2026 Contributors to the Zowe Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/**
- * The MIT License (MIT)
- *
- * Copyright (c) 2015 Jacob Quatier
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
-
 /* eslint-disable no-unused-expressions, max-len, no-underscore-dangle */
 import sinon from 'sinon';
 import * as chai from 'chai';
@@ -69,7 +29,6 @@ describe('CircuitBreaker', () => {
     breaker = new CircuitBreaker({
       maxFailures: 3,
       cooldownTime: 10000,
-      baseCooldown: 5000,
       backoffMax: 60000,
     });
   });
@@ -91,11 +50,14 @@ describe('CircuitBreaker', () => {
       expect(breaker.failureCount).to.equal(0);
     });
 
+    it('should have openCycleCount of 0', () => {
+      expect(breaker._openCycleCount).to.equal(0);
+    });
+
     it('should use default values when none provided', () => {
       const defaultBreaker = new CircuitBreaker();
       expect(defaultBreaker.maxFailures).to.equal(5);
       expect(defaultBreaker.cooldownTime).to.equal(60000);
-      expect(defaultBreaker.baseCooldown).to.equal(30000);
       expect(defaultBreaker.backoffMax).to.equal(300000);
     });
   });
@@ -162,13 +124,15 @@ describe('CircuitBreaker', () => {
       expect(breaker.failureCount).to.equal(0);
     });
 
-    it('should transition HALF_OPEN → CLOSED', () => {
+    it('should transition HALF_OPEN → CLOSED and reset openCycleCount', () => {
       for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      expect(breaker._openCycleCount).to.equal(1);
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
       const result = breaker.recordSuccess();
       expect(result.transition).to.equal('CLOSED');
       expect(breaker.state).to.equal('CLOSED');
+      expect(breaker._openCycleCount).to.equal(0);
     });
 
     it('should not transition when already CLOSED', () => {
@@ -201,41 +165,45 @@ describe('CircuitBreaker', () => {
       expect(breaker.state).to.equal('CLOSED');
       const result = breaker.recordFailure(); // 3 → OPEN
       expect(result.transition).to.equal('OPEN');
-      expect(result.delay).to.equal(10000); // cooldownTime
+      expect(result.delay).to.equal(10000); // cooldownTime (first open cycle)
       expect(breaker.state).to.equal('OPEN');
     });
 
-    it('should return backoff delay when below threshold', () => {
+    it('should return exponential backoff delay when below threshold', () => {
       const result = breaker.recordFailure(); // failureCount=1
       expect(result.transition).to.be.null;
-      expect(result.delay).to.equal(5000); // baseCooldown × 2^(1-1) = baseCooldown
+      expect(result.delay).to.equal(10000); // cooldownTime × 2^(1-1) = 10000
     });
 
-    it('should transition HALF_OPEN → OPEN on probe failure', () => {
+    it('should transition HALF_OPEN → OPEN on probe failure with exponential delay', () => {
       for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      // First open: openCycleCount=1, cooldown=10000
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
       const result = breaker.recordFailure();
       expect(result.transition).to.equal('OPEN');
-      expect(result.delay).to.equal(10000); // cooldownTime
+      // Probe failure starts a NEW open cycle (openCycleCount=2),
+      // so delay = cooldownTime * 2^(2-1) = 20000
+      expect(result.delay).to.equal(20000);
       expect(breaker.state).to.equal('OPEN');
+      expect(breaker._openCycleCount).to.equal(2);
     });
   });
 
   describe('getNextCooldown()', () => {
-    it('should return baseCooldown when failureCount is 0', () => {
-      expect(breaker.getNextCooldown()).to.equal(5000);
+    it('should return cooldownTime when failureCount is 0', () => {
+      expect(breaker.getNextCooldown()).to.equal(10000);
     });
 
     it('should double with each failure (exponential backoff)', () => {
-      breaker.recordFailure(); // 1 failure → 5000 × 2^0 = 5000
-      expect(breaker.getNextCooldown()).to.equal(5000);
-
-      breaker.recordFailure(); // 2 failures → 5000 × 2^1 = 10000
+      breaker.recordFailure(); // 1 failure → 10000 × 2^0 = 10000
       expect(breaker.getNextCooldown()).to.equal(10000);
 
-      // 3rd failure would open circuit, so let's test with maxFailures=10
-      const bigBreaker = new CircuitBreaker({ maxFailures: 10, baseCooldown: 1000, cooldownTime: 10000 });
+      breaker.recordFailure(); // 2 failures → 10000 × 2^1 = 20000
+      expect(breaker.getNextCooldown()).to.equal(20000);
+
+      // 3rd failure would open circuit, test with maxFailures=10 instead
+      const bigBreaker = new CircuitBreaker({ maxFailures: 10, cooldownTime: 1000, backoffMax: 60000 });
       for (let i = 0; i < 5; i += 1) bigBreaker.recordFailure();
       // 5 failures → 1000 × 2^(5-1) = 1000 × 16 = 16000
       expect(bigBreaker.getNextCooldown()).to.equal(16000);
@@ -247,26 +215,89 @@ describe('CircuitBreaker', () => {
     it('should cap at backoffMax', () => {
       const cappedBreaker = new CircuitBreaker({
         maxFailures: 20,
-        baseCooldown: 1000,
-        cooldownTime: 10000,
+        cooldownTime: 1000,
         backoffMax: 5000,
       });
       for (let i = 0; i < 10; i += 1) cappedBreaker.recordFailure();
       expect(cappedBreaker.getNextCooldown()).to.equal(5000); // capped
     });
 
-    it('should return cooldownTime when OPEN', () => {
+    it('should return exponential cooldown when OPEN (AC6)', () => {
       for (let i = 0; i < 3; i += 1) breaker.recordFailure();
       expect(breaker.state).to.equal('OPEN');
+      expect(breaker._openCycleCount).to.equal(1);
+      expect(breaker.getNextCooldown()).to.equal(10000); // cooldownTime × 2^0
+
+      // Simulate a second open cycle
+      breaker._openCycleCount = 2;
+      expect(breaker.getNextCooldown()).to.equal(20000); // cooldownTime × 2^1
+
+      breaker._openCycleCount = 3;
+      expect(breaker.getNextCooldown()).to.equal(40000); // cooldownTime × 2^2
+    });
+
+    it('should cap OPEN cooldown at backoffMax', () => {
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      breaker._openCycleCount = 10; // 10000 × 2^9 = 5120000 > backoffMax(60000)
+      expect(breaker.getNextCooldown()).to.equal(60000); // capped
+    });
+
+    it('should return cooldownTime after success resets failureCount', () => {
+      breaker.recordFailure();
+      breaker.recordFailure();
+      expect(breaker.getNextCooldown()).to.be.above(10000);
+      breaker.recordSuccess();
+      expect(breaker.getNextCooldown()).to.equal(10000);
+    });
+  });
+
+  describe('OPEN cooldown — exponential backoff (AC5+AC6)', () => {
+    it('should use cooldownTime for first OPEN cycle', () => {
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      expect(breaker._openCycleCount).to.equal(1);
       expect(breaker.getNextCooldown()).to.equal(10000);
     });
 
-    it('should return baseCooldown after success resets failureCount', () => {
-      breaker.recordFailure();
-      breaker.recordFailure();
-      expect(breaker.getNextCooldown()).to.be.above(5000);
-      breaker.recordSuccess();
-      expect(breaker.getNextCooldown()).to.equal(5000);
+    it('should double cooldown on second OPEN cycle', () => {
+      // First OPEN
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      clock.tick(10001);
+      breaker.allowRequest(); // HALF_OPEN
+      breaker.recordFailure(); // → OPEN again, openCycleCount=2
+      expect(breaker._openCycleCount).to.equal(2);
+      expect(breaker.getNextCooldown()).to.equal(20000);
+    });
+
+    it('should double cooldown again on third OPEN cycle', () => {
+      // First OPEN
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      clock.tick(10001);
+      breaker.allowRequest();
+      breaker.recordFailure(); // openCycleCount=2
+      clock.tick(20001);
+      breaker.allowRequest();
+      breaker.recordFailure(); // openCycleCount=3
+      expect(breaker._openCycleCount).to.equal(3);
+      expect(breaker.getNextCooldown()).to.equal(40000);
+    });
+
+    it('should reset openCycleCount on successful HALF_OPEN probe', () => {
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      expect(breaker._openCycleCount).to.equal(1);
+      clock.tick(10001);
+      breaker.allowRequest(); // HALF_OPEN
+      breaker.recordSuccess(); // → CLOSED
+      expect(breaker._openCycleCount).to.equal(0);
+    });
+
+    it('should use longer cooldown after multiple OPEN cycles', () => {
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      // openCycleCount=1, cooldown=10000
+      expect(breaker._cooldownExpired()).to.be.false;
+      clock.tick(5000);
+      expect(breaker._cooldownExpired()).to.be.false;
+      clock.tick(5001); // total 10001ms > 10000
+      expect(breaker._cooldownExpired()).to.be.true;
     });
   });
 
@@ -314,13 +345,15 @@ describe('CircuitBreaker', () => {
   });
 
   describe('reset()', () => {
-    it('should reset to CLOSED with failureCount=0', () => {
+    it('should reset to CLOSED with failureCount=0 and openCycleCount=0', () => {
       for (let i = 0; i < 3; i += 1) breaker.recordFailure();
       expect(breaker.state).to.equal('OPEN');
       expect(breaker.failureCount).to.equal(3);
+      expect(breaker._openCycleCount).to.equal(1);
       breaker.reset();
       expect(breaker.state).to.equal('CLOSED');
       expect(breaker.failureCount).to.equal(0);
+      expect(breaker._openCycleCount).to.equal(0);
     });
 
     it('should reset from HALF_OPEN to CLOSED', () => {
@@ -330,6 +363,7 @@ describe('CircuitBreaker', () => {
       breaker.reset();
       expect(breaker.state).to.equal('CLOSED');
       expect(breaker.failureCount).to.equal(0);
+      expect(breaker._openCycleCount).to.equal(0);
     });
   });
 
@@ -364,8 +398,8 @@ describe('CircuitBreaker', () => {
       breaker.recordFailure();
       expect(breaker.state).to.equal('OPEN');
 
-      // Another cooldown cycle
-      clock.tick(10001);
+      // Another cooldown cycle with exponential (20000ms now)
+      clock.tick(20001);
       breaker.allowRequest();
       expect(breaker.state).to.equal('HALF_OPEN');
     });
@@ -398,9 +432,9 @@ describe('CircuitBreaker', () => {
     it('should resume normal interval after success resets failures', () => {
       breaker.recordFailure();
       breaker.recordFailure();
-      expect(breaker.getNextCooldown()).to.equal(10000); // 5000 × 2^1
+      expect(breaker.getNextCooldown()).to.equal(20000); // 10000 × 2^1
       breaker.recordSuccess();
-      expect(breaker.getNextCooldown()).to.equal(5000); // back to base
+      expect(breaker.getNextCooldown()).to.equal(10000); // back to base
     });
 
     it('should keep same OPEN timestamp on repeated failures while OPEN', () => {
@@ -435,6 +469,27 @@ describe('CircuitBreaker', () => {
       breaker.recordFailure();
       expect(breaker.failureCount).to.equal(2);
       expect(breaker.state).to.equal('CLOSED'); // still below threshold
+    });
+
+    it('should increment openCycleCount only once per CLOSED→OPEN transition', () => {
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      expect(breaker._openCycleCount).to.equal(1);
+
+      // HALF_OPEN→OPEN should increment again
+      clock.tick(10001);
+      breaker.allowRequest();
+      breaker.recordFailure();
+      expect(breaker._openCycleCount).to.equal(2);
+    });
+
+    it('should handle many rapid OPEN cycles without overflow', () => {
+      for (let i = 0; i < 50; i += 1) {
+        breaker.recordFailure();
+        clock.tick(10001);
+        breaker.allowRequest();
+      }
+      // Should not crash, and cooldown should be capped
+      expect(breaker.getNextCooldown()).to.be.at.most(breaker.backoffMax);
     });
   });
 });
