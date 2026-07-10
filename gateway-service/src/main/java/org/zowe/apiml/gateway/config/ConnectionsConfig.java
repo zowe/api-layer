@@ -10,7 +10,11 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.*;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.HealthCheckHandler;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -19,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -68,11 +73,19 @@ import reactor.netty.http.client.HttpClient;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
 @Configuration
@@ -92,10 +105,22 @@ public class ConnectionsConfig {
     private char[] discoveryPassword;
 
     @Value("${apiml.service.corsEnabled:false}")
-    private boolean corsEnabled;
+    private boolean gatewayCorsEnabled;
 
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
+
+    @Value("#{T(org.springframework.util.StringUtils).hasText('${apiml.service.corsDefaultAllowedOrigins:}') ? '${apiml.service.corsDefaultAllowedOrigins:}' : 'https://${apiml.service.hostname:localhost}:${apiml.service.port}'}")
+    private String corsDefaultAllowedOrigins;
+
+    @Value("#{T(org.springframework.util.StringUtils).hasText('${apiml.service.corsDefaultAllowedHeaders:}') ? '${apiml.service.corsDefaultAllowedHeaders:}' : '*'}")
+    private String corsDefaultAllowedHeaders;
+
+    @Value("${apiml.service.hostname:localhost}")
+    private String hostname;
+
+    @Value("${apiml.service.port}")
+    private String port;
 
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
@@ -261,10 +286,10 @@ public class ConnectionsConfig {
     }
 
     private boolean isRouteKey(String key) {
-        return StringUtils.startsWith(key, ROUTES + ".") &&
+        return Strings.CS.startsWith(key, ROUTES + ".") &&
             (
-                StringUtils.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
-                    StringUtils.endsWith(key, "." + ROUTES_SERVICE_URL)
+                Strings.CS.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
+                    Strings.CS.endsWith(key, "." + ROUTES_SERVICE_URL)
             );
     }
 
@@ -299,7 +324,13 @@ public class ConnectionsConfig {
 
     @Bean
     CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods, corsEnabledEndpoints);
+        return CorsUtils.builder()
+            .gatewayCorsEnabled(gatewayCorsEnabled)
+            .corsAllowedEndpoints(corsEnabledEndpoints)
+            .defaultAllowedCorsHttpMethods(corsAllowedMethods)
+            .defaultAllowedCorsOrigins(Arrays.asList(corsDefaultAllowedOrigins.split(",")))
+            .defaultAllowedCorsHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
+            .build();
     }
 
     @Bean
