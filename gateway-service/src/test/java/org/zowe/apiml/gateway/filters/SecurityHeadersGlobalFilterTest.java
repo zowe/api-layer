@@ -11,7 +11,6 @@
 package org.zowe.apiml.gateway.filters;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
@@ -22,6 +21,7 @@ import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class SecurityHeadersGlobalFilterTest {
@@ -35,7 +35,7 @@ class SecurityHeadersGlobalFilterTest {
         MockServerWebExchange exchange = MockServerWebExchange.from(request);
 
         // 2. Mock the GatewayFilterChain to simulate a successful downstream filter execution
-        GatewayFilterChain filterChain = Mockito.mock(GatewayFilterChain.class);
+        GatewayFilterChain filterChain = mock(GatewayFilterChain.class);
         when(filterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
         // 3. Execute the filter and use StepVerifier to handle the reactive lifecycle
