@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.config;
+package org.zowe.apiml.security.common.config;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.web.server.header.ServerHttpHeadersWriter;

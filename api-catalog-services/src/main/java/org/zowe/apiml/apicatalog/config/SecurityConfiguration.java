@@ -48,6 +48,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.service.GatewaySecurity;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CustomHstsServerHttpHeadersWriter;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -248,6 +249,7 @@ public class SecurityConfiguration {
 
             .headers(httpSecurityHeadersConfigurer ->
                 httpSecurityHeadersConfigurer.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                    .writer(new CustomHstsServerHttpHeadersWriter())
                     .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
 
             .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
