@@ -39,17 +39,20 @@ import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
-import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
+
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.Socket;
-import java.security.*;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -59,8 +62,23 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ConnectionsConfigTest {
 
@@ -415,12 +433,11 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
-                CorsUtils corsUtils = connectionsConfig.corsUtils();
+            void validateDefaultCorsAllowedMethods() {
+                var corsUtils = connectionsConfig.corsUtils();
 
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                @SuppressWarnings("unchecked")
+                var corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
                 assertEquals(7, corsAllowedMethods.size());
             }
         }
@@ -436,18 +453,20 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
-                CorsUtils corsUtils = connectionsConfig.corsUtils();
+            void validateCorsAllowedMethods() {
+                var corsUtils = connectionsConfig.corsUtils();
 
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                @SuppressWarnings("unchecked")
+                var corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
+
                 assertEquals(3, corsAllowedMethods.size());
                 assertEquals("GET", corsAllowedMethods.get(0));
                 assertEquals("POST", corsAllowedMethods.get(1));
                 assertEquals("PATCH", corsAllowedMethods.get(2));
             }
+
         }
+
     }
 
     @Nested

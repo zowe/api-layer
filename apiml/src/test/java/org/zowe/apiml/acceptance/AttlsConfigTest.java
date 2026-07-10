@@ -215,15 +215,9 @@ class AttlsConfigTest {
     @Nested
     @ActiveProfiles({"attlsClient", "attlsServer", "WhenCorsEnabledService"})
     @DirtiesContext
-    @SpringBootTest(classes = {
-            ApimlApplication.class,
-            FreeMarkerConfigurer.class,
-            TestConfig.class
-        },
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
-    )
     @AcceptanceTest
     @TestInstance(Lifecycle.PER_CLASS)
+    // this test requires a defined port to either match the default allowed origin or set apiml.corsDefaultAllowedOrigins property with the known port
     class WhenCorsEnabledService extends AcceptanceTestWithMockServices {
 
         private static final String VALID_CERT =
