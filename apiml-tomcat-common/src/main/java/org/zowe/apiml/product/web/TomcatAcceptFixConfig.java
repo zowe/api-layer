@@ -52,7 +52,7 @@ public class TomcatAcceptFixConfig {
     @Value("${server.tomcat.retryRebindTimeoutSecs:10}")
     int retryRebindTimeoutSecs;
 
-    @Value("${apiml.tcpStackAwareSocketChannel.enabled:true}")
+    @Value("${apiml.tcpStackAwareSocketChannel.enabled:false}")
     boolean tcpStackAwareSocketChannelEnabled;
 
     private static final Field ENDPOINT_FIELD;
