@@ -4,6 +4,6 @@ Poc to showcase migration of the only distributed cache:
 
 - `invalidatedJwtTokens`
 - `zoweCache`
-- `zoweInvalidatedTokenCache
+- `zoweInvalidatedTokenCache`
 
-using the StoreMigrator Utility class from Infinispan Tools
+using the StoreMigrator Utility class from Infinispan Tools.
