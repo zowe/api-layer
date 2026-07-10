@@ -62,6 +62,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
@@ -204,7 +205,9 @@ class AttlsConfigTest {
             .when()
                 .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
             .then()
-                .statusCode(SC_OK);
+                .log().all()
+                .statusCode(SC_OK)
+                .header("Strict-Transport-Security", notNullValue());
             //@formatter:on
             verify(apimlTomcatCustomizer, times(1)).customize(any());
             verify(attlsHttpHandler, times(1)).postProcessAfterInitialization(any(HttpHandler.class), any());
