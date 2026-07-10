@@ -10,18 +10,31 @@
 
 package org.zowe.apiml;
 
+import lombok.extern.slf4j.Slf4j;
 import org.infinispan.tools.store.migrator.StoreMigrator;
 
+@Slf4j
 public class Main {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
        migrate("infinispan-store-migrator/config/migrator-invalidatedJwtTokens.properties");
        migrate("infinispan-store-migrator/config/migrator-zoweCache.properties");
        migrate("infinispan-store-migrator/config/migrator-zoweInvalidatedTokenCache.properties");
     }
 
-    private static void migrate(String properties) throws Exception {
-        System.out.println("Migrating " + properties + "...");
-        StoreMigrator.main(new String[]{properties});
-        System.out.println("Migration using " + properties + " is completed.");
+    private static void migrate(String properties) {
+        log.info("Migrating {}...", properties);
+
+        try {
+            StoreMigrator.main(new String[]{properties});
+            log.info("Migration using {} is completed.", properties);
+        } catch (Exception e) {
+            log.error(
+                "Migration failed for {}. Continuing with the remaining cache stores. " +
+                    "The source Soft Index File Store could not be fully read. " +
+                    "The store may be incomplete or inconsistent.",
+                properties,
+                e
+            );
+        }
     }
 }

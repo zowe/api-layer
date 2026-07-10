@@ -7,6 +7,9 @@ repositories {
 }
 
 dependencies {
+    compileOnly libs.lombok
+    implementation libs.logback.classic
+    annotationProcessor libs.lombok
     implementation("org.infinispan:infinispan-tools:16.2.1")
 }
 
