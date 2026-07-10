@@ -14,13 +14,14 @@ import org.infinispan.tools.store.migrator.StoreMigrator;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-       migrate("migrator-debug/config/migrator-invalidatedJwtTokens.properties");
-       migrate("migrator-debug/config/migrator-zoweCache.properties");
-       migrate("migrator-debug/config/migrator-zoweInvalidatedTokenCache.properties");
+       migrate("infinispan-store-migrator/config/migrator-invalidatedJwtTokens.properties");
+       migrate("infinispan-store-migrator/config/migrator-zoweCache.properties");
+       migrate("infinispan-store-migrator/config/migrator-zoweInvalidatedTokenCache.properties");
     }
 
     private static void migrate(String properties) throws Exception {
         System.out.println("Migrating " + properties + "...");
         StoreMigrator.main(new String[]{properties});
+        System.out.println("Migration using " + properties + " is completed.");
     }
 }
