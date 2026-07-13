@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ContextClosedEvent;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 
@@ -38,7 +39,8 @@ class ZaasContextClosedEventListenerTest {
     void testOnApplicationEvent() {
         doNothing().when(zaasStartupListener).onContextClosed();
 
-        zaasContextClosedEventListener.onApplicationEvent(new ContextClosedEvent(mock(ApplicationContext.class)));
+        assertDoesNotThrow(() -> zaasContextClosedEventListener.onApplicationEvent(new ContextClosedEvent(mock(ApplicationContext.class)))
+    );
     }
 
 }

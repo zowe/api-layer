@@ -43,8 +43,8 @@ public class ZoweFilterFactory extends AbstractTokenFilterFactory<AbstractTokenF
     }
 
     @Override
-    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer() {
-        return zaasSchemeTransform::zoweJwt;
+    protected Function<RequestCredentials, Mono<AuthorizationResponse<ZaasTokenResponse>>> getAuthorizationResponseTransformer(ServerWebExchange exchange) {
+        return requestCredentials -> zaasSchemeTransform.zoweJwt(requestCredentials, exchange);
     }
 
     @Override

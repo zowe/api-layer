@@ -10,12 +10,15 @@
 
 package org.zowe.apiml.caching.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
@@ -25,15 +28,28 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
+import org.zowe.apiml.product.web.HttpConfig;
+import org.zowe.apiml.security.common.auth.BasicAuthenticationManager;
+import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.security.common.util.X509Util;
+import org.zowe.apiml.security.common.verify.CertificateValidator;
+import org.zowe.apiml.security.common.verify.TrustedCertificatesProvider;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Configuration
 @EnableWebFluxSecurity
+@Import({HttpConfig.class, CertificateValidator.class, TrustedCertificatesProvider.class})
 public class SpringSecurityConfig {
+
+    @Value("${apiml.service.http.userId:#{null}}")
+    private String cachingServiceUserId;
+
+    @Value("${apiml.service.http.password:#{null}}")
+    private char[] cachingServicePassword;
 
     @Value("${apiml.service.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
@@ -43,7 +59,7 @@ public class SpringSecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, @Qualifier("publicKeyCertificatesBase64") Set<String> publicKeyCertificatesBase64, CertificateValidator certificateValidator) {
 
         var antMatchersToIgnore = new ArrayList<String>();
         antMatchersToIgnore.add("/cachingservice/application/info");
@@ -52,7 +68,9 @@ public class SpringSecurityConfig {
         if (!isHealthEndpointProtected) {
             antMatchersToIgnore.add("/cachingservice/application/health");
         }
-
+        var certFilter = new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator);
+        // all certificates in the header coming from trusted proxy are allowed for client authentication, including API ML certificate
+        certFilter.setCertificateForClientAuth(crt -> true);
         http
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .headers(headers -> headers.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable))
@@ -61,21 +79,23 @@ public class SpringSecurityConfig {
             ))
             .exceptionHandling(exceptionHandlingSpec ->
                 exceptionHandlingSpec.authenticationEntryPoint(new HttpStatusServerEntryPoint(HttpStatus.FORBIDDEN))
-            );
+            )
+            .addFilterAfter(certFilter, SecurityWebFiltersOrder.FIRST);
+
+        http.authorizeExchange(exchange -> exchange
+            .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
+            .anyExchange().authenticated());
 
         if (verifyCertificates) {
-            http.authorizeExchange(exchange -> exchange
-                .pathMatchers(antMatchersToIgnore.toArray(new String[0])).permitAll()
-                .anyExchange().authenticated()
-            ).x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
+            http.x509(x509spec -> x509spec.principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager()));
         } else {
-            http.authorizeExchange(exchange -> exchange.anyExchange().permitAll());
+            http.httpBasic(httpBasicSpec -> httpBasicSpec.authenticationManager(
+                new BasicAuthenticationManager(cachingServiceUserId, cachingServicePassword, "CACHING_SERVICE")));
         }
 
         return http.build();
     }
-
 
     @Bean
     ReactiveUserDetailsService userDetailsService() {
@@ -86,4 +106,5 @@ public class SpringSecurityConfig {
             return Mono.just(userDetails);
         };
     }
+
 }

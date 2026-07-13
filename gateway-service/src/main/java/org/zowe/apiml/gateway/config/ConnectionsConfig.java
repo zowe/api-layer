@@ -10,7 +10,11 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.*;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.HealthCheckHandler;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.LeaseInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
@@ -19,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
@@ -57,6 +62,7 @@ import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGateway
 import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.eureka.EurekaServiceUrlUtils;
 import org.zowe.apiml.product.web.DiscoveryRestTemplateConfig;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
@@ -67,11 +73,19 @@ import reactor.netty.http.client.HttpClient;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.REGISTRATION_TYPE;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
 @Configuration
@@ -84,11 +98,29 @@ public class ConnectionsConfig {
     @Value("${eureka.client.serviceUrl.defaultZone}")
     private String eurekaServerUrl;
 
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String discoveryUserid;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] discoveryPassword;
+
     @Value("${apiml.service.corsEnabled:false}")
-    private boolean corsEnabled;
+    private boolean gatewayCorsEnabled;
 
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
+
+    @Value("#{T(org.springframework.util.StringUtils).hasText('${apiml.service.corsDefaultAllowedOrigins:}') ? '${apiml.service.corsDefaultAllowedOrigins:}' : 'https://${apiml.service.hostname:localhost}:${apiml.service.port}'}")
+    private String corsDefaultAllowedOrigins;
+
+    @Value("#{T(org.springframework.util.StringUtils).hasText('${apiml.service.corsDefaultAllowedHeaders:}') ? '${apiml.service.corsDefaultAllowedHeaders:}' : '*'}")
+    private String corsDefaultAllowedHeaders;
+
+    @Value("${apiml.service.hostname:localhost}")
+    private String hostname;
+
+    @Value("${apiml.service.port}")
+    private String port;
 
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
@@ -219,7 +251,7 @@ public class ConnectionsConfig {
     private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, EurekaFactory eurekaFactory) {
         log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
         Map<String, String> urls = new HashMap<>();
-        urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
+        urls.put(DEFAULT_ZONE, withBasicAuthFallback(apimlRegistration.getDiscoveryServiceUrls()));
 
         EurekaClientConfigBean configBean = new EurekaClientConfigBean();
         BeanUtils.copyProperties(config, configBean);
@@ -237,11 +269,27 @@ public class ConnectionsConfig {
         return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInfo), newInfo, configBean, context, factories, args1);
     }
 
+    /**
+     * When TLS validation is disabled the client certificate cannot be trusted by the Discovery Service, so the
+     * additional registration falls back to basic authentication by embedding the configured Discovery Service
+     * credentials into the discovery service URLs. The primary registration is handled by
+     * {@link org.zowe.apiml.product.web.EurekaBasicAuthEnvironmentPostProcessor}.
+     */
+    private String withBasicAuthFallback(String discoveryServiceUrls) {
+        if (discoveryServiceUrls == null || config.isVerifySslCertificatesOfServices()) {
+            return discoveryServiceUrls;
+        }
+        String password = (discoveryPassword == null) ? null : new String(discoveryPassword);
+        return Arrays.stream(discoveryServiceUrls.split(","))
+            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), discoveryUserid, password))
+            .collect(Collectors.joining(","));
+    }
+
     private boolean isRouteKey(String key) {
-        return StringUtils.startsWith(key, ROUTES + ".") &&
+        return Strings.CS.startsWith(key, ROUTES + ".") &&
             (
-                StringUtils.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
-                    StringUtils.endsWith(key, "." + ROUTES_SERVICE_URL)
+                Strings.CS.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
+                    Strings.CS.endsWith(key, "." + ROUTES_SERVICE_URL)
             );
     }
 
@@ -276,7 +324,13 @@ public class ConnectionsConfig {
 
     @Bean
     CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods, corsEnabledEndpoints);
+        return CorsUtils.builder()
+            .gatewayCorsEnabled(gatewayCorsEnabled)
+            .corsAllowedEndpoints(corsEnabledEndpoints)
+            .defaultAllowedCorsHttpMethods(corsAllowedMethods)
+            .defaultAllowedCorsOrigins(Arrays.asList(corsDefaultAllowedOrigins.split(",")))
+            .defaultAllowedCorsHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
+            .build();
     }
 
     @Bean

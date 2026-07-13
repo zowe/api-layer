@@ -35,6 +35,9 @@ buildscript {
 
 }
 
+plugins {
+    id 'net.minecraftforge.licenser' version '1.2.0' apply false
+}
 
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
@@ -54,12 +57,14 @@ apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 allprojects {
     apply plugin: 'idea'
-    apply plugin: 'org.cadixdev.licenser'
+    apply plugin: 'net.minecraftforge.licenser'
     apply plugin: 'eclipse'
 
     repositories mavenRepositories
@@ -96,6 +101,17 @@ allprojects {
         }
     }
 
+    sourceSets {
+        main {
+            java { srcDirs = ['src/main/java'] }
+            resources { srcDirs = ['src/main/resources'] }
+        }
+        test {
+            java { srcDirs = ['src/test/java'] }
+            resources { srcDirs = ['src/test/resources'] }
+        }
+    }
+
     configurations.all {
         resolutionStrategy.dependencySubstitution {
             substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
@@ -129,8 +145,10 @@ configure(subprojects.findAll { it.name in [
 configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
 
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    java {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 
     test {
         useJUnitPlatform()
@@ -158,6 +176,7 @@ configure(subprojects.findAll {it.name != 'platform'}) {
         testImplementation libs.junit.platform.commons
         testImplementation libs.junit.platform.engine
     }
+
 }
 
 subprojects {
@@ -184,6 +203,7 @@ ext.javaLibraries = [
     'apiml-security-common',
     'apiml-tomcat-common',
     'certificate-analyser',
+    'zosmf-jwt-check',
     'common-service-core',
     'security-service-client-spring',
     'apiml-sample-extension',

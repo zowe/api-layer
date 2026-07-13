@@ -13,7 +13,9 @@ package org.zowe.apiml.security.common.auth.saf;
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.security.core.Authentication;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.io.*;
 import java.util.HashMap;
@@ -108,7 +110,7 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
      * @param inputStream stream to be loaded
      */
     private void loadDefinition(InputStream inputStream) {
-        Yaml yaml = new Yaml();
+        Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
         Map<String, Object> data = yaml.load(inputStream);
         loadDefinition(data);
     }

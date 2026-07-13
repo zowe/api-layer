@@ -20,6 +20,8 @@ import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.client.service.ApiMediationClientService;
 import org.zowe.apiml.util.config.TestConfig;
 
+import java.util.Collections;
+
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -49,7 +51,7 @@ class ApiMediationClientTestControllerTest {
 
     @Test
     void unregisterTest_successful() throws Exception {
-        apiMediationClientService.register();
+        apiMediationClientService.register(Collections.emptyMap());
         this.mockMvc.perform(
             delete(MEDIATION_CLIENT_URI))
             .andExpect(status().isOk());

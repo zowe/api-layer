@@ -70,6 +70,7 @@
 # - ZWE_configs_certificate_truststore_password / ZWE_zowe_certificate_truststore_password
 # - ZWE_configs_certificate_ciphers / ZWE_configs_ciphers
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_port - the port the api gateway service will use
 # - ZWE_configs_server_maxConnectionsPerRoute
 # - ZWE_configs_server_maxTotalConnections
@@ -81,6 +82,8 @@
 # - ZWE_configs_spring_profiles_active
 # - ZWE_zowe_network_server_tls_attls
 # - ZWE_DISCOVERY_SERVICES_LIST
+# - ZWE_configs_apiml_discovery_userid - Userid for Eureka basic auth (defaults to "eureka" when verifyCertificates is DISABLED)
+# - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
 
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -100,6 +103,9 @@ if [ -n "${ZWE_GATEWAY_SHARED_LIBS}" ]; then
     GATEWAY_LOADER_PATH=${ZWE_GATEWAY_SHARED_LIBS},${GATEWAY_LOADER_PATH}
 fi
 echo "Setting loader path: ${GATEWAY_LOADER_PATH}"
+
+# Logging level
+add_profile "${ZWE_configs_logging_level:-info}"
 
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then
@@ -148,7 +154,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -XX:+ExitOnOutOfMemoryError \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
-    ${JAVA21_CONSOLE_ENCODING} \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
@@ -166,21 +171,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.gateway.refresh-interval-ms=${ZWE_configs_apiml_gateway_registry_refreshIntervalMs:-30000} \
     -Dapiml.gateway.registry.enabled=${ZWE_configs_apiml_gateway_registry_enabled:-false} \
     -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_configs_apiml_gateway_registry_metadataKeyAllowList:-} \
-    -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-} \
     -Dapiml.gateway.servicesToDisableRetry=${ZWE_configs_apiml_gateway_servicesToDisableRetry:-} \
+    -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-} \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
-    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
-    -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
-    -Dapiml.service.ssl.key-alias="${client_key_alias}" \
-    -Dapiml.service.ssl.key-password="${client_key_pass}" \
-    -Dapiml.service.ssl.key-store="${client_keystore_location}" \
-    -Dapiml.service.ssl.key-store-password="${client_keystore_pass}" \
-    -Dapiml.service.ssl.key-store-type="${client_keystore_type}" \
-    -Dapiml.service.ssl.protocol=${ZWE_configs_apiml_service_ssl_protocol:-${server_protocol}} \
-    -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
-    -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
-    -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.auth.jwt.customAuthHeader=${ZWE_configs_apiml_security_auth_jwt_customAuthHeader:-} \
     -Dapiml.security.auth.passticket.customAuthHeader=${ZWE_configs_apiml_security_auth_passticket_customAuthHeader:-} \
@@ -189,6 +184,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.authorization.endpoint.url=${ZWE_configs_apiml_security_authorization_endpoint_url:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf-auth"} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-"native"} \
     -Dapiml.security.forwardHeader.trustedProxies=${ZWE_configs_apiml_security_forwardHeader_trustedProxies:-} \
+    -Dapiml.security.rauditx.oidcSourceUserPaths=${ZWE_configs_apiml_security_rauditx_oidcSourceUserPaths:-sub} \
+    -Dapiml.security.rauditx.onOidcUserIsMapped=${ZWE_configs_apiml_security_rauditx_onOidcUserIsMapped:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices} \
     -Dapiml.security.x509.acceptForwardedCert=${ZWE_configs_apiml_security_x509_acceptForwardedCert:-false} \
@@ -197,11 +194,28 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
     -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
-    -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS} \
+    -Dapiml.service.corsDefaultAllowedHeaders=${ZWE_configs_apiml_service_corsDefaultAllowedHeaders:-} \
+    -Dapiml.service.corsDefaultAllowedOrigins=${ZWE_configs_apiml_service_corsDefaultAllowedOrigins:-} \
+    -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+    -Dapiml.discovery.password=${discoveryPassword} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
+    -Dapiml.service.http.password=${ZWE_configs_apiml_service_http_password:-${discoveryPassword}} \
+    -Dapiml.service.http.userId=${ZWE_configs_apiml_service_http_userId:-${discoveryUserid}} \
     -Dapiml.service.port=${ZWE_configs_port:-7554} \
+    -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
+    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
+    -Dapiml.service.ssl.key-alias="${client_key_alias}" \
+    -Dapiml.service.ssl.key-password="${client_key_pass}" \
+    -Dapiml.service.ssl.key-store-password="${client_keystore_pass}" \
+    -Dapiml.service.ssl.key-store-type="${client_keystore_type}" \
+    -Dapiml.service.ssl.key-store="${client_keystore_location}" \
+    -Dapiml.service.ssl.protocol=${ZWE_configs_apiml_service_ssl_protocol:-${server_protocol}} \
+    -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
+    -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
+    -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dfile.encoding=UTF-8 \
@@ -212,7 +226,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
+    -Dotel.sdk.disabled=true \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
     -Dserver.maxConnectionsPerRoute=${ZWE_configs_server_maxConnectionsPerRoute:-100} \
     -Dserver.maxTotalConnections=${ZWE_configs_server_maxTotalConnections:-1000} \
@@ -233,9 +247,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000} \
     -Dspring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=${ZWE_configs_server_webSocket_requestBufferSize:-24576} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
-    -Dapiml.security.rauditx.onOidcUserIsMapped=${ZWE_configs_apiml_security_rauditx_onOidcUserIsMapped:-false} \
-    -Dapiml.security.rauditx.oidcSourceUserPaths=${ZWE_configs_apiml_security_rauditx_oidcSourceUserPaths:-sub} \
-    -Dotel.sdk.disabled=true \
     -jar "${JAR_FILE}" &
 
 pid=$!

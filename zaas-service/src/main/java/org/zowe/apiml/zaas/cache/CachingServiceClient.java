@@ -12,18 +12,25 @@ package org.zowe.apiml.zaas.cache;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
+import java.util.Base64;
 import java.util.Map;
 
 
@@ -33,23 +40,34 @@ import java.util.Map;
  */
 @Slf4j
 @SuppressWarnings({"squid:S1192"}) // literals are repeating in debug logs only
-public class CachingServiceClient implements CachingClient {
+public class CachingServiceClient implements CachingClient, InitializingBean {
 
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
+
     @Value("${apiml.cachingServiceClient.apiPath:/cachingservice/api/v1/cache}")
     private String CACHING_API_PATH;
+
     @Value("${apiml.cachingServiceClient.list.apiPath:/cachingservice/api/v1/cache-list/}")
     private String CACHING_LIST_API_PATH;
 
+    @Value("${apiml.service.http.userId:#{null}}")
+    private String cachingServiceUserId;
+
+    @Value("${apiml.service.http.password:#{null}}")
+    private String cachingServicePassword;
+
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifyCertificates;
+
+    @Getter(AccessLevel.PACKAGE)
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
 
     static {
         defaultHeaders.add("Content-Type", "application/json");
-    }
-
-    public static HttpHeaders getDefaultHeaders() {
-        return defaultHeaders;
     }
 
     public CachingServiceClient(RestTemplate restTemplate, GatewayClient gatewayClient) {
@@ -58,6 +76,18 @@ public class CachingServiceClient implements CachingClient {
             throw new IllegalStateException("RestTemplate instance cannot be null");
         }
         this.restTemplate = restTemplate;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        if (!verifyCertificates) {
+            if (StringUtils.isEmpty(cachingServiceUserId) || StringUtils.isEmpty(cachingServicePassword)) {
+                apimlLog.log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
+            } else {
+                String basicToken = "Basic " + Base64.getEncoder().encodeToString((cachingServiceUserId + ":" + cachingServicePassword).getBytes());
+                defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
+            }
+        }
     }
 
     private String getGatewayAddress() {
@@ -74,7 +104,6 @@ public class CachingServiceClient implements CachingClient {
      * @param kv {@link KeyValue} to store
      * @throws CachingServiceClientException when http response from caching is not 2xx, such as connect exception or cache conflict
      */
-
     public void create(KeyValue kv) throws CachingServiceClientException {
         try {
             restTemplate.exchange(getGatewayAddress() + CACHING_API_PATH, HttpMethod.POST, new HttpEntity<>(kv, defaultHeaders), String.class);
@@ -150,7 +179,7 @@ public class CachingServiceClient implements CachingClient {
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
             ResponseEntity<KeyValue> response = restTemplate.exchange(getGatewayAddress() + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
-            if (response != null && response.hasBody()) { //NOSONAR tests return null
+            if (response.hasBody()) {
                 return response.getBody();
             }
         } catch (RestClientException e) {
@@ -163,7 +192,7 @@ public class CachingServiceClient implements CachingClient {
         }
 
         // record not found
-        throw new CachingServiceClientException("Unable to read key: " + key + ", caused by response from caching service is null or has no body");
+        throw new CachingServiceClientException("Key '" + key + "' was not found in caching service or the response body was empty");
     }
 
     /**

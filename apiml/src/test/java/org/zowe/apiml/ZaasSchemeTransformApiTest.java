@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.gateway.filters.RequestCredentials;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -97,7 +98,7 @@ class ZaasSchemeTransformApiTest {
 
                 when(passTicketService.generate("USER1", "app1")).thenReturn("ticket123");
 
-                StepVerifier.create(transformApi.passticket(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.passticket(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertNotNull(result);
                     TicketResponse response = result.getBody();
                     assertNotNull(response);
@@ -112,7 +113,7 @@ class ZaasSchemeTransformApiTest {
 
                 when(passTicketService.generate("USER1", "app1")).thenThrow(new RuntimeException("boom"));
 
-                StepVerifier.create(transformApi.passticket(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.passticket(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertEquals(INVALID_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                 }).verifyComplete();
             }
@@ -126,7 +127,7 @@ class ZaasSchemeTransformApiTest {
                 RequestCredentials credentials = mockCredentials();
                 when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.empty());
 
-                StepVerifier.create(transformApi.passticket(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.passticket(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertNotNull(result);
                     assertNull(result.getBody());
                     assertTrue(result.getHeaders().header("x-zowe-error").isEmpty());
@@ -141,7 +142,7 @@ class ZaasSchemeTransformApiTest {
                 when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
                 when(authSourceService.isValid(authSource)).thenReturn(false);
 
-                StepVerifier.create(transformApi.passticket(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.passticket(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertEquals(MISSING_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
@@ -150,7 +151,7 @@ class ZaasSchemeTransformApiTest {
             @Test
             void whenApplicationNameIsMissing_inPassticket_thenReturnsError() {
                 when(credentials.getApplId()).thenReturn(null);
-                StepVerifier.create(transformApi.passticket(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.passticket(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertEquals("ApplicationName not provided.", result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
@@ -168,7 +169,7 @@ class ZaasSchemeTransformApiTest {
         void whenMissingAppId_returnsError() {
             when(credentials.getApplId()).thenReturn(null);
 
-            StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
+            StepVerifier.create(transformApi.safIdt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                 assertEquals("ApplicationName not provided.", result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                 assertNull(result.getBody());
             }).verifyComplete();
@@ -191,7 +192,7 @@ class ZaasSchemeTransformApiTest {
                 when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
                     .thenReturn("saf-idt");
 
-                StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.safIdt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertNotNull(result);
                     assertEquals("saf-idt", result.getBody().getToken());
                 }).verifyComplete();
@@ -209,7 +210,7 @@ class ZaasSchemeTransformApiTest {
                 when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
                     .thenReturn("saf-idt");
 
-                StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.safIdt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertNotNull(result);
                     assertEquals("saf-idt", result.getBody().getToken());
                     assertNotNull(result.getBody().getDistributedIds());
@@ -224,7 +225,7 @@ class ZaasSchemeTransformApiTest {
                 when(tokenCreationService.createSafIdTokenWithoutCredentials("USER1", "app1"))
                     .thenThrow(new RuntimeException("Simulated SAF IDT failure"));
 
-                StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.safIdt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertEquals("Simulated SAF IDT failure", result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
@@ -241,7 +242,7 @@ class ZaasSchemeTransformApiTest {
                 when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.of(authSource));
                 when(authSourceService.isValid(authSource)).thenReturn(false);
 
-                StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.safIdt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertEquals(MISSING_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
@@ -251,7 +252,7 @@ class ZaasSchemeTransformApiTest {
             void whenApplicationNameIsMissing_inSafIdt_thenReturnsError() {
                 RequestCredentials credentials = mockCredentialsWithAppId(" "); // blank
 
-                StepVerifier.create(transformApi.safIdt(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.safIdt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertEquals("ApplicationName not provided.", result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
@@ -283,7 +284,7 @@ class ZaasSchemeTransformApiTest {
 
                 when(authSourceService.getJWT(authSource)).thenReturn("jwt-token");
 
-                StepVerifier.create(transformApi.zoweJwt(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.zoweJwt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertNotNull(result);
                     ZaasTokenResponse response = result.getBody();
                     assertNotNull(response);
@@ -295,7 +296,7 @@ class ZaasSchemeTransformApiTest {
             void whenJwtRetrievalFails_returnsErrorResponse() {
                 when(authSourceService.getJWT(authSource)).thenThrow(new RuntimeException("boom"));
 
-                StepVerifier.create(transformApi.zoweJwt(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.zoweJwt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertEquals(INVALID_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
@@ -307,7 +308,7 @@ class ZaasSchemeTransformApiTest {
 
             when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.empty());
 
-            StepVerifier.create(transformApi.zoweJwt(credentials)).assertNext(result -> {
+            StepVerifier.create(transformApi.zoweJwt(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                 assertEquals(MISSING_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                 assertNull(result.getBody());
             }).verifyComplete();
@@ -353,7 +354,7 @@ class ZaasSchemeTransformApiTest {
                 when(zosmfService.exchangeAuthenticationForZosmfToken(anyString(), eq(parsed)))
                     .thenReturn(mockResponse);
 
-                StepVerifier.create(transformApi.zosmf(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.zosmf(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
 
                     assertNotNull(result);
                     assertEquals("zosmf-token", result.getBody().getToken());
@@ -365,7 +366,7 @@ class ZaasSchemeTransformApiTest {
 
                 when(zosmfService.exchangeAuthenticationForZosmfToken(any(), any()))
                     .thenThrow(new RuntimeException("Error returned from zosmf"));
-                StepVerifier.create(transformApi.zosmf(credentials)).assertNext(result -> {
+                StepVerifier.create(transformApi.zosmf(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                     assertEquals("Error returned from zosmf", result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                     assertNull(result.getBody());
                 }).verifyComplete();
@@ -376,7 +377,7 @@ class ZaasSchemeTransformApiTest {
         void whenAuthSourceMissing_returnsMissingAuthError() {
 
             when(authSourceService.getAuthSourceFromRequest(any())).thenReturn(Optional.empty());
-            StepVerifier.create(transformApi.zosmf(credentials)).assertNext(result -> {
+            StepVerifier.create(transformApi.zosmf(credentials, mock(ServerWebExchange.class))).assertNext(result -> {
                 assertEquals(MISSING_AUTH_MSG, result.getHeaders().header(AUTH_FAIL_HEADER).get(0));
                 assertNull(result.getBody());
             }).verifyComplete();
@@ -415,7 +416,7 @@ class ZaasSchemeTransformApiTest {
         void giveOidcToken_whenPassticket_thenReturnUserIds() {
             var requestCredentials = RequestCredentials.builder().applId("APPLID").build();
 
-            StepVerifier.create(transformApi.passticket(requestCredentials))
+            StepVerifier.create(transformApi.passticket(requestCredentials, mock(ServerWebExchange.class)))
                 .assertNext(response -> {
                     assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
                     assertSame(USER_ID, response.getBody().getUserId());
@@ -426,7 +427,7 @@ class ZaasSchemeTransformApiTest {
         void giveOidcToken_whenSafIdt_thenReturnUserIds() {
             var requestCredentials = RequestCredentials.builder().applId("APPLID").build();
 
-            StepVerifier.create(transformApi.safIdt(requestCredentials))
+            StepVerifier.create(transformApi.safIdt(requestCredentials, mock(ServerWebExchange.class)))
                 .assertNext(response -> {
                     assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
                     assertSame(USER_ID, response.getBody().getUserId());
@@ -438,7 +439,7 @@ class ZaasSchemeTransformApiTest {
             var requestCredentials = RequestCredentials.builder().build();
             doReturn(ZaasTokenResponse.builder().distributedIds(DISTRIBUTED_IDS).userId(USER_ID).build()).when(zosmfService).exchangeAuthenticationForZosmfToken(any(), any());
 
-            StepVerifier.create(transformApi.zosmf(requestCredentials))
+            StepVerifier.create(transformApi.zosmf(requestCredentials, mock(ServerWebExchange.class)))
                 .assertNext(response -> {
                     assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
                     assertSame(USER_ID, response.getBody().getUserId());
@@ -449,7 +450,7 @@ class ZaasSchemeTransformApiTest {
         void giveOidcToken_whenZoweJwt_thenReturnUserIds() {
             var requestCredentials = RequestCredentials.builder().build();
 
-            StepVerifier.create(transformApi.zoweJwt(requestCredentials))
+            StepVerifier.create(transformApi.zoweJwt(requestCredentials, mock(ServerWebExchange.class)))
                 .assertNext(response -> {
                     assertSame(DISTRIBUTED_IDS, response.getBody().getDistributedIds());
                     assertSame(USER_ID, response.getBody().getUserId());

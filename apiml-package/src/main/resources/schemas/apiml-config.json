@@ -565,6 +565,20 @@
                             "description": "List of allowed HTTP methods when CORS is enabled.",
                             "default": "GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"
                         },
+                        "http": {
+                            "type": "object",
+                            "description": "Configuration for service running in HTTP mode",
+                            "properties": {
+                                "userId": {
+                                    "type": "string",
+                                    "description": "Username used for internal authentication inside APIML. It is used only when TLS is disabled and AT-TLS is not enabled."
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "Password used for internal authentication inside APIML. It is used only when TLS is disabled and AT-TLS is not enabled."
+                                }
+                            }
+                        },
                         "ssl": {
                             "type": "object",
                             "description": "SSL/TLS configuration for the API ML HTTP client",
@@ -707,6 +721,11 @@
                                             }
                                         }
                                     }
+                                },
+                                "useVirtualThreads": {
+                                    "type": "boolean",
+                                    "description": "To enable Infinispan virtual threads available from JDK21+.",
+                                    "default": false
                                 },
                                 "initialHosts": {
                                     "type": "string",
@@ -902,7 +921,7 @@
             "description": "Specifies identifier of the domain APIML for routing purpose in the central APIML."
         },
         "logging": {
-            "type": "string",
+            "type": "object",
             "description": "Logging configuration for APIML single-service.",
             "properties": {
                 "config": {
@@ -910,6 +929,16 @@
                     "description": "Path to custom logback configuration file.",
                     "minLength": 1,
                     "maxLength": 1024
+                },
+                "level": {
+                    "type": "string",
+                    "description": "Logging level to activate",
+                    "default": "info",
+                    "enum": [
+                        "quiet",
+                        "info",
+                        "debug"
+                    ]
                 }
             }
         }

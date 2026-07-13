@@ -102,10 +102,10 @@ apiml:
         corsAllowedEndpoints: /gateway/**
         allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
-        forwardClientCertEnabled: false
+        forwardClientCertEnabled: true
         hostname: localhost
         id: ${spring.application.name}
-        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Origin
         port: 10010
         scheme: https  # "https" or "http"
         preferIpAddress: false
@@ -140,26 +140,12 @@ server:
 
 logbackServiceName: ZWEAGW1
 
+# This section contains only logging levels configuration common to all profiles.
+# Use a dedicated profile below or create a new one to configure logging levels.
 logging:
     level:
-        ROOT: INFO
-        com.netflix: WARN
-        com.netflix.config: ERROR
-        com.netflix.discovery: ERROR
         com.netflix.discovery.DiscoveryClient: OFF
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
-        io.netty.resolver.dns: WARN
-        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
-        javax.net.ssl: ERROR
-        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        org.springframework.beans: WARN
-        org.springframework.cloud.gateway.filter: WARN
-        org.springframework.cloud.gateway.route: WARN
-        org.springframework.context.support: WARN
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
-        reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
 
 management:
@@ -176,18 +162,55 @@ management:
                 include: health,info
 
 ---
+spring.config.activate.on-profile: quiet
+
+logging:
+    level:
+        ROOT: ERROR
+        org.zowe.apiml: INFO
+
+---
+spring.config.activate.on-profile: info
+
+logging:
+    level:
+        ROOT: INFO
+        com.netflix: WARN
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        io.netty.resolver.dns: WARN
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        javax.net.ssl: ERROR
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.springframework.beans: WARN
+        org.springframework.cloud.gateway.filter: WARN
+        org.springframework.cloud.gateway.route: WARN
+        org.springframework.context.support: WARN
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
+
+---
 spring.config.activate.on-profile: debug
 
 logging:
     level:
+        ROOT: INFO
         com.netflix: DEBUG
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        io.netty.resolver.dns: WARN
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
         javax.net.ssl: ERROR
-        org.apache: INFO
         org.apache.http: DEBUG
-        org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.springframework.beans: WARN
         org.springframework.boot.autoconfigure.web: DEBUG
         org.springframework.cloud.gateway: DEBUG
+        org.springframework.cloud.gateway.filter: WARN
+        org.springframework.cloud.gateway.route: WARN
+        org.springframework.context.support: WARN
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.http.server.reactive: DEBUG
         org.springframework.security: DEBUG
@@ -204,6 +227,7 @@ management:
         web:
             exposure:
                 include: health,info,gateway,loggers
+
 ---
 spring.config.activate.on-profile: wiretap
 spring:
