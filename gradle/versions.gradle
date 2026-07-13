@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             version('zosUtils', '2.1.0')
             version('aws', '1.12.797')
             version('awaitility', '4.3.0')
-            version('bouncyCastle', '1.84')
+            version('bouncyCastle', '1.85')
             version('caffeine', '3.2.4')
             version('checkerQual', '3.55.1')
             version('commonsConfiguration2', '2.15.1')
@@ -51,7 +51,7 @@ dependencyResolutionManagement {
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
             version('openTelemetry-starter', '2.29.0')
-            version('openTelemetry-core', '1.63.0')
+            version('openTelemetry-core', '1.64.0')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
@@ -108,7 +108,7 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
-            version('micronaut', '4.10.25')
+            version('micronaut', '4.10.26')
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.5.1')
             version('checkstyle', '10.17.0')
@@ -119,7 +119,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.82.1')
+            version('ioGrpc', '1.82.2')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
@@ -297,7 +297,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.37')
+            version('logback', '1.5.38')
             version('mockitoCore', '5.23.0')
             version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')

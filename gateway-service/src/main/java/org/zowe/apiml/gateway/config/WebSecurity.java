@@ -58,6 +58,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.firewall.StrictServerWebExchangeFirewall;
+import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
 import org.springframework.security.web.server.savedrequest.CookieServerRequestCache;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -178,7 +179,7 @@ public class WebSecurity {
             .headers(headers -> headers
                 .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
                 .writer(new CustomHstsServerHttpHeadersWriter())
-                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+                .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
             .authorizeExchange(authorize -> authorize.anyExchange().authenticated())
@@ -333,7 +334,7 @@ public class WebSecurity {
             .headers(headers -> headers
                 .hsts(hsts -> hsts.disable())
                 .writer(new CustomHstsServerHttpHeadersWriter())
-                .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
+                .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
@@ -542,7 +543,7 @@ public class WebSecurity {
             "/v3/api-docs"
         };
 
-        private static final String[] BASE_PATHS_MODULITH = ArrayUtils.addAll(BASE_PATH_MICROSERVICES, new String[] {
+        private static final String[] BASE_PATHS_MODULITH = ArrayUtils.addAll(BASE_PATH_MICROSERVICES, new String[]{
             "/apicatalog",
             "/cachingservice"
         });
