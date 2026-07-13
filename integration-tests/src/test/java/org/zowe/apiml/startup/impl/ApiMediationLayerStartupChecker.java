@@ -52,9 +52,26 @@ public class ApiMediationLayerStartupChecker {
     private static final long POOL_INTERVAL = 5;
 
     private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+    private static final boolean VERIFY_SSL_CERTIFICATES = Boolean.parseBoolean(
+        System.getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true")
+    );
     private static final Credentials CREDENTIALS = ConfigReader.environmentConfiguration().getCredentials();
     private static final String CREDENTIALS_HEADER = "Basic " + Base64.getEncoder().encodeToString(String.format("%s:%s", CREDENTIALS.getUser(), CREDENTIALS.getPassword()).getBytes());
+    private static final String EUREKA_CREDENTIALS_HEADER = buildEurekaCredentialsHeader();
     private static final String APPLICATION_JSON_HEADER = HttpHeaderValues.APPLICATION_JSON.toString();
+
+    private static String buildEurekaCredentialsHeader() {
+        String userid = System.getProperty("apiml.discovery.userid");
+        String password = System.getProperty("apiml.discovery.password");
+        if (StringUtils.isAnyBlank(userid, password)) {
+            return null;
+        }
+        return "Basic " + Base64.getEncoder().encodeToString((userid + ":" + password).getBytes());
+    }
+
+    private static String authHeader(boolean basicAuth) {
+        return basicAuth ? CREDENTIALS_HEADER : null;
+    }
 
     void initSsl() {
         if (SslContext.sslClientCertValid == null) {
@@ -256,11 +273,11 @@ public class ApiMediationLayerStartupChecker {
                 .until(check);
         }
 
-        private DocumentContext getDocumentAsContext(URI uri, boolean basicAuth) {
+        private DocumentContext getDocumentAsContext(URI uri, String authorizationHeader) {
             HttpGet request = new HttpGet(uri);
             request.addHeader(HttpHeaders.ACCEPT, APPLICATION_JSON_HEADER);
-            if (basicAuth) {
-                request.addHeader(HttpHeaders.AUTHORIZATION, CREDENTIALS_HEADER);
+            if (authorizationHeader != null) {
+                request.addHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
             }
             try (CloseableHttpClient client = HttpClients.custom().setSSLContext(SslContext.sslClientCertValid).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
                 final HttpResponse response = client.execute(request);
@@ -303,9 +320,12 @@ public class ApiMediationLayerStartupChecker {
 
         private boolean areAllInstancesOnboarded() {
             for (var ds : get(CoreService.DISCOVERY)) {
+                String header = VERIFY_SSL_CERTIFICATES
+                    ? authHeader(ds.getServiceConfiguration().isBasicAuthenticationSupported())
+                    : EUREKA_CREDENTIALS_HEADER;
                 var documentContext = getDocumentAsContext(HttpRequestUtils.getUri(
                     ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps"
-                ), ds.getServiceConfiguration().isBasicAuthenticationSupported());
+                ), header);
                 if (documentContext == null || !areAllInstanceOnInEureka(ds, documentContext)) {
                     return false;
                 }
@@ -314,7 +334,7 @@ public class ApiMediationLayerStartupChecker {
         }
 
         private int getEurekaVersion(Instance instance) {
-            var documentContext = getDocumentAsContext(URI.create(instance.getEurekaVersionUrl()), instance.getServiceConfiguration().isBasicAuthenticationSupported());
+            var documentContext = getDocumentAsContext(URI.create(instance.getEurekaVersionUrl()), authHeader(instance.getServiceConfiguration().isBasicAuthenticationSupported()));
             if (documentContext != null) {
                 return documentContext.read("version");
             }
@@ -364,7 +384,7 @@ public class ApiMediationLayerStartupChecker {
         boolean areAllInstancesAreUp() {
             List<String> downInstances = new ArrayList<>();
             for (var instance : getInstancesHealthCheck()) {
-                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicAuthenticationSupported());
+                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), authHeader(instance.getServiceConfiguration().isBasicAuthenticationSupported()));
                 String status = "N/A";
                 if (documentContext != null) {
                     status = documentContext.read("status");
@@ -384,7 +404,7 @@ public class ApiMediationLayerStartupChecker {
             var key = "$.components.zaas.details.auth";
             List<String> downZaasInstances = new ArrayList<>();
             for (var instance : get(serviceId)) {
-                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), instance.getServiceConfiguration().isBasicAuthenticationSupported());
+                var documentContext = getDocumentAsContext(URI.create(instance.getHealthEndpointUrl()), authHeader(instance.getServiceConfiguration().isBasicAuthenticationSupported()));
                 var status = "N/A";
                 if (documentContext != null) {
                     try {
@@ -404,11 +424,24 @@ public class ApiMediationLayerStartupChecker {
         }
 
         public void waitUntilReady() {
+            awaitFor(this::areDiscoveryPortsReachable, 2);
             awaitFor(this::areAllInstancesOnboarded, 8);
             awaitFor(this::areDiscoveryInSync, 3);
             awaitFor(this::areAllInstancesRegistryUpToDate, 3);
             awaitFor(this::areAllInstancesAreUp, 3);
             awaitFor(this::isAuthUp, 1);
+        }
+
+        private boolean areDiscoveryPortsReachable() {
+            for (var ds : get(CoreService.DISCOVERY)) {
+                try (var socket = new java.net.Socket()) {
+                    socket.connect(new java.net.InetSocketAddress(ds.getHostname(), ds.getPort()), 5000);
+                } catch (IOException e) {
+                    log.debug("Discovery service {}:{} is not yet reachable: {}", ds.getHostname(), ds.getPort(), e.getMessage());
+                    return false;
+                }
+            }
+            return true;
         }
 
         public List<Instance> get(CoreService type) {

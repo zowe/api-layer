@@ -41,7 +41,7 @@
                 "connection": {
                     "type": "object",
                     "properties": {
-                        "idleConnectionTimeoutSeconds" : {
+                        "idleConnectionTimeoutSeconds": {
                             "type": "integer",
                             "description": "Specifies a timeout limit for idle client connections, in seconds.",
                             "default": 5
@@ -371,6 +371,20 @@
                                     "default": false
                                 }
                             }
+                        },
+                        "http": {
+                            "type": "object",
+                            "description": "Configuration for service running in HTTP mode.",
+                            "properties": {
+                                "userId": {
+                                    "type": "string",
+                                    "description": "Username used for internal authentication inside APIML."
+                                },
+                                "password": {
+                                    "type": "string",
+                                    "description": "Password used for internal authentication inside APIML."
+                                }
+                            }
                         }
                     }
                 }
@@ -391,7 +405,6 @@
                         }
                     }
                 }
-
             }
         },
         "spring": {
@@ -412,7 +425,7 @@
             }
         },
         "logging": {
-            "type": "string",
+            "type": "object",
             "description": "Logging configuration for Gateway service.",
             "properties": {
                 "config": {
@@ -420,6 +433,16 @@
                     "description": "Path to custom logback configuration file.",
                     "minLength": 1,
                     "maxLength": 1024
+                },
+                "level": {
+                    "type": "string",
+                    "description": "Logging level to activate",
+                    "default": "info",
+                    "enum": [
+                        "quiet",
+                        "info",
+                        "debug"
+                    ]
                 }
             }
         }

@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.HttpCookie;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -166,12 +167,19 @@ class ZaasJwtService implements TokenService {
 
     private ZaasOidcValidationResult extractZaasOidcValidate(SimpleHttpResponse response) throws IOException, ZaasClientException {
         int statusCode = response.getCode();
+
+        if (statusCode == 200) {
+            var body = response.getStringBody();
+            var claims = objectMapper.readValue(body, Map.class);
+            return new ZaasOidcValidationResult(true, claims);
+        }
+
         if (statusCode == 204) {
-            return new ZaasOidcValidationResult(true);
+            return new ZaasOidcValidationResult(true, null);
         }
 
         if (statusCode == 401) {
-            return new ZaasOidcValidationResult(false);
+            return new ZaasOidcValidationResult(false, null);
         } else {
             throw new ZaasClientException(ZaasClientErrorCodes.GENERIC_EXCEPTION, response.getStringBody());
         }

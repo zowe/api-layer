@@ -14,6 +14,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -23,7 +26,9 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.RequestPath;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
+import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
+import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
@@ -44,15 +49,18 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.firewall.StrictServerWebExchangeFirewall;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -482,4 +490,121 @@ class WebSecurityTest {
         assertThat(cookies.getFirst(WebSecurity.COOKIE_STATE).getValue()).isEqualTo("test-state");
 
     }
+
+    @Nested
+    @ExtendWith(MockitoExtension.class)
+    class ApimlStrictServerWebExchangeFirewall {
+
+        private static final int GATEWAY_PORT = 10010;
+
+        @Mock
+        private StrictServerWebExchangeFirewall nonRoutingFirewall;
+        private WebSecurity.ApimlStrictServerWebExchangeFirewall apimlStrictServerWebExchangeFirewall;
+        private ApplicationInfo applicationInfo = ApplicationInfo.builder().build();
+
+        @BeforeEach
+        void setUp() {
+            apimlStrictServerWebExchangeFirewall = new WebSecurity.ApimlStrictServerWebExchangeFirewall(nonRoutingFirewall);
+            ReflectionTestUtils.setField(apimlStrictServerWebExchangeFirewall, "gatewayPort", GATEWAY_PORT);
+            ReflectionTestUtils.setField(apimlStrictServerWebExchangeFirewall, "applicationInfo", applicationInfo);
+        }
+
+        @Nested
+        class Modulith {
+
+            @BeforeEach
+            void setUp() {
+                applicationInfo.setModulith(true);
+            }
+
+            @ParameterizedTest(name = "givenLocalEndpointPath_whenFirewallCheck_thenDecideToUseStrictOne(port={0}, path={1})")
+            @CsvSource({
+                "10010,/",
+                "10010,/gateway",
+                "10010,/gateway/api/v1/anyUrl",
+                "10010,/images",
+                "10010,/images/homepage/picture.gif",
+                "10010,/application",
+                "10010,/application/health",
+                "10010,/v3/api-docs",
+                "10010,/v3/api-docs/apicatalog",
+                "10010,/apicatalog",
+                "10010,/apicatalog/index.html",
+                "10010,/cachingservice",
+                "10010,/cachingservice/map",
+                "10011,/",
+                "10011,/application",
+                "10011,/eureka"
+            })
+            void givenLocalEndpointPath_whenFirewallCheck_thenDecideToUseStrictOne(int port, String path) {
+                var request = MockServerHttpRequest.get(path).localAddress(new InetSocketAddress(port)).build();
+                var exchange = MockServerWebExchange.from(request);
+
+                apimlStrictServerWebExchangeFirewall.getFirewalledExchange(exchange);
+
+                verify(nonRoutingFirewall).getFirewalledExchange(any());
+            }
+
+            @ParameterizedTest(name = "givenSouthBoundServicePath_whenFirewallCheck_thenDecideToUseCustomizedOne(port={0}, path={1})")
+            @CsvSource({
+                "10010,/service/api/v1",
+                "10010,/v3/a/strange/service"
+            })
+            void givenSouthBoundServicePath_whenFirewallCheck_thenDecideToUseCustomizedOne(int port, String path) {
+                var request = MockServerHttpRequest.get(path).localAddress(new InetSocketAddress(port)).build();
+                var exchange = MockServerWebExchange.from(request);
+
+                apimlStrictServerWebExchangeFirewall.getFirewalledExchange(exchange);
+
+                verify(nonRoutingFirewall, never()).getFirewalledExchange(any());
+            }
+
+        }
+
+        @Nested
+        class Microservices {
+
+            @BeforeEach
+            void setUp() {
+                applicationInfo.setModulith(false);
+            }
+
+            @ParameterizedTest(name = "givenLocalEndpointPath_whenFirewallCheck_thenDecideToUseStrictOne({0})")
+            @CsvSource({
+                "/",
+                "/gateway",
+                "/gateway/api/v1/anyUrl",
+                "/images",
+                "/images/homepage/picture.gif",
+                "/application",
+                "/application/health",
+                "/v3/api-docs"
+            })
+            void givenLocalEndpointPath_whenFirewallCheck_thenDecideToUseStrictOne(String path) {
+                var request = MockServerHttpRequest.get(path).localAddress(new InetSocketAddress(12345)).build();
+                var exchange = MockServerWebExchange.from(request);
+
+                apimlStrictServerWebExchangeFirewall.getFirewalledExchange(exchange);
+
+                verify(nonRoutingFirewall).getFirewalledExchange(any());
+            }
+
+            @ParameterizedTest(name = "givenSouthBoundServicePath_whenFirewallCheck_thenDecideToUseCustomizedOne({0})")
+            @CsvSource({
+                "10010,/service/api/v1",
+                "10010,/v3/a/strange/service"
+            })
+            void givenSouthBoundServicePath_whenFirewallCheck_thenDecideToUseCustomizedOne(String path) {
+                var request = MockServerHttpRequest.get(path).localAddress(new InetSocketAddress(54321)).build();
+                var exchange = MockServerWebExchange.from(request);
+
+                apimlStrictServerWebExchangeFirewall.getFirewalledExchange(exchange);
+
+                verify(nonRoutingFirewall, never()).getFirewalledExchange(any());
+            }
+
+        }
+
+    }
+
 }

@@ -25,7 +25,7 @@ configurations.all {
 dependencies {
     testImplementation project(':apiml-security-common')
     testImplementation project(':zaas-client')
-    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.5'
+    testImplementation group: 'org.springframework.graphql', name: 'spring-graphql-test', version: '1.4.6'
 
 
     testImplementation libs.spring.boot.starter.actuator
@@ -59,6 +59,9 @@ test.enabled = false
 apply plugin: 'java'
 
 tasks.withType(Test) {
+    // Gradle 9: explicit classpath required (convention inheritance removed)
+    classpath = sourceSets.test.runtimeClasspath
+    testClassesDirs = sourceSets.test.output.classesDirs
     jvmArgs '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
     jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
@@ -227,7 +230,9 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'GatewayProxyTest',
             'GatewayCentralRegistry',
             'SafIdTokenTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -275,7 +280,9 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'ChaoticHATest',
             'RateLimitTest',
             'GraphQLTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -326,7 +333,9 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
             'SafIdTokenTest',
             'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
             'NonModulithTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -378,7 +387,9 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
             'NonModulithTest',
             'InfinispanJGroupStabilityTest',
-            'RateLimitTest'
+            'RateLimitTest',
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -482,7 +493,8 @@ task runContainerModulithTests(type: Test) {
             'ZaasTest',
             'ApiCatalogStandaloneTest',
             'NonModulithTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
         )
     }
 }
@@ -517,7 +529,8 @@ task runContainerTests(type: Test) {
             'GatewayServiceRouting',
             'GatewayCentralRegistry',
             'ZaasTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
         )
     }
 }
@@ -584,6 +597,20 @@ task runRegistrationTests(type: Test) {
     useJUnitPlatform {
         includeTags(
             'RegistrationTest'
+        )
+    }
+}
+
+task runDiscoveryBasicAuthTests(type: Test) {
+    group "integration tests"
+    description "Run tests verifying discovery service basic auth protection when SSL certificate verification is disabled"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'DiscoveryBasicAuthTest'
         )
     }
 }

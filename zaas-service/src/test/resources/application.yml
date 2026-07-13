@@ -184,11 +184,6 @@ management:
                 include: "*"
 
 ---
-spring.config.activate.on-profile: dev
-
-logbackServiceName: ZWEAZS1
-
----
 spring.config.activate.on-profile: attlsServer
 
 server:

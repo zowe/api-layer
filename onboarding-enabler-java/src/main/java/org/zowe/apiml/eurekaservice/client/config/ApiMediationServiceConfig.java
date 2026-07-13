@@ -35,6 +35,20 @@ public class ApiMediationServiceConfig {
     private List<String> discoveryServiceUrls;
 
     /**
+     * Eureka basic authentication user id. It is used only as a fallback when TLS validation is disabled
+     * ({@code ssl.verifySslCertificatesOfServices=false}); in that case the client certificate cannot be trusted by the
+     * Discovery Service, so the credentials are embedded into the discovery service URLs to authenticate with basic
+     * authentication instead. The value has to match the Discovery Service {@code apiml.discovery.userid}.
+     */
+    private String discoveryUserid;
+
+    /**
+     * Eureka basic authentication password, see {@link #discoveryUserid}. The value has to match the Discovery Service
+     * {@code apiml.discovery.password}.
+     */
+    private char[] discoveryPassword;
+
+    /**
      *     Uniquely identifies instances of a microservice in the API ML.
      *     The service developer specifies a default value during the design of the service.
      *
