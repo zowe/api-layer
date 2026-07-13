@@ -24,10 +24,17 @@ const ENV_MAP = [
     key: 'heartbeatInterval',
     unit: 'seconds',
   },
-  // Future: add entries here for circuit breaker properties (#4775)
-  // { env: 'EUREKA_CLIENT_MAXFAILURES',   key: 'maxFailures',   unit: 'milliseconds' },
-  // { env: 'EUREKA_CLIENT_COOLDOWNTIME',  key: 'cooldownTime',  unit: 'seconds' },
-  // { env: 'EUREKA_CLIENT_BACKOFFMAX',    key: 'backoffMax',    unit: 'seconds' },
+  { env: 'EUREKA_CLIENT_MAXFAILURES',   
+    key: 'circuitBreaker.maxFailures'
+  },
+  { env: 'EUREKA_CLIENT_COOLDOWNTIME',  
+    key: 'circuitBreaker.cooldownTime',  
+    unit: 'seconds' 
+  },
+  { env: 'EUREKA_CLIENT_BACKOFFMAX',    
+    key: 'bcircuitBreaker.ackoffMax',    
+    unit: 'seconds' 
+  },
 ];
 
 function parsePositiveInt(envName) {
