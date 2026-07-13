@@ -107,7 +107,7 @@ export default class CircuitBreaker extends EventEmitter {
   /**
    * Record a failed request. Increments failureCount.
    * May transition to OPEN if threshold reached.
-   * OPEN delay returned is the exponential cooldown (AC5, AC6).
+   * OPEN delay returned is the exponential cooldown .
    *
    * @returns {{ transition: string|null, delay: number }}
    *   transition — state change if any; delay — suggested wait before next attempt (ms)
