@@ -392,7 +392,7 @@ export default class Eureka extends EventEmitter {
       } else if (!error && response.statusCode === 404) {
         this.logger.warn('eureka heartbeat FAILED, Re-registering app');
         this.register();
-        callback(new Error('Heartbeat returned 404'));
+        callback(null);
       } else {
         if (error) {
           this.logger.error('An error in the request occured.', error);
