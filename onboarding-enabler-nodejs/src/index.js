@@ -75,7 +75,7 @@ function init() {
       };
     } else {
       throw new Error(
-        'Invalid TLS configuration: provide either p12File or certificate + keystore'
+         'Invalid TLS configuration: provide either p12File or certificate + keystore'
       );
     }
 
