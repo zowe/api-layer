@@ -235,7 +235,6 @@ public class WebSecurityConfig {
 
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http, boolean defaultExceptionHandler) {
         http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
@@ -495,7 +494,6 @@ public class WebSecurityConfig {
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(pathMatchers("/gateway/api/v1/auth/access-token/revoke/tokens/**", "/gateway/api/v1/auth/access-token/evict"))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
