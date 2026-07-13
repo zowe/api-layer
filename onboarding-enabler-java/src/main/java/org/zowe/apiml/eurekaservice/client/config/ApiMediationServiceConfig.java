@@ -29,7 +29,7 @@ import java.util.Map;
 @Slf4j
 public class ApiMediationServiceConfig {
 
-    public static final char[] DEFAULT_ZOS_KEYRING_PASSWORD = "password".toCharArray();
+    protected static final char[] DEFAULT_ZOS_KEYRING_PASSWORD = "password".toCharArray();
 
     @Singular
     private List<String> discoveryServiceUrls;
