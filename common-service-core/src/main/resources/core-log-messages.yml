@@ -42,7 +42,7 @@ messages:
       reason: "The endpoint you are looking for could not be located."
       action: "Verify that the URL of the endpoint you are trying to reach is correct."
 
-    - key: org.zowe.apiml.common.provider
+    - key: org.zowe.apiml.common.authentication.provider
       number: ZWEAM105
       type: INFO
       text: "Using authentication provider: %s"
