@@ -46,7 +46,7 @@ messages:
       number: ZWEAM105
       type: INFO
       text: "Using authentication provider: %s"
-      reason: "You have chosen to use the authentication provider passed as a parameter to this message."
+      reason: "You have chosen an authentication provider, as seen in this message."
       action: "No action required."
 
     # Ticket messages
