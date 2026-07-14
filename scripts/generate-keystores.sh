@@ -410,11 +410,9 @@ cat all-services.crt >> all-services.pem
 # server-only.p12 — same as all-services.keystore.p12 (used by mock-services local config)
 cp all-services.keystore.p12 server-only.p12
 
-# client-cert.p12 — empty client cert store used by integration tests
-# Create it as a copy of the client_cert/client-certs.p12 (will be created in step 5)
-# For now, create a basic keystore with apiml_ca
-keytool -importcert -keystore client-cert.p12 -alias "zowe development instances certificate authority" \
-    -file local_ca.pem -noprompt -storepass "$PASSWORD" -storetype pkcs12 2>/dev/null || true
+# client-cert.p12 — used by integration tests as the server keystore
+# Must contain localhost PrivateKeyEntry + CA trustedCertEntry (same as all-services.keystore.p12)
+cp all-services.keystore.p12 client-cert.p12
 
 # Clean up
 rm -f all-services.key all-services.csr all-services.crt all-services-chain.crt local_ca.key local_ca.pem "$san_config"
