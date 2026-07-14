@@ -163,7 +163,7 @@ dependencyResolutionManagement {
             version('testLogger', '4.0.0')
             version('mailapi', '1.6.8')
             // version 4.x is not compatible with Java 8
-            version('micronaut', '3.10.9')
+            version('micronaut', '3.10.10')
             version('micronautPlugin', '3.7.10')
             version('shadow', '8.1.1')
             version('gradleTomcatPlugin', '2.7.0')
