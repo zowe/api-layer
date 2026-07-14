@@ -142,6 +142,18 @@ def generateKeystores = tasks.register('generateKeystores', Exec) {
             logger.lifecycle('Keystore generation skipped: keystores already exist in {}', keystoreDir)
             return false
         }
+        // Check if openssl is actually available
+        try {
+            def proc = 'openssl version'.execute()
+            proc.waitFor()
+            if (proc.exitValue() != 0) {
+                logger.lifecycle('Keystore generation skipped: openssl not available')
+                return false
+            }
+        } catch (IOException e) {
+            logger.lifecycle('Keystore generation skipped: openssl not available')
+            return false
+        }
         true
     }
 }
