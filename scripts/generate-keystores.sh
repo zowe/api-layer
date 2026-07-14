@@ -469,6 +469,16 @@ keytool -importkeystore -srckeystore UNKNOWNUSER.p12 -srcstorepass "$PASSWORD" \
 keytool -importcert -keystore client-certs.p12 -alias apiml_ca \
     -file apiml_ca.crt -noprompt -storepass "$PASSWORD" -storetype pkcs12
 
+# Import APIML CA into Docker truststore so mock services trust client certificates
+keytool -importcert -keystore "$KEYSTORE_DIR/docker/all-services.truststore.p12" \
+    -alias "apiml ca" -file apiml_ca.crt \
+    -noprompt -storepass "$PASSWORD" -storetype pkcs12
+
+# Import APIML CA into localhost truststore (used by mock-services for X509 client auth)
+keytool -importcert -keystore "$KEYSTORE_DIR/localhost/localhost.truststore.p12" \
+    -alias "apiml ca" -file apiml_ca.crt \
+    -noprompt -storepass "$PASSWORD" -storetype pkcs12
+
 # Clean up individual p12 files and intermediates
 rm -f APIMTST.p12 USER.p12 UNKNOWNUSER.p12 apiml_ca.key apiml_ca.crt apiml_ca.srl
 
