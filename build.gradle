@@ -122,6 +122,29 @@ allprojects {
 
 }
 
+// ── Keystore generation ─────────────────────────────────────────────────
+def generateKeystores = tasks.register('generateKeystores', Exec) {
+    group = 'build'
+    description = 'Generate TLS keystores for local development and testing'
+    workingDir = rootProject.projectDir
+    if (System.getProperty('os.name').toLowerCase().contains('win')) {
+        commandLine 'cmd', '/c', 'bash scripts/generate-keystores.sh'
+    } else {
+        commandLine 'bash', 'scripts/generate-keystores.sh'
+    }
+}
+
+tasks.register('cleanKeystores', Delete) {
+    group = 'build'
+    description = 'Delete generated keystore files'
+    delete fileTree(dir: 'keystore', include: [
+        '**/*.p12', '**/*.pem', '**/*.key', '**/*.cer', '**/*.crt', '**/*.csr'
+    ])
+    delete 'zaas-client/src/test/resources/localhost.keystore.p12'
+    delete 'zaas-client/src/test/resources/localhost.truststore.p12'
+}
+tasks.named('clean') { dependsOn 'cleanKeystores' }
+
 configure(subprojects.findAll { it.name in [
     'apiml-common-lib-package',
     'api-catalog-services',
@@ -144,6 +167,10 @@ configure(subprojects.findAll { it.name in [
 
 configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
+
+    tasks.withType(JavaCompile).configureEach {
+        dependsOn generateKeystores
+    }
 
     java {
         sourceCompatibility = JavaVersion.VERSION_17

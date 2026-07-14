@@ -74,150 +74,22 @@ The following files are used by the NGINX proxy to simulate AT_TLS on the CI ser
 * `keystore/localhost/localca.cer`
 * `keystore/localhost/trusted_CAs.cer`
 
-## Generate your own certificates for localhost
+## Generate keystores for local development
 
-### (Optional)Generate certificate authority
-
-create private key
-
-```bash
-    openssl genrsa -out local_ca.key 2048
-```
-
-create certificate
+Keystores are automatically generated when running `./gradlew build`.
+To manually regenerate, run:
 
 ```bash
-    openssl req -x509 -new -nodes -key local_ca.key -sha256 -days 1825 -out local_ca.pem
+./scripts/generate-keystores.sh
 ```
 
-### Generate certificate
-
-#### generate CSR together with private key in PEM format
+Or via Gradle:
 
 ```bash
-    openssl req -newkey rsa:2048 -nodes -keyout localhost.key -sha256 -out localhost.csr -outform PEM -subj "/C=CZ/ST=Czechia/L=Prague/O=Broadcom/OU=MSD/CN=*.zowe.svc.cluster.local" -config ../client_cert/openssl.conf -extensions v3_req
+./gradlew generateKeystores
 ```
 
-**Verify CSR**
-
-```bash
-    openssl req -text -noout -verify -in localhost.csr
-```
-
-Example of a valid CSR:
-
-```plaintext
-    Certificate Request:
-    Data:
-    Version: 1 (0x0)
-    Subject: C = CZ, ST = Czechia, L = Prague, O = Broadcom Inc, OU = IT, CN = localhost
-    Subject Public Key Info:
-    Public Key Algorithm: rsaEncryption
-    RSA Public-Key: (2048 bit)
-    Modulus:
-    ...
-    Exponent: 65537 (0x10001)
-    Attributes:
-    Requested Extensions:
-    X509v3 Key Usage:
-    Key Encipherment, Data Encipherment
-    X509v3 Extended Key Usage:
-    TLS Web Client Authentication, TLS Web Server Authentication
-    X509v3 Subject Alternative Name:
-    DNS:localhost, DNS:127.0.0.1
-    Signature Algorithm: sha1WithRSAEncryption
-    ...
-```
-
-#### sign the request using CA, this will produce certificate in PEM format
-
-**Note:** You may need to export the public and private key in PEM format from the local CA keystore
-
-With PWD as <project_root>/keystore/local_ca, run the following comnmand:
-
-```bash
-openssl x509 -req -in localhost.csr -CA local_ca.pem -CAkey local_ca.key \
--CAcreateserial -out localhost.crt -days 1825 -sha256 -extfile ../client_cert/openssl.conf -extensions v3_req
-```
-
-Use the following script to display the certificate content:
-
-```bash
-openssl x509 -in localhost.pem -text -noout
-```
-
-Example of a valid signed certificate:
-
-```plaintext
-    Certificate:
-    Data:
-    Version: 3 (0x2)
-    Serial Number:
-    66:ab:1e:0b:6f:f9:69:c5:45:1a:41:06:c6:de:ea:34:bf:d0:20:0f
-    Signature Algorithm: sha256WithRSAEncryption
-    Issuer: C = CZ, ST = Prague, L = Prague, O = Broadcom, OU = MFD, CN = APIML External         Certificate Authority
-    Validity
-    Not Before: Oct 11 11:04:06 2021 GMT
-    Not After : Feb 23 11:04:06 2023 GMT
-    Subject: C = CZ, ST = Czechia, L = Prague, O = Broadcom Inc, OU = IT, CN = localhost
-    Subject Public Key Info:
-    Public Key Algorithm: rsaEncryption
-    RSA Public-Key: (2048 bit)
-    Modulus:
-    ...
-    Exponent: 65537 (0x10001)
-    X509v3 extensions:
-    X509v3 Key Usage:
-    Key Encipherment, Data Encipherment
-    X509v3 Extended Key Usage:
-    TLS Web Client Authentication, TLS Web Server Authentication
-    X509v3 Subject Alternative Name:
-    DNS:localhost, DNS:127.0.0.1
-    Signature Algorithm: sha256WithRSAEncryption
-    ...
-```
-
-#### Create PKCS12 truststore and keystore
-
-Create truststore
-
-```bash
-keytool -import -alias local-ca -file local_ca.pem -keystore localhost.truststore.p12 -storetype pkcs12
-```
-
-Convert certificate to PKCS12 package
-
-```bash
-openssl pkcs12 -export -out keystore.p12 -in localhost.crt -inkey localhost.key -name localhost -macalg SHA1
-```
-
-Create keystore
-
-```bash
-keytool -J-Dkeystore.pkcs12.legacy -importkeystore -srckeystore keystore.p12 -destkeystore localhost.keystore.p12 -storetype pkcs12
-```
-
-You will be prompted to set a password for the keystore.
-
-**(optional) use legacy flag `-J-Dkeystore.pkcs12.legacy` in case you want ZSS to use this keystore**
-
-### Trust certificates of other services
-
-API ML needs to validate the certificate of services that it accesses by API ML. API ML needs to validate the full certificate chain. Ensure that the following criteria are met:
-
-* Import the public certificate of the root CA that has signed the service certificate to the API ML truststore.
-
-* Ensure that your service has its own certificate and all intermediate CA certificates (if it was signed by intermediate CA) in its keystore.
-
-**Note:** Validation fails if the service does not provide intermediate CA certificates to API ML. This can be circumvented by importing the intermediate CA certificates to the API ML truststore.
-
-You can add a public certificate to the API ML trust store by calling in the directory with API ML.
-
-Issue the following script:
-
-```bash
-    keytool -import -alias <alias> -file <path-to-certificate-in-PEM-format> -keystore localhost.truststore.p12 -storetype pkcs12
-```
+Requirements: `openssl` and `keytool` (JRE) on PATH.
 
 ## Import the root certificate of a local CA to your browser
 
