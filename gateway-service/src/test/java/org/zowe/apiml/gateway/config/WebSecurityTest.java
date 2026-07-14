@@ -15,7 +15,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +66,7 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -111,7 +114,7 @@ class WebSecurityTest {
         @Test
         void whenAccessTokenIsAvailable_thenAddItAsCookie() {
             var token = "thisIsToken";
-            var location = "localhost:10010";
+            var location = "/gateway/some/path";
             var webFilterExchange = mock(WebFilterExchange.class);
             var exchange = mock(ServerWebExchange.class);
             when(webFilterExchange.getExchange()).thenReturn(exchange);
@@ -488,6 +491,106 @@ class WebSecurityTest {
 
         assertThat(cookies.getFirst(WebSecurity.COOKIE_NONCE).getValue()).isEqualTo("test-nonce");
         assertThat(cookies.getFirst(WebSecurity.COOKIE_STATE).getValue()).isEqualTo("test-state");
+
+    }
+
+    @Nested
+    class SanitizeReturnUrl {
+
+        private static final String EXTERNAL_URL = "https://gateway.zowe.example:10010";
+
+        WebSecurity.ApimlServerAuthorizationRequestRepository requestRepository;
+
+        @BeforeEach
+        void setUp() {
+            var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
+            ReflectionTestUtils.setField(webSecurity, "externalUrl", EXTERNAL_URL);
+            var resolver = mock(ServerOAuth2AuthorizationRequestResolver.class);
+            requestRepository = webSecurity.new ApimlServerAuthorizationRequestRepository(resolver);
+        }
+
+        private String sanitize(String returnUrlQueryParam, String originHeader) {
+            var request = mock(ServerHttpRequest.class);
+            var headers = new HttpHeaders();
+            if (originHeader != null) {
+                headers.set(HttpHeaders.ORIGIN, originHeader);
+            }
+            when(request.getHeaders()).thenReturn(headers);
+
+            var queryParams = new LinkedMultiValueMap<String, String>();
+            if (returnUrlQueryParam != null) {
+                queryParams.add("returnUrl", returnUrlQueryParam);
+            }
+            when(request.getQueryParams()).thenReturn(queryParams);
+
+            var exchange = mock(ServerWebExchange.class);
+            when(exchange.getRequest()).thenReturn(request);
+            var response = mock(ServerHttpResponse.class);
+            when(exchange.getResponse()).thenReturn(response);
+
+            var cookies = new LinkedMultiValueMap<String, ResponseCookie>();
+            doAnswer(invocation -> {
+                var cookie = invocation.getArgument(0, ResponseCookie.class);
+                cookies.add(cookie.getName(), cookie);
+                return null;
+            }).when(response).addCookie(any(ResponseCookie.class));
+
+            var oauth2AuthReq = OAuth2AuthorizationRequest.authorizationCode()
+                .clientId("test-client")
+                .state("test-state")
+                .authorizationUri("https://test.auth.server/oauth/authorize")
+                .attributes(attrs -> attrs.put(OidcParameterNames.NONCE, "test-nonce"))
+                .build();
+
+            requestRepository.saveAuthorizationRequest(oauth2AuthReq, exchange).block();
+
+            return cookies.getFirst(WebSecurity.COOKIE_RETURN_URL).getValue();
+        }
+
+        static Stream<Arguments> safeAndUnsafeReturnUrls() {
+            return Stream.of(
+                // no returnUrl and no Origin header at all
+                Arguments.of(null, WebSecurity.CONTEXT_PATH),
+                Arguments.of("", WebSecurity.CONTEXT_PATH),
+                // plain relative paths are passed through untouched
+                Arguments.of("/gateway/foo", "/gateway/foo"),
+                Arguments.of("/gateway/foo?bar=1#frag", "/gateway/foo?bar=1#frag"),
+                // protocol-relative and backslash tricks that resolve to a different host
+                Arguments.of("//attacker.example/x", WebSecurity.CONTEXT_PATH),
+                Arguments.of("/\\attacker.example", WebSecurity.CONTEXT_PATH),
+                Arguments.of("/foo%5Cattacker.example", WebSecurity.CONTEXT_PATH),
+                Arguments.of("/foo%0D%0ASet-Cookie:evil=1", WebSecurity.CONTEXT_PATH),
+                // absolute URLs matching the configured externalUrl are accepted, authority stripped
+                Arguments.of(EXTERNAL_URL + "/gateway/foo?x=1#frag", "/gateway/foo?x=1#frag"),
+                Arguments.of(EXTERNAL_URL, "/"),
+                Arguments.of("HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo", "/gateway/foo"),
+                // absolute URLs that differ from externalUrl in host, port, scheme or userinfo
+                Arguments.of("https://attacker.example/x", WebSecurity.CONTEXT_PATH),
+                Arguments.of("https://gateway.zowe.example:9999/x", WebSecurity.CONTEXT_PATH),
+                Arguments.of("http://gateway.zowe.example:10010/x", WebSecurity.CONTEXT_PATH),
+                Arguments.of("https://user@gateway.zowe.example:10010/x", WebSecurity.CONTEXT_PATH),
+                // non-http(s) schemes and malformed URIs
+                Arguments.of("javascript:alert(1)", WebSecurity.CONTEXT_PATH),
+                Arguments.of("mailto:foo@bar.com", WebSecurity.CONTEXT_PATH),
+                Arguments.of("http://exa mple.com", WebSecurity.CONTEXT_PATH)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("safeAndUnsafeReturnUrls")
+        void sanitizesReturnUrlQueryParam(String returnUrl, String expected) {
+            assertThat(sanitize(returnUrl, null)).isEqualTo(expected);
+        }
+
+        @Test
+        void whenNoReturnUrlParam_thenFallsBackToOriginHeader_sameOrigin() {
+            assertThat(sanitize(null, EXTERNAL_URL)).isEqualTo("/");
+        }
+
+        @Test
+        void whenNoReturnUrlParam_thenFallsBackToOriginHeader_crossOrigin() {
+            assertThat(sanitize(null, "https://attacker.example")).isEqualTo(WebSecurity.CONTEXT_PATH);
+        }
 
     }
 

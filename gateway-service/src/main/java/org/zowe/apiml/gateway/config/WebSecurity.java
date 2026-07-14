@@ -83,6 +83,8 @@ import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
@@ -130,6 +132,9 @@ public class WebSecurity {
 
     @Value("${apiml.security.enableStrictUrlValidation:false}")
     private boolean isStrictUrlValidationEnabled;
+
+    @Value("${apiml.service.externalUrl}")
+    private String externalUrl;
 
     private final ClientConfiguration clientConfiguration;
 
@@ -213,13 +218,134 @@ public class WebSecurity {
             .build();
     }
 
-    public Mono<Object> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
-        webFilterExchange.getExchange().getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue())).build());
-        var location = webFilterExchange.getExchange().getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
-        if (!HAS_NO_VALUE.test(location)) {
-            redirect(webFilterExchange.getExchange().getResponse(), location.getValue());
+    private String sanitizeRelativeUri(URI uri) {
+        /*
+         * Reject:
+         *   //attacker.example
+         *   attacker.example/path
+         *   gateway:foo
+         *
+         * Only root-relative paths are allowed.
+         */
+        if (uri.getRawAuthority() != null
+            || uri.getRawUserInfo() != null) {
+            return CONTEXT_PATH;
         }
+
+        String path = uri.getRawPath();
+
+        if (StringUtils.isEmpty(path)
+            || !path.startsWith("/")
+            || path.startsWith("//")) {
+            return CONTEXT_PATH;
+        }
+
+        return toRelativeLocation(uri);
+    }
+
+    private boolean isSameOrigin(URI candidate, URI configuredExternalUri) {
+        if (candidate.getScheme() == null
+            || candidate.getHost() == null
+            || configuredExternalUri.getScheme() == null
+            || configuredExternalUri.getHost() == null
+            || candidate.getRawUserInfo() != null) {
+            return false;
+        }
+
+        return candidate.getScheme().equalsIgnoreCase(configuredExternalUri.getScheme())
+            && candidate.getHost().equalsIgnoreCase(configuredExternalUri.getHost())
+            && effectivePort(candidate) == effectivePort(configuredExternalUri);
+    }
+
+    private int effectivePort(URI uri) {
+        if (uri.getPort() >= 0) {
+            return uri.getPort();
+        }
+
+        if ("https".equalsIgnoreCase(uri.getScheme())) {
+            return 443;
+        }
+
+        if ("http".equalsIgnoreCase(uri.getScheme())) {
+            return 80;
+        }
+
+        return -1;
+    }
+
+    // defense-in-depth
+    private String toRelativeLocation(URI uri) {
+        String path = StringUtils.defaultIfEmpty(uri.getRawPath(), "/");
+
+        StringBuilder location = new StringBuilder(path);
+
+        if (uri.getRawQuery() != null) {
+            location.append('?').append(uri.getRawQuery());
+        }
+
+        if (uri.getRawFragment() != null) {
+            location.append('#').append(uri.getRawFragment());
+        }
+
+        return location.toString();
+    }
+
+    private String sanitizeReturnUrl(String candidate) {
+        if (StringUtils.isBlank(candidate)) {
+            return CONTEXT_PATH;
+        }
+
+        String lowercaseCandidate = candidate.toLowerCase(Locale.ROOT);
+
+        // Backslashes can be interpreted as slashes by some clients.
+        // Also reject encoded backslashes and CR/LF characters.
+        if (candidate.contains("\\")
+            || lowercaseCandidate.contains("%5c")
+            || lowercaseCandidate.contains("%0d")
+            || lowercaseCandidate.contains("%0a")) {
+            return CONTEXT_PATH;
+        }
+
+        try {
+            URI candidateUri = new URI(candidate);
+
+            if (!candidateUri.isAbsolute()) {
+                return sanitizeRelativeUri(candidateUri);
+            }
+
+            if (StringUtils.isBlank(externalUrl)) {
+                return CONTEXT_PATH;
+            }
+            URI configuredExternalUri = new URI(externalUrl);
+
+            if (!isSameOrigin(candidateUri, configuredExternalUri)) {
+                return CONTEXT_PATH;
+            }
+
+            /*
+             * Even for an accepted absolute same-origin URL, return only its
+             * path/query/fragment. This guarantees that Location never contains
+             * a user-controlled authority.
+             */
+            return toRelativeLocation(candidateUri);
+        } catch (URISyntaxException | IllegalArgumentException e) {
+            return CONTEXT_PATH;
+        }
+    }
+    public Mono<Object> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
+        ServerWebExchange exchange = webFilterExchange.getExchange();
+
+        exchange.getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue())).build());
+
+        HttpCookie locationCookie = exchange.getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
+
+        String location = HAS_NO_VALUE.test(locationCookie)
+            ? CONTEXT_PATH
+            : sanitizeReturnUrl(locationCookie.getValue());
+
+        redirect(exchange.getResponse(), location);
         clearCookies(webFilterExchange);
+
         return Mono.empty();
     }
 
@@ -468,7 +594,7 @@ public class WebSecurity {
             exchange.getResponse().addCookie(
                 createCookie(COOKIE_NONCE, String.valueOf(authorizationRequest.getAttributes().get(OidcParameterNames.NONCE)))
             );
-            exchange.getResponse().addCookie(createCookie(COOKIE_RETURN_URL, getReturnUrl(exchange)));
+            exchange.getResponse().addCookie(createCookie(COOKIE_RETURN_URL, getSafeReturnUrl(exchange)));
             exchange.getResponse().addCookie(createCookie(COOKIE_STATE, authorizationRequest.getState()));
             return Mono.empty();
         }
@@ -476,6 +602,12 @@ public class WebSecurity {
         String getReturnUrl(ServerWebExchange exchange) {
             return Optional.ofNullable(exchange.getRequest().getQueryParams().getFirst("returnUrl"))
                 .orElse(exchange.getRequest().getHeaders().getFirst(HttpHeaders.ORIGIN));
+        }
+
+        // Only a same-origin relative path or an absolute URL matching apiml.service.externalUrl is trusted;
+        // anything else falls back to the gateway's own root to prevent open-redirect/phishing via returnUrl.
+        private String getSafeReturnUrl(ServerWebExchange exchange) {
+            return sanitizeReturnUrl(getReturnUrl(exchange));
         }
 
         @Override
