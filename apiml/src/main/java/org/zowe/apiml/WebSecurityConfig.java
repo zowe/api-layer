@@ -61,6 +61,7 @@ import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
+import org.zowe.apiml.security.common.auth.saf.SafMethodSecurityExpressionRoot;
 
 import java.util.Arrays;
 import java.util.List;
@@ -98,6 +99,7 @@ public class WebSecurityConfig {
     private final FailedAuthenticationWebHandler failedAuthenticationWebHandler;
     private final TokenAuthenticationProvider tokenAuthenticationProvider;
     private final HttpUtils httpUtils;
+    private final SafMethodSecurityExpressionRoot safMethodSecurityExpressionRoot;
 
     @Setter(onMethod_ = {@Autowired(required = false)})
     private OIDCProvider oidcProvider;
@@ -361,7 +363,10 @@ public class WebSecurityConfig {
                 new NegatedServerWebExchangeMatcher(pathMatchers(APPLICATION_HEALTH, APPLICATION_INFO, "/application/version"))
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
+            .authorizeExchange(exchange -> exchange.anyExchange()
+                .authenticated())
+            // .authorizeExchange(exchange -> exchange.anyExchange()
+            //     .access)
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)

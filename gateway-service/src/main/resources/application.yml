@@ -222,14 +222,28 @@ logging:
 management:
     endpoint:
         gateway:
-            access: unrestricted
+            access: read-only
+        loggers:
+            access: read-only
     endpoints:
         web:
             exposure:
                 include: health,info,gateway,loggers
 
 ---
+spring.config.activate.on-profile: debug-control
+spring.profiles.active: debug
+
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+        loggers:
+            access: unrestricted
+
+---
 spring.config.activate.on-profile: wiretap
+
 spring:
     cloud:
         gateway:
