@@ -77,6 +77,7 @@ import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CustomHstsServerHttpHeadersWriter;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
