@@ -64,6 +64,7 @@ import reactor.test.StepVerifier;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -133,9 +134,9 @@ class WebSecurityTest {
             when(accessToken.getTokenValue()).thenReturn(token);
 
             webSecurity.updateCookies(webFilterExchange, oAuth2AuthorizedClient);
-            assertEquals(token, serverHttpResponse.getCookies().getFirst("apimlAuthenticationToken").getValue());
-            assertEquals("", serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_NONCE).getValue());
-            assertEquals("", serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_STATE).getValue());
+            assertEquals(token, Objects.requireNonNull(serverHttpResponse.getCookies().getFirst("apimlAuthenticationToken")).getValue());
+            assertEquals("", Objects.requireNonNull(serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_NONCE)).getValue());
+            assertEquals("", Objects.requireNonNull(serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_STATE)).getValue());
             assertEquals(location, serverHttpResponse.getHeaders().getFirst(HttpHeaders.LOCATION));
         }
 
@@ -246,8 +247,6 @@ class WebSecurityTest {
 
         ServerHttpSecurity.AuthorizeExchangeSpec authorizeExchangeSpec = mock(ServerHttpSecurity.AuthorizeExchangeSpec.class);
         ServerHttpSecurity.AuthorizeExchangeSpec.Access access = mock(ServerHttpSecurity.AuthorizeExchangeSpec.Access.class);
-        ServerHttpSecurity.OAuth2LoginSpec oauth2LoginSpec = mock(ServerHttpSecurity.OAuth2LoginSpec.class);
-        ServerHttpSecurity.HeaderSpec headerSpec = mock(ServerHttpSecurity.HeaderSpec.class);
 
         when(http.headers(any())).thenReturn(http);
         when(http.securityContextRepository(any())).thenReturn(http);
@@ -489,8 +488,8 @@ class WebSecurityTest {
 
         requestRepository.saveAuthorizationRequest(oauth2AuthReq, exchange).block();
 
-        assertThat(cookies.getFirst(WebSecurity.COOKIE_NONCE).getValue()).isEqualTo("test-nonce");
-        assertThat(cookies.getFirst(WebSecurity.COOKIE_STATE).getValue()).isEqualTo("test-state");
+        assertThat(Objects.requireNonNull(cookies.getFirst(WebSecurity.COOKIE_NONCE)).getValue()).isEqualTo("test-nonce");
+        assertThat(Objects.requireNonNull(cookies.getFirst(WebSecurity.COOKIE_STATE)).getValue()).isEqualTo("test-state");
 
     }
 
@@ -544,7 +543,7 @@ class WebSecurityTest {
 
             requestRepository.saveAuthorizationRequest(oauth2AuthReq, exchange).block();
 
-            return cookies.getFirst(WebSecurity.COOKIE_RETURN_URL).getValue();
+            return Objects.requireNonNull(cookies.getFirst(WebSecurity.COOKIE_RETURN_URL)).getValue();
         }
 
         static Stream<Arguments> safeAndUnsafeReturnUrls() {
@@ -603,7 +602,7 @@ class WebSecurityTest {
         @Mock
         private StrictServerWebExchangeFirewall nonRoutingFirewall;
         private WebSecurity.ApimlStrictServerWebExchangeFirewall apimlStrictServerWebExchangeFirewall;
-        private ApplicationInfo applicationInfo = ApplicationInfo.builder().build();
+        private final ApplicationInfo applicationInfo = ApplicationInfo.builder().build();
 
         @BeforeEach
         void setUp() {
