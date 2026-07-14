@@ -102,6 +102,18 @@ cp localca.cer "$KEYSTORE_DIR/localhost/Zowe_Service_Zowe_Development_Instances_
 # Clean up CA PEM intermediates (keep for signing in later steps)
 rm -f local_ca.pem
 
+# Generate a second CA for truststore mismatch tests (localhost2)
+# This CA is intentionally different from the main CA so that localhost2.truststore
+# does NOT trust certificates signed by the main local CA
+echo ""
+echo "=== Generating Secondary Certificate Authority (for truststore mismatch tests) ==="
+openssl genrsa -out local_ca2.key 2048
+openssl req -x509 -new -nodes -key local_ca2.key -sha256 -days 3650 \
+    -out local_ca2.pem \
+    -subj "/C=CZ/ST=Prague/L=Prague/O=Broadcom/OU=MFD/CN=Zowe Secondary Development CA"
+openssl x509 -in local_ca2.pem -outform DER -out localca2.cer
+rm -f local_ca2.key local_ca2.pem
+
 # ── 2. Localhost keystores ─────────────────────────────────────────────────
 echo ""
 echo "=== Generating localhost keystores ==="
@@ -224,6 +236,12 @@ generate_localhost_keystore \
     "localhost2" "localhost" \
     "localhost2.keystore.p12" "localhost2.truststore.p12" \
     "../local_ca/localca.cer" "../local_ca/local_ca.key" "$CA_PASSWORD"
+
+# Overwrite localhost2 truststore with secondary CA (intentionally different from main CA)
+# so that trustStoreWithDifferentCertificateAuthorityShouldFail test works
+rm -f localhost2.truststore.p12
+keytool -import -alias localca -file "$KEYSTORE_DIR/local_ca/localca2.cer" \
+    -keystore localhost2.truststore.p12 -storetype pkcs12 -storepass "$PASSWORD" -noprompt
 
 # --- nonlocalhost ---
 generate_localhost_keystore \
@@ -459,6 +477,14 @@ echo ""
 echo "=== Copying keystores to test resources ==="
 cp "$KEYSTORE_DIR/localhost/localhost.keystore.p12" "$REPO_ROOT/zaas-client/src/test/resources/localhost.keystore.p12"
 cp "$KEYSTORE_DIR/localhost/localhost.truststore.p12" "$REPO_ROOT/zaas-client/src/test/resources/localhost.truststore.p12"
+
+# Extract JWT public key for SecurityUtilsTest (common-service-core test fixture)
+echo "Extracting JWT public key for test fixtures..."
+openssl pkcs12 -in "$KEYSTORE_DIR/localhost/localhost.keystore.p12" \
+    -passin pass:"$PASSWORD" -nokeys 2>/dev/null \
+    | openssl x509 -pubkey -noout 2>/dev/null \
+    | openssl pkey -pubin -outform DER 2>/dev/null \
+    | base64 -w0 > "$REPO_ROOT/common-service-core/src/test/resources/jwt-public-key.pub"
 
 # ── Done ───────────────────────────────────────────────────────────────────
 echo ""
