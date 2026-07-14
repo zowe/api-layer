@@ -21,8 +21,13 @@ runs:
                 node-version: '24.18.0'
         -   run: npm install -g npm@10.9.8
             shell: bash
-        -   name: Install OpenSSL for keystore generation
-            run: apt-get update && apt-get install -y openssl
+        -   name: Install OpenSSL for keystore generation (best-effort)
+            run: |
+                if ! command -v openssl &>/dev/null; then
+                    (sudo apt-get update && sudo apt-get install -y openssl) 2>/dev/null || \
+                    (apt-get update && apt-get install -y openssl) 2>/dev/null || \
+                    echo "::warning::openssl not available -- generateKeystores will skip"
+                fi
             shell: bash
         -   name: Grant execute permission for gradlew
             run: chmod +x gradlew
