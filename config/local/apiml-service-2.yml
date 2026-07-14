@@ -1,5 +1,8 @@
-spring.profiles.active: diag
+spring.profiles.active: debug,diag
+
+logbackServiceName: ZWEAGW2
 logging:
+    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} <%blue(${logbackServiceName}):%magenta(%thread):${PID:}> %X{userid:-} %clr(%-5level) %cyan(\(%logger{15}\)) %msg%n'
     level:
         org.springframework.web.socket.client.standard.AnnotatedEndpointConnectionManager: DEBUG
         org.springframework.web.reactive.socket.client.StandardWebSocketClient: TRACE
@@ -15,10 +18,6 @@ eureka:
 apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-        # Not used in HTTPS mode and not applicable for Zowe
-        # The `apiml.discovery` node contains discovery-service only configuration
-        userid: eureka  # Userid that Eureka server will use to check authentication of its clients (other services)
-        password: password  # Password that Eureka server will use to check authentication of its clients (other services)
         allPeersUrls: https://localhost:10011/eureka/
     internal-discovery:
         port: 10021
@@ -68,6 +67,7 @@ apiml:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
         useDummyCNMapper: true
+        allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
 caching:
     storage:
         mode: infinispan

@@ -13,6 +13,7 @@ package org.zowe.apiml;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,7 +42,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CachedBodyFilter;
-import org.zowe.apiml.filter.CategorizeCertsWebFilter;
+import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
 import org.zowe.apiml.filter.OIDCAuthFilter;
 import org.zowe.apiml.filter.QueryWebFilter;
@@ -65,6 +66,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import reactor.core.publisher.Mono;
+
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.http.HttpMethod.POST;
@@ -81,10 +87,6 @@ public class WebSecurityConfig {
 
     private static final String CONTEXT_PATH = String.format("/%s", CoreService.GATEWAY.getServiceId());
     private static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
-    private static final String CONFORMANCE_SHORT_URL = CONTEXT_PATH + "/conformance/**";
-    private static final String CONFORMANCE_LONG_URL = CONTEXT_PATH + "/api/v1" + "/conformance/**";
-    private static final String VALIDATE_SHORT_URL = "gateway/validate";
-    private static final String VALIDATE_LONG_URL = "gateway/api/v1/validate";
     private static final String APPLICATION_HEALTH = "/application/health";
     private static final String APPLICATION_INFO = "/application/info";
 
@@ -111,6 +113,12 @@ public class WebSecurityConfig {
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifySslCertificatesOfServices;
+
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String discoveryUserid;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] discoveryPassword;
 
     @Value("${apiml.service.port}")
     private int gatewayPort;
@@ -160,21 +168,15 @@ public class WebSecurityConfig {
                 notInUnauthenticatedPaths,
                 exchange -> exchange.getRequest().getURI().getPath().startsWith("/eureka/") ? MatchResult.match() : MatchResult.notMatch() // Prevents matching /eureka (mapping for homepage in modulith)
             ))
-            .authorizeExchange(authorizeExchangeSpec -> {
-                if (verifySslCertificatesOfServices) {
-                    authorizeExchangeSpec
-                        .anyExchange().authenticated();
-                } else {
-                    authorizeExchangeSpec.anyExchange().permitAll();
-                }
-            })
-            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().authenticated())
             .formLogin(ServerHttpSecurity.FormLoginSpec::disable);
 
         if (verifySslCertificatesOfServices) {
+            http.httpBasic(ServerHttpSecurity.HttpBasicSpec::disable);
             return x509SecurityConfig(http).build();
         }
 
+        http.httpBasic(basic -> basic.authenticationManager(eurekaReactiveAuthManager()));
         return http.build();
     }
 
@@ -211,9 +213,28 @@ public class WebSecurityConfig {
     /**
      * Set up the default x509 authentication mode. It verifies only trusted certificates such as server certs, without mapping
      */
+    private ReactiveAuthenticationManager eurekaReactiveAuthManager() {
+        return authentication -> {
+            String principal = authentication.getName();
+            Object credentials = authentication.getCredentials();
+            String password = credentials != null ? credentials.toString() : null;
+            if (isValidAuthentication(principal, password)) {
+                return Mono.just(new UsernamePasswordAuthenticationToken(principal, null, List.of()));
+            }
+            return Mono.error(new BadCredentialsException("Invalid Eureka credentials"));
+        };
+    }
+
+    private boolean isValidAuthentication(String principal, String password) {
+        return StringUtils.isNotEmpty(discoveryUserid)
+            && discoveryUserid.equals(principal)
+            && discoveryPassword != null
+            && password != null
+            && Arrays.equals(discoveryPassword, password.toCharArray());
+    }
+
     private ServerHttpSecurity x509SecurityConfig(ServerHttpSecurity http, boolean defaultExceptionHandler) {
         http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())
                 .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
@@ -473,7 +494,6 @@ public class WebSecurityConfig {
         var man = new ProviderManager(x509AuthenticationProvider);
         var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(man);
         return http
-            .headers(customizer -> customizer.frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .securityMatcher(pathMatchers("/gateway/api/v1/auth/access-token/revoke/tokens/**", "/gateway/api/v1/auth/access-token/evict"))
             .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
@@ -658,8 +678,6 @@ public class WebSecurityConfig {
      * This security filter chain secures the Gateway's endpoints:
      * /services
      * /registry
-     * /conformance
-     * /validate
      *
      * @param http
      * @param authConfigurationProperties
@@ -675,11 +693,7 @@ public class WebSecurityConfig {
                 SERVICES_SHORT_URL,
                 SERVICES_SHORT_URL + "/**",
                 SERVICES_FULL_URL,
-                SERVICES_FULL_URL + "/**",
-                CONFORMANCE_SHORT_URL,
-                CONFORMANCE_LONG_URL,
-                VALIDATE_SHORT_URL,
-                VALIDATE_LONG_URL
+                SERVICES_FULL_URL + "/**"
             ))
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec

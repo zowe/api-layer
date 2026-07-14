@@ -32,7 +32,7 @@ export default defineConfig(({ mode }) => {
                 },
             }),
         ],
-        base: './',
+        base: '/apicatalog/ui/v1/',
         build: {
             outDir: 'build',
             sourcemap: false,
@@ -61,3 +61,4 @@ export default defineConfig(({ mode }) => {
         },
     };
 });
+

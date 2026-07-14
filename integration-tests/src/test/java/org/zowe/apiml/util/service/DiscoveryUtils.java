@@ -39,6 +39,7 @@ public class DiscoveryUtils {
         DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         return discoveryServiceConfiguration.getScheme() + "://" + discoveryServiceConfiguration.getHost() + ":" + discoveryServiceConfiguration.getPort();
     }
+
     public static String getAdditionalDiscoveryUrl() {
         DiscoveryServiceConfiguration discoveryServiceConfiguration = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         return discoveryServiceConfiguration.getScheme() + "://" + discoveryServiceConfiguration.getAdditionalHost() + ":" + discoveryServiceConfiguration.getAdditionalPort();

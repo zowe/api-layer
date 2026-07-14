@@ -167,8 +167,3 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-
----
-spring.config.activate.on-profile: dev
-
-logbackServiceName: ZWEAZS1

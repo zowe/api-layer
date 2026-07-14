@@ -23,6 +23,7 @@ import org.zowe.apiml.eurekaservice.client.impl.ApiMediationClientImpl;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * Service that allows a new {@link com.netflix.discovery.EurekaClient} to be registered and un-registered via ApiMediationClientImpl instance.
@@ -31,6 +32,7 @@ import java.util.Collections;
  */
 @Service
 public class ApiMediationClientService {
+
     private static final String PORT = "10013";
     private static final String SERVICE_ID = "registrationtest";
     private static final String GATEWAY_URL = "api/v1";
@@ -44,7 +46,9 @@ public class ApiMediationClientService {
         this.dcConfig = dcConfig;
     }
 
-    public boolean register() throws ServiceDefinitionException {
+    public boolean register(
+        Map<String, Object> additionalMetadata
+    ) throws ServiceDefinitionException {
         ApiInfo apiInfo = new ApiInfo(SERVICE_ID, GATEWAY_URL, "1.0.0", null, null, null);
         Authentication authentication = new Authentication("bypass", null, null);
         Ssl ssl = new Ssl(dcConfig.isSslEnabled(), dcConfig.isVerifyCerts(), dcConfig.isNonStrictVerifyCerts(), dcConfig.getSslProtocol(), dcConfig.getKeyAlias(),
@@ -52,7 +56,7 @@ public class ApiMediationClientService {
             dcConfig.getKeyStoreType(), dcConfig.getTrustStore(), dcConfig.getTrustStorePassword().toCharArray(), dcConfig.getTrustStoreType());
         Route apiRoute = new Route(GATEWAY_URL, "/" + SERVICE_ID + "/" + GATEWAY_URL);
 
-        ApiMediationServiceConfig apiConfig = ApiMediationServiceConfig.builder()
+        var apiConfig = ApiMediationServiceConfig.builder()
             .apiInfo(Collections.singletonList(apiInfo))
             .authentication(authentication)
             .routes(Collections.singletonList(apiRoute))
@@ -68,9 +72,11 @@ public class ApiMediationClientService {
             .preferIpAddress(false)
             .serviceIpAddress("0.0.0.0") //use hostname instead of IP address
             .connectTimeout(dcConfig.getConnectTimeout())
-            .readTimeout(dcConfig.getReadTimeout())
-            .build();
-        apiMediationClient.register(apiConfig);
+            .readTimeout(dcConfig.getReadTimeout());
+        if (additionalMetadata != null && !additionalMetadata.isEmpty()) {
+            apiConfig.customMetadata(additionalMetadata);
+        }
+        apiMediationClient.register(apiConfig.build());
         return true; // indicates success, successful unless exception thrown. Used to assert success in unit tests.
     }
 
@@ -82,4 +88,5 @@ public class ApiMediationClientService {
     public boolean isRegistered() {
         return apiMediationClient.isRegistered();
     }
+
 }

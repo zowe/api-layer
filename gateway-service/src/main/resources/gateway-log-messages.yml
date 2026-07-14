@@ -9,6 +9,8 @@ messages:
       number: ZWEAG111
       type: ERROR
       text: "The service has encountered a situation it doesn't know how to handle. Please contact support for further assistance. More details are available in the log under the provided message instance ID"
+      reason: "The Gateway encountered an unexpected error that it cannot handle."
+      action: "Check the Gateway logs for additional details. Use the message instance ID from the log entry to trace the request. If the issue persists, contact support."
 
     # HTTP,Protocol messages
     # 400-499
@@ -42,20 +44,6 @@ messages:
       text: "Gateway does not allow encoded slashes in request: '%s'."
       reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
       action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
-
-    - key: org.zowe.apiml.gateway.verifier.wrongServiceId
-      number: ZWEAG717
-      type: ERROR
-      text: "The service id provided is invalid: '%s'"
-      reason: "The provided id is not valid under conformance criteria."
-      action: "Verify the conformance criteria, provide valid service id."
-
-    - key: org.zowe.apiml.gateway.verifier.noMetadata
-      number: ZWEAG718
-      type: ERROR
-      text: "Cannot retrieve metadata: '%s'"
-      reason: "Metadata aren't accessible"
-      action: "Verify that the metadata are accessible and not empty"
 
     - key: org.zowe.apiml.gateway.verifier.nonConformant
       number: ZWEAG719
