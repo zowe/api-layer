@@ -132,6 +132,18 @@ def generateKeystores = tasks.register('generateKeystores', Exec) {
     } else {
         commandLine 'bash', 'scripts/generate-keystores.sh'
     }
+    onlyIf {
+        if (project.hasProperty('skipKeystoreGeneration')) {
+            logger.lifecycle('Keystore generation skipped: skipKeystoreGeneration property is set')
+            return false
+        }
+        def keystoreDir = file('keystore')
+        if (keystoreDir.exists() && !fileTree(keystoreDir).matching { include '**/*.p12' }.empty) {
+            logger.lifecycle('Keystore generation skipped: keystores already exist in {}', keystoreDir)
+            return false
+        }
+        true
+    }
 }
 
 tasks.register('cleanKeystores', Delete) {
