@@ -18,8 +18,11 @@ runs:
         -   name: Set up Node
             uses: actions/setup-node@v4
             with:
-                node-version: '24'
-        -   run: npm install -g npm@10.9.0
+                node-version: '24.18.0'
+        -   run: npm install -g npm@10.9.8
+            shell: bash
+        -   name: Install OpenSSL for keystore generation
+            run: sudo apt-get update && sudo apt-get install -y openssl
             shell: bash
         -   name: Grant execute permission for gradlew
             run: chmod +x gradlew
