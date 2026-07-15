@@ -10,5 +10,15 @@
 # Copyright IBM Corporation 2021
 ################################################################################
 
+validate_caching_storage_mode() {
+  storage_mode="${ZWE_components_caching_service_storage_mode:-${ZWE_configs_storage_mode}}"
+  storage_mode_lc=$(printf '%s' "${storage_mode}" | tr '[:upper:]' '[:lower:]')
+
+  if [ -n "${storage_mode}" ] && [ "${storage_mode_lc}" != "infinispan" ]; then
+    echo "API ML single service requires caching storage mode set to infinispan"
+    return 1
+  fi
+}
+
 print_formatted_debug "ZWELS" "apiml-service,bin/validate.sh:${LINENO}" "- Checking API ML single service caching storage mode is infinispan"
-validate_this "(storage_mode=\"\${ZWE_components_caching_service_storage_mode:-\${ZWE_configs_storage_mode}}\"; [ -n \"\$storage_mode\" ] && [ \"\$(printf '%s' \"\$storage_mode\" | tr '[:upper:]' '[:lower:]')\" != \"infinispan\" ] && { echo \"API ML single service requires caching storage mode set to infinispan\"; exit 1; }; true; ) 2>&1" "apiml-service,bin/validate.sh:${LINENO}"
+validate_this "validate_caching_storage_mode" "apiml-service,bin/validate.sh:${LINENO}"
