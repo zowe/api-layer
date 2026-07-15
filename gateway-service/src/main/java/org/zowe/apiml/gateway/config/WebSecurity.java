@@ -362,7 +362,7 @@ public class WebSecurity {
 
         exchange.getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue())).build());
 
-        HttpCookie location = exchange.getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
+        var location = exchange.getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
 
         if (!HAS_NO_VALUE.test(location)) {
             redirect(webFilterExchange.getExchange().getResponse(), sanitizeReturnUrl(location.getValue()));
