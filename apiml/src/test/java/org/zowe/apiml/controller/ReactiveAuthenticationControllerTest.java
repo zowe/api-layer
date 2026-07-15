@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -45,6 +46,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ReactiveAuthenticationControllerTest {
 
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String BEARER = "Bearer ";
     @Mock private AuthenticationService authenticationService;
     @Mock private PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
     @Mock private HttpUtils httpUtils;
@@ -92,7 +95,9 @@ class ReactiveAuthenticationControllerTest {
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(true);
         ServerHttpRequest request = mock(ServerHttpRequest.class);
-        when(request.getHeaders().getFirst("Authorization")).thenReturn("Bearer " + jwtToInvalidate);
+        HttpHeaders headers = mock(HttpHeaders.class);
+        when(request.getHeaders()).thenReturn(headers);
+        when(headers.getFirst(AUTHORIZATION)).thenReturn(BEARER + jwtToInvalidate);
 
         var result = controller.invalidateJwtToken(request);
 
@@ -110,7 +115,9 @@ class ReactiveAuthenticationControllerTest {
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(false);
         ServerHttpRequest request = mock(ServerHttpRequest.class);
-        when(request.getHeaders().getFirst("Authorization")).thenReturn("Bearer " + jwtToInvalidate);
+        HttpHeaders headers = mock(HttpHeaders.class);
+        when(request.getHeaders()).thenReturn(headers);
+        when(headers.getFirst(AUTHORIZATION)).thenReturn(BEARER + jwtToInvalidate);
 
         var result = controller.invalidateJwtToken(request);
 
@@ -125,7 +132,9 @@ class ReactiveAuthenticationControllerTest {
         Applications mockApplications = mock(Applications.class);
         Application mockApplication = mock(Application.class);
         ServerHttpRequest request = mock(ServerHttpRequest.class);
-        when(request.getHeaders().getFirst("Authorization")).thenReturn("Bearer " + jwtToInvalidate);
+        HttpHeaders headers = mock(HttpHeaders.class);
+        when(request.getHeaders()).thenReturn(headers);
+        when(headers.getFirst(AUTHORIZATION)).thenReturn(BEARER + jwtToInvalidate);
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class)))
