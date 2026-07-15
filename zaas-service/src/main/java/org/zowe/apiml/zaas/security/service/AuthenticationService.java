@@ -222,7 +222,7 @@ public class AuthenticationService {
         try {
             switch (queryResponse.getSource()) {
                 case ZOWE:
-                    final String ltpaToken = getLtpaTokenWithValidation(jwtToken);
+                    final String ltpaToken = getLtpaToken(jwtToken);
                     if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
                     break;
                 case ZOSMF:
