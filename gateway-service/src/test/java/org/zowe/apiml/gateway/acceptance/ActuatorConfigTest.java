@@ -20,6 +20,8 @@ import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithBasePath;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.hc.core5.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
 @MicroservicesAcceptanceTest
 @TestPropertySource(properties = "spring.config.additional-location=file:gateway-service/src/main/resources/application.yml")
@@ -33,7 +35,15 @@ class ActuatorConfigTest {
         void whenAccessDangerousActuatorWithCredentials_thenBlock() {
             given()
             .when()
-            .then();
+                .get(basePath + "/application/gateway")
+            .then()
+                .statusCode(SC_NOT_FOUND);
+
+            given()
+            .when()
+                .get(basePath + "/application/loggers")
+            .then()
+                .statusCode(SC_NOT_FOUND);
         }
 
     }
@@ -44,6 +54,12 @@ class ActuatorConfigTest {
 
         @Test
         void whenAccessDangerousActuatorWithCredentials_thenBlockModify() {
+            given()
+            .when()
+                .get(basePath + "/application/loggers")
+            .then()
+                .statusCode(SC_OK);
+
             given()
             .when()
             .then();
