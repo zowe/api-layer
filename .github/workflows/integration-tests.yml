@@ -61,13 +61,7 @@ jobs:
                 with:
                     name: keystores-${{ env.JOB_ID }}
                     path: keystore
-
-            # Upload generated keystores so CITests jobs use the same certificates
-            -   name: Upload keystores for CITests
-                uses: actions/upload-artifact@v4
-                with:
-                    name: keystores-${{ env.JOB_ID }}
-                    path: keystore
+                    overwrite: true
 
             -   uses: ./.github/actions/teardown
 
