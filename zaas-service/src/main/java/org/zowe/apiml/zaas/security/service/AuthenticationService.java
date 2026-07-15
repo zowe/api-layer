@@ -222,7 +222,7 @@ public class AuthenticationService {
         try {
             switch (queryResponse.getSource()) {
                 case ZOWE:
-                    final String ltpaToken = getLtpaToken(jwtToken);
+                    final String ltpaToken = getLtpaTokenWithValidation(jwtToken);
                     if (ltpaToken != null) zosmfService.invalidate(LTPA, ltpaToken);
                     break;
                 case ZOSMF:
@@ -482,33 +482,15 @@ public class AuthenticationService {
 
     /**
      * This method validates if JWT token is valid and if yes, then get claim from LTPA token.
-     * For purpose, when is not needed validation, you can use method {@link #getLtpaToken(String)}
      *
      * @param jwtToken the JWT token
      * @return LTPA token extracted from JWT
      */
-    public String getLtpaTokenWithValidation(String jwtToken) {
+    public String getLtpaToken(String jwtToken) {
         try {
             var tokenAuthentication = new TokenAuthentication(jwtToken);
             validateLocalJwtToken(tokenAuthentication);
             return tokenAuthentication.getClaimAsString(LTPA_CLAIM_NAME);
-        } catch (ParseException e) {
-            throw new TokenNotValidException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get the LTPA token from the JWT token
-     *
-     * @param jwtToken the JWT token
-     * @return the LTPA token
-     * @throws TokenNotValidException if the JWT token is not valid
-     */
-    public String getLtpaToken(String jwtToken) {
-        var claims = getJwtClaims(jwtToken);
-
-        try {
-            return claims.getClaimAsString(LTPA_CLAIM_NAME);
         } catch (ParseException e) {
             throw new TokenNotValidException(e.getMessage(), e);
         }

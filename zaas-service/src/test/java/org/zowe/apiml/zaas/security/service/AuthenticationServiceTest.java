@@ -386,7 +386,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-            assertEquals(LTPA, authService.getLtpaTokenWithValidation(jwtToken));
+            assertEquals(LTPA, authService.getLtpaToken(jwtToken));
         }
 
         @Test
@@ -396,7 +396,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             String brokenToken = jwtToken + "not";
             assertThrows(
                 TokenNotValidException.class,
-                () -> authService.getLtpaTokenWithValidation(brokenToken)
+                () -> authService.getLtpaToken(brokenToken)
             );
         }
 
@@ -406,7 +406,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             assertThrows(
                 TokenExpireException.class,
-                () -> authService.getLtpaTokenWithValidation(expiredJwtToken)
+                () -> authService.getLtpaToken(expiredJwtToken)
             );
         }
 
