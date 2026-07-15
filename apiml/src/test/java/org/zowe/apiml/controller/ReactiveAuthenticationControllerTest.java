@@ -22,6 +22,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -90,8 +91,10 @@ class ReactiveAuthenticationControllerTest {
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(true);
+        ServerHttpRequest request = mock(ServerHttpRequest.class);
+        when(request.getHeaders().getFirst("Authorization")).thenReturn("Bearer " + jwtToInvalidate);
 
-        var result = controller.invalidateJwtToken(jwtToInvalidate);
+        var result = controller.invalidateJwtToken(request);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.OK.equals(responseEntity.getStatusCode()))
@@ -106,8 +109,10 @@ class ReactiveAuthenticationControllerTest {
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(false);
+        ServerHttpRequest request = mock(ServerHttpRequest.class);
+        when(request.getHeaders().getFirst("Authorization")).thenReturn("Bearer " + jwtToInvalidate);
 
-        var result = controller.invalidateJwtToken(jwtToInvalidate);
+        var result = controller.invalidateJwtToken(request);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.SERVICE_UNAVAILABLE.equals(responseEntity.getStatusCode()))
@@ -119,12 +124,14 @@ class ReactiveAuthenticationControllerTest {
         String jwtToInvalidate = "invalid.jwt.token";
         Applications mockApplications = mock(Applications.class);
         Application mockApplication = mock(Application.class);
+        ServerHttpRequest request = mock(ServerHttpRequest.class);
+        when(request.getHeaders().getFirst("Authorization")).thenReturn("Bearer " + jwtToInvalidate);
         when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class)))
             .thenThrow(new TokenNotValidException("Token is not valid"));
 
-        var result = controller.invalidateJwtToken(jwtToInvalidate);
+        var result = controller.invalidateJwtToken(request);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.BAD_REQUEST.equals(responseEntity.getStatusCode()))

@@ -17,6 +17,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
@@ -25,6 +28,8 @@ import java.net.URI;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -150,11 +155,10 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
 
     @Test
     void whenInvalidate_wrongMethod_thenFail() {
-        var token = login();
 
         given()
         .when()
-            .get(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+            .get(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
         .then()
             .statusCode(SC_METHOD_NOT_ALLOWED);
     }
@@ -166,10 +170,37 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
         given()
             .config(SslContext.clientCertApiml)
         .when()
-            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+            .header("Authorization", "Bearer " + token)
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
         .then()
-            .statusCode(200);
+            .statusCode(SC_OK);
     }
+
+    @Test
+    void whenNoHeader_withCert_then401() {
+
+        given()
+            .config(SslContext.clientCertApiml)
+            .when()
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .then()
+            .statusCode(SC_UNAUTHORIZED);
+
+    }
+
+    @Test
+    void whenInvalidHeader_withCert_then401() {
+
+        given()
+            .config(SslContext.clientCertApiml)
+            .when()
+            .header("Authorization", "wibble")
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .then()
+            .statusCode(SC_UNAUTHORIZED);
+
+    }
+
     @TestConfiguration
     public static class MockRegisterToApiLayerConfig {
         @Bean

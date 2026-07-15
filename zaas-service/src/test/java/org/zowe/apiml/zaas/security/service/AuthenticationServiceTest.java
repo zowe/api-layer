@@ -37,7 +37,10 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
@@ -489,7 +492,14 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", DOMAIN, null);
-            doNothing().when(restTemplate).delete("http://localhost:0/zaas/api/v1/auth/invalidate/" + token);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
+            when(restTemplate.exchange("http://localhost:0/zaas/api/v1/auth/invalidate",
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class)).thenReturn(responseEntity);
             doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             assertTrue(authService.invalidateJwtToken(token, true));
@@ -762,7 +772,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             doThrow(HttpClientErrorException.BadRequest.class)
                 .when(restTemplate)
-                .delete(anyString());
+                .exchange(anyString(),any(),any(),(Class<Object>)any());
 
             assertFalse(authService.invalidateJwtToken(token, true));
 

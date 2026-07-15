@@ -35,7 +35,9 @@ import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -275,11 +277,10 @@ public class AuthenticationService {
      * Obtain URL to use to invalidate a JWT
      *
      * @param instanceInfo Registration data for the authentication service used
-     * @param jwtToken     JWT token to invalidate
-     * @return
+     * @return the URL
      */
-    protected String getInvalidateUrl(InstanceInfo instanceInfo, String jwtToken) {
-        return EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/" + jwtToken;
+    protected String getInvalidateUrl(InstanceInfo instanceInfo) {
+        return EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
     }
 
     private boolean invalidateTokenOnAnotherInstance(String jwtToken, Application application) {
@@ -295,9 +296,17 @@ public class AuthenticationService {
                 continue;
             }
 
-            final String url = getInvalidateUrl(instanceInfo, jwtToken);
+            final String url = getInvalidateUrl(instanceInfo);
             try {
-                restTemplate.delete(url);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Bearer " + jwtToken);
+                HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+                restTemplate.exchange(
+                    url,
+                    HttpMethod.DELETE,
+                    requestEntity,
+                    Void.class
+                );
             } catch (HttpClientErrorException e) {
                 log.debug("Problem invalidating token on another instance url {}", url, e);
                 returnValue = Boolean.FALSE;
