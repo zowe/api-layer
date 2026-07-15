@@ -147,10 +147,6 @@ public class FullApiMediationLayer {
                 var cachingEnv = new HashMap<>(env);
                 cachingEnv.put("ZWE_configs_port", "10016");
                 cachingService.startWithScript("caching-service-package/src/main/resources/bin", cachingEnv);
-                mockZosmfService.start();
-                // Give mock services time to register in Eureka before ZAAS starts
-                // to avoid ZWEAG108E timeout in JwtSecurity
-                Thread.sleep(15_000);
                 var zaasEnv = new HashMap<>(env);
                 zaasEnv.put("ZWE_configs_port", "10023");
                 zaasService.startWithScript("zaas-package/src/main/resources/bin", zaasEnv);
@@ -160,6 +156,7 @@ public class FullApiMediationLayer {
             nodeJsSampleApp = nodeJsBuilder.start();
 
             discoverableClientService.start();
+            mockZosmfService.start();
             log.info("Services started");
         } catch (IOException ex) {
             log.error("error while starting services: {}", ex.getMessage(), ex.getCause());

@@ -91,16 +91,16 @@ openssl pkcs12 -export -out localca.keystore.p12 \
     -in local_ca.pem -inkey local_ca.key \
     -name localca -macalg SHA256 -passout "pass:$CA_PASSWORD"
 
-# Export public certificate
+# Export public certificate (DER format)
 openssl x509 -in local_ca.pem -outform DER -out localca.cer
 cp localca.cer zowe-dev-ca.cer
+
+# Keep PEM copy for signing operations in later steps
+cp local_ca.pem localca.pem
 
 # Export to localhost directory for convenience (used by NGINX AT-TLS)
 cp localca.cer "$KEYSTORE_DIR/localhost/localca.cer"
 cp localca.cer "$KEYSTORE_DIR/localhost/Zowe_Service_Zowe_Development_Instances_Certificate_Authority_.cer"
-
-# Clean up CA PEM intermediates (keep for signing in later steps)
-rm -f local_ca.pem
 
 # Generate a second CA for truststore mismatch tests (localhost2)
 # This CA is intentionally different from the main CA so that localhost2.truststore
@@ -221,7 +221,7 @@ EOF
 generate_localhost_keystore \
     "localhost" "localhost" \
     "localhost.keystore.p12" "localhost.truststore.p12" \
-    "../local_ca/localca.cer" "../local_ca/local_ca.key" "$CA_PASSWORD"
+    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD"
 
 # Export convenience files
 keytool -exportcert -keystore localhost.keystore.p12 -alias localhost \
@@ -235,7 +235,7 @@ keytool -exportcert -keystore localhost.keystore.p12 -alias localhost \
 generate_localhost_keystore \
     "localhost2" "localhost" \
     "localhost2.keystore.p12" "localhost2.truststore.p12" \
-    "../local_ca/localca.cer" "../local_ca/local_ca.key" "$CA_PASSWORD"
+    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD"
 
 # Overwrite localhost2 truststore with secondary CA (intentionally different from main CA)
 # so that trustStoreWithDifferentCertificateAuthorityShouldFail test works
@@ -247,14 +247,14 @@ keytool -import -alias localca -file "$KEYSTORE_DIR/local_ca/localca2.cer" \
 generate_localhost_keystore \
     "nonlocalhost" "nonlocalhost" \
     "nonlocalhost.keystore.p12" "does-not-matter.p12" \
-    "../local_ca/localca.cer" "../local_ca/local_ca.key" "$CA_PASSWORD"
+    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD"
 rm -f does-not-matter.p12
 
 # --- localhost-multi (uses different alias and CA alias) ---
 generate_localhost_keystore \
     "localhost-multi" "localhost-multi" \
     "localhost-multi.keystore.p12" "localhost-multi.truststore.p12" \
-    "../local_ca/localca.cer" "../local_ca/local_ca.key" "$CA_PASSWORD"
+    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD"
 
 # Trusted CAs chain for NGINX proxy
 cat ../local_ca/localca.cer > trusted_CAs.cer
