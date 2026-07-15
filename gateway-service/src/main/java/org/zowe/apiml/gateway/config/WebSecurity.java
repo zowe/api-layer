@@ -626,8 +626,11 @@ public class WebSecurity {
                 .orElse(exchange.getRequest().getHeaders().getFirst(HttpHeaders.ORIGIN));
         }
 
-        // Only a same-origin relative path or an absolute URL matching apiml.service.externalUrl is trusted;
-        // anything else falls back to the gateway's own root to prevent open-redirect/phishing via returnUrl.
+        /**
+         * Sanitize the return URL
+         * @param exchange the exchange
+         * @return the sanitized return URL
+         */
         private String getSafeReturnUrl(ServerWebExchange exchange) {
             return sanitizeReturnUrl(getReturnUrl(exchange));
         }
