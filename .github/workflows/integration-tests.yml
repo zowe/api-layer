@@ -62,6 +62,13 @@ jobs:
                     name: keystores-${{ env.JOB_ID }}
                     path: keystore
 
+            # Upload generated keystores so CITests jobs use the same certificates
+            -   name: Upload keystores for CITests
+                uses: actions/upload-artifact@v4
+                with:
+                    name: keystores-${{ env.JOB_ID }}
+                    path: keystore
+
             -   uses: ./.github/actions/teardown
 
     CITestsModulithUnknownHostnames:
@@ -88,13 +95,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -164,13 +171,13 @@ jobs:
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -254,13 +261,13 @@ jobs:
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -381,13 +388,13 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -539,13 +546,13 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
                     logbackService: ZWEAZS2
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -649,13 +656,13 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAZS2
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -735,13 +742,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -853,13 +860,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -948,13 +955,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1011,13 +1018,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1089,13 +1096,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1177,13 +1184,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1232,13 +1239,13 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1324,13 +1331,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1405,13 +1412,13 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1468,13 +1475,13 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1522,6 +1529,10 @@ jobs:
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/download-keystores
+                with:
+                    job-id: ${{ env.JOB_ID }}
+
 
             -   uses: ./.github/actions/setup
 
@@ -1610,6 +1621,10 @@ jobs:
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/download-keystores
+                with:
+                    job-id: ${{ env.JOB_ID }}
+
 
             -   uses: ./.github/actions/setup
 
@@ -1750,13 +1765,13 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     logbackService: ZWEAGW2
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1850,13 +1865,13 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     logbackService: ZWEAGW2
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -1978,13 +1993,13 @@ jobs:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW2
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -2075,13 +2090,13 @@ jobs:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW2
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -2246,13 +2261,13 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -2392,13 +2407,13 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -2534,13 +2549,13 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -2622,13 +2637,13 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -2735,10 +2750,6 @@ jobs:
                     logbackService: ZWEAZS2
 
         steps:
-            -   uses: ./.github/actions/download-keystores
-                with:
-                    job-id: ${{ env.JOB_ID }}
-
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
@@ -2859,10 +2870,6 @@ jobs:
                     APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
 
         steps:
-            -   uses: ./.github/actions/download-keystores
-                with:
-                    job-id: ${{ env.JOB_ID }}
-
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
@@ -2953,13 +2960,13 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -3014,13 +3021,13 @@ jobs:
 
 
         steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
 
-            -   uses: actions/checkout@v4
-                with:
-                    ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
 
@@ -3072,6 +3079,10 @@ jobs:
                 with:
                     fetch-depth: 0
                     ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/download-keystores
+                with:
+                    job-id: ${{ env.JOB_ID }}
+
 
             -   uses: ./.github/actions/setup
 
