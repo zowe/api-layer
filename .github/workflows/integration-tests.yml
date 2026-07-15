@@ -704,6 +704,7 @@ jobs:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
                     logbackService: ZWEAGW1
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
@@ -711,6 +712,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_APIMLID: apiml2
                     logbackService: ZWEAGW2
+                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -730,6 +732,7 @@ jobs:
                     APIML_CONNECTION_TIMEOUT: 2000
                     APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
                     APIML_SERVICE_HOSTNAME: central-gateway-service
+                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
