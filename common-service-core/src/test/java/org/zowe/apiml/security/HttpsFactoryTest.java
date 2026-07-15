@@ -36,7 +36,7 @@ class HttpsFactoryTest {
     @Test
     void shouldCreateSecureSslSocketFactory() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         ConnectionSocketFactory socketFactory = httpsFactory.createSslSocketFactory();
         assertEquals(SSLConnectionSocketFactory.class, socketFactory.getClass());
     }
@@ -44,7 +44,7 @@ class HttpsFactoryTest {
     @Test
     void shouldCreateIgnoringSslSocketFactory() throws KeyStoreException {
         HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         ConnectionSocketFactory socketFactory = httpsFactory.createSslSocketFactory();
         assertEquals(SSLConnectionSocketFactory.class, socketFactory.getClass());
         assertFalse(httpsFactory.getUsedKeyStore().aliases().hasMoreElements());
@@ -53,7 +53,7 @@ class HttpsFactoryTest {
     @Test
     void shouldCreateSecureSslContextWithEmptyKeystoreWhenNoKeystoreIsProvided() throws KeyStoreException {
         HttpsConfig httpsConfig = HttpsConfig.builder().protocol("TLSv1.2").verifySslCertificatesOfServices(true).build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         httpsFactory.getSslContext();
         assertFalse(httpsFactory.getUsedKeyStore().aliases().hasMoreElements());
     }
@@ -61,7 +61,7 @@ class HttpsFactoryTest {
     @Test
     void shouldCreateSecureHttpClient() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
 
         var httpClient = httpsFactory.buildHttpClient(null);
         assertEquals("org.apache.hc.client5.http.impl.classic.InternalHttpClient", httpClient.getClass().getName());
@@ -70,7 +70,7 @@ class HttpsFactoryTest {
     @Test
     void shouldCreateSecureSslContext() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         SSLContext sslContext = httpsFactory.getSslContext();
         assertNotNull(sslContext);
         assertEquals(SSLContext.class, sslContext.getClass());
@@ -79,7 +79,7 @@ class HttpsFactoryTest {
     @Test
     void shouldCreateIgnoringSslContext() {
         HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         SSLContext sslContext = httpsFactory.getSslContext();
         assertNotNull(sslContext);
         assertEquals(SSLContext.class, sslContext.getClass());
@@ -88,28 +88,28 @@ class HttpsFactoryTest {
     @Test
     void wrongKeyPasswordConfigurationShouldFail() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyPassword(INCORRECT_PARAMETER_VALUE.toCharArray()).build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         assertThrows(HttpsConfigError.class, () -> httpsFactory.getSslContext());
     }
 
     @Test
     void specificIncorrectAliasShouldFail() {
         HttpsConfig httpsConfig = httpsConfigBuilder.trustStorePassword(INCORRECT_PARAMETER_VALUE.toCharArray()).build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         assertThrows(HttpsConfigError.class, () -> httpsFactory.getSslContext());
     }
 
     @Test
     void incorrectProtocolShouldFail() {
         HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).protocol(INCORRECT_PARAMETER_VALUE).build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         assertThrows(HttpsConfigError.class, () -> httpsFactory.getSslContext());
     }
 
     @Test
     void shouldCreateDefaultHostnameVerifier() {
         HttpsConfig httpsConfig = httpsConfigBuilder.build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         HostnameVerifier hostnameVerifier = httpsFactory.getHostnameVerifier();
         assertEquals(DefaultHostnameVerifier.class, hostnameVerifier.getClass());
     }
@@ -117,7 +117,7 @@ class HttpsFactoryTest {
     @Test
     void shouldCreateNoopHostnameVerifier() {
         HttpsConfig httpsConfig = httpsConfigBuilder.verifySslCertificatesOfServices(false).build();
-        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
+        HttpsFactory httpsFactory = new HttpsFactory(httpsConfig, "0.0.0.0");
         HostnameVerifier hostnameVerifier = httpsFactory.getHostnameVerifier();
         assertEquals(NoopHostnameVerifier.class, hostnameVerifier.getClass());
     }
