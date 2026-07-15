@@ -133,7 +133,7 @@ public class WebSecurity {
     @Value("${apiml.security.enableStrictUrlValidation:false}")
     private boolean isStrictUrlValidationEnabled;
 
-    @Value("${apiml.service.externalUrl}")
+    @Value("${apiml.service.externalUrl:}")
     private String externalUrl;
 
     private final ClientConfiguration clientConfiguration;
@@ -332,6 +332,7 @@ public class WebSecurity {
             return CONTEXT_PATH;
         }
     }
+
     public Mono<Object> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
         ServerWebExchange exchange = webFilterExchange.getExchange();
 
