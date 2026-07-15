@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
@@ -35,10 +36,9 @@ import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 
-/**
- * Registers security related beans
- */
+/** Configures internal security components */
 @Configuration
+@DependsOn("zaasMessageServiceConfiguration")
 public class ComponentsConfiguration {
 
     /**

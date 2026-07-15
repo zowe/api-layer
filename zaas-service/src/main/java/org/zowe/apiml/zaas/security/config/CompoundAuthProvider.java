@@ -34,7 +34,14 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     public static final String ORG_ZOWE_APIML_GENERAL_INFO = "org.zowe.apiml.common.generalInfo";
     public static final String DUMMY = "dummy";
 
-    private final ApimlLogger apimlLog = ApimlLogger.of(CompoundAuthProvider.class, YamlMessageServiceInstance.getInstance());
+    private ApimlLogger apimlLog;
+
+    private ApimlLogger getApimlLog() {
+        if (apimlLog == null) {
+            apimlLog = ApimlLogger.of(CompoundAuthProvider.class, YamlMessageServiceInstance.getInstance());
+        }
+        return apimlLog;
+    }
 
     private final Map<String, AuthenticationProvider> authProvidersMap;
     private final Environment environment;
@@ -42,20 +49,20 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     private LoginProvider loginProvider;
 
     public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment, @Value("${apiml.security.auth.provider:zosmf}") String defaultProviderName) {
-        apimlLog.log(ORG_ZOWE_APIML_GENERAL_INFO, "Using authentication provider: %s".formatted(defaultProviderName));
+        getApimlLog().log(ORG_ZOWE_APIML_GENERAL_INFO, "Using authentication provider: %s".formatted(defaultProviderName));
         this.authProvidersMap = authProvidersMap;
         this.environment = environment;
         warnForDummyProvider(defaultProviderName);
         defaultProvider = loginProvider =
             LoginProvider.getLoginProvider(defaultProviderName);
         if (loginProvider == null) {
-            apimlLog.log(ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER, defaultProviderName);
+            getApimlLog().log(ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER, defaultProviderName);
         }
     }
 
     private void warnForDummyProvider(String defaultProviderName) {
         if (defaultProviderName.equalsIgnoreCase(DUMMY)) {
-            apimlLog.log(ORG_ZOWE_APIML_SECURITY_LOGIN_ENDPOINT_IN_DUMMY_MODE, "user", "user");
+            getApimlLog().log(ORG_ZOWE_APIML_SECURITY_LOGIN_ENDPOINT_IN_DUMMY_MODE, "user", "user");
         }
     }
 
