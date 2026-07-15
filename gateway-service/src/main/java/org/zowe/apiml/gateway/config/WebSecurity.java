@@ -365,7 +365,7 @@ public class WebSecurity {
         var location = exchange.getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
 
         if (!HAS_NO_VALUE.test(location)) {
-            redirect(webFilterExchange.getExchange().getResponse(), sanitizeReturnUrl(location.getValue()));
+            redirect(exchange.getResponse(), sanitizeReturnUrl(location.getValue()));
         }
         clearCookies(webFilterExchange);
         return Mono.empty();
