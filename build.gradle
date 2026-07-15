@@ -151,6 +151,7 @@ configure(subprojects.findAll {it.name != 'platform'}) {
     }
 
     test {
+        maxHeapSize = '2g'
         useJUnitPlatform()
         jvmArgs '--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED'
         jvmArgs '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
