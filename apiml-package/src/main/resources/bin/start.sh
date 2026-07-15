@@ -53,6 +53,7 @@
 # - ZWE_configs_apiml_security_authorization_endpoint_enabled
 # - ZWE_configs_apiml_security_authorization_endpoint_url
 # - ZWE_configs_apiml_security_authorization_provider
+# - ZWE_configs_apiml_security_enableStrictUrlValidation
 # - ZWE_configs_apiml_security_x509_acceptForwardedCert
 # - ZWE_configs_apiml_security_x509_certificatesUrl
 # - ZWE_configs_apiml_security_x509_enabled
@@ -289,6 +290,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.authorization.provider=${ZWE_components_gateway_apiml_security_authorization_provider:-${ZWE_configs_apiml_security_authorization_provider:-"native"}} \
     -Dapiml.security.authorization.resourceClass=${ZWE_components_gateway_apiml_security_authorization_resourceClass:-${ZWE_configs_apiml_security_authorization_resourceClass:-ZOWE}} \
     -Dapiml.security.authorization.resourceNamePrefix=${ZWE_components_gateway_apiml_security_authorization_resourceNamePrefix:-${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-APIML.}} \
+    -Dapiml.security.enableStrictUrlValidation=${ZWE_components_gateway_apiml_security_enableStrictUrlValidation:-${ZWE_configs_apiml_security_enableStrictUrlValidation:-true}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-${ZWE_configs_apiml_security_jwtInitializerTimeout:-5}} \
     -Dapiml.security.oidc.enabled=${ZWE_components_gateway_apiml_security_oidc_enabled:-${ZWE_configs_apiml_security_oidc_enabled:-false}} \
     -Dapiml.security.oidc.identityMapperUrl=${ZWE_components_gateway_apiml_security_oidc_identityMapperUrl:-${ZWE_configs_apiml_security_oidc_identityMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"}} \
