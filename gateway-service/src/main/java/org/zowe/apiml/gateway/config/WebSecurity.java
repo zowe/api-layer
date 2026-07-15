@@ -128,7 +128,7 @@ public class WebSecurity {
     @Value("${apiml.health.protected:true}")
     private boolean isHealthEndpointProtected;
 
-    @Value("${apiml.security.enableStrictUrlValidation:false}")
+    @Value("${apiml.security.enableStrictUrlValidation:true}")
     private boolean isStrictUrlValidationEnabled;
 
     private final ClientConfiguration clientConfiguration;
