@@ -218,17 +218,16 @@ public class WebSecurity {
             .build();
     }
 
+    /**
+     * Validates a relative return URI.
+     * Only root-relative paths are accepted. Protocol-relative URLs,
+     * paths with an authority component, and other ambiguous forms are rejected.
+     *
+     * @param uri the relative URI to validate
+     * @return a safe relative location or {@link #CONTEXT_PATH} if invalid
+     */
     private String sanitizeRelativeUri(URI uri) {
-        /*
-         * Reject:
-         *   //attacker.example
-         *   attacker.example/path
-         *   gateway:foo
-         *
-         * Only root-relative paths are allowed.
-         */
-        if (uri.getRawAuthority() != null
-            || uri.getRawUserInfo() != null) {
+        if (uri.getRawAuthority() != null) {
             return CONTEXT_PATH;
         }
 
@@ -243,6 +242,13 @@ public class WebSecurity {
         return toRelativeLocation(uri);
     }
 
+    /**
+     * Checks whether the supplied absolute URI matches the configured Gateway origin.
+     *
+     * @param candidate the URI provided by the client
+     * @param configuredExternalUri the configured Gateway external URL
+     * @return true if both URIs share the same origin, false otherwise
+     */
     private boolean isSameOrigin(URI candidate, URI configuredExternalUri) {
         if (candidate.getScheme() == null
             || candidate.getHost() == null
@@ -257,6 +263,14 @@ public class WebSecurity {
             && effectivePort(candidate) == effectivePort(configuredExternalUri);
     }
 
+    /**
+     * Returns the effective port of the URI.
+     * If the URI does not explicitly specify a port, the default port for
+     * the URI scheme is returned (80 for HTTP, 443 for HTTPS).
+     *
+     * @param uri the URI
+     * @return the effective port
+     */
     private int effectivePort(URI uri) {
         if (uri.getPort() >= 0) {
             return uri.getPort();
@@ -273,7 +287,13 @@ public class WebSecurity {
         return -1;
     }
 
-    // defense-in-depth
+    /**
+     * Converts an absolute or relative URI into a relative redirect location.
+     * The returned value contains only the path, query, and fragment.
+     *
+     * @param uri the URI to normalize
+     * @return the relative redirect location
+     */
     private String toRelativeLocation(URI uri) {
         String path = StringUtils.defaultIfEmpty(uri.getRawPath(), "/");
 
@@ -290,6 +310,15 @@ public class WebSecurity {
         return location.toString();
     }
 
+    /**
+     * Validates and normalizes a return URL.
+     * Only root-relative paths or absolute URLs matching the configured
+     * Gateway origin are accepted. Any invalid or untrusted value falls back
+     * to {@link #CONTEXT_PATH} to prevent open redirect attacks.
+     *
+     * @param candidate the return URL supplied by the client
+     * @return a safe redirect target
+     */
     private String sanitizeReturnUrl(String candidate) {
         if (StringUtils.isBlank(candidate)) {
             return CONTEXT_PATH;
@@ -298,7 +327,7 @@ public class WebSecurity {
         String lowercaseCandidate = candidate.toLowerCase(Locale.ROOT);
 
         // Backslashes can be interpreted as slashes by some clients.
-        // Also reject encoded backslashes and CR/LF characters.
+        // Also reject encoded backslashes and CR/LF characters, to avoid CRLF Injection.
         if (candidate.contains("\\")
             || lowercaseCandidate.contains("%5c")
             || lowercaseCandidate.contains("%0d")
@@ -322,11 +351,6 @@ public class WebSecurity {
                 return CONTEXT_PATH;
             }
 
-            /*
-             * Even for an accepted absolute same-origin URL, return only its
-             * path/query/fragment. This guarantees that Location never contains
-             * a user-controlled authority.
-             */
             return toRelativeLocation(candidateUri);
         } catch (URISyntaxException | IllegalArgumentException e) {
             return CONTEXT_PATH;
@@ -338,15 +362,12 @@ public class WebSecurity {
 
         exchange.getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue())).build());
 
-        HttpCookie locationCookie = exchange.getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
+        HttpCookie location = exchange.getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
 
-        String location = HAS_NO_VALUE.test(locationCookie)
-            ? CONTEXT_PATH
-            : sanitizeReturnUrl(locationCookie.getValue());
-
-        redirect(exchange.getResponse(), location);
+        if (!HAS_NO_VALUE.test(location)) {
+            redirect(webFilterExchange.getExchange().getResponse(), sanitizeReturnUrl(location.getValue()));
+        }
         clearCookies(webFilterExchange);
-
         return Mono.empty();
     }
 
