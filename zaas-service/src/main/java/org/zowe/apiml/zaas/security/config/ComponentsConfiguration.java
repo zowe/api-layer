@@ -21,7 +21,6 @@ import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.mapping.X509CommonNameUserMapper;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.X509AuthSourceService;
 import org.zowe.apiml.zaas.security.service.schema.source.X509CNAuthSourceService;
@@ -76,8 +75,8 @@ public class ComponentsConfiguration {
      * This bean performs the mapping between common name from the client certificate and the mainframe user ID.
      */
     @Bean("x509MFAuthSourceService")
-    X509AuthSourceService getX509MFAuthSourceService(@Qualifier("x509Mapper") AuthenticationMapper mapper, TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
-        return new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
+    X509AuthSourceService getX509MFAuthSourceService(@Qualifier("x509Mapper") AuthenticationMapper mapper, TokenCreationService tokenCreationService) {
+        return new X509AuthSourceService(mapper, tokenCreationService);
     }
 
     /**
@@ -86,8 +85,8 @@ public class ComponentsConfiguration {
      * It treats client name from certificate as user ID and uses X509CommonNameUserMapper for validation.
      */
     @Bean("x509CNAuthSourceService")
-    X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService, AuthenticationService authenticationService) {
-        return new X509CNAuthSourceService(new X509CommonNameUserMapper(), tokenCreationService, authenticationService);
+    X509AuthSourceService getX509CNAuthSourceService(TokenCreationService tokenCreationService) {
+        return new X509CNAuthSourceService(new X509CommonNameUserMapper(), tokenCreationService);
     }
 
     @Bean
