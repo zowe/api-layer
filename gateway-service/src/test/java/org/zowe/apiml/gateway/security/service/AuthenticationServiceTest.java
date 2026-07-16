@@ -445,7 +445,14 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", DOMAIN, null);
-            doNothing().when(restTemplate).delete("http://localhost:0/gateway/auth/invalidate/" + token);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
+            when(restTemplate.exchange("http://localhost:0/zaas/api/v1/auth/invalidate",
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class)).thenReturn(responseEntity);
             Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             assertTrue(authService.invalidateJwtToken(token, true));
