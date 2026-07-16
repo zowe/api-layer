@@ -15,14 +15,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hc.client5.http.UserTokenHandler;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultSchemePortResolver;
 import org.apache.hc.client5.http.impl.LaxRedirectStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.routing.DefaultRoutePlanner;
 import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
 import org.apache.hc.client5.http.ssl.HttpsSupport;
 import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
 import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.HttpHost;
+import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.ssl.PrivateKeyStrategy;
 import org.apache.hc.core5.ssl.SSLContextBuilder;
 import org.apache.hc.core5.util.Timeout;
@@ -36,7 +40,9 @@ import javax.net.ssl.TrustManager;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -50,14 +56,16 @@ import java.util.Collection;
 @Data
 public class HttpsFactory {
 
+    private String address;
     private HttpsConfig config;
     private SSLContext secureSslContext;
     private KeyStore usedKeyStore = null;
     private ApimlLogger apimlLog;
     private Collection<TrustManager> trustManagers;
 
-    public HttpsFactory(HttpsConfig httpsConfig) {
+    public HttpsFactory(HttpsConfig httpsConfig, String address) {
         this.config = httpsConfig;
+        this.address = address;
         this.apimlLog = ApimlLogger.of(HttpsFactory.class, YamlMessageServiceInstance.getInstance());
     }
 
@@ -75,6 +83,17 @@ public class HttpsFactory {
             .evictIdleConnections(Timeout.ofSeconds(config.getIdleConnTimeoutSeconds()))
             .disableAuthCaching()
             .setRedirectStrategy(new LaxRedirectStrategy())
+            .setRoutePlanner(new DefaultRoutePlanner(DefaultSchemePortResolver.INSTANCE) {
+                @Override
+                protected InetAddress determineLocalAddress(HttpHost firstHop, HttpContext context) {
+                    try {
+                        return InetAddress.getByName(address);
+                    } catch (UnknownHostException e) {
+                        log.warn("Failed to resolve local address {}, using default", address, e);
+                        return null;
+                    }
+                }
+        })
             .build();
     }
 
