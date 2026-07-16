@@ -100,6 +100,6 @@ messages:
       type: WARNING
       text: "Service '%s' registered with the httpBasicPassTicket authentication scheme but without a configured APPLID. The authentication scheme will be ignored"
       reason: "The service is onboarded with the httpBasicPassTicket authentication scheme but does not provide an APPLID, which is required to generate PassTickets."
-      action: "Configure the 'applid' parameter of the httpBasicPassTicket authentication scheme in the service metadata."
+      action: "Configure the 'authentication.applid' parameter of the httpBasicPassTicket authentication scheme in the service metadata."
 
     # Legacy messages
