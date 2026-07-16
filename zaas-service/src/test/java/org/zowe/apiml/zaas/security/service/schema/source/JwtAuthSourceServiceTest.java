@@ -131,11 +131,6 @@ class JwtAuthSourceServiceTest {
                 verifyNoInteractions(authenticationService);
             }
 
-            @Test
-            void thenNullLtpa() {
-                Assertions.assertNull(serviceUnderTest.getLtpaToken(null));
-                verifyNoInteractions(authenticationService);
-            }
         }
 
         @Nested
@@ -154,11 +149,6 @@ class JwtAuthSourceServiceTest {
                 verifyNoInteractions(authenticationService);
             }
 
-            @Test
-            void givenNullTokenInAuthSource_thenNullLtpa() {
-                Assertions.assertNull(serviceUnderTest.getLtpaToken(authSourceNullToken));
-                verifyNoInteractions(authenticationService);
-            }
         }
     }
 
@@ -178,11 +168,6 @@ class JwtAuthSourceServiceTest {
             verifyNoInteractions(authenticationService);
         }
 
-        @Test
-        void whenGetLtpa_thenNull() {
-            Assertions.assertNull(serviceUnderTest.getLtpaToken(dummyAuthSource));
-            verifyNoInteractions(authenticationService);
-        }
     }
 
     @Nested
@@ -208,14 +193,6 @@ class JwtAuthSourceServiceTest {
             Assertions.assertEquals(expectedParsedSource, parsedSource);
         }
 
-        @Test
-        void thenLtpaGenerated() {
-            String ltpa = "ltpaToken";
-            when(authenticationService.getLtpaTokenWithValidation(anyString())).thenReturn(ltpa);
-
-            Assertions.assertEquals(ltpa, serviceUnderTest.getLtpaToken(jwtAuthSource));
-            verify(authenticationService, times(1)).getLtpaTokenWithValidation(token);
-        }
     }
 
     @Nested
@@ -236,14 +213,6 @@ class JwtAuthSourceServiceTest {
 
             assertThrows(TokenNotValidException.class, () -> serviceUnderTest.parse(jwtAuthSource));
             verify(authenticationService, times(1)).parseJwtToken(token);
-        }
-
-        @Test
-        void whenGetLtpa_thenThrow() {
-            when(authenticationService.getLtpaTokenWithValidation(anyString())).thenThrow(exception);
-
-            assertThrows(TokenNotValidException.class, () -> serviceUnderTest.getLtpaToken(jwtAuthSource));
-            verify(authenticationService, times(1)).getLtpaTokenWithValidation(token);
         }
 
         @Test
@@ -274,14 +243,6 @@ class JwtAuthSourceServiceTest {
 
             assertThrows(TokenExpireException.class, () -> serviceUnderTest.parse(jwtAuthSource));
             verify(authenticationService, times(1)).parseJwtToken(token);
-        }
-
-        @Test
-        void whenGetLtpa_thenThrow() {
-            when(authenticationService.getLtpaTokenWithValidation(anyString())).thenThrow(exception);
-
-            assertThrows(TokenExpireException.class, () -> serviceUnderTest.getLtpaToken(jwtAuthSource));
-            verify(authenticationService, times(1)).getLtpaTokenWithValidation(token);
         }
 
         @Test

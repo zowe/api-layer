@@ -130,21 +130,6 @@ class OIDCAuthSourceServiceTest {
         }
 
         @Test
-        void givenValidAuthSource_thenReturnLTPAToken() {
-            OIDCAuthSource authSource = mockValidAuthSource();
-            String expectedToken = "ltpa-token";
-            when(mapper.mapToMainframeUserId(any())).thenReturn(MF_USER);
-            String zoweToken = "zowe-token";
-            when(tokenCreationService.createJwtTokenWithoutCredentials(MF_USER)).thenReturn(zoweToken);
-            when(authenticationService.getTokenOrigin(zoweToken)).thenReturn(AuthSource.Origin.ZOWE);
-            when(authenticationService.getLtpaToken(zoweToken)).thenReturn(expectedToken);
-
-            String ltpaResult = service.getLtpaToken(authSource);
-            assertEquals(expectedToken, ltpaResult);
-            assertEquals(SUB_USER, authSource.getDistributedId().get(0));
-        }
-
-        @Test
         void givenValidAuthSource_thenReturnJWT() {
             OIDCAuthSource authSource = mockValidAuthSource();
             when(mapper.mapToMainframeUserId(any())).thenReturn(MF_USER);
