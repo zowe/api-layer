@@ -42,6 +42,7 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CachedBodyFilter;
+import org.zowe.apiml.filter.ContentTypeFilter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
 import org.zowe.apiml.filter.OIDCAuthFilter;
@@ -417,6 +418,7 @@ public class WebSecurityConfig {
                 .logoutSuccessHandler(new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.NO_CONTENT)))
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .addFilterAfter(new CachedBodyFilter(), SecurityWebFiltersOrder.FIRST)
+            .addFilterAfter(new ContentTypeFilter(), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION);
