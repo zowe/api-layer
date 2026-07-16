@@ -71,6 +71,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 class AuthControllerTest {
 
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String BEARER = "Bearer ";
+    private static final String INVALIDATE = "/gateway/auth/invalidate";
     private AuthController authController;
     private MockMvc mockMvc;
 
@@ -113,12 +116,28 @@ class AuthControllerTest {
     @Test
     void invalidateJwtToken() throws Exception {
         when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/gateway/auth/invalidate/a/b")).andExpect(status().is(SC_OK));
+        mockMvc.perform(delete(INVALIDATE)
+                .header(AUTHORIZATION, BEARER + "a/b"))
+            .andExpect(status().is(SC_OK));
 
         when(authenticationService.invalidateJwtToken("abcde", false)).thenReturn(Boolean.TRUE);
-        this.mockMvc.perform(delete("/gateway/auth/invalidate/abcde")).andExpect(status().is(SC_OK));
+        mockMvc.perform(delete(INVALIDATE)
+                .header(AUTHORIZATION, BEARER + "abcde"))
+            .andExpect(status().is(SC_OK));
 
-        this.mockMvc.perform(delete("/gateway/auth/invalidate/xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
+        when(authenticationService.invalidateJwtToken("fghij", false)).thenThrow(new TokenNotValidException("invalid"));
+        mockMvc.perform(delete(INVALIDATE)
+                .header(AUTHORIZATION, BEARER + "fghij"))
+            .andExpect(status().is(SC_BAD_REQUEST));
+
+        mockMvc.perform(delete(INVALIDATE)
+            .header("authorization", BEARER + "xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
+
+        mockMvc.perform(delete(INVALIDATE)
+            .header("authorization", "wibble")).andExpect(status().is(SC_UNAUTHORIZED));
+
+        mockMvc.perform(delete(INVALIDATE))
+            .andExpect(status().is(SC_UNAUTHORIZED));
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
