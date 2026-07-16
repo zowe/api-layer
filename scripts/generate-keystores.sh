@@ -437,17 +437,34 @@ subjectAltName = @alt_names
 [alt_names]
 DNS.1 = localhost
 DNS.2 = 127.0.0.1
-DNS.3 = apiml
-DNS.4 = discovery-service
-DNS.5 = discovery-service-2
-DNS.6 = gateway-service
-DNS.7 = gateway-service-2
-DNS.8 = zaas-service
-DNS.9 = zaas-service-2
-DNS.10 = api-catalog-services
-DNS.11 = caching-service
-DNS.12 = mock-services
-DNS.13 = discoverable-client
+DNS.3 = zaas-service
+DNS.4 = zaas-service-2
+DNS.5 = api-catalog-services
+DNS.6 = api-catalog-services-2
+DNS.7 = caching-service
+DNS.8 = caching-service-2
+DNS.9 = caching-service-3
+DNS.10 = discovery-service
+DNS.11 = discovery-service-2
+DNS.12 = discoverable-client
+DNS.13 = discoverable-client-1
+DNS.14 = discoverable-client-2
+DNS.15 = discoverable-client-3
+DNS.16 = discoverable-client-4
+DNS.17 = discoverable-client-unknown
+DNS.18 = mock-services
+DNS.19 = mock-services-2
+DNS.20 = mock-services-unknown
+DNS.21 = reverse-proxy
+DNS.22 = gateway-service
+DNS.23 = gateway-service-2
+DNS.24 = central-gateway-service
+DNS.25 = central-gateway-service-2
+DNS.26 = apiml
+DNS.27 = apiml-2
+DNS.28 = apiml-3
+DNS.29 = nodejs-sample-app
+DNS.30 = python-sample-app
 EOC
 
 openssl req -new -key client-cert.key -out client-cert.csr \

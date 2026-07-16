@@ -100,7 +100,7 @@ class X509SchemeTest implements TestWithStartedInstances {
                     .when()
                     .get(X509SchemeTest.URL)
                     .then()
-                    .body("dn", containsString("O=OMP,CN=zowe component"))
+                    .body("dn", containsString("CN=zowe component,O=OMP"))
                     .statusCode(200);
             }
         }
