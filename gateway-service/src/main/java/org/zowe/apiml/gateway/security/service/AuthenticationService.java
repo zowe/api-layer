@@ -31,7 +31,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -202,9 +204,17 @@ public class AuthenticationService {
         for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
 
-            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/" + jwtToken;
+            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
             try {
-                restTemplate.delete(url);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Bearer " + jwtToken);
+                HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+                restTemplate.exchange(
+                    url,
+                    HttpMethod.DELETE,
+                    requestEntity,
+                    Void.class
+                );
             } catch (HttpClientErrorException e) {
                 log.debug("Problem invalidating token on another instance url " + url, e);
             }
