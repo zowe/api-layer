@@ -254,17 +254,15 @@ public class WebSecurity {
                 )) {
                     throw new InvalidForwardException(forwardUrlString);
                 }
+            } else {
+                var path = forwardUrl.getRawPath();
 
-                return forwardUrlString;
-            }
-
-            var path = forwardUrl.getRawPath();
-
-            if (forwardUrl.getRawAuthority() != null ||
-                StringUtils.isEmpty(path) ||
-                !path.startsWith("/") ||
-                path.startsWith("//")) {
-                throw new InvalidForwardException(forwardUrlString);
+                if (forwardUrl.getRawAuthority() != null ||
+                    StringUtils.isEmpty(path) ||
+                    !path.startsWith("/") ||
+                    path.startsWith("//")) {
+                    throw new InvalidForwardException(forwardUrlString);
+                }
             }
 
             return forwardUrlString;
