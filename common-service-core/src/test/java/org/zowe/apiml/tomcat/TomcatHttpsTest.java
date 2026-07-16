@@ -123,7 +123,7 @@ class TomcatHttpsTest {
     private void startTomcatAndDoHttpsRequest(HttpsConfig serverConfig, HttpsConfig clientConfig) throws IOException, LifecycleException {
         Tomcat tomcat = new TomcatServerFactory().startTomcat(serverConfig);
         try {
-            HttpsFactory clientHttpsFactory = new HttpsFactory(clientConfig);
+            HttpsFactory clientHttpsFactory = new HttpsFactory(clientConfig, "0.0.0.0");
             RegistryBuilder<ConnectionSocketFactory> socketFactoryRegistryBuilder = RegistryBuilder
                 .<ConnectionSocketFactory>create().register("http", PlainConnectionSocketFactory.getSocketFactory());
             socketFactoryRegistryBuilder.register("https", clientHttpsFactory.createSslSocketFactory());

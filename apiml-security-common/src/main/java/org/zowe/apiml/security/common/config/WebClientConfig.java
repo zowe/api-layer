@@ -10,8 +10,10 @@
 
 package org.zowe.apiml.security.common.config;
 
-import java.util.List;
-
+import io.netty.handler.ssl.SslContext;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,12 +32,10 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
-
-import io.netty.handler.ssl.SslContext;
-import io.netty.resolver.DefaultAddressResolverGroup;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.netty.http.client.HttpClient;
+
+import java.net.InetSocketAddress;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -49,6 +49,9 @@ public class WebClientConfig {
 
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
+
+    @Value("${server.address:0.0.0.0}")
+    private String listenAddress;
 
     @Bean
     HttpClientFactory gatewayHttpClientFactory(
@@ -68,6 +71,7 @@ public class WebClientConfig {
             @Override
             protected HttpClient createInstance() {
                 return super.createInstance()
+                    .bindAddress(() -> new InetSocketAddress(listenAddress, 0))
                     .secure(sslContextSpec -> sslContextSpec.sslContext(sslContext))
                     .resolver(DefaultAddressResolverGroup.INSTANCE);
             }
