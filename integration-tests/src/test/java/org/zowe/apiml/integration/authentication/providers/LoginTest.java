@@ -47,10 +47,12 @@ import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static io.restassured.http.ContentType.TEXT;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.http.HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.startsWith;
@@ -353,6 +355,20 @@ class LoginTest implements TestWithStartedInstances {
                 assertValidAuthToken(cookie, Optional.of(loggedUser));
             }
 
+        }
+
+        @ParameterizedTest(name = "givenTextContentTypeWithBody {index} {0} ")
+        @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
+        void givenTextContentTypeWithBody_thenUnsupportedMediaType(URI loginUrl) {
+            LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword().toCharArray());
+
+            given()
+                .contentType(TEXT)
+                .body(loginRequest)
+            .when()
+                .post(loginUrl)
+            .then()
+                .statusCode(is(SC_UNSUPPORTED_MEDIA_TYPE));
         }
 
     }
