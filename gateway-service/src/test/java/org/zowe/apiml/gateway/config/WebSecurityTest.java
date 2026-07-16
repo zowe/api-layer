@@ -92,6 +92,7 @@ class WebSecurityTest {
         void setUp() {
             webSecurity = new WebSecurity(new ClientConfiguration(), tokenProvider, basicAuthProvider, applicationContext);
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "registryUser,registryAdmin");
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains", "");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
         }
@@ -175,6 +176,7 @@ class WebSecurityTest {
         void setUp() {
             var webSecurity = new WebSecurity(new ClientConfiguration(), tokenProvider, basicAuthProvider, applicationContext);
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "*");
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains", "");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
         }
@@ -465,7 +467,9 @@ class WebSecurityTest {
         var request = mock(ServerHttpRequest.class);
         var headers = new HttpHeaders();
         when(request.getHeaders()).thenReturn(headers);
-        when(request.getQueryParams()).thenReturn(new LinkedMultiValueMap<>());
+        var queryParams = new LinkedMultiValueMap<String, String>();
+        queryParams.add("returnUrl", "/gateway/foo");
+        when(request.getQueryParams()).thenReturn(queryParams);
 
         var exchange = mock(ServerWebExchange.class);
         when(exchange.getRequest()).thenReturn(request);
@@ -496,19 +500,21 @@ class WebSecurityTest {
     @Nested
     class SanitizeReturnUrl {
 
-        private static final String EXTERNAL_URL = "https://gateway.zowe.example:10010";
+        private static final String ALLOWED_HOST = "gateway.zowe.example";
+        private static final String EXTERNAL_URL = "https://" + ALLOWED_HOST + ":10010";
 
         WebSecurity.ApimlServerAuthorizationRequestRepository requestRepository;
 
         @BeforeEach
         void setUp() {
             var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
-            ReflectionTestUtils.setField(webSecurity, "externalUrl", EXTERNAL_URL);
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains", ALLOWED_HOST);
+            webSecurity.initScopes();
             var resolver = mock(ServerOAuth2AuthorizationRequestResolver.class);
             requestRepository = webSecurity.new ApimlServerAuthorizationRequestRepository(resolver);
         }
 
-        private String sanitize(String returnUrlQueryParam, String originHeader) {
+        private Mono<Void> save(String returnUrlQueryParam, String originHeader, LinkedMultiValueMap<String, ResponseCookie> cookies) {
             var request = mock(ServerHttpRequest.class);
             var headers = new HttpHeaders();
             if (originHeader != null) {
@@ -527,7 +533,6 @@ class WebSecurityTest {
             var response = mock(ServerHttpResponse.class);
             when(exchange.getResponse()).thenReturn(response);
 
-            var cookies = new LinkedMultiValueMap<String, ResponseCookie>();
             doAnswer(invocation -> {
                 var cookie = invocation.getArgument(0, ResponseCookie.class);
                 cookies.add(cookie.getName(), cookie);
@@ -541,54 +546,75 @@ class WebSecurityTest {
                 .attributes(attrs -> attrs.put(OidcParameterNames.NONCE, "test-nonce"))
                 .build();
 
-            requestRepository.saveAuthorizationRequest(oauth2AuthReq, exchange).block();
+            return requestRepository.saveAuthorizationRequest(oauth2AuthReq, exchange);
+        }
 
+        private String sanitize(String returnUrlQueryParam, String originHeader) {
+            var cookies = new LinkedMultiValueMap<String, ResponseCookie>();
+            save(returnUrlQueryParam, originHeader, cookies).block();
             return Objects.requireNonNull(cookies.getFirst(WebSecurity.COOKIE_RETURN_URL)).getValue();
         }
 
-        static Stream<Arguments> safeAndUnsafeReturnUrls() {
+        private void assertRejected(String returnUrlQueryParam, String originHeader) {
+            var cookies = new LinkedMultiValueMap<String, ResponseCookie>();
+            StepVerifier.create(save(returnUrlQueryParam, originHeader, cookies))
+                .verifyErrorSatisfies(e -> assertThat(e).isInstanceOf(InvalidForwardException.class));
+            assertThat(cookies.getFirst(WebSecurity.COOKIE_RETURN_URL)).isNull();
+        }
+
+        static Stream<Arguments> safeReturnUrls() {
             return Stream.of(
-                // no returnUrl and no Origin header at all
-                Arguments.of(null, WebSecurity.CONTEXT_PATH),
-                Arguments.of("", WebSecurity.CONTEXT_PATH),
                 // plain relative paths are passed through untouched
                 Arguments.of("/gateway/foo", "/gateway/foo"),
                 Arguments.of("/gateway/foo?bar=1#frag", "/gateway/foo?bar=1#frag"),
-                // protocol-relative and backslash tricks that resolve to a different host
-                Arguments.of("//attacker.example/x", WebSecurity.CONTEXT_PATH),
-                Arguments.of("/\\attacker.example", WebSecurity.CONTEXT_PATH),
-                Arguments.of("/foo%5Cattacker.example", WebSecurity.CONTEXT_PATH),
-                Arguments.of("/foo%0D%0ASet-Cookie:evil=1", WebSecurity.CONTEXT_PATH),
-                // absolute URLs matching the configured externalUrl are accepted, authority stripped
-                Arguments.of(EXTERNAL_URL + "/gateway/foo?x=1#frag", "/gateway/foo?x=1#frag"),
-                Arguments.of(EXTERNAL_URL, "/"),
-                Arguments.of("HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo", "/gateway/foo"),
-                // absolute URLs that differ from externalUrl in host, port, scheme or userinfo
-                Arguments.of("https://attacker.example/x", WebSecurity.CONTEXT_PATH),
-                Arguments.of("https://gateway.zowe.example:9999/x", WebSecurity.CONTEXT_PATH),
-                Arguments.of("http://gateway.zowe.example:10010/x", WebSecurity.CONTEXT_PATH),
-                Arguments.of("https://user@gateway.zowe.example:10010/x", WebSecurity.CONTEXT_PATH),
-                // non-http(s) schemes and malformed URIs
-                Arguments.of("javascript:alert(1)", WebSecurity.CONTEXT_PATH),
-                Arguments.of("mailto:foo@bar.com", WebSecurity.CONTEXT_PATH),
-                Arguments.of("http://exa mple.com", WebSecurity.CONTEXT_PATH)
+                // absolute URLs whose host is allow-listed are accepted unchanged
+                Arguments.of(EXTERNAL_URL + "/gateway/foo?x=1#frag", EXTERNAL_URL + "/gateway/foo?x=1#frag"),
+                Arguments.of(EXTERNAL_URL, EXTERNAL_URL),
+                Arguments.of("HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo", "HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo"),
+                Arguments.of("http://gateway.zowe.example:10010/x", "http://gateway.zowe.example:10010/x"),
+                Arguments.of("https://www.ibm.com/docs", "https://www.ibm.com/docs")
+            );
+        }
+
+        static Stream<String> unsafeReturnUrls() {
+            return Stream.of(
+                "",
+                "//attacker.example/x",
+                "/\\attacker.example",
+                "/foo%5Cattacker.example",
+                "/foo%0D%0ASet-Cookie:evil=1",
+                "https://attacker.example/x",
+                "https://user@gateway.zowe.example:10010/x",
+                "mailto:foo@bar.com",
+                "http://exa mple.com"
             );
         }
 
         @ParameterizedTest
-        @MethodSource("safeAndUnsafeReturnUrls")
+        @MethodSource("safeReturnUrls")
         void sanitizesReturnUrlQueryParam(String returnUrl, String expected) {
             assertThat(sanitize(returnUrl, null)).isEqualTo(expected);
         }
 
+        @ParameterizedTest
+        @MethodSource("unsafeReturnUrls")
+        void rejectsUnsafeReturnUrlQueryParam(String returnUrl) {
+            assertRejected(returnUrl, null);
+        }
+
+        @Test
+        void whenNoReturnUrlParamAndNoOriginHeader_thenRejected() {
+            assertRejected(null, null);
+        }
+
         @Test
         void whenNoReturnUrlParam_thenFallsBackToOriginHeader_sameOrigin() {
-            assertThat(sanitize(null, EXTERNAL_URL)).isEqualTo("/");
+            assertThat(sanitize(null, EXTERNAL_URL)).isEqualTo(EXTERNAL_URL);
         }
 
         @Test
         void whenNoReturnUrlParam_thenFallsBackToOriginHeader_crossOrigin() {
-            assertThat(sanitize(null, "https://attacker.example")).isEqualTo(WebSecurity.CONTEXT_PATH);
+            assertRejected(null, "https://attacker.example");
         }
 
     }

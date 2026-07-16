@@ -52,6 +52,13 @@ messages:
       reason: "The provided service does not satisfy the conformance criteria and is therefore not valid."
       action: "Verify the conformance criteria."
 
+    - key: org.zowe.apiml.gateway.invalidOidcReturnUrl
+      number: ZWEAG703
+      type: ERROR
+      text: "The OIDC return URL is invalid, malformed, or untrusted."
+      reason: "The requested return URL is absolute but its domain is not present in the allowed domains whitelist, or the URL is relative but malformed."
+      action: "Whitelist the domain in 'apiml.security.allowedDomains' or use a valid relative path."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.authRequired

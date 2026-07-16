@@ -64,6 +64,7 @@ import org.springframework.security.web.server.util.matcher.PathPatternParserSer
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
@@ -83,8 +84,7 @@ import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
@@ -94,6 +94,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
@@ -133,8 +134,11 @@ public class WebSecurity {
     @Value("${apiml.security.enableStrictUrlValidation:true}")
     private boolean isStrictUrlValidationEnabled;
 
-    @Value("${apiml.service.externalUrl:}")
-    private String externalUrl;
+    @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
+    private String allowedDomains;
+
+    private Set<String> allowedDomainsSet;
+    private static final String[] DEFAULT_ALLOWED_DOMAINS = { "www.ibm.com", "zowe.github.io", "www.zowe.org", "techdocs.broadcom.com" };
 
     private final ClientConfiguration clientConfiguration;
 
@@ -148,6 +152,7 @@ public class WebSecurity {
     @PostConstruct
     void initScopes() {
         boolean authorizeAnyUsers = "*".equals(allowedUsers);
+        allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
 
         Set<String> users = Optional.ofNullable(allowedUsers)
             .map(line -> line.split("[,;]"))
@@ -166,6 +171,10 @@ public class WebSecurity {
 
     private ResponseCookie createCookie(String name, String value) {
         return defaultCookieAttr(ResponseCookie.from(name, value)).build();
+    }
+
+    private GatewayExceptionHandler gatewayExceptionHandler() {
+        return applicationContext.getBean("gatewayExceptionHandler", GatewayExceptionHandler.class);
     }
 
     /**
@@ -201,8 +210,7 @@ public class WebSecurity {
                     reactiveOAuth2AuthorizedClientService
                         .orElseThrow(() -> new NoSuchBeanDefinitionException(ReactiveOAuth2AuthorizedClientService.class))
                         .loadAuthorizedClient(getClientRegistrationId(webFilterExchange.getExchange()), authentication.getName())
-                        .map(oAuth2AuthorizedClient -> updateCookies(webFilterExchange, oAuth2AuthorizedClient)
-                        ).flatMap(x -> Mono.empty())
+                        .flatMap(oAuth2AuthorizedClient -> updateCookies(webFilterExchange, oAuth2AuthorizedClient))
                 )
                 .authenticationFailureHandler((webFilterExchange, exception) -> {
                         var clientRegistrationId = getClientRegistrationId(webFilterExchange.getExchange());
@@ -219,153 +227,66 @@ public class WebSecurity {
     }
 
     /**
+     * Sanitize the return URL
      * Validates a relative return URI.
-     * Only root-relative paths are accepted. Protocol-relative URLs,
-     * paths with an authority component, and other ambiguous forms are rejected.
-     *
-     * @param uri the relative URI to validate
-     * @return a safe relative location or {@link #CONTEXT_PATH} if invalid
+     * Only relative paths are accepted, paths with an authority component, and other ambiguous forms are rejected.
+     * @param forwardUrlString the return URL to check
+     * @return the sanitized return URL
      */
-    private String sanitizeRelativeUri(URI uri) {
-        if (uri.getRawAuthority() != null) {
-            return CONTEXT_PATH;
-        }
+    private String getSafeReturnUrl(String forwardUrlString) throws InvalidForwardException {
 
-        String path = uri.getRawPath();
-
-        if (StringUtils.isEmpty(path)
-            || !path.startsWith("/")
-            || path.startsWith("//")) {
-            return CONTEXT_PATH;
-        }
-
-        return toRelativeLocation(uri);
-    }
-
-    /**
-     * Checks whether the supplied absolute URI matches the configured Gateway origin.
-     *
-     * @param candidate the URI provided by the client
-     * @param configuredExternalUri the configured Gateway external URL
-     * @return true if both URIs share the same origin, false otherwise
-     */
-    private boolean isSameOrigin(URI candidate, URI configuredExternalUri) {
-        if (candidate.getScheme() == null
-            || candidate.getHost() == null
-            || configuredExternalUri.getScheme() == null
-            || configuredExternalUri.getHost() == null
-            || candidate.getRawUserInfo() != null) {
-            return false;
-        }
-
-        return candidate.getScheme().equalsIgnoreCase(configuredExternalUri.getScheme())
-            && candidate.getHost().equalsIgnoreCase(configuredExternalUri.getHost())
-            && effectivePort(candidate) == effectivePort(configuredExternalUri);
-    }
-
-    /**
-     * Returns the effective port of the URI.
-     * If the URI does not explicitly specify a port, the default port for
-     * the URI scheme is returned (80 for HTTP, 443 for HTTPS).
-     *
-     * @param uri the URI
-     * @return the effective port
-     */
-    private int effectivePort(URI uri) {
-        if (uri.getPort() >= 0) {
-            return uri.getPort();
-        }
-
-        if ("https".equalsIgnoreCase(uri.getScheme())) {
-            return 443;
-        }
-
-        if ("http".equalsIgnoreCase(uri.getScheme())) {
-            return 80;
-        }
-
-        return -1;
-    }
-
-    /**
-     * Converts an absolute or relative URI into a relative redirect location.
-     * The returned value contains only the path, query, and fragment.
-     *
-     * @param uri the URI to normalize
-     * @return the relative redirect location
-     */
-    private String toRelativeLocation(URI uri) {
-        String path = StringUtils.defaultIfEmpty(uri.getRawPath(), "/");
-
-        StringBuilder location = new StringBuilder(path);
-
-        if (uri.getRawQuery() != null) {
-            location.append('?').append(uri.getRawQuery());
-        }
-
-        if (uri.getRawFragment() != null) {
-            location.append('#').append(uri.getRawFragment());
-        }
-
-        return location.toString();
-    }
-
-    /**
-     * Validates and normalizes a return URL.
-     * Only root-relative paths or absolute URLs matching the configured
-     * Gateway origin are accepted. Any invalid or untrusted value falls back
-     * to {@link #CONTEXT_PATH} to prevent open redirect attacks.
-     *
-     * @param candidate the return URL supplied by the client
-     * @return a safe redirect target
-     */
-    private String sanitizeReturnUrl(String candidate) {
-        if (StringUtils.isBlank(candidate)) {
-            return CONTEXT_PATH;
-        }
-
-        String lowercaseCandidate = candidate.toLowerCase(Locale.ROOT);
-
-        // Backslashes can be interpreted as slashes by some clients.
-        // Also reject encoded backslashes and CR/LF characters, to avoid CRLF Injection.
-        if (candidate.contains("\\")
-            || lowercaseCandidate.contains("%5c")
-            || lowercaseCandidate.contains("%0d")
-            || lowercaseCandidate.contains("%0a")) {
-            return CONTEXT_PATH;
+        if (StringUtils.isBlank(forwardUrlString)
+            || forwardUrlString.contains("\\")) {
+            throw new InvalidForwardException(forwardUrlString);
         }
 
         try {
-            URI candidateUri = new URI(candidate);
+            var forwardUrl = UriComponentsBuilder
+                .fromUriString(forwardUrlString)
+                .build()
+                .toUri();
 
-            if (!candidateUri.isAbsolute()) {
-                return sanitizeRelativeUri(candidateUri);
+            if (forwardUrl.isAbsolute()) {
+                if (forwardUrl.getHost() == null ||
+                    forwardUrl.getRawUserInfo() != null ||
+                     allowedDomainsSet.stream()
+                    .noneMatch(allowed -> StringUtils.equalsIgnoreCase(allowed, forwardUrl.getHost())
+                )) {
+                    throw new InvalidForwardException(forwardUrlString);
+                }
+
+                return forwardUrlString;
             }
 
-            if (StringUtils.isBlank(externalUrl)) {
-                return CONTEXT_PATH;
-            }
-            URI configuredExternalUri = new URI(externalUrl);
+            var path = forwardUrl.getRawPath();
 
-            if (!isSameOrigin(candidateUri, configuredExternalUri)) {
-                return CONTEXT_PATH;
+            if (forwardUrl.getRawAuthority() != null ||
+                StringUtils.isEmpty(path) ||
+                !path.startsWith("/") ||
+                path.startsWith("//")) {
+                throw new InvalidForwardException(forwardUrlString);
             }
 
-            return toRelativeLocation(candidateUri);
-        } catch (URISyntaxException | IllegalArgumentException e) {
-            return CONTEXT_PATH;
+            return forwardUrlString;
+        } catch (IllegalArgumentException e) {
+            throw new InvalidForwardException(forwardUrlString);
         }
     }
 
-    public Mono<Object> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
+    public Mono<Void> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
         ServerWebExchange exchange = webFilterExchange.getExchange();
 
         exchange.getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_AUTH_NAME, oAuth2AuthorizedClient.getAccessToken().getTokenValue())).build());
 
         var location = exchange.getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
 
-        if (!HAS_NO_VALUE.test(location)) {
-            redirect(exchange.getResponse(), sanitizeReturnUrl(location.getValue()));
+        if (!HAS_NO_VALUE.test(location) && location != null) {
+            try {
+                String decodedLocation = URLDecoder.decode(location.getValue(), StandardCharsets.UTF_8);
+                redirect(exchange.getResponse(), getSafeReturnUrl(decodedLocation));
+            } catch (InvalidForwardException e) {
+                return Mono.error(e);
+            }
         }
         clearCookies(webFilterExchange);
         return Mono.empty();
@@ -477,11 +398,11 @@ public class WebSecurity {
     }
 
     public ServerHttpSecurity defaultSecurityConfig(ServerHttpSecurity http) {
-        var gatewayExceptionHandler = applicationContext.getBean("gatewayExceptionHandler", GatewayExceptionHandler.class);
+        var gatewayExceptionHandler = gatewayExceptionHandler();
 
         return http
             .headers(headers -> headers
-                .hsts(hsts -> hsts.disable())
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
                 .writer(new CustomHstsServerHttpHeadersWriter())
                 .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)))
             .x509(x509 -> x509
@@ -616,7 +537,19 @@ public class WebSecurity {
             exchange.getResponse().addCookie(
                 createCookie(COOKIE_NONCE, String.valueOf(authorizationRequest.getAttributes().get(OidcParameterNames.NONCE)))
             );
-            exchange.getResponse().addCookie(createCookie(COOKIE_RETURN_URL, getSafeReturnUrl(exchange)));
+            String targetUrl = null;
+            try {
+                targetUrl = getReturnUrl(exchange);
+                if (targetUrl != null) {
+                    targetUrl = URLDecoder.decode(targetUrl, StandardCharsets.UTF_8);
+                }
+                var safeCookieUrl = getSafeReturnUrl(targetUrl);
+                exchange.getResponse().addCookie(createCookie(COOKIE_RETURN_URL, safeCookieUrl));
+            } catch (InvalidForwardException e) {
+                return Mono.error(e);
+            } catch (IllegalArgumentException e) {
+                return Mono.error(new InvalidForwardException(targetUrl));
+            }
             exchange.getResponse().addCookie(createCookie(COOKIE_STATE, authorizationRequest.getState()));
             return Mono.empty();
         }
@@ -626,15 +559,6 @@ public class WebSecurity {
                 .orElse(exchange.getRequest().getHeaders().getFirst(HttpHeaders.ORIGIN));
         }
 
-        /**
-         * Sanitize the return URL
-         * @param exchange the exchange
-         * @return the sanitized return URL
-         */
-        private String getSafeReturnUrl(ServerWebExchange exchange) {
-            return sanitizeReturnUrl(getReturnUrl(exchange));
-        }
-
         @Override
         public Mono<OAuth2AuthorizationRequest> removeAuthorizationRequest(ServerWebExchange exchange) {
             Mono<OAuth2AuthorizationRequest> requestMono = loadAuthorizationRequest(exchange);
@@ -642,6 +566,18 @@ public class WebSecurity {
             return requestMono;
         }
 
+    }
+
+    /**
+     * InvalidForwardException is thrown from within the Spring Security filter chain (e.g. while saving the
+     * OAuth2 authorization request), which runs before the GatewayExceptionHandler
+     * resolution. This filter is to turn it into an actual response.
+     */
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    WebFilter invalidForwardExceptionHandlingFilter() {
+        return (exchange, chain) -> chain.filter(exchange)
+            .onErrorResume(InvalidForwardException.class, e -> gatewayExceptionHandler().handleInvalidForwardException(exchange, e));
     }
 
     @Bean
@@ -701,10 +637,8 @@ public class WebSecurity {
             "/v3/api-docs"
         };
 
-        private static final String[] BASE_PATHS_MODULITH = ArrayUtils.addAll(BASE_PATH_MICROSERVICES, new String[]{
-            "/apicatalog",
-            "/cachingservice"
-        });
+        private static final String[] BASE_PATHS_MODULITH = ArrayUtils.addAll(BASE_PATH_MICROSERVICES, "/apicatalog",
+            "/cachingservice");
 
         @Value("${server.port}")
         private int gatewayPort;

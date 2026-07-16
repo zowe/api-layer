@@ -33,6 +33,7 @@ import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
 import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.gateway.config.InvalidForwardException;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
 import org.zowe.apiml.gateway.filters.ForbidSlashException;
 import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
@@ -179,6 +180,12 @@ public class GatewayExceptionHandler {
     public Mono<Void> handleZaasInternalErrorException(ServerWebExchange exchange, ZaasInternalErrorException ex) {
         log.debug("The ZAAS instance {} return internal server error for request {}: {}", ex.getInstanceId(), exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.zaas.internalServerError", ex.getInstanceId());
+    }
+
+    @ExceptionHandler(InvalidForwardException.class)
+    public Mono<Void> handleInvalidForwardException(ServerWebExchange exchange, InvalidForwardException ex) {
+        log.debug("Invalid or not allowed return URL on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.invalidOidcReturnUrl");
     }
 
     @ExceptionHandler(ServerWebInputException.class)
