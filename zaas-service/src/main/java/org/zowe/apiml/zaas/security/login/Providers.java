@@ -37,13 +37,6 @@ public class Providers {
     @InjectApimlLogger
     private ApimlLogger apimlLog;
 
-    private ApimlLogger getApimlLog() {
-        if (apimlLog == null) {
-            apimlLog = ApimlLogger.of(Providers.class, YamlMessageServiceInstance.getInstance());
-        }
-        return apimlLog;
-    }
-
     /**
      * This method decides whether the Zosmf service is available.
      *
@@ -59,7 +52,7 @@ public class Providers {
             if (!ids.isEmpty()) {
                 boolean isZosmfRegisteredAndPropagated = !this.discoveryClient.getInstances(zosmfServiceId).isEmpty();
                 if (!isZosmfRegisteredAndPropagated) {
-                    getApimlLog().log("org.zowe.apiml.security.auth.zosmf.serviceId", zosmfServiceId);
+                    apimlLog.log("org.zowe.apiml.security.auth.zosmf.serviceId", zosmfServiceId);
                 }
                 log.debug("z/OSMF registered with the Discovery Service and propagated to ZAAS: {}", isZosmfRegisteredAndPropagated);
                 return isZosmfRegisteredAndPropagated;

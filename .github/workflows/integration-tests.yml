@@ -1515,17 +1515,10 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: ./.github/actions/download-keystores
-                with:
-                    job-id: ${{ env.JOB_ID }}
-
-            -   uses: ./.github/actions/download-keystores
-                with:
-                    job-id: ${{ env.JOB_ID }}
-
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
@@ -1607,17 +1600,10 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: ./.github/actions/download-keystores
-                with:
-                    job-id: ${{ env.JOB_ID }}
-
-            -   uses: ./.github/actions/download-keystores
-                with:
-                    job-id: ${{ env.JOB_ID }}
-
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
