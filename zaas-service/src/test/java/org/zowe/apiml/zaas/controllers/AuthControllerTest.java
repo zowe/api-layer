@@ -35,6 +35,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
@@ -113,6 +114,11 @@ class AuthControllerTest {
         mockMvc.perform(delete(INVALIDATE)
             .header(AUTHORIZATION, BEARER + "abcde"))
             .andExpect(status().is(SC_OK));
+
+        when(authenticationService.invalidateJwtToken("fghij", false)).thenThrow(new TokenNotValidException("invalid"));
+        mockMvc.perform(delete(INVALIDATE)
+            .header(AUTHORIZATION, BEARER + "fghij"))
+            .andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(delete(INVALIDATE)
             .header("authorization", BEARER + "xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
