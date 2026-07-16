@@ -96,7 +96,7 @@ public class AuthController {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
-        final var jwtToken = authHeader.substring(7);
+        final String jwtToken = authHeader.substring(7);
         try {
             final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
             response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
