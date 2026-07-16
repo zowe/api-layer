@@ -407,12 +407,62 @@ cp all-services.crt all-services.cer
 cat all-services.key > all-services.pem
 cat all-services.crt >> all-services.pem
 
-# server-only.p12 — same as all-services.keystore.p12 (used by mock-services local config)
-cp all-services.keystore.p12 server-only.p12
+# server-only.p12 — created after client-cert.p12 (see below)
 
 # client-cert.p12 — used by integration tests as the server keystore
-# Must contain localhost PrivateKeyEntry + CA trustedCertEntry (same as all-services.keystore.p12)
-cp all-services.keystore.p12 client-cert.p12
+# Must contain a PrivateKeyEntry with the original subject DN matching test assertions
+echo ""
+echo "--- Generating client-cert keystore ---"
+CLIENT_CERT_CN="zowe component"
+CLIENT_CERT_O="OMP"
+
+# Generate key and CSR
+openssl genrsa -out client-cert.key 2048
+cat > client-cert-san.cnf <<EOC
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+C = CZ
+ST = Czechia
+L = Prague
+O = ${CLIENT_CERT_O}
+CN = ${CLIENT_CERT_CN}
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+DNS.2 = 127.0.0.1
+EOC
+
+openssl req -new -key client-cert.key -out client-cert.csr \
+    -config client-cert-san.cnf
+
+# Sign with local CA
+openssl x509 -req -in client-cert.csr \
+    -CA local_ca.pem -CAkey local_ca.key -CAcreateserial \
+    -days 3650 -out client-cert.crt \
+    -extfile client-cert-san.cnf -extensions v3_req
+
+# Create PKCS12 keystore
+openssl pkcs12 -export -out client-cert.p12 \
+    -in client-cert.crt -inkey client-cert.key \
+    -name localhost -macalg SHA256 -passout "pass:$PASSWORD"
+
+# Import CA certificate as trusted cert entry
+keytool -importcert -keystore client-cert.p12 \
+    -alias "zowe development instances certificate authority" \
+    -file local_ca.pem -noprompt -storepass "$PASSWORD" -storetype pkcs12
+
+# server-only.p12 — same as client-cert.p12 (used by mock-services)
+cp client-cert.p12 server-only.p12
+
+# Clean up
+rm -f client-cert.key client-cert.csr client-cert.crt client-cert-san.cnf
 
 # Clean up
 rm -f all-services.key all-services.csr all-services.crt all-services-chain.crt local_ca.key local_ca.pem "$san_config"
