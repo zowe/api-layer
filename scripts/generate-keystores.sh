@@ -437,6 +437,17 @@ subjectAltName = @alt_names
 [alt_names]
 DNS.1 = localhost
 DNS.2 = 127.0.0.1
+DNS.3 = apiml
+DNS.4 = discovery-service
+DNS.5 = discovery-service-2
+DNS.6 = gateway-service
+DNS.7 = gateway-service-2
+DNS.8 = zaas-service
+DNS.9 = zaas-service-2
+DNS.10 = api-catalog-services
+DNS.11 = caching-service
+DNS.12 = mock-services
+DNS.13 = discoverable-client
 EOC
 
 openssl req -new -key client-cert.key -out client-cert.csr \
