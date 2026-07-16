@@ -13,7 +13,6 @@ package org.zowe.apiml.zaas.security.service.schema.source;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.zaas.security.service.schema.source.X509AuthSource.Parsed;
@@ -44,7 +43,6 @@ public class X509AuthSourceService implements AuthSourceService {
     @Qualifier("x509Mapper")
     private final AuthenticationMapper mapper;
     private final TokenCreationService tokenService;
-    private final AuthenticationService authenticationService;
 
     /**
      * Gets client certificate from request.
@@ -101,12 +99,6 @@ public class X509AuthSourceService implements AuthSourceService {
             return isValid(authSource) ? parseClientCert((X509AuthSource) authSource, mapper) : null;
         }
         return null;
-    }
-
-    @Override
-    public String getLtpaToken(AuthSource authSource) {
-        String jwt = getJWT(authSource);
-        return jwt != null ? authenticationService.getLtpaToken(jwt) : null;
     }
 
     // Gets client certificate from request
