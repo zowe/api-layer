@@ -26,6 +26,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
 import reactor.core.publisher.Mono;
+import reactor.netty.ChannelBindException;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.client.HttpClientResponse;
 
@@ -39,8 +40,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
@@ -132,7 +133,8 @@ class WebClientConfigTest {
 
             var connectionAttempt = assertThrows(Exception.class, () -> connect(httpClient).block(Duration.ofSeconds(5)));
 
-            assertInstanceOf(BindException.class, ExceptionUtils.getRootCause(connectionAttempt));
+            var rootCause = ExceptionUtils.getRootCause(connectionAttempt);
+            assertTrue(rootCause instanceof BindException || rootCause instanceof ChannelBindException);
         }
     }
 
