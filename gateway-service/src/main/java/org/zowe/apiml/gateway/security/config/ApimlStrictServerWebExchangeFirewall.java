@@ -26,7 +26,7 @@ public class ApimlStrictServerWebExchangeFirewall extends StrictHttpFirewall {
         "/api-doc"
     };
 
-        private StrictHttpFirewall nonRoutingFirewall = new StrictHttpFirewall();
+    private StrictHttpFirewall nonRoutingFirewall = new StrictHttpFirewall();
 
     boolean isPathToRoute(String path, String[] prefixes) {
         // homepage

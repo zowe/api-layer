@@ -120,6 +120,9 @@ public class NewSecurityConfiguration {
     @Value("${apiml.health.protected:false}")
     private boolean isHealthEndpointProtected;
 
+    @Value("${apiml.security.enableStrictUrlValidation:true}")
+    private boolean isStrictUrlValidationEnabled;
+
     /**
      * Login and Logout endpoints
      * <p>
@@ -598,12 +601,7 @@ public class NewSecurityConfiguration {
             // Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
             @Bean
             public WebSecurityCustomizer webSecurityCustomizer() {
-                StrictHttpFirewall firewall = new ApimlStrictServerWebExchangeFirewall();
-                firewall.setAllowUrlEncodedSlash(true);
-                firewall.setAllowBackSlash(true);
-                firewall.setAllowUrlEncodedPercent(true);
-                firewall.setAllowUrlEncodedPeriod(true);
-                firewall.setAllowSemicolon(true);
+                final StrictHttpFirewall firewall = buildHttpFirewall();
 
                 return web -> {
                     web.httpFirewall(firewall);
@@ -622,6 +620,26 @@ public class NewSecurityConfiguration {
                         web.ignoring().antMatchers("/application/health");
                     }
                 };
+            }
+
+            /**
+             * Strict URL validation is enabled by default. Setting
+             * apiml.security.enableStrictUrlValidation=false reverts to the original, relaxed
+             * behavior where routed requests allow encoded slashes, backslashes, percent, period
+             * and semicolon characters.
+             */
+            private StrictHttpFirewall buildHttpFirewall() {
+                if (isStrictUrlValidationEnabled) {
+                    return new StrictHttpFirewall();
+                }
+
+                ApimlStrictServerWebExchangeFirewall firewall = new ApimlStrictServerWebExchangeFirewall();
+                firewall.setAllowUrlEncodedSlash(true);
+                firewall.setAllowBackSlash(true);
+                firewall.setAllowUrlEncodedPercent(true);
+                firewall.setAllowUrlEncodedPeriod(true);
+                firewall.setAllowSemicolon(true);
+                return firewall;
             }
         }
 

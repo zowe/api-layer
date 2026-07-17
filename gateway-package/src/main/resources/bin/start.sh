@@ -54,6 +54,7 @@
 # - ZWE_configs_apiml_security_authorization_provider
 # - ZWE_configs_apiml_security_authorization_resourceClass
 # - ZWE_configs_apiml_security_authorization_resourceNamePrefix
+# - ZWE_configs_apiml_security_enableStrictUrlValidation
 # - ZWE_configs_apiml_security_jwtInitializerTimeout
 # - ZWE_configs_apiml_security_useInternalMapper
 # - ZWE_configs_apiml_security_x509_enabled
@@ -376,6 +377,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-} \
     -Dapiml.security.authorization.resourceClass=${ZWE_configs_apiml_security_authorization_resourceClass:-ZOWE} \
     -Dapiml.security.authorization.resourceNamePrefix=${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-APIML.} \
+    -Dapiml.security.enableStrictUrlValidation=${ZWE_configs_apiml_security_enableStrictUrlValidation:-true} \
     -Dapiml.security.forwardHeader.trustedProxies=${ZWE_configs_apiml_security_forwardHeader_trustedProxies:-${ZWE_components_cloudGateway_apiml_security_forwardHeader_trustedProxies:-}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-5} \
     -Dapiml.security.oidc.clientId=${ZWE_configs_apiml_security_oidc_clientId:-} \
