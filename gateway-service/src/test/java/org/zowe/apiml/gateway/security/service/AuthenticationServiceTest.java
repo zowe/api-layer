@@ -456,6 +456,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 HttpMethod.DELETE,
                 requestEntity,
                 Void.class)).thenReturn(responseEntity);
+
             Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             assertTrue(authService.invalidateJwtToken(token, true));
