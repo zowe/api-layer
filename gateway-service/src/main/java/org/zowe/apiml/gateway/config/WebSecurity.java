@@ -235,14 +235,19 @@ public class WebSecurity {
      */
     private String getSafeReturnUrl(String forwardUrlString) throws InvalidForwardException {
 
-        if (StringUtils.isBlank(forwardUrlString)
-            || forwardUrlString.contains("\\")) {
+        if (StringUtils.isBlank(forwardUrlString)) {
             throw new InvalidForwardException(forwardUrlString);
+        }
+
+        var decodedUrl = URLDecoder.decode(forwardUrlString, StandardCharsets.UTF_8);
+
+        if (decodedUrl.contains("\\")) {
+            throw new InvalidForwardException(decodedUrl);
         }
 
         try {
             var forwardUrl = UriComponentsBuilder
-                .fromUriString(forwardUrlString)
+                .fromUriString(decodedUrl)
                 .build()
                 .toUri();
 
@@ -251,7 +256,7 @@ public class WebSecurity {
                      allowedDomainsSet.stream()
                     .noneMatch(allowed -> StringUtils.equalsIgnoreCase(allowed, forwardUrl.getHost())
                 )) {
-                    throw new InvalidForwardException(forwardUrlString);
+                    throw new InvalidForwardException(decodedUrl);
                 }
             } else {
                 var path = forwardUrl.getRawPath();
@@ -260,13 +265,13 @@ public class WebSecurity {
                     StringUtils.isBlank(path) ||
                     !path.startsWith("/") ||
                     path.startsWith("//")) {
-                    throw new InvalidForwardException(forwardUrlString);
+                    throw new InvalidForwardException(decodedUrl);
                 }
             }
 
-            return forwardUrlString;
+            return decodedUrl;
         } catch (IllegalArgumentException e) {
-            throw new InvalidForwardException(forwardUrlString, e);
+            throw new InvalidForwardException(decodedUrl, e);
         }
     }
 
@@ -279,8 +284,7 @@ public class WebSecurity {
 
         if (!HAS_NO_VALUE.test(location) && location != null) {
             try {
-                String decodedLocation = URLDecoder.decode(location.getValue(), StandardCharsets.UTF_8);
-                redirect(exchange.getResponse(), getSafeReturnUrl(decodedLocation));
+                redirect(exchange.getResponse(), getSafeReturnUrl(location.getValue()));
             } catch (InvalidForwardException e) {
                 return Mono.error(e);
             }
@@ -537,9 +541,6 @@ public class WebSecurity {
             String targetUrl = null;
             try {
                 targetUrl = getReturnUrl(exchange);
-                if (targetUrl != null) {
-                    targetUrl = URLDecoder.decode(targetUrl, StandardCharsets.UTF_8);
-                }
                 var safeCookieUrl = getSafeReturnUrl(targetUrl);
                 exchange.getResponse().addCookie(createCookie(COOKIE_RETURN_URL, safeCookieUrl));
             } catch (InvalidForwardException e) {
