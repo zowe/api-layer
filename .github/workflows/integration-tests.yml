@@ -2980,5 +2980,6 @@ jobs:
                         build/reports/problems/problems-report.html
                         results/**
                         apiml/build/reports/tests/**
+                        apiml-security-common/build/reports/tests/**
 
             -   uses: ./.github/actions/teardown
