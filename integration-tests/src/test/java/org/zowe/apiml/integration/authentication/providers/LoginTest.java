@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.integration.authentication.providers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.restassured.RestAssured;
 import io.restassured.config.RestAssuredConfig;
@@ -48,24 +49,15 @@ import java.util.stream.Stream;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static io.restassured.http.ContentType.TEXT;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
-import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
-import static org.apache.http.HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.zowe.apiml.integration.zaas.ZaasTestUtil.isTestForICSF;
-import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
-import static org.zowe.apiml.util.SecurityUtils.assertThatTokenIsValid;
-import static org.zowe.apiml.util.SecurityUtils.assertValidAuthToken;
-import static org.zowe.apiml.util.SecurityUtils.parseJwtStringUnsecure;
+import static org.zowe.apiml.util.SecurityUtils.*;
 import static org.zowe.apiml.util.requests.Endpoints.JWK_CURRENT;
 import static org.zowe.apiml.util.requests.Endpoints.ROUTED_LOGIN;
 
@@ -348,7 +340,7 @@ class LoginTest implements TestWithStartedInstances {
                 .post(loginUrl);
 
             response.then()
-            .statusCode(is(rc.value()));
+                .statusCode(is(rc.value()));
 
             if (loggedUser != null) {
                 Cookie cookie = response.detailedCookie(COOKIE_NAME);
@@ -359,12 +351,12 @@ class LoginTest implements TestWithStartedInstances {
 
         @ParameterizedTest(name = "givenTextContentTypeWithBody {index} {0} ")
         @MethodSource("org.zowe.apiml.integration.authentication.providers.LoginTest#loginUrlsSource")
-        void givenTextContentTypeWithBody_thenUnsupportedMediaType(URI loginUrl) {
+        void givenTextContentTypeWithBody_thenUnsupportedMediaType(URI loginUrl) throws Exception {
             LoginRequest loginRequest = new LoginRequest(getUsername(), getPassword().toCharArray());
-
+            ObjectMapper mapper = new ObjectMapper();
             given()
                 .contentType(TEXT)
-                .body(loginRequest)
+                .body(mapper.writeValueAsString(loginRequest))
             .when()
                 .post(loginUrl)
             .then()
