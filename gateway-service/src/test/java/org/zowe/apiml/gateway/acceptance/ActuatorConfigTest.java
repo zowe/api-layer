@@ -12,6 +12,8 @@ package org.zowe.apiml.gateway.acceptance;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.NestedTestConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -24,7 +26,13 @@ import static org.apache.hc.core5.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
 @MicroservicesAcceptanceTest
-@TestPropertySource(properties = "spring.config.additional-location=file:gateway-service/src/main/resources/application.yml")
+@TestPropertySource(
+    properties = {
+        "spring.config.additional-location=file:../gateway-service/src/main/resources/application.yml",
+        "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
+        "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12"
+    }
+)
 @NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
 class ActuatorConfigTest {
 
@@ -52,17 +60,30 @@ class ActuatorConfigTest {
     @ActiveProfiles("debug")
     class GivenDebugProfile extends AcceptanceTestWithBasePath {
 
-        @Test
-        void whenAccessDangerousActuatorWithCredentials_thenBlockModify() {
+        @ParameterizedTest
+        @CsvSource({
+            "/application/loggers",
+            "/application/gateway"
+        })
+        void whenAccessDangerousActuatorWithCredentials_thenBlockModify(String endpoint) {
             given()
             .when()
-                .get(basePath + "/application/loggers")
+                .post(basePath + endpoint)
             .then()
                 .statusCode(SC_OK);
+        }
 
+        @ParameterizedTest
+        @CsvSource({
+            "/application/loggers",
+            "/application/gateway"
+        })
+        void whenAccessDangerousActuator_thenAllowRead(String endpoint) {
             given()
             .when()
-            .then();
+                .get(basePath + endpoint)
+            .then()
+                .statusCode(SC_OK);
         }
 
     }
@@ -72,19 +93,45 @@ class ActuatorConfigTest {
     class GivenDebugControlProfile extends AcceptanceTestWithBasePath {
 
         @Test
-        void whenAccessDangerousActuatorWithCredentials_thenAllowModify() {
+        void whenAccessDangerousActuatorWithCredentialsWithPermission_thenAllowModify() {
             given()
             .when()
             .then();
         }
 
         @Test
-        void whenAccessDangerousActuatorWithoutCredentials_thenBlock() {
+        void whenAccessDangerousActuatorWithCredentialsWithoutPermission_thenBlock() {
+            // update a logger level
+            given()
+            .when()
+            .then();
+
+            // update routes
             given()
             .when()
             .then();
         }
 
+        @ParameterizedTest
+        @CsvSource({
+            "/application/loggers",
+            "/application/gateway"
+        })
+        void whenAccessDangerousActuatorWithoutCredentials_thenBlock() {
+            given()
+            .when()
+
+            .then();
+        }
+
+        void whenAccessDangerousActuator_thenAllowRead() {
+
+        }
+
+    }
+
+    private String login() {
+        return null;
     }
 
 }
