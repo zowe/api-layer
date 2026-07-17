@@ -56,8 +56,8 @@ messages:
       number: ZWEAG703
       type: ERROR
       text: "The OIDC return URL is invalid, malformed, or untrusted."
-      reason: "The requested return URL is absolute but its domain is not present in the allowed domains whitelist, or the URL is relative but malformed."
-      action: "Whitelist the domain in 'apiml.security.allowedDomains' or use a valid relative path."
+      reason: "The requested return URL is absolute but its domain is not present in the allowed domains allowedlist, or the URL is relative but malformed."
+      action: "Add the domain to 'apiml.security.allowedDomains' or use a valid relative path."
 
     # Legacy messages
 

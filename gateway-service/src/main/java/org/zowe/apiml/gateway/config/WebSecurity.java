@@ -96,6 +96,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
@@ -138,7 +139,6 @@ public class WebSecurity {
     private String allowedDomains;
 
     private Set<String> allowedDomainsSet;
-    private static final String[] DEFAULT_ALLOWED_DOMAINS = { "www.ibm.com", "zowe.github.io", "www.zowe.org", "techdocs.broadcom.com" };
 
     private final ClientConfiguration clientConfiguration;
 
@@ -258,7 +258,7 @@ public class WebSecurity {
                 var path = forwardUrl.getRawPath();
 
                 if (forwardUrl.getRawAuthority() != null ||
-                    StringUtils.isEmpty(path) ||
+                    StringUtils.isBlank(path) ||
                     !path.startsWith("/") ||
                     path.startsWith("//")) {
                     throw new InvalidForwardException(forwardUrlString);
@@ -267,7 +267,7 @@ public class WebSecurity {
 
             return forwardUrlString;
         } catch (IllegalArgumentException e) {
-            throw new InvalidForwardException(forwardUrlString);
+            throw new InvalidForwardException(forwardUrlString, e);
         }
     }
 
@@ -546,7 +546,7 @@ public class WebSecurity {
             } catch (InvalidForwardException e) {
                 return Mono.error(e);
             } catch (IllegalArgumentException e) {
-                return Mono.error(new InvalidForwardException(targetUrl));
+                return Mono.error(new InvalidForwardException(targetUrl, e));
             }
             exchange.getResponse().addCookie(createCookie(COOKIE_STATE, authorizationRequest.getState()));
             return Mono.empty();
