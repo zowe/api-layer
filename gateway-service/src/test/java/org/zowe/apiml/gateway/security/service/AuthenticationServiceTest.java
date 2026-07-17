@@ -452,7 +452,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             headers.set("Authorization", "Bearer " + token);
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
             ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
-            when(restTemplate.exchange("http://localhost:0/zaas/api/v1/auth/invalidate",
+            when(restTemplate.exchange("http://localhost:0/gateway/auth/invalidate",
                 HttpMethod.DELETE,
                 requestEntity,
                 Void.class)).thenReturn(responseEntity);
