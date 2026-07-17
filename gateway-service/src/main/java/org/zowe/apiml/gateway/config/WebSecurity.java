@@ -248,7 +248,6 @@ public class WebSecurity {
 
             if (forwardUrl.isAbsolute()) {
                 if (forwardUrl.getHost() == null ||
-                    forwardUrl.getRawUserInfo() != null ||
                      allowedDomainsSet.stream()
                     .noneMatch(allowed -> StringUtils.equalsIgnoreCase(allowed, forwardUrl.getHost())
                 )) {

@@ -567,6 +567,7 @@ class WebSecurityTest {
                 // plain relative paths are passed through untouched
                 Arguments.of("/gateway/foo", "/gateway/foo"),
                 Arguments.of("/gateway/foo?bar=1#frag", "/gateway/foo?bar=1#frag"),
+                Arguments.of("https://user@gateway.zowe.example:10010/x", "https://user@gateway.zowe.example:10010/x"),
                 // absolute URLs whose host is allow-listed are accepted unchanged
                 Arguments.of(EXTERNAL_URL + "/gateway/foo?x=1#frag", EXTERNAL_URL + "/gateway/foo?x=1#frag"),
                 Arguments.of(EXTERNAL_URL, EXTERNAL_URL),
@@ -584,7 +585,7 @@ class WebSecurityTest {
                 "/foo%5Cattacker.example",
                 "/foo%0D%0ASet-Cookie:evil=1",
                 "https://attacker.example/x",
-                "https://user@gateway.zowe.example:10010/x",
+                "https://user@attacker.example:10010/x",
                 "mailto:foo@bar.com",
                 "http://exa mple.com"
             );
