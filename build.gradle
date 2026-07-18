@@ -158,6 +158,18 @@ def generateKeystores = tasks.register('generateKeystores', Exec) {
     }
 }
 
+tasks.register('copyTestKeystores', Copy) {
+    group = 'build'
+    description = 'Copy generated keystores to test resource locations (runs independently of generateKeystores skip guard)'
+    dependsOn generateKeystores
+
+    // zaas-client expects certs next to its test properties
+    from('keystore/localhost') {
+        include 'localhost.keystore.p12', 'localhost.truststore.p12'
+        into 'zaas-client/src/test/resources'
+    }
+}
+
 tasks.register('cleanKeystores', Delete) {
     group = 'build'
     description = 'Delete generated keystore files'
@@ -168,6 +180,13 @@ tasks.register('cleanKeystores', Delete) {
     delete 'zaas-client/src/test/resources/localhost.truststore.p12'
 }
 tasks.named('clean') { dependsOn 'cleanKeystores' }
+
+// Ensure zaas-client test resources have keystores (runs even if generateKeystores skips)
+project(':zaas-client') {
+    tasks.named('processTestResources') {
+        dependsOn 'copyTestKeystores'
+    }
+}
 
 configure(subprojects.findAll { it.name in [
     'apiml-common-lib-package',

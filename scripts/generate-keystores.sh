@@ -613,6 +613,10 @@ openssl pkcs12 -in "$KEYSTORE_DIR/localhost/localhost.keystore.p12" \
     | base64 -w0 > "$REPO_ROOT/common-service-core/src/test/resources/jwt-public-key.pub"
 
 # ── Done ───────────────────────────────────────────────────────────────────
+# Fix permissions: OpenSSL creates .key files with 0600 which Docker containers
+# (like the OpenTelemetry collector used in the Register job) cannot read
+find "$KEYSTORE_DIR" -type f -name '*.key' -exec chmod 644 {} +
+
 echo ""
 echo "=== Keystore generation complete ==="
 echo "All keystores generated under: $KEYSTORE_DIR"
