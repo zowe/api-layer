@@ -53,6 +53,17 @@ fi
 echo "Using keytool: $KEYTOOL ($(keytool -version 2>&1 || true))"
 echo "Using openssl: $(openssl version)"
 
+# Find Java cacerts for importing public CA certificates
+JAVA_CACERTS="${JAVA_HOME:+$JAVA_HOME/lib/security/cacerts}"
+if [ ! -f "$JAVA_CACERTS" ]; then
+    JAVA_CACERTS=$(find / -name "cacerts" -path "*/security/*" -not -path "/mnt/*" 2>/dev/null | head -1)
+fi
+if [ -n "$JAVA_CACERTS" ]; then
+    echo "Found Java cacerts: $JAVA_CACERTS"
+else
+    echo "WARNING: Could not find Java cacerts truststore. External TLS connections may fail."
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 KEYSTORE_DIR="$REPO_ROOT/keystore"
@@ -259,6 +270,23 @@ generate_localhost_keystore \
 # Trusted CAs chain for NGINX proxy
 cat ../local_ca/localca.cer > trusted_CAs.cer
 
+# Import public CA certificates into all truststores
+# This is needed for outbound TLS connections to external services (e.g. OIDC providers)
+import_cacerts() {
+    local truststore="$1"
+    if [ -n "$JAVA_CACERTS" ] && [ -f "$JAVA_CACERTS" ]; then
+        keytool -importkeystore \
+            -srckeystore "$JAVA_CACERTS" -srcstoretype JKS -srcstorepass changeit \
+            -destkeystore "$truststore" -deststoretype PKCS12 -deststorepass "$PASSWORD" \
+            -noprompt 2>/dev/null || true
+    fi
+}
+for ts in localhost.truststore.p12 localhost2.truststore.p12 localhost-multi.truststore.p12; do
+    if [ -f "$ts" ]; then
+        import_cacerts "$ts"
+    fi
+done
+
 # ── 3. Self-signed keystores ───────────────────────────────────────────────
 echo ""
 echo "=== Generating self-signed keystores ==="
@@ -402,10 +430,6 @@ keytool -import -alias "zowe development instances certificate authority" \
 
 # Import public CA certificates from the JDK's cacerts truststore
 # This is needed for outbound TLS connections to external services (e.g. OIDC providers)
-JAVA_CACERTS="${JAVA_HOME:+$JAVA_HOME/lib/security/cacerts}"
-if [ ! -f "$JAVA_CACERTS" ]; then
-    JAVA_CACERTS=$(find / -name "cacerts" -path "*/security/*" 2>/dev/null | head -1)
-fi
 if [ -n "$JAVA_CACERTS" ] && [ -f "$JAVA_CACERTS" ]; then
     echo "Importing public CA certificates from $JAVA_CACERTS"
     keytool -importkeystore \

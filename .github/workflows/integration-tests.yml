@@ -3050,18 +3050,11 @@ jobs:
         timeout-minutes: 20
 
         steps:
-            -   uses: ./.github/actions/download-keystores
-                with:
-                    job-id: ${{ env.JOB_ID }}
-
-            -   uses: ./.github/actions/download-keystores
-                with:
-                    job-id: ${{ env.JOB_ID }}
-
             -   uses: actions/checkout@v4
                 with:
                     fetch-depth: 0
                     ref: ${{ github.head_ref }}
+
             -   uses: ./.github/actions/download-keystores
                 with:
                     job-id: ${{ env.JOB_ID }}
