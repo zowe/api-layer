@@ -400,6 +400,22 @@ keytool -import -alias "zowe development instances certificate authority" \
     -file local_ca.pem -keystore all-services.truststore.p12 \
     -storetype pkcs12 -storepass "$PASSWORD" -noprompt
 
+# Import public CA certificates from the JDK's cacerts truststore
+# This is needed for outbound TLS connections to external services (e.g. OIDC providers)
+JAVA_CACERTS="${JAVA_HOME:+$JAVA_HOME/lib/security/cacerts}"
+if [ ! -f "$JAVA_CACERTS" ]; then
+    JAVA_CACERTS=$(find / -name "cacerts" -path "*/security/*" 2>/dev/null | head -1)
+fi
+if [ -n "$JAVA_CACERTS" ] && [ -f "$JAVA_CACERTS" ]; then
+    echo "Importing public CA certificates from $JAVA_CACERTS"
+    keytool -importkeystore \
+        -srckeystore "$JAVA_CACERTS" -srcstoretype JKS -srcstorepass changeit \
+        -destkeystore all-services.truststore.p12 -deststoretype PKCS12 -deststorepass "$PASSWORD" \
+        -noprompt
+else
+    echo "WARNING: Could not find Java cacerts truststore. External TLS connections may fail."
+fi
+
 # Convenience exports
 cp all-services.crt all-services.keystore.cer
 cp all-services.key all-services.keystore.key
