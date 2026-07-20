@@ -145,6 +145,10 @@ configure(subprojects.findAll { it.name in [
 configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
 
+    tasks.withType(JavaCompile).configureEach {
+        dependsOn generateKeystores
+    }
+
     java {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -357,6 +361,87 @@ task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
 }
 
 clean.dependsOn nodejsClean
+
+def generateKeystores = tasks.register('generateKeystores', Exec) {
+    group = 'build'
+    description = 'Generate TLS keystores for local development and testing'
+    workingDir = rootProject.projectDir
+    if (System.getProperty('os.name').toLowerCase().contains('win')) {
+        commandLine 'cmd', '/c', 'bash scripts/generate-keystores.sh'
+    } else {
+        commandLine 'bash', 'scripts/generate-keystores.sh'
+    }
+    onlyIf {
+        if (project.hasProperty('skipKeystoreGeneration')) {
+            logger.lifecycle('Keystore generation skipped: skipKeystoreGeneration property is set')
+            return false
+        }
+        def keystoreDir = file('keystore')
+        if (keystoreDir.exists() && !fileTree(keystoreDir).matching { include '**/*.p12' }.empty) {
+            logger.lifecycle('Keystore generation skipped: keystores already exist in {}', keystoreDir)
+            return false
+        }
+        try {
+            def proc = 'openssl version'.execute()
+            proc.waitFor()
+            if (proc.exitValue() != 0) {
+                logger.lifecycle('Keystore generation skipped: openssl not available')
+                return false
+            }
+        } catch (IOException e) {
+            logger.lifecycle('Keystore generation skipped: openssl not available')
+            return false
+        }
+        true
+    }
+}
+
+// Copy generated keystores to zaas-client test resources
+// Runs when keystore/ is populated (generation OR artifact download)
+tasks.register('copyTestKeystores', Copy) {
+    group = 'build'
+    description = 'Copy generated keystores to zaas-client test resources'
+    from('keystore/localhost') {
+        include 'localhost.keystore.p12', 'localhost.truststore.p12'
+    }
+    into layout.projectDirectory.dir('zaas-client/src/test/resources')
+    onlyIf {
+        file('keystore/localhost/localhost.keystore.p12').exists()
+    }
+}
+
+// Extract JWT public key from localhost keystore for common-service-core tests
+tasks.register('extractJwtPublicKey') {
+    group = 'build'
+    description = 'Extract JWT public key for common-service-core tests'
+    doLast {
+        def outFile = file('common-service-core/src/test/resources/jwt-public-key.pub')
+        exec {
+            commandLine 'bash', '-c', """
+                openssl pkcs12 -in keystore/localhost/localhost.keystore.p12 \\
+                    -passin pass:password -nokeys 2>/dev/null \\
+                    | openssl x509 -pubkey -noout 2>/dev/null \\
+                    | openssl pkey -pubin -outform DER 2>/dev/null \\
+                    | base64 -w0 > "${outFile.absolutePath}"
+            """
+        }
+    }
+    onlyIf {
+        file('keystore/localhost/localhost.keystore.p12').exists()
+    }
+}
+
+// Wire tasks into subproject build lifecycle
+project(':zaas-client') {
+    tasks.named('processTestResources') {
+        dependsOn rootProject.tasks.named('copyTestKeystores')
+    }
+}
+project(':common-service-core') {
+    tasks.named('processTestResources') {
+        dependsOn rootProject.tasks.named('extractJwtPublicKey')
+    }
+}
 
 publishAllVersions.dependsOn publishZoweServerArtifacts
 
