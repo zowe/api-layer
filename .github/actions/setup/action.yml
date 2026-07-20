@@ -18,8 +18,8 @@ runs:
         -   name: Set up Node
             uses: actions/setup-node@v4
             with:
-                node-version: '24.16.0'
-        -   run: npm install -g npm@10.9.8
+                node-version: '24.16.0'    # keep in sync with gradle/versions.gradle projectNode
+        -   run: npm install -g npm@10.9.8   # keep in sync with gradle/versions.gradle projectNpm
             shell: bash
         -   name: Install OpenSSL for keystore generation (best-effort)
             run: |
