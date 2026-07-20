@@ -246,29 +246,24 @@ public class WebSecurity {
         }
 
         try {
-            var forwardUrl = UriComponentsBuilder
-                .fromUriString(decodedUrl)
-                .build()
+            var uriBuilder =
+                UriComponentsBuilder.fromUriString(decodedUrl)
+                .build();
+            var forwardUrl = uriBuilder
                 .toUri();
 
-            if (forwardUrl.isAbsolute()) {
-                if (forwardUrl.getHost() == null ||
-                     allowedDomainsSet.stream()
+            if (forwardUrl.getScheme() != null || forwardUrl.getHost() != null) {
+                if (allowedDomainsSet.stream()
                     .noneMatch(allowed -> StringUtils.equalsIgnoreCase(allowed, forwardUrl.getHost())
-                )) {
+                    )) {
                     throw new InvalidForwardException(decodedUrl);
                 }
             } else {
-                var path = forwardUrl.getRawPath();
-
-                if (forwardUrl.getRawAuthority() != null ||
-                    !path.startsWith("/") ||
-                    path.startsWith("//")) {
+                if (decodedUrl.contains("//")) {
                     throw new InvalidForwardException(decodedUrl);
                 }
             }
-
-            return decodedUrl;
+            return uriBuilder.toUriString();
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new InvalidForwardException(decodedUrl, e);
         }

@@ -571,7 +571,8 @@ class WebSecurityTest {
                 // absolute URLs whose host is allow-listed are accepted unchanged
                 Arguments.of(EXTERNAL_URL + "/gateway/foo?x=1#frag", EXTERNAL_URL + "/gateway/foo?x=1#frag"),
                 Arguments.of(EXTERNAL_URL, EXTERNAL_URL),
-                Arguments.of("HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo", "HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo"),
+                Arguments.of("//gateway.zowe.example", "//gateway.zowe.example"),
+                Arguments.of("HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo", "https://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo"),
                 Arguments.of("http://gateway.zowe.example:10010/x", "http://gateway.zowe.example:10010/x"),
                 Arguments.of("https://www.ibm.com/docs", "https://www.ibm.com/docs"),
                 Arguments.of("/gateway/foo%2Bmore?bar=%2f1#frag", "/gateway/foo+more?bar=/1#frag"),
@@ -590,13 +591,11 @@ class WebSecurityTest {
                 "https://attacker.example/x",
                 "https://user@attacker.example:10010/x",
                 "mailto:foo@bar.com",
-                "//gateway.zowe.example",
                 "http://exa mple.com",
                 "%2f%2fatacker/unknow",
                 "https://user:password@attacker.example:10010/x",
                 "//user:password@attacker.example:10010/x",
                 "https://",
-                "//gateway.zowe.example",
                 "//:80/",
                 "relative//invalid"
             );
