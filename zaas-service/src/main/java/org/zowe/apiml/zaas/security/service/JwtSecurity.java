@@ -322,7 +322,7 @@ public class JwtSecurity {
                         apimlLog.log("org.zowe.apiml.security.zosmfInstanceNotFound", zosmfServiceId);
                     }
                 }
-            }, Duration.ofMinutes(1).toMillis()
+            }, Duration.ofMinutes(5).toMillis()
         );
     }
 

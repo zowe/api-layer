@@ -239,7 +239,7 @@ keytool -exportcert -keystore localhost.keystore.p12 -alias localhost \
     -storepass "$PASSWORD" -storetype pkcs12 -rfc -file localhost.pem
 openssl pkcs12 -in localhost.keystore.p12 -nocerts -nodes \
     -passin "pass:$PASSWORD" -out localhost.keystore.key
-keytool -exportcert -keystore localhost.keystore.p12 -alias localhost \
+keytool -exportcert -rfc -keystore localhost.keystore.p12 -alias localhost \
     -storepass "$PASSWORD" -storetype pkcs12 -file localhost.keystore.cer 2>/dev/null || true
 
 # --- localhost2 ---
