@@ -160,13 +160,28 @@ def generateKeystores = tasks.register('generateKeystores', Exec) {
 
 tasks.register('copyTestKeystores', Copy) {
     group = 'build'
-    description = 'Copy generated keystores to test resource locations (runs independently of generateKeystores skip guard)'
-    dependsOn generateKeystores
+    description = 'Copy generated keystores to test resource locations. Runs independently of generateKeystores skip guard.'
+    // does NOT depend on generateKeystores — must run even when generateKeystores skips
 
-    // zaas-client expects certs next to its test properties
     from('keystore/localhost') {
         include 'localhost.keystore.p12', 'localhost.truststore.p12'
-        into 'zaas-client/src/test/resources'
+    }
+    into 'zaas-client/src/test/resources'
+}
+
+tasks.register('extractJwtPublicKey', Exec) {
+    group = 'build'
+    description = 'Extract JWT public key from localhost keystore for SecurityUtilsTest fixture'
+    workingDir = rootProject.projectDir
+    commandLine 'bash', '-c', '''
+        openssl pkcs12 -in keystore/localhost/localhost.keystore.p12 \
+            -passin pass:password -nokeys 2>/dev/null \
+            | openssl x509 -pubkey -noout 2>/dev/null \
+            | openssl pkey -pubin -outform DER 2>/dev/null \
+            | base64 -w0 > common-service-core/src/test/resources/jwt-public-key.pub
+    '''
+    onlyIf {
+        file('keystore/localhost/localhost.keystore.p12').exists()
     }
 }
 
@@ -179,12 +194,20 @@ tasks.register('cleanKeystores', Delete) {
     delete 'zaas-client/src/test/resources/localhost.keystore.p12'
     delete 'zaas-client/src/test/resources/localhost.truststore.p12'
 }
+
 tasks.named('clean') { dependsOn 'cleanKeystores' }
 
 // Ensure zaas-client test resources have keystores (runs even if generateKeystores skips)
 project(':zaas-client') {
     tasks.named('processTestResources') {
-        dependsOn 'copyTestKeystores'
+        dependsOn rootProject.tasks.named('copyTestKeystores')
+    }
+}
+
+// Extract JWT public key for SecurityUtilsTest (runs even if generateKeystores skips)
+project(':common-service-core') {
+    tasks.named('processTestResources') {
+        dependsOn rootProject.tasks.named('extractJwtPublicKey')
     }
 }
 
