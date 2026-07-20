@@ -135,7 +135,7 @@ public class WebSecurity {
     @Value("${apiml.security.enableStrictUrlValidation:true}")
     private boolean isStrictUrlValidationEnabled;
 
-    @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
+    @Value("${apiml.security.allowedDomains:${apiml.service.hostname:localhost}}")
     private String allowedDomains;
 
     private Set<String> allowedDomainsSet;
@@ -262,7 +262,6 @@ public class WebSecurity {
                 var path = forwardUrl.getRawPath();
 
                 if (forwardUrl.getRawAuthority() != null ||
-                    StringUtils.isBlank(path) ||
                     !path.startsWith("/") ||
                     path.startsWith("//")) {
                     throw new InvalidForwardException(decodedUrl);
@@ -270,7 +269,7 @@ public class WebSecurity {
             }
 
             return decodedUrl;
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             throw new InvalidForwardException(decodedUrl, e);
         }
     }

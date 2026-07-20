@@ -38,7 +38,7 @@ public class MetadataFilterService implements InitializingBean {
 
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
 
-    @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
+    @Value("${apiml.security.allowedDomains:${apiml.service.hostname:localhost}}")
     private String allowedDomains;
 
     private boolean onlyWarn = false;
