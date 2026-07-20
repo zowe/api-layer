@@ -60,6 +60,7 @@ import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
+import org.zowe.apiml.gateway.filters.security.SecFetchSiteFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.eureka.EurekaServiceUrlUtils;
@@ -115,6 +116,9 @@ public class ConnectionsConfig {
 
     @Value("#{T(org.springframework.util.StringUtils).hasText('${apiml.service.corsDefaultAllowedHeaders:}') ? '${apiml.service.corsDefaultAllowedHeaders:}' : '*'}")
     private String corsDefaultAllowedHeaders;
+
+    @Value("${apiml.security.csrf.validateFetchMetadata:true}")
+    private boolean validateFetchMetadata;
 
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
@@ -336,6 +340,18 @@ public class ConnectionsConfig {
     @Bean
     WebFilter corsWebFilter(ServiceCorsUpdater serviceCorsUpdater) {
         return new CorsWebFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource());
+    }
+
+    /**
+     * Token-free CSRF protection for state-changing requests based on the {@code Sec-Fetch-Site}
+     * request header. Delegates the cross-origin allow decision to the same live CORS configuration
+     * source used by {@link #corsWebFilter(ServiceCorsUpdater)}, so Gateway defaults and per-service
+     * Eureka metadata origins are honored consistently. Can be disabled with
+     * {@code apiml.security.csrf.validateFetchMetadata=false}.
+     */
+    @Bean
+    WebFilter secFetchSiteFilter(ServiceCorsUpdater serviceCorsUpdater) {
+        return new SecFetchSiteFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource(), validateFetchMetadata);
     }
 
     public InstanceInfo create(EurekaInstanceConfig config) {
