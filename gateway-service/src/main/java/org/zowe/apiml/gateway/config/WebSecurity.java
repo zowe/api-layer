@@ -45,11 +45,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.*;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -61,7 +70,6 @@ import org.springframework.security.web.server.context.NoOpServerSecurityContext
 import org.springframework.security.web.server.firewall.StrictServerWebExchangeFirewall;
 import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
 import org.springframework.security.web.server.savedrequest.CookieServerRequestCache;
-import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
@@ -93,15 +101,21 @@ import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
-import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 
 
 @Configuration
@@ -389,10 +403,14 @@ public class WebSecurity {
                     }
                 }
             )
-            .authorizeExchange(exchange -> exchange.matchers(new OrServerWebExchangeMatcher(
-                    new AndServerWebExchangeMatcher(pathMatchers(HttpMethod.POST, "/application/loggers/**")),
-                    new AndServerWebExchangeMatcher(pathMatchers(HttpMethod.POST, "/application/gateway/**"))
+            .authorizeExchange(exchange -> exchange.matchers(
+                new OrServerWebExchangeMatcher(
+                    pathMatchers(HttpMethod.GET, "/application/**"),
+                    pathMatchers(HttpMethod.HEAD, "/application/**")
                 ))
+                .authenticated()
+            )
+            .authorizeExchange(exchange -> exchange.matchers(pathMatchers("/application/**"))
                 .access(new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL"))
             )
             .authorizeExchange(authorizeExchangeSpec ->
