@@ -51,6 +51,7 @@ import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
+import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -114,13 +115,17 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Invalid token"),
         @ApiResponse(responseCode = "503", description = "Authentication service is not available")
     })
-    public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
-        final var authHeader = request.getHeader("Authorization");
+    public void invalidateJwtToken(@RequestHeader("Authorization") String authHeader, HttpServletResponse response) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setStatus(SC_BAD_REQUEST);
             return;
         }
-        final var jwtToken = authHeader.substring(7);
+        final var jwtToken = authHeader.substring(7).trim();
+        if (jwtToken.isEmpty()) { //it cannot be null, as "Bearer".substring(7) is empty, not null
+            response.setStatus(SC_BAD_REQUEST);
+            return;
+        }
+
         try {
             final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
             response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
