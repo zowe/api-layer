@@ -114,6 +114,8 @@ apiml:
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        csrf:
+            validateFetchMetadata: true
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
         rauditx:
