@@ -132,3 +132,15 @@ deploy-apiml.sh
 
 tools/*
 otel/otel-collector/export/*.json
+
+# Generated keystores — do not commit, regenerate via scripts/generate-keystores.sh
+keystore/**/*.p12
+keystore/**/*.cer
+keystore/**/*.key
+keystore/**/*.pem
+keystore/**/*.srl
+keystore/**/*.crt
+keystore/**/*.csr
+zaas-client/src/test/resources/localhost.keystore.p12
+zaas-client/src/test/resources/localhost.truststore.p12
+common-service-core/src/test/resources/jwt-public-key.pub
