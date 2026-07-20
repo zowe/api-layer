@@ -137,6 +137,8 @@ jobs:
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
                     APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+                    APIML_SERVICE_CORSENABLED: true
+                    APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 #The memory is constrained to test large file upload memory issues (#4265)
                 #If the container runs oom, it is hard killed without printing any reasonable message in the log
                 options: --memory 640m --memory-swap 640m
@@ -476,6 +478,8 @@ jobs:
                     EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS: 1
                     EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: 1
                     logbackService: ZWEAGW1
+                    APIML_SERVICE_CORSENABLED: true
+                    APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 options: --memory 640m --memory-swap 640m
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
@@ -499,6 +503,8 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
+                    APIML_SERVICE_CORSENABLED: true
+                    APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 options: --memory 640m --memory-swap 640m
             zaas-service-2:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
@@ -666,6 +672,7 @@ jobs:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
                     logbackService: ZWEAGW1
             gateway-service-2:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
@@ -673,6 +680,7 @@ jobs:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_APIMLID: apiml2
                     logbackService: ZWEAGW2
+                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
             zaas-service:
                 image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
@@ -692,6 +700,7 @@ jobs:
                     APIML_CONNECTION_TIMEOUT: 2000
                     APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
                     APIML_SERVICE_HOSTNAME: central-gateway-service
+                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
             discoverable-client:
                 image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
@@ -2971,5 +2980,6 @@ jobs:
                         build/reports/problems/problems-report.html
                         results/**
                         apiml/build/reports/tests/**
+                        apiml-security-common/build/reports/tests/**
 
             -   uses: ./.github/actions/teardown

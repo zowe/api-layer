@@ -105,7 +105,7 @@ apiml:
         forwardClientCertEnabled: true
         hostname: localhost
         id: ${spring.application.name}
-        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Origin
         port: 10010
         scheme: https  # "https" or "http"
         preferIpAddress: false
