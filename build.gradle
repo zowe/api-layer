@@ -411,21 +411,17 @@ tasks.register('copyTestKeystores', Copy) {
 }
 
 // Extract JWT public key from localhost keystore for common-service-core tests
-tasks.register('extractJwtPublicKey') {
+tasks.register('extractJwtPublicKey', Exec) {
     group = 'build'
     description = 'Extract JWT public key for common-service-core tests'
-    doLast {
-        def outFile = file('common-service-core/src/test/resources/jwt-public-key.pub')
-        exec {
-            commandLine 'bash', '-c', """
-                openssl pkcs12 -in keystore/localhost/localhost.keystore.p12 \\
-                    -passin pass:password -nokeys 2>/dev/null \\
-                    | openssl x509 -pubkey -noout 2>/dev/null \\
-                    | openssl pkey -pubin -outform DER 2>/dev/null \\
-                    | base64 -w0 > "${outFile.absolutePath}"
-            """
-        }
-    }
+    workingDir = rootProject.projectDir
+    commandLine 'bash', '-c', """
+        openssl pkcs12 -in keystore/localhost/localhost.keystore.p12 \\
+            -passin pass:password -nokeys 2>/dev/null \\
+            | openssl x509 -pubkey -noout 2>/dev/null \\
+            | openssl pkey -pubin -outform DER 2>/dev/null \\
+            | base64 -w0 > "common-service-core/src/test/resources/jwt-public-key.pub"
+    """
     onlyIf {
         file('keystore/localhost/localhost.keystore.p12').exists()
     }
