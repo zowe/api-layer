@@ -20,10 +20,8 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -46,7 +44,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ReactiveAuthenticationControllerTest {
 
-    private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
     @Mock private AuthenticationService authenticationService;
     @Mock private PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
