@@ -147,6 +147,12 @@ class AuthControllerTest {
         mockMvc.perform(get(INVALIDATE)
             .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_METHOD_NOT_ALLOWED));
 
+        mockMvc.perform(delete(INVALIDATE)
+            .header(AUTHORIZATION, BEARER)).andExpect(status().is(SC_BAD_REQUEST));
+
+        mockMvc.perform(get(INVALIDATE)
+            .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_METHOD_NOT_ALLOWED));
+
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
     }
