@@ -65,10 +65,8 @@ public class MetadataFilterService implements InitializingBean {
         if (StringUtils.isBlank(domain)) {
             return true;
         }
-// Some services may not have correct path set, so it may be a malformed URL
-var domainToCheck = domain.endsWith("null")
-    ? domain.substring(0, domain.lastIndexOf("null"))
-    : domain;
+        // Some services may not have correct path set, so it may be a malformed URL
+        var domainToCheck = domain.endsWith("null") ? domain.substring(0, domain.lastIndexOf("null")) : domain;
         return allowedDomainsSet.stream().anyMatch(allowedDomain -> {
             try {
                 return isAllowed(allowedDomain, domainToCheck);
