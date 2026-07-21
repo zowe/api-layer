@@ -239,20 +239,20 @@ class ActuatorConfigTest {
         void whenAccessDangerousActuatorWithCredentialsWithPermission_thenAllowModify() {
             var jwt = login(USER);
             // update a logger level
-            String endpoint = ""; // TODO
+            String endpoint = "/application/loggers";
             given()
                 .cookie("apimlAuthenticationToken", jwt)
             .when()
-                .post(endpoint)
+                .post(basePath + endpoint)
             .then()
                 .statusCode(SC_OK);
 
             // update routes
-            endpoint = ""; // TODO
+            endpoint = "/application/gateway";
             given()
                 .cookie("apimlAuthenticationToken", jwt)
             .when()
-                .post(endpoint)
+                .post(basePath + endpoint)
             .then()
                 .statusCode(SC_OK);
         }
@@ -260,7 +260,7 @@ class ActuatorConfigTest {
         @Test
         void whenAccessDangerousActuatorWithCredentialsWithoutPermission_thenBlock() {
             var jwt = login(USER_NO_PERMISSION);
-            String endpoint = "/"; // TODO
+            String endpoint = "/application/loggers";
             // update a logger level
             given()
                 .cookie("apimlAuthenticationToken", jwt)
@@ -269,7 +269,7 @@ class ActuatorConfigTest {
             .then()
                 .statusCode(SC_FORBIDDEN);
 
-            endpoint = ""; // TODO
+            endpoint = "/application/gateway";
             // update routes
             given()
                 .cookie("apimlAuthenticationToken", jwt)
