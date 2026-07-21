@@ -116,6 +116,7 @@ class AuthControllerTest {
 
     @Test
     void invalidateJwtToken() throws Exception {
+
         when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
         mockMvc.perform(delete(INVALIDATE)
                 .header(AUTHORIZATION, BEARER + "a/b"))
