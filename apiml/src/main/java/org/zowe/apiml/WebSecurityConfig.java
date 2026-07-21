@@ -358,29 +358,6 @@ public class WebSecurityConfig {
                                                          AuthExceptionHandlerReactive authExceptionHandlerReactive,
                                                          SafResourceAccessVerifying safResourceAccessVerifying) {
 
-        // var protectedEndpoints = new OrServerWebExchangeMatcher(
-        //     pathMatchers("/application/loggers/**"),
-        //     pathMatchers("/application/loggers"),
-        //     pathMatchers("/application/gateway"),
-        //     pathMatchers("/application/gateway/**")
-        // );
-
-        // ServerWebExchangeMatcher writeProtectMatcher = exchange -> {
-
-        //     if (!List.of(HttpMethod.HEAD, HttpMethod.GET).contains(exchange.getRequest().getMethod())) {
-
-        //     }
-        //     return Mono.empty();
-        // };
-
-        /*
-        exchange -> exchange.matchers(new OrServerWebExchangeMatcher(
-                    new AndServerWebExchangeMatcher(pathMatchers("/application/loggers/**")),
-                    new AndServerWebExchangeMatcher(pathMatchers("/application/gateway/**"))
-                ))
-                .access(new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL"))
-        */
-
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 pathMatchers("/application/**"),

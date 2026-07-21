@@ -38,6 +38,7 @@ import java.util.Date;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_FORBIDDEN;
+import static org.apache.hc.core5.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
 import static org.apache.hc.core5.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
@@ -182,7 +183,7 @@ class ActuatorConfigTest {
             .when()
                 .post(basePath + "/application/loggers/ROOT")
             .then()
-                .statusCode(SC_FORBIDDEN);
+                .statusCode(SC_METHOD_NOT_ALLOWED);
 
             // refresh the gateway's routes
             given()
@@ -190,7 +191,7 @@ class ActuatorConfigTest {
             .when()
                 .post(basePath + "/application/gateway/refresh")
             .then()
-                .statusCode(SC_FORBIDDEN);
+                .statusCode(SC_NOT_FOUND);
         }
 
         @ParameterizedTest
@@ -210,7 +211,7 @@ class ActuatorConfigTest {
         @CsvSource({
             "/application/loggers",
             "/application/gateway/routes",
-            "/application/info" // open without credentials?
+            "/application/info"
         })
         void whenAccessDangerousActuator_thenAllowRead(String endpoint) {
             given()
