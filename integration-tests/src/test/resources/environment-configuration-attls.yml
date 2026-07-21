@@ -70,6 +70,7 @@ instanceEnv:
     CATALOG_PORT: 10014
     DISCOVERY_PORT: 10011
     GATEWAY_PORT: 10010
+    ZWE_configs_apiml_security_enableStrictUrlValidation: false
     APIML_PREFER_IP_ADDRESS: false
     APIML_CONNECTION_TIMEOUT: 10000
     APIML_SECURITY_X509_ENABLED: true
