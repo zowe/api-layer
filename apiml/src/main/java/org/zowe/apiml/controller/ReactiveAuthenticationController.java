@@ -236,13 +236,10 @@ public class ReactiveAuthenticationController {
     public Mono<ResponseEntity<Void>> invalidateJwtToken(@RequestHeader("Authorization") String authHeader) {
         try {
             var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            if (!authHeader.startsWith("Bearer ")) {
                 return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
             }
             final var jwtToken = authHeader.substring(7).trim(); //Starts with "Bearer "
-            if (jwtToken.isEmpty()) { //it cannot be null, as "Bearer".substring(7) is empty, not null
-                return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
-            }
             var invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, false, app);
             return Mono.just(ResponseEntity.status(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE).build());
         } catch (TokenNotValidException e) {

@@ -116,7 +116,7 @@ public class AuthController {
         @ApiResponse(responseCode = "503", description = "Authentication service is not available")
     })
     public void invalidateJwtToken(@RequestHeader("Authorization") String authHeader, HttpServletResponse response) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (!authHeader.startsWith("Bearer ")) {
             response.setStatus(SC_BAD_REQUEST);
             return;
         }

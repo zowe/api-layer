@@ -121,18 +121,18 @@ class AuthControllerTest {
             .andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(delete(INVALIDATE)
-            .header("authorization", BEARER + "xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
+            .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
 
         mockMvc.perform(delete(INVALIDATE)
-            .header("authorization", "wibble")).andExpect(status().is(SC_BAD_REQUEST));
+            .header(AUTHORIZATION, "wibble")).andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(delete(INVALIDATE)).andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(delete(INVALIDATE)
-            .header("authorization", BEARER)).andExpect(status().is(SC_BAD_REQUEST));
+            .header(AUTHORIZATION, BEARER)).andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(get(INVALIDATE)
-            .header("authorization", BEARER + "xyz")).andExpect(status().is(SC_METHOD_NOT_ALLOWED));
+            .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_METHOD_NOT_ALLOWED));
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
