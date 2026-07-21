@@ -60,7 +60,6 @@ jobs:
     CITestsModulithUnknownHostnames:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -119,7 +118,6 @@ jobs:
     CITestsModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -192,7 +190,6 @@ jobs:
     CITestsModulithSAFProviderHA:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -278,7 +275,6 @@ jobs:
 
     CITestsModulithHA:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
@@ -445,7 +441,6 @@ jobs:
     CITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -553,7 +548,6 @@ jobs:
     CITestsSAFProviderHA:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -659,7 +653,6 @@ jobs:
     GatewayProxy:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 10
 
         services:
@@ -747,7 +740,6 @@ jobs:
     GatewayCentralRegistry:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 10
 
         services:
@@ -863,7 +855,6 @@ jobs:
     CentralRegistryModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 10
 
         services:
@@ -947,7 +938,6 @@ jobs:
     CITestsRegistration:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -1007,7 +997,6 @@ jobs:
     CITestsDiscoveryBasicAuth:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -1078,7 +1067,6 @@ jobs:
     CITestsDiscoveryBasicAuthModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -1162,7 +1150,6 @@ jobs:
     CITestsRegistrationModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -1217,7 +1204,6 @@ jobs:
     CITestsZaas:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -1312,7 +1298,6 @@ jobs:
     CITestsZosmfWithoutJwt:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -1380,7 +1365,6 @@ jobs:
     CITestsZosmfWithoutJwtModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -1605,7 +1589,6 @@ jobs:
 
     DeterministicHALoadBalancing:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1726,7 +1709,6 @@ jobs:
 
     DeterministicHALoadBalancingModulith:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1820,7 +1802,6 @@ jobs:
 
     StickySessionHALoadBalancing:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -1945,7 +1926,6 @@ jobs:
 
     StickySessionHALoadBalancingModulith:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -2036,7 +2016,6 @@ jobs:
 
     CITestsHA_caching-chaotic:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
         services:
@@ -2188,7 +2167,6 @@ jobs:
 
     CITestsHA:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 18
         strategy:
@@ -2380,7 +2358,6 @@ jobs:
     CITestsWithInfinispan:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -2465,7 +2442,6 @@ jobs:
     CITestsModulithWithInfinispan:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
         services:
@@ -2805,7 +2781,6 @@ jobs:
 
     CITestsServicePrefixReplacer:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
@@ -2868,7 +2843,6 @@ jobs:
 
     CITestsNodeJsAndPythonServices:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
