@@ -8,3 +8,7 @@
 # This file is stored in `src/main/resources/mock-saf.yml` which means that it will be used by the service and its unit tests.
 # If you can create a different file in `src/test/resources/mock-saf.yml` then unit tests will use different definitions.
 safAccess:
+    ZOWE:
+        APIML.DEBUG:
+            CONTROL:
+                - USER

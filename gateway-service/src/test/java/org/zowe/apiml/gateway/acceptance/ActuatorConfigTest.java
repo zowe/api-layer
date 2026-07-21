@@ -39,6 +39,7 @@ import java.util.Date;
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.hc.core5.http.HttpStatus.SC_NOT_FOUND;
+import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -173,10 +174,21 @@ class ActuatorConfigTest {
         })
         void whenAccessDangerousActuatorWithCredentials_thenBlockModify(String endpoint) {
             var jwt = login(USER);
+            // change the level of the ROOT logger
+            given()
+                .cookie("apimlAuthenticationToken", jwt)
+                .contentType("application/json")
+                .body("{\"configuredLevel\":\"DEBUG\"}")
+            .when()
+                .post(basePath + "/application/loggers/ROOT")
+            .then()
+                .statusCode(SC_FORBIDDEN);
+
+            // refresh the gateway's routes
             given()
                 .cookie("apimlAuthenticationToken", jwt)
             .when()
-                .post(basePath + endpoint)
+                .post(basePath + "/application/gateway/refresh")
             .then()
                 .statusCode(SC_FORBIDDEN);
         }
@@ -197,7 +209,7 @@ class ActuatorConfigTest {
         @ParameterizedTest
         @CsvSource({
             "/application/loggers",
-            "/application/gateway",
+            "/application/gateway/routes",
             "/application/info" // open without credentials?
         })
         void whenAccessDangerousActuator_thenAllowRead(String endpoint) {
@@ -238,21 +250,21 @@ class ActuatorConfigTest {
         @Test
         void whenAccessDangerousActuatorWithCredentialsWithPermission_thenAllowModify() {
             var jwt = login(USER);
-            // update a logger level
-            String endpoint = "/application/loggers";
+            // change the level of the ROOT logger
             given()
                 .cookie("apimlAuthenticationToken", jwt)
+                .contentType("application/json")
+                .body("{\"configuredLevel\":\"DEBUG\"}")
             .when()
-                .post(basePath + endpoint)
+                .post(basePath + "/application/loggers/ROOT")
             .then()
-                .statusCode(SC_OK);
+                .statusCode(SC_NO_CONTENT);
 
-            // update routes
-            endpoint = "/application/gateway";
+            // refresh the gateway's routes
             given()
                 .cookie("apimlAuthenticationToken", jwt)
             .when()
-                .post(basePath + endpoint)
+                .post(basePath + "/application/gateway/refresh")
             .then()
                 .statusCode(SC_OK);
         }
@@ -295,7 +307,7 @@ class ActuatorConfigTest {
         @ParameterizedTest
         @CsvSource({
             "/application/loggers",
-            "/application/gateway"
+            "/application/gateway/routes"
         })
         void whenAccessDangerousActuator_thenAllowRead(String endpoint) {
             var jwt = login(USER_NO_PERMISSION);
