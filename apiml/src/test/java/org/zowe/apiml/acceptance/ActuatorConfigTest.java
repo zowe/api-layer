@@ -21,8 +21,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.NestedTestConfiguration;
-import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.handler.LocalTokenProvider;
@@ -45,16 +43,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@AcceptanceTest
-@TestPropertySource(
-    properties = {
-        "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
-        "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
-        "apiml.security.auth.provider=dummy",
-        "caching.storage.mode=inMemory"
-    }
-)
-@NestedTestConfiguration(EnclosingConfiguration.INHERIT)
 class ActuatorConfigTest {
 
     private static final String USER = "USER";
@@ -103,7 +91,7 @@ class ActuatorConfigTest {
         }
     )
     @ActiveProfiles("default")
-    // @AcceptanceTest
+    @AcceptanceTest
     class GivenDefaultProfile extends ActuatorAcceptanceTest {
 
         @Autowired
@@ -155,7 +143,7 @@ class ActuatorConfigTest {
             "caching.storage.mode=inMemory"
         }
     )
-    // @AcceptanceTest
+    @AcceptanceTest
     class GivenDebugProfile extends ActuatorAcceptanceTest {
 
         @Autowired
@@ -237,7 +225,7 @@ class ActuatorConfigTest {
             "caching.storage.mode=inMemory"
         }
     )
-    // @AcceptanceTest
+    @AcceptanceTest
     class GivenDebugControlProfile extends ActuatorAcceptanceTest {
 
         @Autowired
