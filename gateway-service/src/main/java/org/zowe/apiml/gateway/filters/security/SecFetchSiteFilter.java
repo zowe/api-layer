@@ -12,16 +12,19 @@ package org.zowe.apiml.gateway.filters.security;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -29,82 +32,83 @@ import java.util.Set;
  * (specifically {@code Sec-Fetch-Site}). This complements, and does not replace, the existing
  * CORS handling and {@code SameSite} cookies.
  * <p>
- * {@code Sec-Fetch-*} headers are set by the browser and cannot be overridden by page scripts
- * (they are on the forbidden header name list), which is what makes them trustworthy for CSRF
- * defense. The policy applied here is a Fetch Metadata Resource Isolation Policy scoped to
- * state-changing requests:
+ * This is the reactive (Gateway edge) counterpart of the servlet {@code SecFetchSiteFilter} enforced
+ * by southbound services; both apply the same Fetch Metadata Resource Isolation Policy so a request is
+ * judged consistently at both tiers:
  * <ul>
- *     <li>Safe methods (GET/HEAD/OPTIONS) are exempt - this covers top-level navigations and the
- *     CORS preflight (OPTIONS), and safe methods must not change state by HTTP semantics.</li>
- *     <li>A missing {@code Sec-Fetch-Site} header means a non-browser client (CLI, service-to-service)
- *     or a legacy browser - such a caller cannot be a CSRF vector, so the request is allowed.</li>
- *     <li>{@code same-origin} and {@code none} (user-initiated, e.g. typed URL or bookmark) are allowed.</li>
- *     <li>{@code same-site} and {@code cross-site} are allowed only when the request's {@code Origin}
- *     is permitted by the effective CORS configuration. This keeps the filter consistent with CORS:
- *     it becomes the enforcement arm of the same allow-list CORS only declares.</li>
+ *     <li>A missing {@code Sec-Fetch-Site} header (non-browser/legacy client) or a value of
+ *     {@code same-origin} / {@code same-site} / {@code none} continues.</li>
+ *     <li>Otherwise ({@code cross-site} or any other value): when CORS is enabled the request's
+ *     {@code Origin} is validated (and rejected if not permitted) by the CORS {@code DefaultCorsProcessor},
+ *     so the decision is deferred to CORS; when CORS is disabled only a safe top-level navigation is
+ *     allowed and everything else is rejected with 403.</li>
  * </ul>
- * The CORS decision is delegated to the same live {@link CorsConfigurationSource} that backs the
- * Gateway's CORS filter, so both the Gateway default origins and the per-service origins declared in
- * Eureka registration metadata are honored automatically, including services that (de)register at runtime.
  */
 @Slf4j
 public class SecFetchSiteFilter implements WebFilter, Ordered {
 
     static final String SEC_FETCH_SITE_HEADER = "Sec-Fetch-Site";
+    static final String SEC_FETCH_MODE_HEADER = "Sec-Fetch-Mode";
+    static final String SEC_FETCH_DEST_HEADER = "Sec-Fetch-Dest";
 
-    private static final Set<HttpMethod> SAFE_METHODS = Set.of(HttpMethod.GET, HttpMethod.HEAD, HttpMethod.OPTIONS);
-    private static final Set<String> ALLOWED_SITES = Set.of("same-origin", "none");
+    private static final Set<String> SAFE_SEC_FETCH_SITE_VALUES = Set.of("same-origin", "same-site", "none");
+    private static final String NAVIGATE_MODE = "navigate";
+    private static final Set<HttpMethod> SAFE_NAVIGATION_METHODS = Set.of(HttpMethod.GET, HttpMethod.HEAD);
+    private static final Set<String> UNSAFE_NAVIGATION_DESTINATIONS = Set.of("object", "embed");
+    private static final String REJECTION_MESSAGE = "Invalid CORS request";
 
-    private final CorsConfigurationSource corsConfigurationSource;
-    private final boolean enabled;
+    private final boolean corsEnabled;
 
-    public SecFetchSiteFilter(CorsConfigurationSource corsConfigurationSource, boolean enabled) {
-        this.corsConfigurationSource = corsConfigurationSource;
-        this.enabled = enabled;
+    public SecFetchSiteFilter(boolean corsEnabled) {
+        this.corsEnabled = corsEnabled;
     }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        if (!enabled || isAllowed(exchange)) {
+        if (isAllowed(exchange)) {
             return chain.filter(exchange);
         }
 
         ServerHttpRequest request = exchange.getRequest();
-        log.debug("Rejecting request as a potential CSRF attempt: method={}, path={}, origin={}, Sec-Fetch-Site={}",
-            request.getMethod(), request.getPath(), request.getHeaders().getOrigin(),
-            request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER));
-        exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-        return exchange.getResponse().setComplete();
+        log.debug("Blocked cross-site {} {} - Sec-Fetch-Site={}, CORS is not enabled",
+            request.getMethod(), request.getPath(), request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER));
+        ServerHttpResponse response = exchange.getResponse();
+        response.setStatusCode(HttpStatus.FORBIDDEN);
+        response.getHeaders().setContentType(MediaType.TEXT_PLAIN);
+        DataBuffer body = response.bufferFactory().wrap(REJECTION_MESSAGE.getBytes(StandardCharsets.UTF_8));
+        return response.writeWith(Mono.just(body));
     }
 
     private boolean isAllowed(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
+        String secFetchSite = request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER);
 
-        // Safe (non-state-changing) methods are exempt: navigations, cross-origin reads, CORS preflight.
-        if (SAFE_METHODS.contains(request.getMethod())) {
+        // Absent header (non-browser/legacy client) or same-origin/same-site/none: continue.
+        if (secFetchSite == null || SAFE_SEC_FETCH_SITE_VALUES.contains(secFetchSite.toLowerCase(Locale.ROOT))) {
             return true;
         }
 
-        String site = request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER);
-        // Header absent -> non-browser client or legacy browser: cannot be a CSRF vector.
-        if (site == null) {
-            return true;
-        }
-        // Same-origin and user-initiated (typed URL / bookmark) requests are trusted.
-        if (ALLOWED_SITES.contains(site)) {
-            return true;
-        }
-        // same-site / cross-site: allow only if the Origin is on the effective CORS allow-list.
-        return isAllowedByCors(exchange);
+        // Cross-site (or any other value): when CORS is enabled the Origin is validated by the CORS
+        // DefaultCorsProcessor, so defer to it; otherwise allow only a safe top-level navigation.
+        return corsEnabled || isSafeTopLevelNavigation(request);
     }
 
-    private boolean isAllowedByCors(ServerWebExchange exchange) {
-        String origin = exchange.getRequest().getHeaders().getOrigin();
-        if (origin == null) {
+    /**
+     * A safe top-level navigation per the Fetch Metadata Resource Isolation Policy: a
+     * {@code Sec-Fetch-Mode: navigate} request using a safe method that is not being loaded into an
+     * {@code <object>} or {@code <embed>}. Such navigations cannot read the response cross-origin
+     * and, being read-only, cannot change server state, so they are allowed even when cross-site.
+     */
+    private boolean isSafeTopLevelNavigation(ServerHttpRequest request) {
+        String mode = request.getHeaders().getFirst(SEC_FETCH_MODE_HEADER);
+        if (!NAVIGATE_MODE.equalsIgnoreCase(mode)) {
             return false;
         }
-        CorsConfiguration corsConfiguration = corsConfigurationSource.getCorsConfiguration(exchange);
-        return corsConfiguration != null && corsConfiguration.checkOrigin(origin) != null;
+        if (!SAFE_NAVIGATION_METHODS.contains(request.getMethod())) {
+            return false;
+        }
+        String dest = request.getHeaders().getFirst(SEC_FETCH_DEST_HEADER);
+        return dest == null || !UNSAFE_NAVIGATION_DESTINATIONS.contains(dest.toLowerCase(Locale.ROOT));
     }
 
     @Override

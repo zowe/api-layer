@@ -31,6 +31,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
@@ -116,9 +117,6 @@ public class ConnectionsConfig {
 
     @Value("#{T(org.springframework.util.StringUtils).hasText('${apiml.service.corsDefaultAllowedHeaders:}') ? '${apiml.service.corsDefaultAllowedHeaders:}' : '*'}")
     private String corsDefaultAllowedHeaders;
-
-    @Value("${apiml.security.csrf.validateFetchMetadata:true}")
-    private boolean validateFetchMetadata;
 
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
@@ -344,14 +342,13 @@ public class ConnectionsConfig {
 
     /**
      * Token-free CSRF protection for state-changing requests based on the {@code Sec-Fetch-Site}
-     * request header. Delegates the cross-origin allow decision to the same live CORS configuration
-     * source used by {@link #corsWebFilter(ServiceCorsUpdater)}, so Gateway defaults and per-service
-     * Eureka metadata origins are honored consistently. Can be disabled with
-     * {@code apiml.security.csrf.validateFetchMetadata=false}.
+     * request header. When CORS is enabled the Origin is validated by the CORS filter
+     * ({@link #corsWebFilter(ServiceCorsUpdater)}), so this filter defers to it; when CORS is disabled
+     * it rejects cross-site requests itself.
      */
     @Bean
-    WebFilter secFetchSiteFilter(ServiceCorsUpdater serviceCorsUpdater) {
-        return new SecFetchSiteFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource(), validateFetchMetadata);
+    WebFilter secFetchSiteFilter() {
+        return new SecFetchSiteFilter(gatewayCorsEnabled);
     }
 
     public InstanceInfo create(EurekaInstanceConfig config) {

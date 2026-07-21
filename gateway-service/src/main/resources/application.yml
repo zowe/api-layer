@@ -115,7 +115,7 @@ apiml:
     security:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         csrf:
-            validateFetchMetadata: true
+            preserveOriginForCrossSite: true
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
         rauditx:

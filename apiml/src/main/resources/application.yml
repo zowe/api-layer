@@ -205,6 +205,8 @@ apiml:
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
+        csrf:
+            preserveOriginForCrossSite: true
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
