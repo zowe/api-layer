@@ -18,6 +18,7 @@ import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
@@ -49,6 +50,7 @@ class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactoryTest {
 
     @Test
     void givenCrossSiteRequest_thenConfiguredHeaderPreserved() {
+        ReflectionTestUtils.setField(factory, "preserveOrigin", true);
         MockServerHttpRequest request = MockServerHttpRequest.post("/service/api/v1/foo")
             .header(HttpHeaders.ORIGIN, ORIGIN)
             .header(RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory.SEC_FETCH_SITE_HEADER,
