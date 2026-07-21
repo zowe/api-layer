@@ -41,6 +41,10 @@ caching:
     storage:
         mode: inMemory
 
+infinispan:
+    embedded:
+        enabled: false
+
 server:
     ssl:
         keyStore: ../keystore/localhost/localhost.keystore.p12
