@@ -138,7 +138,7 @@ class AuthControllerTest {
             .header(AUTHORIZATION, "wibble")).andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(delete(INVALIDATE))
-            .andExpect(status().is(SC_UNAUTHORIZED));
+            .andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(delete(INVALIDATE)
             .header(AUTHORIZATION, BEARER)).andExpect(status().is(SC_BAD_REQUEST));
