@@ -10,6 +10,9 @@ inputs:
 runs:
     using: "composite"
     steps:
+        -   name: Install openssl
+            run: apt-get update && apt-get install -y openssl
+            shell: bash
         -   name: Set up JDK ${{ inputs.jdkVersion }}
             uses: actions/setup-java@v4
             with:
