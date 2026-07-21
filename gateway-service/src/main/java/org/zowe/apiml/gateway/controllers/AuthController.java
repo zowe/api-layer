@@ -96,6 +96,10 @@ public class AuthController {
             return;
         }
         final String jwtToken = authHeader.substring(7).trim();
+        if (jwtToken.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
         try {
             final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
             response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);
