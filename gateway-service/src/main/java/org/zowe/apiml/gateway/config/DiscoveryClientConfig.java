@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
 import org.springframework.cloud.netflix.eureka.MutableDiscoveryClientOptionalArgs;
@@ -36,9 +37,11 @@ import org.zowe.apiml.config.AdditionalRegistrationParser;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClient;
 import org.zowe.apiml.gateway.discovery.ApimlDiscoveryClientFactory;
 import org.zowe.apiml.gateway.filters.pre.ApimlPreDecorationFilter;
+import org.zowe.apiml.product.eureka.EurekaServiceUrlUtils;
 import org.zowe.apiml.product.gateway.AdditionalRegistrationGatewayRegistry;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +73,15 @@ public class DiscoveryClientConfig {
     private final ApplicationContext context;
     private final Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> eurekaJerseyClientBuilder;
     private final AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry;
+
+    @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
+    private boolean verifySslCertificatesOfServices;
+
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String discoveryUserId;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] discoveryPassword;
 
     @Bean
     public List<AdditionalRegistration> additionalRegistration() {
@@ -121,7 +133,7 @@ public class DiscoveryClientConfig {
 
         Map<String, String> urls = new HashMap<>();
         log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
-        urls.put(DEFAULT_ZONE, apimlRegistration.getDiscoveryServiceUrls());
+        urls.put(DEFAULT_ZONE, withBasicAuthFallback(apimlRegistration.getDiscoveryServiceUrls()));
 
         configBean.setServiceUrl(urls);
 
@@ -136,6 +148,21 @@ public class DiscoveryClientConfig {
         discoveryClientClient.registerHealthCheck(healthCheckHandler);
 
         return discoveryClientClient;
+    }
+
+    /**
+     * When TLS validation is disabled the client certificate cannot be trusted by the Discovery Service, so the
+     * additional registration falls back to basic authentication by embedding the configured Discovery Service
+     * credentials into the discovery service URLs.
+     */
+    private String withBasicAuthFallback(String discoveryServiceUrls) {
+        if (discoveryServiceUrls == null || verifySslCertificatesOfServices) {
+            return discoveryServiceUrls;
+        }
+        String password = (discoveryPassword == null) ? null : new String(discoveryPassword);
+        return Arrays.stream(discoveryServiceUrls.split(","))
+            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), discoveryUserId, password))
+            .collect(Collectors.joining(","));
     }
 
     private InstanceInfo rewriteInstanceInfoRoutes(AdditionalRegistration apimlRegistration, InstanceInfo newInfo) {

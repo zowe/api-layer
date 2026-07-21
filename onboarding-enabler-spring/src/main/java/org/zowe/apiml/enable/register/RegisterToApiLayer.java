@@ -45,6 +45,12 @@ public class RegisterToApiLayer {
     @Value("${apiml.enabled:true}")
     private boolean apimlEnabled;
 
+    @Value("${apiml.discovery.userid:#{null}}")
+    private String discoveryUserId;
+
+    @Value("${apiml.discovery.password:#{null}}")
+    private char[] discoveryPassword;
+
     @InjectApimlLogger
     private final ApimlLogger logger = ApimlLogger.empty();
 
@@ -82,6 +88,12 @@ public class RegisterToApiLayer {
     }
 
     private void register(ApiMediationServiceConfig newConfig) {
+        if (newConfig.getDiscoveryUserid() == null) {
+            newConfig.setDiscoveryUserid(discoveryUserId);
+        }
+        if (newConfig.getDiscoveryPassword() == null) {
+            newConfig.setDiscoveryPassword(discoveryPassword);
+        }
 
         this.config = newConfig;
 

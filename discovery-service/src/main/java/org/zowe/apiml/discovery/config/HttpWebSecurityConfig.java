@@ -61,10 +61,10 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
 
     @Value("${apiml.discovery.userid:#{null}}")
-    private String eurekaUserid;
+    private String discoveryUserId;
 
     @Value("${apiml.discovery.password:#{null}}")
-    private char[] eurekaPassword;
+    private char[] discoveryPassword;
 
     @Value("${apiml.metrics.enabled:false}")
     private boolean isMetricsEnabled;
@@ -75,7 +75,7 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) {
         // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
-        auth.authenticationProvider(new EurekaBasicAuthenticationProvider(eurekaUserid, eurekaPassword));
+        auth.authenticationProvider(new EurekaBasicAuthenticationProvider(discoveryUserId, discoveryPassword));
     }
 
     private final HandlerInitializer handlerInitializer;

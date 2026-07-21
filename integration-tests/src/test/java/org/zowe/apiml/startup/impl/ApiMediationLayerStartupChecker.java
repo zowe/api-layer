@@ -15,17 +15,23 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.DiscoveryServiceConfiguration;
 import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.http.HttpClientUtils;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
@@ -41,6 +47,12 @@ public class ApiMediationLayerStartupChecker {
     private final List<Service> servicesToCheck = new ArrayList<>();
     private final String healthEndpoint = "/application/health";
 
+    private static final boolean VERIFY_SSL_CERTIFICATES = Boolean.parseBoolean(
+        System.getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true")
+    );
+    private static final String EUREKA_CREDENTIALS_HEADER = buildEurekaCredentialsHeader();
+
+
     public ApiMediationLayerStartupChecker() {
         gatewayConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
@@ -50,8 +62,23 @@ public class ApiMediationLayerStartupChecker {
         servicesToCheck.add(new Service("Authentication Service", "$.components.gateway.details.auth"));
     }
 
+    private static String buildEurekaCredentialsHeader() {
+        String userId = System.getProperty("apiml.discovery.userid");
+        String password = System.getProperty("apiml.discovery.password");
+        if (StringUtils.isAnyBlank(userId, password)) {
+            return null;
+        }
+        return "Basic " + Base64.getEncoder().encodeToString((userId + ":" + password).getBytes());
+    }
+
     public void waitUntilReady() {
         long poolInterval = 5;
+        await()
+            .atMost(2, MINUTES)
+            .pollDelay(1, SECONDS)
+            .pollInterval(1, SECONDS)
+        .until(this::areDiscoveryPortsReachable);
+
         await()
             .atMost(10, MINUTES)
             .pollDelay(0, SECONDS)
@@ -59,9 +86,12 @@ public class ApiMediationLayerStartupChecker {
         .until(this::areAllServicesUp);
     }
 
-    private DocumentContext getDocumentAsContext() {
+    private DocumentContext getDocumentAsContext(String authorizationHeader) {
         try {
             HttpGet request = HttpRequestUtils.getRequest(healthEndpoint);
+            if (authorizationHeader != null) {
+                request.addHeader(HttpHeaders.AUTHORIZATION, authorizationHeader);
+            }
             final HttpResponse response = HttpClientUtils.client().execute(request);
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
                 log.warn("Unexpected HTTP status code: {}", response.getStatusLine().getStatusCode());
@@ -79,7 +109,10 @@ public class ApiMediationLayerStartupChecker {
 
     private boolean areAllServicesUp() {
         try {
-            DocumentContext context = getDocumentAsContext();
+            String header = VERIFY_SSL_CERTIFICATES
+                ? null
+                : EUREKA_CREDENTIALS_HEADER;
+            DocumentContext context = getDocumentAsContext(header);
             if (context == null) {
                 return false;
             }
@@ -134,6 +167,17 @@ public class ApiMediationLayerStartupChecker {
 
     private void logDebug(String logMessage, boolean state) {
         log.debug(logMessage, state ? "UP" : "DOWN");
+    }
+
+    private boolean areDiscoveryPortsReachable() {
+        DiscoveryServiceConfiguration discoveryConfig = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(discoveryConfig.getHost(), discoveryConfig.getPort()), 5000);
+        } catch (IOException e) {
+            log.debug("Discovery service {}:{} is not yet reachable: {}", discoveryConfig.getHost(), discoveryConfig.getPort(), e.getMessage());
+            return false;
+        }
+        return true;
     }
 
     @AllArgsConstructor

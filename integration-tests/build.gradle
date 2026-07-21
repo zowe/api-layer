@@ -216,7 +216,8 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'CloudGatewayAuthTest',
             'CloudGatewayCentralRegistry',
             'SafIdTokenTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
         )
     }
 
@@ -262,7 +263,8 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'SafIdTokenTest',
             'ChaoticHATest',
             'GraphQLTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
         )
     }
 
@@ -359,7 +361,8 @@ task runContainerTests(type: Test) {
             'CloudGatewayCentralRegistry',
             'ZaasTest',
             'HealthEndpointProtectionDisabledTest',
-            'InfinispanJGroupStabilityTest'
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
         )
     }
 }
@@ -412,6 +415,20 @@ task runRegistrationTests(type: Test) {
     useJUnitPlatform {
         includeTags(
             'RegistrationTest'
+        )
+    }
+}
+
+task runDiscoveryBasicAuthTests(type: Test) {
+    group "integration tests"
+    description "Run tests verifying discovery service basic auth protection when SSL certificate verification is disabled"
+
+    outputs.cacheIf { false }
+
+    systemProperties System.getProperties()
+    useJUnitPlatform {
+        includeTags(
+            'DiscoveryBasicAuthTest'
         )
     }
 }

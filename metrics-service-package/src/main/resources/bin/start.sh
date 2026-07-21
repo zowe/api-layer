@@ -220,6 +220,9 @@ if [ -n "${ZWE_configs_logging_config}" ]; then
     LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
 fi
 
+discoveryUserid=${ZWE_configs_apiml_discovery_userid:-${ZWE_components_discovery_apiml_discovery_userid:-}}
+discoveryPassword=${ZWE_configs_apiml_discovery_password:-${ZWE_components_discovery_apiml_discovery_password:-}}
+
 METRICS_CODE=MS
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
@@ -241,6 +244,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -Dapiml.service.customMetadata.apiml.gatewayPort=${ZWE_components_gateway_port:-7554} \
   -Dapiml.service.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
   -Dapiml.service.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+  -Dapiml.discovery.password=${discoveryPassword} \
+  -Dapiml.discovery.userid=${discoveryUserid} \
   -Dapiml.httpclient.ssl.enabled-protocols=${ZWE_components_gateway_apiml_httpclient_ssl_enabled_protocols:-"TLSv1.2"} \
   -Dserver.address=0.0.0.0 \
   -Dserver.ssl.enabled=${ZWE_components_gateway_server_ssl_enabled:-true} \
