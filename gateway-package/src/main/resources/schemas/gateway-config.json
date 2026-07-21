@@ -149,6 +149,11 @@
                             "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
                             "default": true
                         },
+                        "enableStrictUrlValidation": {
+                            "type": "boolean",
+                            "description": "When enabled, the Gateway strictly validates request URLs and rejects encoded characters such as encoded slashes, backslashes, and semicolons. When disabled, validation is relaxed for routed traffic, while Gateway-internal endpoints remain strictly validated.",
+                            "default": true
+                        },
                         "auth": {
                             "type": "object",
                             "description": "Detail configuration of authentication schemes.",
