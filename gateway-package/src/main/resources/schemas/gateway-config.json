@@ -509,11 +509,6 @@
                                 }
                             }
                         },
-                        "allowEncodedSlashes": {
-                            "type": "boolean",
-                            "description": "When this parameter is set to true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway.",
-                            "default": true
-                        },
                         "corsEnabled": {
                             "type": "boolean",
                             "description": "Allow CORS on gateway.",

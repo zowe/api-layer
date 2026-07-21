@@ -34,7 +34,6 @@ import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
-import org.zowe.apiml.gateway.filters.ForbidSlashException;
 import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -106,12 +105,6 @@ public class GatewayExceptionHandler {
     public Mono<Void> handleForbidCharacterException(ServerWebExchange exchange, ForbidCharacterException ex) {
         log.debug("Forbidden character in the URI {}: {}", exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.requestContainEncodedCharacter");
-    }
-
-    @ExceptionHandler(ForbidSlashException.class)
-    public Mono<Void> handleForbidSlashException(ServerWebExchange exchange, ForbidSlashException ex) {
-        log.debug("Forbidden slash in the URI {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.requestContainEncodedSlash");
     }
 
     @ExceptionHandler({AuthenticationException.class, WebClientResponseException.Unauthorized.class})
