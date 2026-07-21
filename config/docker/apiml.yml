@@ -62,7 +62,7 @@ management:
         shutdown:
             access: unrestricted
         loggers:
-            enabled: true
+            access: read-only
 
 server:
     address: 0.0.0.0
