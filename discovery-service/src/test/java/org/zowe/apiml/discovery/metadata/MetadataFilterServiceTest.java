@@ -75,7 +75,9 @@ class MetadataFilterServiceTest {
             "apiml.customKey, https://invalid.org:8080, true",
             "apiml.documentationUrl, invalid-url, false",
             "apiml.externalUrl, HTTPS://LOCALHOST:8080, true",
-            "apiml.externalUrl, HTTPS://INVALID.ORG:8080, false"
+            "apiml.externalUrl, HTTPS://INVALID.ORG:8080, false",
+            "apiml.externalUrl, https://invalid.org:8080null, false",
+            "apiml.externalUrl, https://localhost:8080null, true"
         })
         void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed) throws Exception {
             Map<String, String> metadata = new HashMap<>();
