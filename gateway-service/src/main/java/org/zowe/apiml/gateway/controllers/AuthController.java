@@ -90,13 +90,12 @@ public class AuthController {
 
     @DeleteMapping(path = INVALIDATE_PATH)
     @HystrixCommand
-    public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
-        final String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+    public void invalidateJwtToken(@RequestHeader("Authorization") String authHeader, HttpServletResponse response) {
+        if (!authHeader.startsWith("Bearer ")) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        final String jwtToken = authHeader.substring(7);
+        final String jwtToken = authHeader.substring(7).trim();
         try {
             final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
             response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);

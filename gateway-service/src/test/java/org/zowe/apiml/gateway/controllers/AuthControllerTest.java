@@ -50,6 +50,7 @@ import java.util.Optional;
 
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
 import static org.apache.http.HttpStatus.SC_NOT_FOUND;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
@@ -131,13 +132,19 @@ class AuthControllerTest {
             .andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(delete(INVALIDATE)
-            .header("authorization", BEARER + "xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
+            .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
 
         mockMvc.perform(delete(INVALIDATE)
-            .header("authorization", "wibble")).andExpect(status().is(SC_UNAUTHORIZED));
+            .header(AUTHORIZATION, "wibble")).andExpect(status().is(SC_BAD_REQUEST));
 
         mockMvc.perform(delete(INVALIDATE))
             .andExpect(status().is(SC_UNAUTHORIZED));
+
+        mockMvc.perform(delete(INVALIDATE)
+            .header(AUTHORIZATION, BEARER)).andExpect(status().is(SC_BAD_REQUEST));
+
+        mockMvc.perform(get(INVALIDATE)
+            .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_METHOD_NOT_ALLOWED));
 
         verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
         verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
