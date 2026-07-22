@@ -27,4 +27,5 @@ safAccess:
                 - USER
         APIML.DEBUG:
             CONTROL:
+                - user
                 - USER
