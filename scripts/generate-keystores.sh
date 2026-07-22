@@ -271,15 +271,25 @@ generate_localhost_keystore \
 # Trusted CAs chain for NGINX proxy
 cat ../local_ca/localca.cer > trusted_CAs.cer
 
-# Import public CA certificates into all truststores
-# This is needed for outbound TLS connections to external services (e.g. OIDC providers)
+# Import only the public CA certificates needed for OIDC provider connections
+# Importing all JDK cacerts (~150 certs) bloats the truststore and causes
+# startup timing regressions in CI
 import_cacerts() {
     local truststore="$1"
     if [ -n "$JAVA_CACERTS" ] && [ -f "$JAVA_CACERTS" ]; then
-        keytool -importkeystore \
-            -srckeystore "$JAVA_CACERTS" -srcstoretype JKS -srcstorepass changeit \
-            -destkeystore "$truststore" -deststoretype PKCS12 -deststorepass "$PASSWORD" \
-            -noprompt 2>/dev/null || true
+        echo "Importing required public CA certificates into $truststore"
+        for alias in \
+            "cn_digicert_global_root_ca,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+            "cn_digicert_global_root_g2,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+            "cn_digicert_global_root_g3,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+            "cn_isrg_root_x1,o_internet_security_research_group,c_us [jdk]"; do
+            tmpcert="/tmp/cert-$(echo "$alias" | tr ' ,' '__' | tr '[' '_' | tr ']' '_').crt"
+            keytool -exportcert -keystore "$JAVA_CACERTS" -storepass changeit \
+                -alias "$alias" -file "$tmpcert" 2>/dev/null && \
+            keytool -importcert -keystore "$truststore" \
+                -storepass "$PASSWORD" -alias "$alias" -file "$tmpcert" -noprompt 2>/dev/null
+            rm -f "$tmpcert"
+        done
     fi
 }
 for ts in localhost.truststore.p12 localhost2.truststore.p12 localhost-multi.truststore.p12; do
@@ -439,14 +449,23 @@ keytool -import -alias "zowe development instances certificate authority" \
     -file local_ca.pem -keystore all-services.truststore.p12 \
     -storetype pkcs12 -storepass "$PASSWORD" -noprompt
 
-# Import public CA certificates from the JDK's cacerts truststore
-# This is needed for outbound TLS connections to external services (e.g. OIDC providers)
+# Import only the public CA certificates needed for OIDC provider connections
+# Importing all JDK cacerts (~150 certs) bloats the truststore and causes
+# startup timing regressions in CI
 if [ -n "$JAVA_CACERTS" ] && [ -f "$JAVA_CACERTS" ]; then
-    echo "Importing public CA certificates from $JAVA_CACERTS"
-    keytool -importkeystore \
-        -srckeystore "$JAVA_CACERTS" -srcstoretype JKS -srcstorepass changeit \
-        -destkeystore all-services.truststore.p12 -deststoretype PKCS12 -deststorepass "$PASSWORD" \
-        -noprompt
+    echo "Importing required public CA certificates from $JAVA_CACERTS"
+    for alias in \
+        "cn_digicert_global_root_ca,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+        "cn_digicert_global_root_g2,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+        "cn_digicert_global_root_g3,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+        "cn_isrg_root_x1,o_internet_security_research_group,c_us [jdk]"; do
+        tmpcert="/tmp/cert-$(echo "$alias" | tr ' ,' '__' | tr '[' '_' | tr ']' '_').crt"
+        keytool -exportcert -keystore "$JAVA_CACERTS" -storepass changeit \
+            -alias "$alias" -file "$tmpcert" 2>/dev/null && \
+        keytool -importcert -keystore all-services.truststore.p12 \
+            -storepass "$PASSWORD" -alias "$alias" -file "$tmpcert" -noprompt 2>/dev/null
+        rm -f "$tmpcert"
+    done
 else
     echo "WARNING: Could not find Java cacerts truststore. External TLS connections may fail."
 fi
