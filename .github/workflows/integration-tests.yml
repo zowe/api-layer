@@ -94,6 +94,11 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+
             -   name: Run Startup Check
                 if: always()
                 run: >
@@ -165,6 +170,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
 
             -   name: Run Startup Check
                 if: always()
@@ -251,6 +261,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
 
             -   name: Run Startup Check
                 if: always()
@@ -374,6 +389,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
 
             -   name: Run Startup Check
                 if: always()
@@ -1142,6 +1162,11 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+
             -   name: Run Startup Check
                 if: always()
                 run: >
@@ -1192,6 +1217,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
 
             -   name: Run Startup Check
                 if: always()
@@ -1416,6 +1446,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
 
             -   name: Run Startup Check
                 if: always()
@@ -1775,6 +1810,11 @@ jobs:
 
             -   uses: ./.github/actions/setup
 
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
                 run: |
@@ -1991,6 +2031,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -2522,6 +2567,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+
+            -   name: Reload static API definitions
+                run: |
+                    sleep 10
+                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
 
             -   name: Run Startup Check
                 if: always()
