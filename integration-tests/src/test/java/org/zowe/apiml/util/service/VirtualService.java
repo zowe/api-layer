@@ -100,6 +100,7 @@ public class VirtualService implements AutoCloseable {
 
     private final String serviceId;
     private String instanceId;
+    private String hostname;
 
     private boolean registered, started;
 
@@ -389,6 +390,28 @@ public class VirtualService implements AutoCloseable {
     }
 
     /**
+     * To obtain hostname where the service is listening to.
+     * @return configured hostname or a detected hostname by localhost IP
+     * @throws UnknownHostException
+     */
+    public String getHostname() throws UnknownHostException {
+        if (hostname != null) {
+            return hostname;
+        }
+        return InetAddress.getLocalHost().getHostAddress();
+    }
+
+    /**
+     * Configure a custom hostname
+     * @param hostname custom hostname of service
+     * @return the same instance of virtual service
+     */
+    public VirtualService hostname(String hostname) {
+        this.hostname = hostname;
+        return this;
+    }
+
+    /**
      * @return instance of Tomcat for special configuration etc.
      */
     public Tomcat getTomcat() {
@@ -416,10 +439,10 @@ public class VirtualService implements AutoCloseable {
             .body(new JSONObject()
                 .put("instance", new JSONObject()
                     .put("instanceId", instanceId)
-                    .put("hostName", InetAddress.getLocalHost().getHostName())
+                    .put("hostName", getHostname())
                     .put("vipAddress", serviceId)
                     .put("app", serviceId)
-                    .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
+                    .put("ipAddr", getHostname())
                     .put("status", status)
                     .put("overriddenstatus", status)
                     .put("port", new JSONObject()
