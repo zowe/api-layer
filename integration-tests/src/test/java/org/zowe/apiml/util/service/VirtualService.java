@@ -131,7 +131,7 @@ public class VirtualService implements AutoCloseable {
     public VirtualService start() throws IOException, LifecycleException, JSONException {
         // start Tomcat to get listening port
         tomcat.start();
-        instanceId = InetAddress.getLocalHost().getHostName() + ":" + serviceId + ":" + getPort();
+        instanceId = getHostname() + ":" + serviceId + ":" + getPort();
 
         // register into discovery service and start heart beating
         register(Status.UP.toString());
@@ -434,7 +434,7 @@ public class VirtualService implements AutoCloseable {
     }
 
     public Response postRegistration(String status) throws UnknownHostException, JSONException {
-        return given().log().all().when()
+        var response = given().log().all().when()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(new JSONObject()
                 .put("instance", new JSONObject()
@@ -466,6 +466,10 @@ public class VirtualService implements AutoCloseable {
                 ).toString()
             )
             .post(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}", serviceId);
+        response.then()
+            .log().all()
+            .statusCode(SC_OK);
+        return response;
     }
 
     /**
