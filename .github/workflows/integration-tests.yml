@@ -119,7 +119,9 @@ jobs:
     CITestsModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
+        container:
+            image: ubuntu:latest
+            options: "--hostname testrunner"
         timeout-minutes: 15
 
         services:
@@ -174,6 +176,7 @@ jobs:
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Dtest_hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
@@ -445,7 +448,9 @@ jobs:
     CITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
+        container:
+            image: ubuntu:latest
+            options: "--hostname testrunner"
         timeout-minutes: 15
 
         services:
@@ -536,6 +541,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Dtest_hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
