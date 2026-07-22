@@ -298,6 +298,16 @@ for ts in localhost.truststore.p12 localhost2.truststore.p12 localhost-multi.tru
     fi
 done
 
+# Import mockserver certificate for zaas-client tests
+# mockserver-netty presents a built-in self-signed certificate (CN=www.mockserver.com)
+# during TLS negotiation. The ZaasClientTest validates against this cert.
+MOCKSERVER_CERT="$REPO_ROOT/zaas-client/src/test/resources/mockserver-cert.pem"
+if [ -f "$MOCKSERVER_CERT" ]; then
+    keytool -importcert -keystore localhost.truststore.p12 \
+        -storetype pkcs12 -storepass "$PASSWORD" \
+        -alias "www.mockserver.com" -file "$MOCKSERVER_CERT" -noprompt 2>/dev/null
+fi
+
 # ── 3. Self-signed keystores ───────────────────────────────────────────────
 echo ""
 echo "=== Generating self-signed keystores ==="
