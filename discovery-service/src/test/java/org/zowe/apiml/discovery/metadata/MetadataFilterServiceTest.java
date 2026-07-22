@@ -57,7 +57,7 @@ class MetadataFilterServiceTest {
     class GivenAllowedDomains {
 
         @BeforeEach
-        void setUp() throws Exception {
+        void setUp() {
             ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "localhost, *.zowe.org");
             metadataFilterService.afterPropertiesSet();
             var allowedDomainsSet = ReflectionTestUtils.getField(metadataFilterService, "allowedDomainsSet");
@@ -66,21 +66,19 @@ class MetadataFilterServiceTest {
 
         @ParameterizedTest(name = "Key: {0}, Value: {1} -> Allowed: {2}")
         @CsvSource({
-            "apiml.externalUrl, https://localhost:8080, true",
-            "apiml.externalUrl, https://localhost:8080, true",
-            "apiml.externalUrl, https://example.com:8080, false",
-            "apiml.swaggerUrl, https://example.com:8080, false",
-            "apiml.swaggerUrl, https://sub.zowe.org:8080, true",
-            "apiml.graphqlUrl, https://sub.zowe.org:8080, true",
-            "apiml.documentationUrl, https://invalid.org:8080, false",
-            "apiml.customKey, https://invalid.org:8080, true",
-            "apiml.documentationUrl, invalid-url, false",
-            "apiml.externalUrl, HTTPS://LOCALHOST:8080, true",
-            "apiml.externalUrl, HTTPS://INVALID.ORG:8080, false",
-            "apiml.externalUrl, https://invalid.org:8080null, false",
-            "apiml.externalUrl, https://localhost:8080null, true"
+            "apiml.externalUrl, https://localhost:8080, true, ''",
+            "apiml.externalUrl, https://example.com:8080, false, org.zowe.apiml.common.urlNotAllowed",
+            "apiml.swaggerUrl, https://example.com:8080, false, org.zowe.apiml.common.urlNotAllowed",
+            "apiml.swaggerUrl, https://sub.zowe.org:8080, true, ''",
+            "apiml.graphqlUrl, https://sub.zowe.org:8080, true, ''",
+            "apiml.documentationUrl, https://invalid.org:8080, false, org.zowe.apiml.common.urlNotAllowed",
+            "apiml.customKey, https://invalid.org:8080, true, ''",
+            "apiml.documentationUrl, invalid-url, false, org.zowe.apiml.common.urlNotAllowed",
+            "apiml.externalUrl, HTTPS://LOCALHOST:8080, true, ''",
+            "apiml.externalUrl, HTTPS://INVALID.ORG:8080, false, org.zowe.apiml.common.urlNotAllowed",
+            "apiml.externalUrl, http://localhost:8080, false, org.zowe.apiml.common.schemeNotAllowed"
         })
-        void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed) {
+        void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed, String expectedLogKey) {
             Map<String, String> metadata = new HashMap<>();
             metadata.put(metadataKey, metadataValue);
             when(instanceInfo.getMetadata()).thenReturn(metadata);
@@ -88,10 +86,10 @@ class MetadataFilterServiceTest {
 
             if (isAllowed) {
                 metadataFilterService.verifyAllowedDomains(instanceInfo);
-                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
+                verify(apimlLogger, never()).log(anyString(), eq(metadataKey), eq(metadataValue), anyString());
             } else {
                 assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
-                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
+                verify(apimlLogger).log(eq(expectedLogKey), eq(metadataKey), eq(metadataValue), anyString());
             }
         }
 
