@@ -334,8 +334,8 @@ public class ConnectionsConfig {
      * it rejects cross-site requests itself.
      */
     @Bean
-    WebFilter secFetchSiteFilter() {
-        return new SecFetchSiteFilter(gatewayCorsEnabled);
+    WebFilter secFetchSiteFilter(@Value("${security.secFetch.safeNavigationDestinations:#{null}}") Set<String> safeNav) {
+        return new SecFetchSiteFilter(gatewayCorsEnabled, safeNav);
     }
 
     public InstanceInfo create(EurekaInstanceConfig config) {

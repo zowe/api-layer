@@ -10,9 +10,11 @@
 
 package org.zowe.apiml.gateway.filters.security;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -22,6 +24,7 @@ import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -74,65 +77,75 @@ class SecFetchSiteFilterTest {
     @Nested
     class WhenCorsEnabled {
 
-        private final SecFetchSiteFilter filter = new SecFetchSiteFilter(true);
+        private SecFetchSiteFilter filter;
 
-        @ParameterizedTest
-        @ValueSource(strings = {"same-origin", "same-site", "none", "cross-site"})
-        void givenAnySite_thenAllowedAndDeferredToCors(String site) {
-            assertAllowed(exchange(HttpMethod.POST, site, null, null), filter);
+        @BeforeEach
+        void setUp() {
+            filter = new SecFetchSiteFilter(true, Set.of());
         }
 
-        @Test
-        void givenNoSecFetchSiteHeader_thenAllowed() {
-            assertAllowed(exchange(HttpMethod.POST, null, null, null), filter);
+        @ParameterizedTest
+        @ValueSource(strings = {"same-origin", "same-site", "none", "cross-site", "Same-Origin"})
+        @NullSource
+        void givenAnySecFetchSiteHeader_thenAllowedAndDeferredToCors(String site) {
+            assertAllowed(exchange(HttpMethod.POST, site, null, null), filter);
         }
     }
 
     @Nested
     class WhenCorsDisabled {
 
-        private final SecFetchSiteFilter filter = new SecFetchSiteFilter(false);
+        private SecFetchSiteFilter filter;
 
-        @Test
-        void givenNoSecFetchSiteHeader_thenAllowed() {
-            assertAllowed(exchange(HttpMethod.POST, null, null, null), filter);
+        @BeforeEach
+        void setUp() {
+            filter = new SecFetchSiteFilter(false, Set.of());
         }
 
-        @ParameterizedTest
-        @ValueSource(strings = {"same-origin", "same-site", "none"})
-        void givenSafeSite_thenAllowed(String site) {
-            assertAllowed(exchange(HttpMethod.POST, site, null, null), filter);
+        @Nested
+        class GivenSafeSecFetchSiteHeader {
+
+            @ParameterizedTest
+            @ValueSource(strings = {"same-origin", "same-site", "none", "Same-Origin", "SAME-SITE"})
+            @NullSource
+            void thenAllowed(String site) {
+                assertAllowed(exchange(HttpMethod.POST, site, null, null), filter);
+            }
         }
 
-        @Test
-        void givenCrossSiteStateChanging_thenRejected() {
-            assertRejected(exchange(HttpMethod.POST, "cross-site", null, null), filter);
-        }
+        @Nested
+        class GivenCrossSiteRequest {
 
-        @Test
-        void givenCrossSiteNonNavigationGet_thenRejected() {
-            assertRejected(exchange(HttpMethod.GET, "cross-site", "cors", null), filter);
-        }
+            @Nested
+            class WhenNavigateMode {
 
-        @Test
-        void givenCrossSiteSafeTopLevelNavigation_thenAllowed() {
-            assertAllowed(exchange(HttpMethod.GET, "cross-site", "navigate", "document"), filter);
-        }
+                @ParameterizedTest
+                @ValueSource(strings = {"GET", "POST", "PUT", "DELETE"})
+                void givenAllowedDestination_thenAllowed(String method) {
+                    assertAllowed(exchange(HttpMethod.valueOf(method), "cross-site", "navigate", "document"), filter);
+                }
 
-        @Test
-        void givenCrossSiteNavigationIntoObject_thenRejected() {
-            assertRejected(exchange(HttpMethod.GET, "cross-site", "navigate", "object"), filter);
-        }
+                @ParameterizedTest
+                @ValueSource(strings = {"object", "embed", "OBJECT", "EMBED"})
+                void givenUnsafeDestination_thenRejected(String destination) {
+                    assertRejected(exchange(HttpMethod.GET, "cross-site", "navigate", destination), new SecFetchSiteFilter(false, Set.of("iframe","frame")));
+                }
 
-        @Test
-        void givenCrossSiteNavigationWithUnsafeMethod_thenRejected() {
-            assertRejected(exchange(HttpMethod.POST, "cross-site", "navigate", "document"), filter);
-        }
+                @Test
+                void givenNullDestination_thenAllowed() {
+                    assertAllowed(exchange(HttpMethod.GET, "cross-site", "navigate", null), filter);
+                }
+            }
 
-        @Test
-        void givenSecFetchSiteValueIsCaseInsensitive_thenAllowed() {
-            assertAllowed(exchange(HttpMethod.POST, "Same-Origin", null, null), filter);
+            @Nested
+            class WhenNonNavigateMode {
+
+                @ParameterizedTest
+                @ValueSource(strings = {"cors", "no-cors"})
+                void thenRejected(String mode) {
+                    assertRejected(exchange(HttpMethod.POST, "cross-site", mode, null), filter);
+                }
+            }
         }
     }
-
 }

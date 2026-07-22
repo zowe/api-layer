@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.filters.security;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -52,15 +51,16 @@ public class SecFetchSiteFilter implements WebFilter, Ordered {
     static final String SEC_FETCH_DEST_HEADER = "Sec-Fetch-Dest";
 
     private static final Set<String> SAFE_SEC_FETCH_SITE_VALUES = Set.of("same-origin", "same-site", "none");
-    private static final String NAVIGATE_MODE = "navigate";
-    private static final Set<HttpMethod> SAFE_NAVIGATION_METHODS = Set.of(HttpMethod.GET, HttpMethod.HEAD);
-    private static final Set<String> UNSAFE_NAVIGATION_DESTINATIONS = Set.of("object", "embed");
+    private static final Set<String> SAFE_MODE = Set.of("navigate", "same-origin", "websocket");
+
     private static final String REJECTION_MESSAGE = "Invalid CORS request";
 
+    private final Set<String> safeNavigationDestinations;
     private final boolean corsEnabled;
 
-    public SecFetchSiteFilter(boolean corsEnabled) {
+    public SecFetchSiteFilter(boolean corsEnabled, Set<String> safeNavigationDestinations) {
         this.corsEnabled = corsEnabled;
+        this.safeNavigationDestinations = safeNavigationDestinations;
     }
 
     @Override
@@ -88,27 +88,20 @@ public class SecFetchSiteFilter implements WebFilter, Ordered {
             return true;
         }
 
-        // Cross-site (or any other value): when CORS is enabled the Origin is validated by the CORS
-        // DefaultCorsProcessor, so defer to it; otherwise allow only a safe top-level navigation.
         return corsEnabled || isSafeTopLevelNavigation(request);
     }
 
-    /**
-     * A safe top-level navigation per the Fetch Metadata Resource Isolation Policy: a
-     * {@code Sec-Fetch-Mode: navigate} request using a safe method that is not being loaded into an
-     * {@code <object>} or {@code <embed>}. Such navigations cannot read the response cross-origin
-     * and, being read-only, cannot change server state, so they are allowed even when cross-site.
-     */
     private boolean isSafeTopLevelNavigation(ServerHttpRequest request) {
-        String mode = request.getHeaders().getFirst(SEC_FETCH_MODE_HEADER);
-        if (!NAVIGATE_MODE.equalsIgnoreCase(mode)) {
+        var mode = request.getHeaders().getFirst(SEC_FETCH_MODE_HEADER);
+        if (mode == null || !SAFE_MODE.contains(mode.toLowerCase(Locale.ROOT))) {
             return false;
         }
-        if (!SAFE_NAVIGATION_METHODS.contains(request.getMethod())) {
-            return false;
-        }
-        String dest = request.getHeaders().getFirst(SEC_FETCH_DEST_HEADER);
-        return dest == null || !UNSAFE_NAVIGATION_DESTINATIONS.contains(dest.toLowerCase(Locale.ROOT));
+        var dest = request.getHeaders().getFirst(SEC_FETCH_DEST_HEADER);
+        return isSafeDest(dest);
+    }
+
+    private boolean isSafeDest(String dest) {
+        return dest == null || (safeNavigationDestinations.isEmpty() || safeNavigationDestinations.contains(dest.toLowerCase(Locale.ROOT)));
     }
 
     @Override
