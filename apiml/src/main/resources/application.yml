@@ -1,6 +1,4 @@
 # for back-compatibility
-spring.profiles.group.attls: attlsServer,attlsClient
-
 eureka:
     dashboard:
         path: /eureka
@@ -18,6 +16,10 @@ eureka:
         useReadOnlyResponseCache: false
         peer-node-read-timeout-ms: 15000
 spring:
+    profiles:
+        group:
+            attls: attlsServer,attlsClient
+            debug-control: debug
     cloud:
         gateway:
             server:
@@ -390,7 +392,6 @@ management:
 
 ---
 spring.config.activate.on-profile: debug-control
-spring.profiles.active: debug
 
 management:
     endpoint:

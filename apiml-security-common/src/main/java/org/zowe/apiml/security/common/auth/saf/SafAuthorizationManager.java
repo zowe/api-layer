@@ -17,8 +17,8 @@ import org.springframework.security.authorization.ReactiveAuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
-import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -33,9 +33,12 @@ public class SafAuthorizationManager<T> implements ReactiveAuthorizationManager<
     public Mono<AuthorizationDecision> check(Mono<Authentication> authentication, T object) {
         // @formatter:off
         return authentication.filter(Authentication::isAuthenticated)
-                .filter(auth -> safResourceAccessVerifying.hasSafResourceAccess(auth, safResourceClass, safResourceName, safResourceAccess))
+                .flatMap(auth -> Mono.fromCallable(() ->
+                    safResourceAccessVerifying.hasSafResourceAccess(auth, safResourceClass, safResourceName, safResourceAccess))
+                .subscribeOn(Schedulers.boundedElastic()))
+                .filter(value -> value != null && value)
                 .map(auth -> ((AuthorizationDecision) new AuthorityAuthorizationDecision(true, List.of(new SimpleGrantedAuthority(String.format("%s.%s:%s", safResourceClass, safResourceName, safResourceAccess))))))
-                .defaultIfEmpty(new AuthorityAuthorizationDecision(false, Collections.emptyList()));
+                .defaultIfEmpty(new AuthorityAuthorizationDecision(false, List.of()));
         // @formatter:on
     }
 
