@@ -83,14 +83,18 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
 
     @Override
     public boolean hasSafResourceAccess(Authentication authentication, String resourceClass, String resourceName, String accessLevel) {
-        ResourceUser resourceUser = ResourceUser.builder()
+        log.info("Verify access of principal: {} to SAF class: {}, resource: {}, access level: {}", authentication.getPrincipal(), resourceClass, resourceName, accessLevel);
+        var resourceUser = ResourceUser.builder()
             .resourceClass(resourceClass)
             .resourceName(resourceName)
             .userId(authentication.getName())
             .build();
-        AccessLevel currentLevel = resourceUserToAccessLevel.get(resourceUser);
-        if (currentLevel == null) return false;
-        return currentLevel.compareTo(AccessLevel.valueOf(accessLevel)) >= 0;
+        var currentLevel = resourceUserToAccessLevel.get(resourceUser);
+        var hasAccess = currentLevel != null && currentLevel.compareTo(AccessLevel.valueOf(accessLevel)) >= 0;
+
+        log.info("Has access: {}, current level: {}", hasAccess, currentLevel);
+
+        return hasAccess;
     }
 
     /**
