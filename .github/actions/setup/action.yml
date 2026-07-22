@@ -17,6 +17,12 @@ runs:
                     else sudo apt-get update && sudo apt-get install -y openssl; fi
                 fi
             shell: bash
+        -   name: Download keystores
+            uses: actions/download-artifact@v4
+            with:
+                name: keystores-${{ env.JOB_ID }}
+                path: keystore/
+            continue-on-error: true
         -   name: Set up JDK ${{ inputs.jdkVersion }}
             uses: actions/setup-java@v4
             with:

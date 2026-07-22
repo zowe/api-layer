@@ -55,6 +55,13 @@ jobs:
                 run: >
                     ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
 
+            -   name: Upload keystores
+                uses: actions/upload-artifact@v4
+                with:
+                    name: keystores-${{ env.JOB_ID }}
+                    path: keystore/**/*.p12
+                    retention-days: 1
+
             -   uses: ./.github/actions/teardown
 
     CITestsModulithUnknownHostnames:
@@ -90,7 +97,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Ddiscoverableclient.host=discoverable-client-unknown -Dzosmf.host=mock-services-unknown
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -100,7 +107,7 @@ jobs:
 
             -   name: Run CI Tests with Unknown Hostnames
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runUnknownHostnamesTests --info
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runUnknownHostnamesTests -PskipKeystoreGeneration --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -162,7 +169,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith
                     -Denvironment.modulith=true -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -171,7 +178,7 @@ jobs:
 
             -   name: Run Modulith CI Tests
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests --info
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests -PskipKeystoreGeneration --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
@@ -248,7 +255,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
                     -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                     -Dzosmf.instances=0
@@ -258,7 +265,7 @@ jobs:
 
             -   name: Run Modulith CI Tests with SAF Provider in HA
                 run: >
-                    ENV_CONFIG=docker-modulith-ha ./gradlew :integration-tests:runContainerSAFProviderTests --info
+                    ENV_CONFIG=docker-modulith-ha ./gradlew :integration-tests:runContainerSAFProviderTests -PskipKeystoreGeneration --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
@@ -371,7 +378,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -380,7 +387,7 @@ jobs:
             -   name: Run Normal HA Tests in Modulith
                 if: ${{ 'normal' == matrix.type }}
                 run: >
-                    ./gradlew runHATests -Denvironment.config=-docker-modulith-ha -Denvironment.gwCount=3
+                    ./gradlew -PskipKeystoreGeneration runHATests -Denvironment.config=-docker-modulith-ha -Denvironment.gwCount=3
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -389,7 +396,7 @@ jobs:
             -   name: Run Gateway Service Chaotic HA Tests in Modulith
                 if: ${{ 'gateway-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
                     -Denvironment.config=-docker-modulith-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
@@ -399,7 +406,7 @@ jobs:
             -   name: Run Discoverable Client Chaotic HA Tests in Modulith
                 if: ${{ 'discoverableclient-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
                     -Denvironment.config=-docker-modulith-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
@@ -409,7 +416,7 @@ jobs:
             -   name: Run WebSocket Chaotic HA Tests in Modulith
                 if: ${{ 'websocket-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     -Denvironment.config=-docker-modulith-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
@@ -419,7 +426,7 @@ jobs:
             -   name: Run Caching Chaotic HA Tests
                 if: ${{ 'caching-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.CachingServiceTests
                     -Denvironment.config=-docker-modulith-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Denvironment.modulith=true -Denvironment.chaotic=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -525,7 +532,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker -DcentralGateway.instances=0
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker -DcentralGateway.instances=0
                     -DcentralHosts=discovery-service-2,gateway-service-2,zaas-service-2
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -534,7 +541,7 @@ jobs:
             -   name: Run CI Tests
                 timeout-minutes: 4
                 run: >
-                    ./gradlew :integration-tests:runContainerTests -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runContainerTests -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -631,7 +638,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dcaching.instances=1 -Dzosmf.instances=0
                 env:
@@ -640,7 +647,7 @@ jobs:
 
             -   name: Run CI Tests With SAF Provider
                 run: >
-                    ENV_CONFIG=ha ./gradlew :integration-tests:runContainerSAFProviderTests -Denvironment.config=-ha
+                    ENV_CONFIG=ha ./gradlew :integration-tests:runContainerSAFProviderTests -PskipKeystoreGeneration -Denvironment.config=-ha
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -716,7 +723,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -Dapicatalog.instances=0
                 env:
@@ -725,7 +732,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runGatewayProxyTest -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runGatewayProxyTest -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
@@ -830,7 +837,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Ddiscoverableclient.instances=0 -Dgateway.instances=2
                     -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -840,7 +847,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
+                    ./gradlew :integration-tests:runGatewayCentralRegistryTest -PskipKeystoreGeneration --info
                     -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
@@ -921,14 +928,14 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0
                     -Denvironment.modulith=true -Dgateway.host=central-gateway-service
                     -DcentralHosts=central-gateway-service
 
             -   name: Run CI Tests
                 timeout-minutes: 4
                 run: >
-                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
+                    ./gradlew :integration-tests:runGatewayCentralRegistryTest -PskipKeystoreGeneration --info
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Ddiscovery.additionalHost=central-gateway-service
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -980,7 +987,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
                 env:
@@ -989,7 +996,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runRegistrationTests -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runRegistrationTests -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
 
@@ -1054,14 +1061,14 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration --info -Denvironment.config=-docker
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
                     -Dapiml.security.ssl.verifySslCertificatesOfServices=false
                     -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
 
             -   name: Run Discovery Basic Auth Tests
                 run: >
-                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests -PskipKeystoreGeneration -Denvironment.config=-docker
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1138,14 +1145,14 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-2-instances
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration --info -Denvironment.config=-docker-modulith-2-instances
                     -Denvironment.modulith=true
                     -Dapiml.security.ssl.verifySslCertificatesOfServices=false
                     -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
 
             -   name: Run Discovery Basic Auth Tests
                 run: >
-                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker-modulith-2-instances
+                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests -PskipKeystoreGeneration -Denvironment.config=-docker-modulith-2-instances
                     -Denvironment.modulith=true
 
             -   name: Store results
@@ -1189,7 +1196,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
                 env:
@@ -1198,7 +1205,7 @@ jobs:
 
             -   name: Run CI Tests
                 run: >
-                    ./gradlew :integration-tests:runRegistrationTests -Denvironment.config=-docker-modulith
+                    ./gradlew :integration-tests:runRegistrationTests -PskipKeystoreGeneration -Denvironment.config=-docker-modulith
                     -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
@@ -1277,7 +1284,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -1286,7 +1293,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runZaasTest -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runZaasTest -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Doidc.client.id=${{ secrets.OIDC_CLIENT_ID }} -Doidc.client.secret=${{ secrets.OIDC_CLIENT_SECRET }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OIDC_WINNIE_USER }}
@@ -1354,7 +1361,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
                 env:
@@ -1363,7 +1370,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runZosmfAuthTest -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
@@ -1413,7 +1420,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -DcentralGateway.instances=0
                 env:
@@ -1422,7 +1429,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runZosmfAuthTest --info
+                    ./gradlew :integration-tests:runZosmfAuthTest -PskipKeystoreGeneration --info
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
@@ -1457,7 +1464,7 @@ jobs:
 
             -   name: Run Startup Check
                 run: >
-                    ./gradlew runStartUpCheck --info
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration --info
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
@@ -1470,7 +1477,7 @@ jobs:
 
             -   name: Run Caching Service tests
                 run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info
+                    ./gradlew :integration-tests:runCachingServiceTests -PskipKeystoreGeneration --info
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
@@ -1537,7 +1544,7 @@ jobs:
 
             -   name: Run Startup Check
                 run: >
-                    ./gradlew runStartUpCheck --info
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration --info
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
@@ -1550,7 +1557,7 @@ jobs:
 
             -   name: Run Caching Service tests
                 run: >
-                    ./gradlew :integration-tests:runCachingServiceTests --info
+                    ./gradlew :integration-tests:runCachingServiceTests -PskipKeystoreGeneration --info
                     -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
@@ -1686,7 +1693,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-ha
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-ha
                     -Ddiscoverableclient.instances=2 -Dcaching.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -1695,7 +1702,7 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runDeterministicLbHaTests --info
+                    ./gradlew -PskipKeystoreGeneration runDeterministicLbHaTests --info
                     -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=1
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -1782,7 +1789,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith-ha
                     -Ddiscoverableclient.instances=2 -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2
                     -Dcaching.instances=2 -Dapicatalog.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
@@ -1792,7 +1799,7 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runDeterministicLbHaTests --info
+                    ./gradlew -PskipKeystoreGeneration runDeterministicLbHaTests --info
                     -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
@@ -1906,7 +1913,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-ha
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dapicatalog.instances=1 -Dcaching.instances=1
                 env:
@@ -1915,7 +1922,7 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runStickySessionLbHaTests -Denvironment.config=-ha
+                    ./gradlew -PskipKeystoreGeneration runStickySessionLbHaTests -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1999,7 +2006,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
                 env:
@@ -2008,7 +2015,7 @@ jobs:
 
             -   name: Run HA Tests
                 run: >
-                    ./gradlew runStickySessionLbHaTests -Denvironment.config=-docker-modulith-ha
+                    ./gradlew -PskipKeystoreGeneration runStickySessionLbHaTests -Denvironment.config=-docker-modulith-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2155,7 +2162,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=2
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-ha -Ddiscoverableclient.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2163,7 +2170,7 @@ jobs:
 
             -   name: Run Caching Chaotic HA Tests
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.CachingServiceTests
                     -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -2297,7 +2304,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=2
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2306,7 +2313,7 @@ jobs:
             -   name: Run Normal HA Tests
                 if: ${{ 'normal' == matrix.type }}
                 run: >
-                    ./gradlew runHATests -Denvironment.config=-ha -Denvironment.gwCount=2 -Dcaching.instances=2
+                    ./gradlew -PskipKeystoreGeneration runHATests -Denvironment.config=-ha -Denvironment.gwCount=2 -Dcaching.instances=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2315,7 +2322,7 @@ jobs:
             -   name: Run Discovery Service Chaotic HA Tests
                 if: ${{ 'discovery-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
                     -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -2325,7 +2332,7 @@ jobs:
             -   name: Run Gateway Service Chaotic HA Tests
                 if: ${{ 'gateway-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
                     -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -2335,7 +2342,7 @@ jobs:
             -   name: Run Discoverable Client Chaotic HA Tests
                 if: ${{ 'discoverableclient-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
                     -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -2345,7 +2352,7 @@ jobs:
             -   name: Run WebSocket Chaotic HA Tests
                 if: ${{ 'websocket-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -2355,7 +2362,7 @@ jobs:
             -   name: Run Caching Chaotic HA Tests
                 if: ${{ 'caching-chaotic' == matrix.type }}
                 run: >
-                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    ./gradlew :integration-tests:runChaoticHATests -PskipKeystoreGeneration --tests org.zowe.apiml.integration.ha.CachingServiceTests
                     -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -2435,7 +2442,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
                 env:
@@ -2444,7 +2451,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew :integration-tests:runInfinispanServiceTests -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runInfinispanServiceTests -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   uses: ./.github/actions/dump-jacoco
@@ -2519,7 +2526,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith-ha
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
                     -Denvironment.modulith=true -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -2529,7 +2536,7 @@ jobs:
 
             -   name: Build with Gradle
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests --info
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests -PskipKeystoreGeneration --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
@@ -2638,7 +2645,7 @@ jobs:
 
             -   name: Run startup check
                 run: >
-                    ./gradlew runStartUpCheck --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Dgateway.instances=1 -Dcaching.instances=1 -Dapicatalog.instances=1
                     -DcentralHosts=api-catalog-services,discoverable-client,discovery-service,gateway-service,zaas-service,caching-service
 
@@ -2758,7 +2765,7 @@ jobs:
 
             -   name: Run startup check
                 run: >
-                    ./gradlew runStartUpCheck --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
                     -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
                     -DcentralHosts=discoverable-client,gateway-service
 
@@ -2838,7 +2845,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DserviceIdReplaced=discoverableclient:sampleclient
                     -DcentralGateway.instances=0
@@ -2848,7 +2855,7 @@ jobs:
 
             -   name: Run Service ID Prefix Replacer Tests
                 run: >
-                    ./gradlew :integration-tests:runIdPrefixReplacerTests -Denvironment.config=-docker
+                    ./gradlew :integration-tests:runIdPrefixReplacerTests -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2895,7 +2902,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
+                    ./gradlew runStartUpCheck -PskipKeystoreGeneration -Denvironment.config=-docker-modulith
                     -Denvironment.modulith=true -Ddiscoverableclient.instances=0 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -2904,7 +2911,7 @@ jobs:
 
             -   name: Run Node.JS and Python Services Tests
                 run: >
-                    ./gradlew :integration-tests:runNodeAndPythonSampleServiceTests -Denvironment.config=-docker-modulith
+                    ./gradlew :integration-tests:runNodeAndPythonSampleServiceTests -PskipKeystoreGeneration -Denvironment.config=-docker-modulith
                     -Denvironment.modulith=true
 
             -   name: Store results
