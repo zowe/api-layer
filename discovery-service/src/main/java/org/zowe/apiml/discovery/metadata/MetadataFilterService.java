@@ -21,6 +21,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -37,19 +38,23 @@ import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
 public class MetadataFilterService implements InitializingBean {
 
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
+    private static final String ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED = "org.zowe.apiml.common.schemeNotAllowed";
 
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname:localhost}}")
     private String allowedDomains;
 
+    @Value("${server.attlsClient.enabled:false}")
+    private boolean isClientAttlsEnabled;
+
     private boolean onlyWarn = false;
 
     @InjectApimlLogger
-    private ApimlLogger apimlLogger = ApimlLogger.empty();
+    private final ApimlLogger apimlLogger = ApimlLogger.empty();
 
     private Set<String> allowedDomainsSet;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
         onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
 
@@ -76,6 +81,19 @@ public class MetadataFilterService implements InitializingBean {
         });
     }
 
+    private boolean isAllowedScheme(String url) {
+        if (StringUtils.isBlank(url)) {
+            return true;
+        }
+
+        if (isUrl(url)) {
+            String scheme = URI.create(url).getScheme();
+            return !"http".equalsIgnoreCase(scheme) || isClientAttlsEnabled;
+        }
+
+        return true;
+    }
+
     private boolean isAllowed(String allowedDomain, String domain) throws MalformedURLException {
         log.debug("checking URL {} against domain {}", domain, allowedDomain);
         allowedDomain = allowedDomain.toLowerCase();
@@ -93,6 +111,29 @@ public class MetadataFilterService implements InitializingBean {
         return false;
     }
 
+    private boolean validateUrl(String label, String url, InstanceInfo info) {
+        if (StringUtils.isBlank(url)) {
+            return true;
+        }
+
+        boolean isValid = true;
+
+        if (!isAllowedDomain(url)) {
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, url, info.getInstanceId());
+            isValid = false;
+        }
+
+        if (!isAllowedScheme(url)) {
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED, label, url, info.getInstanceId());
+            isValid = false;
+        }
+        if (isValid && log.isTraceEnabled()) {
+            log.trace("URL {} is allowed for {}", url, label);
+        }
+
+        return isValid;
+    }
+
     private boolean verifyMetadataEntry(String key, String value, InstanceInfo info) {
         var metadataKeysToVerify = List.of(
             "swaggerUrl",
@@ -101,14 +142,7 @@ public class MetadataFilterService implements InitializingBean {
             "externalUrl");
 
         if (metadataKeysToVerify.stream().anyMatch(metadataKey -> key.startsWith("apiml.") && key.endsWith(metadataKey))) {
-            if (!isAllowedDomain(value)) {
-                apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, key, value, info.getInstanceId());
-                return false;
-            } else {
-                if (log.isTraceEnabled()) {
-                    log.trace("URL {} is allowed", value);
-                }
-            }
+            return validateUrl(key, value, info);
         }
         return true;
 
@@ -122,8 +156,7 @@ public class MetadataFilterService implements InitializingBean {
             apimlLogger.log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
         } else {
             urls.forEach(url -> {
-                if (!isAllowedDomain(url)) {
-                    apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "API ML CORS Allowed Origin", url, info.getInstanceId());
+                if (!validateUrl("API ML CORS Allowed Origin", url, info)) {
                     result.set(false);
                 }
             });
@@ -134,24 +167,16 @@ public class MetadataFilterService implements InitializingBean {
 
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
-        if (!isAllowedDomain(info.getHostName())) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Instance Hostname", info.getHostName(), info.getInstanceId());
+        if (!validateUrl("Home Page URL", info.getHomePageUrl(), info)) {
             result.set(false);
         }
-        if (!isAllowedDomain(info.getHomePageUrl())) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Home Page URL", info.getHomePageUrl(), info.getInstanceId());
+        if (!validateUrl("HealthCheck URL", info.getHealthCheckUrl(), info)) {
             result.set(false);
         }
-        if (!isAllowedDomain(info.getHealthCheckUrl())) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "HealthCheck URL", info.getHealthCheckUrl(), info.getInstanceId());
+        if (!validateUrl("Status Page URL", info.getStatusPageUrl(), info)) {
             result.set(false);
         }
-        if (!isAllowedDomain(info.getStatusPageUrl())) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Status Page URL", info.getStatusPageUrl(), info.getInstanceId());
-            result.set(false);
-        }
-        if (!isAllowedDomain(info.getSecureHealthCheckUrl())) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Secure Health Check URL", info.getSecureHealthCheckUrl(), info.getInstanceId());
+        if (!validateUrl("Secure Health Check URL", info.getSecureHealthCheckUrl(), info)) {
             result.set(false);
         }
 

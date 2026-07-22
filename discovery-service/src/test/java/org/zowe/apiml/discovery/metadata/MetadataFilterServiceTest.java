@@ -80,7 +80,7 @@ class MetadataFilterServiceTest {
             "apiml.externalUrl, https://invalid.org:8080null, false",
             "apiml.externalUrl, https://localhost:8080null, true"
         })
-        void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed) throws Exception {
+        void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed) {
             Map<String, String> metadata = new HashMap<>();
             metadata.put(metadataKey, metadataValue);
             when(instanceInfo.getMetadata()).thenReturn(metadata);
@@ -90,9 +90,7 @@ class MetadataFilterServiceTest {
                 metadataFilterService.verifyAllowedDomains(instanceInfo);
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
             } else {
-                assertThrows(MetadataValidationException.class, () -> {
-                    metadataFilterService.verifyAllowedDomains(instanceInfo);
-                });
+                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
                 verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
             }
         }
@@ -127,7 +125,7 @@ class MetadataFilterServiceTest {
         class OnCors {
 
             @Test
-            void whenUsingWildcard_thenWarningIsLogged() throws Exception {
+            void whenUsingWildcard_thenWarningIsLogged() {
                 Map<String, String> metadata = new HashMap<>();
                 metadata.put("apiml.corsAllowedOrigins", "*");
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
@@ -139,7 +137,7 @@ class MetadataFilterServiceTest {
             }
 
             @Test
-            void whenUsingSpecificURL_thenNoWarningIsLogged() throws Exception {
+            void whenUsingSpecificURL_thenNoWarningIsLogged() {
                 Map<String, String> metadata = new HashMap<>();
                 metadata.put("apiml.corsAllowedOrigins", "https://localhost:3000");
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
@@ -157,11 +155,58 @@ class MetadataFilterServiceTest {
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
                 when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
-                assertThrows(MetadataValidationException.class, () -> {
-                    metadataFilterService.verifyAllowedDomains(instanceInfo);
-                });
+                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
 
                 verify(apimlLogger).log("org.zowe.apiml.common.urlNotAllowed", "API ML CORS Allowed Origin", "https://invalid.org:3000", "test-instance");
+            }
+
+            @Test
+            void whenUsingHttpCorsWithoutAttls_thenSchemeNotAllowedIsLogged() {
+                ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", false);
+                Map<String, String> metadata = new HashMap<>();
+                metadata.put("apiml.corsAllowedOrigins", "http://localhost:3000");
+                when(instanceInfo.getMetadata()).thenReturn(metadata);
+                when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+
+                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+
+                verify(apimlLogger).log("org.zowe.apiml.common.schemeNotAllowed", "API ML CORS Allowed Origin", "http://localhost:3000", "test-instance");
+            }
+
+        }
+
+        @Nested
+        class OnSchemeValidation {
+
+            @Test
+            void whenHttpAndAttlsDisabled_thenSchemeNotAllowedLoggedAndExceptionThrown() {
+                ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", false);
+                when(instanceInfo.getHomePageUrl()).thenReturn("http://localhost:8080");
+                when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+
+                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+
+                verify(apimlLogger).log("org.zowe.apiml.common.schemeNotAllowed", "Home Page URL", "http://localhost:8080", "test-instance");
+            }
+
+            @Test
+            void whenHttpAndAttlsEnabled_thenAllowed() {
+                ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", true);
+                when(instanceInfo.getHomePageUrl()).thenReturn("http://localhost:8080");
+
+                metadataFilterService.verifyAllowedDomains(instanceInfo);
+
+                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.schemeNotAllowed"), anyString(), anyString(), anyString());
+            }
+
+            @Test
+            void whenHttpsAndAttlsDisabled_thenAllowed() {
+                ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", false);
+                when(instanceInfo.getHomePageUrl()).thenReturn("https://localhost:8080");
+
+                metadataFilterService.verifyAllowedDomains(instanceInfo);
+
+                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.schemeNotAllowed"), anyString(), anyString(), anyString());
             }
 
         }
