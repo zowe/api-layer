@@ -15,8 +15,10 @@ import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
 import io.restassured.RestAssured;
 import io.restassured.config.HttpClientConfig;
+import io.restassured.config.RestAssuredConfig;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.HttpRequestRetryHandler;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -60,6 +62,8 @@ class ActuatorConfigTest {
         @MockitoBean
         private LocalTokenProvider tokenProvider;
 
+        private RestAssuredConfig config;
+
         @BeforeEach
         void mockTokenValidation() {
             when(tokenProvider.validateToken(any())).thenAnswer(invocation -> {
@@ -76,8 +80,14 @@ class ActuatorConfigTest {
         void retryOnDroppedConnection() {
             HttpRequestRetryHandler retryHandler = (exception, executionCount, context) ->
                 exception instanceof NoHttpResponseException && executionCount < 3;
+            this.config = RestAssured.config;
             RestAssured.config = RestAssured.config
                 .httpClient(HttpClientConfig.httpClientConfig().setParam("http.method.retry-handler", retryHandler));
+        }
+
+        @AfterEach
+        void restoreConfig() {
+            RestAssured.config = this.config;
         }
 
     }
