@@ -83,7 +83,7 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
 
     @Override
     public boolean hasSafResourceAccess(Authentication authentication, String resourceClass, String resourceName, String accessLevel) {
-        log.info("Verify access of principal: {} to SAF class: {}, resource: {}, access level: {}", authentication.getName(), resourceClass, resourceName, accessLevel);
+        log.info("Verify access of : {} to SAF class: {}, resource: {}, access level: {}", authentication, resourceClass, resourceName, accessLevel);
         var resourceUser = ResourceUser.builder()
             .resourceClass(resourceClass)
             .resourceName(resourceName)
