@@ -13,6 +13,10 @@ package org.zowe.apiml.gateway.acceptance;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
+import io.restassured.RestAssured;
+import io.restassured.config.HttpClientConfig;
+import org.apache.http.NoHttpResponseException;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -79,6 +83,14 @@ class ActuatorConfigTest {
                     QueryResponse.Source.ZOWE.value, Collections.emptyList(), QueryResponse.Source.ZOWE
                 ));
             });
+        }
+
+        @BeforeEach
+        void retryOnDroppedConnection() {
+            HttpRequestRetryHandler retryHandler = (exception, executionCount, context) ->
+                exception instanceof NoHttpResponseException && executionCount < 3;
+            RestAssured.config = RestAssured.config
+                .httpClient(HttpClientConfig.httpClientConfig().setParam("http.method.retry-handler", retryHandler));
         }
 
     }
