@@ -119,11 +119,15 @@ public class MetadataFilterService implements InitializingBean {
         boolean isValid = true;
 
         if (!isAllowedDomain(url)) {
+            // temporarly
+            log.error("URL_CHECK_FAILED: Domain not allowed for '{}' -> URL: '{}'", label, url);
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, url, info.getInstanceId());
             isValid = false;
         }
 
         if (!isAllowedScheme(url)) {
+            // temporarly
+            log.error("URL_CHECK_FAILED: Scheme not allowed for '{}' -> URL: '{}'", label, url);
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED, label, url, info.getInstanceId());
             isValid = false;
         }
