@@ -3,7 +3,7 @@ dependencyResolutionManagement {
         libs {
             // for node projects — keep in sync with .github/actions/setup/action.yml
             version('projectNode', '24.18.0')
-            version('projectNpm', '10.9.0')     // keep in sync with .github/actions/setup/action.yml
+            version('projectNpm', '10.9.8')     // keep in sync with .github/actions/setup/action.yml
 
             version('springBoot', '3.5.16')
             version('springBootGraphQl', '3.5.16')
