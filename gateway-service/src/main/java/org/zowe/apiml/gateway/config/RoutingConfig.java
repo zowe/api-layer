@@ -28,8 +28,6 @@ public class RoutingConfig {
 
     @Value("${apiml.security.x509.acceptForwardedCert:false}")
     private boolean acceptForwardedCert;
-    @Value("${apiml.service.allowEncodedSlashes:true}")
-    private boolean allowEncodedSlashes;
 
     @Bean
     public List<FilterDefinition> commonNoRetryFilters() {
@@ -39,12 +37,6 @@ public class RoutingConfig {
             FilterDefinition acceptForwardedClientCertFilter = new FilterDefinition();
             acceptForwardedClientCertFilter.setName("AcceptForwardedClientCertFilterFactory");
             filters.add(acceptForwardedClientCertFilter);
-        }
-
-        if (!allowEncodedSlashes) {
-            var encodedSlashesFilter = new FilterDefinition();
-            encodedSlashesFilter.setName("ForbidEncodedSlashesFilterFactory");
-            filters.add(encodedSlashesFilter);
         }
 
         var secureHeaders = new FilterDefinition();

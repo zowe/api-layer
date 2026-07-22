@@ -35,7 +35,6 @@ import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
-import org.zowe.apiml.gateway.filters.ForbidSlashException;
 import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
@@ -90,7 +89,6 @@ class GatewayExceptionHandlerTest {
 
         Stream<Arguments> getExceptions() {
             return Stream.of(
-                Arguments.of(new ForbidSlashException(""), 400, "org.zowe.apiml.gateway.requestContainEncodedSlash"),
                 Arguments.of(new ForbidCharacterException(""), 400, "org.zowe.apiml.gateway.requestContainEncodedCharacter"),
                 Arguments.of(new ResponseStatusException(HttpStatusCode.valueOf(504)), 504, "org.zowe.apiml.gateway.responseStatusError")
             );
