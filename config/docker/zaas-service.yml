@@ -11,8 +11,6 @@ apiml:
     hostname: zaas-service
     discoveryServiceUrls: https://discovery-service:10011/eureka/
   security:
-    authorization:
-      provider: endpoint
     allowTokenRefresh: true
     personalAccessToken:
       enabled: true

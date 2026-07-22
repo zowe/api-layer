@@ -1,8 +1,5 @@
 spring.profiles.include: diag,debug
 apiml:
-    security:
-        authorization:
-            provider: endpoint
     service:
         ssl:
             key-store: /docker/client-cert.p12
