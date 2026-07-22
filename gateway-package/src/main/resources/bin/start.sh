@@ -53,7 +53,6 @@
 # - ZWE_configs_apiml_security_x509_acceptForwardedCert
 # - ZWE_configs_apiml_security_x509_certificatesUrl
 # - ZWE_configs_apiml_security_x509_registry_allowedUsers
-# - ZWE_configs_apiml_service_allowEncodedSlashes
 # - ZWE_configs_apiml_service_corsEnabled
 # - ZWE_configs_apiml_service_corsAllowedMethods
 # - ZWE_configs_apiml_gateway_registry_enabled
@@ -194,7 +193,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.x509.certificatesUrls=${ZWE_configs_apiml_security_x509_certificatesUrls:-${ZWE_configs_apiml_security_x509_certificatesUrl:-}} \
     -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-false} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_configs_apiml_security_x509_registry_allowedUsers:-} \
-    -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS} \
     -Dapiml.service.corsDefaultAllowedHeaders=${ZWE_configs_apiml_service_corsDefaultAllowedHeaders:-} \
