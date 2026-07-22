@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
@@ -72,7 +73,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 class AuthControllerTest {
 
-    private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
     private static final String INVALIDATE = "/gateway/auth/invalidate";
     private AuthController authController;

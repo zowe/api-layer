@@ -62,6 +62,7 @@ import java.security.PublicKey;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -263,12 +264,12 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         void givenJwtInAuthorizationHeader_thenReadJwtFromRequestHeader() {
             String jwtToken = "token";
             MockHttpServletRequest request = new MockHttpServletRequest();
-            request.addHeader("Authorization", "Bearer ");
+            request.addHeader(AUTHORIZATION, "Bearer ");
             Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
             assertFalse(optionalToken.isPresent());
 
             request = new MockHttpServletRequest();
-            request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
+            request.addHeader(AUTHORIZATION, String.format("Bearer %s", jwtToken));
             optionalToken = authService.getJwtTokenFromRequest(request);
             assertTrue(optionalToken.isPresent());
             assertEquals(optionalToken.get(), jwtToken);
@@ -282,7 +283,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             @BeforeEach
             void setup() {
                 request = new MockHttpServletRequest();
-                request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwtInAuthHeader");
+                request.addHeader(AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwtInAuthHeader");
             }
 
             @Test

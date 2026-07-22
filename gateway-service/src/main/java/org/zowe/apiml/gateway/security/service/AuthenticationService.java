@@ -53,6 +53,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.gateway.security.service.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
@@ -207,7 +208,7 @@ public class AuthenticationService {
             final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
             try {
                 HttpHeaders headers = new HttpHeaders();
-                headers.set("Authorization", "Bearer " + jwtToken);
+                headers.set(AUTHORIZATION, "Bearer " + jwtToken);
                 HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
                 restTemplate.exchange(
                     url,
