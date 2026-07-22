@@ -73,7 +73,6 @@
 # - ZWE_configs_apiml_security_oidc_jwks_refreshInternalHours
 # - ZWE_configs_apiml_security_oidc_userInfo_uri
 # - ZWE_configs_apiml_security_oidc_validationType
-# - ZWE_configs_apiml_service_allowEncodedSlashes - Allows encoded slashes on on URLs through gateway
 # - ZWE_configs_apiml_service_corsEnabled
 # - ZWE_configs_certificate_keystore_type / ZWE_zowe_certificate_keystore_type - The keystore type to use for SSL certificates
 # - ZWE_configs_certificate_key_password / ZWE_zowe_certificate_key_password
@@ -403,7 +402,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_configs_port:-7554}/zss/api/v1/certificate/x509/map"} \
     -Dapiml.security.x509.externalMapperUser=${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}} \
     -Dapiml.security.zosmf.applid=${ZWE_configs_apiml_security_zosmf_applid:-IZUDFLT} \
-    -Dapiml.service.allowEncodedSlashes=${ZWE_configs_apiml_service_allowEncodedSlashes:-true} \
     -Dapiml.service.apimlId=${ZWE_configs_apimlId:-} \
     -Dapiml.service.corsAllowedMethods=${ZWE_configs_apiml_service_corsAllowedMethods:-GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS} \
     -Dapiml.service.corsEnabled=${ZWE_configs_apiml_service_corsEnabled:-false} \
