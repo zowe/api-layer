@@ -24,6 +24,9 @@ jobs:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
 
+            -   name: Generate Keystores
+                run: ./gradlew generateKeystores
+
             -   name: Build Nodejs Sample App
                 run: |
                     cd onboarding-enabler-nodejs-sample-app
