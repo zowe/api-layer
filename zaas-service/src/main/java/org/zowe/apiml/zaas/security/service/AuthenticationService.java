@@ -56,6 +56,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
@@ -299,7 +300,7 @@ public class AuthenticationService {
             final String url = getInvalidateUrl(instanceInfo);
             try {
                 HttpHeaders headers = new HttpHeaders();
-                headers.set("Authorization", "Bearer " + jwtToken);
+                headers.set(AUTHORIZATION, "Bearer " + jwtToken);
                 HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
                 restTemplate.exchange(
                     url,

@@ -185,7 +185,7 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
     }
 
     @Test
-    void whenNoHeader_withCert_then401() {
+    void whenNoHeader_withCert_then400() {
 
         given()
             .config(SslContext.clientCertApiml)

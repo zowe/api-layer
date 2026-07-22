@@ -75,6 +75,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -493,7 +494,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", DOMAIN, null);
             HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + token);
+            headers.set(AUTHORIZATION, "Bearer " + token);
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
             ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
             when(restTemplate.exchange("http://localhost:0/zaas/api/v1/auth/invalidate",

@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -62,7 +63,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class AuthControllerTest {
 
     private static final String INVALIDATE = "/zaas/api/v1/auth/invalidate";
-    private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
     private AuthController authController;
     private MockMvc mockMvc;
