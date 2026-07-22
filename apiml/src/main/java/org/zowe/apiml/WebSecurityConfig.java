@@ -88,6 +88,7 @@ public class WebSecurityConfig {
 
     private static final String CONTEXT_PATH = String.format("/%s", CoreService.GATEWAY.getServiceId());
     private static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
+    private static final String APPLICATION = "/application/**";
     private static final String APPLICATION_HEALTH = "/application/health";
     private static final String APPLICATION_INFO = "/application/info";
 
@@ -360,19 +361,19 @@ public class WebSecurityConfig {
 
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
-                pathMatchers("/application/**"),
+                pathMatchers(APPLICATION),
                 new NegatedServerWebExchangeMatcher(pathMatchers(APPLICATION_HEALTH, APPLICATION_INFO, "/application/version"))
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
             .authorizeExchange(exchange -> exchange.matchers(
                 new OrServerWebExchangeMatcher(
-                    pathMatchers(HttpMethod.GET, "/application/**"),
-                    pathMatchers(HttpMethod.HEAD, "/application/**")
+                    pathMatchers(HttpMethod.GET, APPLICATION),
+                    pathMatchers(HttpMethod.HEAD, APPLICATION)
                 ))
                 .authenticated()
             )
-            .authorizeExchange(exchange -> exchange.matchers(pathMatchers("/application/**"))
+            .authorizeExchange(exchange -> exchange.matchers(pathMatchers(APPLICATION))
                 .access(new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL"))
             )
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)

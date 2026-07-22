@@ -128,6 +128,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class WebSecurity {
 
+    private static final String APPLICATION = "/application/**";
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
     public static final String COOKIE_NONCE = "oidc_nonce";
@@ -453,7 +454,7 @@ public class WebSecurity {
                 SERVICES_SHORT_URL + "/**",
                 SERVICES_FULL_URL,
                 SERVICES_FULL_URL + "/**",
-                "/application/**"
+                APPLICATION
             ))
             .authorizeExchange(authorizeExchangeSpec -> {
                     if (!isHealthEndpointProtected) {
@@ -469,12 +470,12 @@ public class WebSecurity {
             )
             .authorizeExchange(exchange -> exchange.matchers(
                 new OrServerWebExchangeMatcher(
-                    pathMatchers(HttpMethod.GET, "/application/**"),
-                    pathMatchers(HttpMethod.HEAD, "/application/**")
+                    pathMatchers(HttpMethod.GET, APPLICATION),
+                    pathMatchers(HttpMethod.HEAD, APPLICATION)
                 ))
                 .authenticated()
             )
-            .authorizeExchange(exchange -> exchange.matchers(pathMatchers("/application/**"))
+            .authorizeExchange(exchange -> exchange.matchers(pathMatchers(APPLICATION))
                 .access(new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL"))
             )
             .authorizeExchange(authorizeExchangeSpec ->
