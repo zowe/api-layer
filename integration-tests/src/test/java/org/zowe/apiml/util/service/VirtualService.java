@@ -173,7 +173,7 @@ public class VirtualService implements AutoCloseable {
     private void createTomcat(int port) {
         httpConnector = new Connector();
         httpConnector.setPort(port);
-        httpConnector.setScheme("http");
+        httpConnector.setScheme("https");
 
         tomcat = new Tomcat();
         tomcat.setConnector(httpConnector);
