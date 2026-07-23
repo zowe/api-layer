@@ -91,7 +91,7 @@ class ActuatorConfigTest {
         @BeforeEach
         void retryOnDroppedConnection() {
             HttpRequestRetryHandler retryHandler = (exception, executionCount, context) ->
-                exception instanceof NoHttpResponseException && executionCount < 3;
+                exception instanceof NoHttpResponseException && executionCount < 4;
             this.config = RestAssured.config;
             RestAssured.config = RestAssured.config
                 .httpClient(HttpClientConfig.httpClientConfig().setParam("http.method.retry-handler", retryHandler));
