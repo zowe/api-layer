@@ -320,11 +320,19 @@ public class AuthenticationService {
         final InstanceInfo instanceInfo = application.getByInstanceId(toInstanceId);
         if (instanceInfo == null) return false;
 
-        final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
+        final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate{}";
 
         final Collection<String> invalidated = cacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {
-            restTemplate.delete(url, invalidatedToken);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(com.google.common.net.HttpHeaders.AUTHORIZATION, "Bearer " + invalidatedToken);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            restTemplate.exchange(
+                url,
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class
+            );
         }
 
         return true;

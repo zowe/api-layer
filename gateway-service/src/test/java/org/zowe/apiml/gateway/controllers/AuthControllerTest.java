@@ -20,9 +20,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.zowe.apiml.security.common.token.TokenNotValidException;import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
@@ -47,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
@@ -59,13 +64,17 @@ import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -115,55 +124,47 @@ class AuthControllerTest {
     }
 
     @Test
-    void invalidateJwtToken() throws Exception {
-
-        when(authenticationService.invalidateJwtToken("a/b", false)).thenReturn(Boolean.TRUE);
-        mockMvc.perform(delete(INVALIDATE)
-                .header(AUTHORIZATION, BEARER + "a/b"))
-            .andExpect(status().is(SC_OK));
-
-        when(authenticationService.invalidateJwtToken("abcde", false)).thenReturn(Boolean.TRUE);
-        mockMvc.perform(delete(INVALIDATE)
-                .header(AUTHORIZATION, BEARER + "abcde"))
-            .andExpect(status().is(SC_OK));
-
-        when(authenticationService.invalidateJwtToken("fghij", false)).thenThrow(new TokenNotValidException("invalid"));
-        mockMvc.perform(delete(INVALIDATE)
-                .header(AUTHORIZATION, BEARER + "fghij"))
-            .andExpect(status().is(SC_BAD_REQUEST));
-
-        mockMvc.perform(delete(INVALIDATE)
-            .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_SERVICE_UNAVAILABLE));
-
-        mockMvc.perform(delete(INVALIDATE)
-            .header(AUTHORIZATION, "wibble")).andExpect(status().is(SC_BAD_REQUEST));
-
-        mockMvc.perform(delete(INVALIDATE))
-            .andExpect(status().is(SC_BAD_REQUEST));
-
-        mockMvc.perform(delete(INVALIDATE)
-            .header(AUTHORIZATION, BEARER)).andExpect(status().is(SC_BAD_REQUEST));
-
-        mockMvc.perform(get(INVALIDATE)
-            .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_METHOD_NOT_ALLOWED));
-
-        mockMvc.perform(delete(INVALIDATE)
-            .header(AUTHORIZATION, BEARER)).andExpect(status().is(SC_BAD_REQUEST));
-
-        mockMvc.perform(get(INVALIDATE)
-            .header(AUTHORIZATION, BEARER + "xyz")).andExpect(status().is(SC_METHOD_NOT_ALLOWED));
-
-        verify(authenticationService, times(1)).invalidateJwtToken("abcde", false);
-        verify(authenticationService, times(1)).invalidateJwtToken("a/b", false);
-    }
-
-    @Test
     void distributeInvalidate() throws Exception {
         when(authenticationService.distributeInvalidate("instance/1")).thenReturn(true);
         this.mockMvc.perform(get("/gateway/auth/distribute/instance/1")).andExpect(status().is(SC_OK));
 
         when(authenticationService.distributeInvalidate("instance2")).thenReturn(false);
         this.mockMvc.perform(get("/gateway/auth/distribute/instance2")).andExpect(status().is(SC_NO_CONTENT));
+    }
+
+    @ParameterizedTest
+    @MethodSource("jwtArguments")
+    void invalidateJwt(String header, HttpMethod method, int status, String tokenToMock, Class<? extends Throwable> exceptionToThrow) throws Exception {
+
+        if (tokenToMock != null) {
+            if (exceptionToThrow != null) {
+                when(authenticationService.invalidateJwtToken(tokenToMock, false))
+                    .thenThrow(exceptionToThrow);
+            } else {
+                when(authenticationService.invalidateJwtToken(tokenToMock, false))
+                    .thenReturn(Boolean.TRUE);
+            }
+        }
+        MockHttpServletRequestBuilder request = request(method, INVALIDATE);
+        if (header != null) {
+            request.header(AUTHORIZATION, header);
+        }
+        mockMvc.perform(request)
+            .andExpect(status().is(status));
+        if (tokenToMock != null) {
+            verify(authenticationService, times(1)).invalidateJwtToken(tokenToMock, false);
+        }
+    }
+
+    private static Stream<Arguments> jwtArguments() {
+        return Stream.of(
+            arguments(null, DELETE, SC_BAD_REQUEST, null, null),
+            arguments("wibble", DELETE, SC_BAD_REQUEST, null, null),
+            arguments(BEARER, DELETE, SC_BAD_REQUEST, null, null),
+            arguments(BEARER + "xyz", GET, SC_METHOD_NOT_ALLOWED, null, null),
+            arguments(BEARER + "xyz", DELETE, SC_SERVICE_UNAVAILABLE, null, null),
+            arguments(BEARER + "abcde", DELETE, SC_OK, "abcde", null),
+            arguments(BEARER + "fghij", DELETE, SC_BAD_REQUEST, "fghij", TokenNotValidException.class)        );
     }
 
     private JWK getJwk(int i) throws ParseException {

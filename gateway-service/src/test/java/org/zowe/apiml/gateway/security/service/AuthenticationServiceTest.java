@@ -65,6 +65,7 @@ import java.util.function.Consumer;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpMethod.DELETE;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
@@ -640,9 +641,23 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             authService.distributeInvalidate(instanceInfo.getInstanceId());
 
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "b");
+            verify(restTemplate, times(1))
+                .exchange(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate",
+                    DELETE,
+                    getHeaders("a"),
+                    Void.class);
+            verify(restTemplate, times(1))
+                .exchange(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate",
+                    DELETE,
+                    getHeaders("b"),
+                    Void.class);
         }
+    }
+
+    private HttpEntity<Void> getHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, "Bearer " + token);
+        return new HttpEntity<>(headers);
 
     }
 
