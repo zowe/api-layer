@@ -80,7 +80,8 @@ public class MetadataFilterService implements InitializingBean {
         if (StringUtils.isBlank(domain)) {
             return true;
         }
-        return allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, domain));
+        var domainToCheck = domain.endsWith("null") ? domain.substring(0, domain.lastIndexOf("null")) : domain;
+        return allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, domainToCheck));
     }
 
     private InetAddress[] getInetAddresses(String domain) {
