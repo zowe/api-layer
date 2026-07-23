@@ -11,6 +11,7 @@
 package org.zowe.apiml.security.common.auth.saf;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorityAuthorizationDecision;
 import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.authorization.ReactiveAuthorizationManager;
@@ -22,6 +23,7 @@ import reactor.core.scheduler.Schedulers;
 import java.util.List;
 
 @RequiredArgsConstructor
+@Slf4j
 public class SafAuthorizationManager<T> implements ReactiveAuthorizationManager<T> {
 
     private final SafResourceAccessVerifying safResourceAccessVerifying;
@@ -38,7 +40,11 @@ public class SafAuthorizationManager<T> implements ReactiveAuthorizationManager<
                 .subscribeOn(Schedulers.boundedElastic()))
                 .filter(value -> value != null && value)
                 .map(auth -> ((AuthorizationDecision) new AuthorityAuthorizationDecision(true, List.of(new SimpleGrantedAuthority(String.format("%s.%s:%s", safResourceClass, safResourceName, safResourceAccess))))))
-                .defaultIfEmpty(new AuthorityAuthorizationDecision(false, List.of()));
+                .defaultIfEmpty(new AuthorityAuthorizationDecision(false, List.of()))
+                .onErrorResume(t -> {
+                    log.error("Unable to resolve SAF authorization check: {}", t.getMessage(), t);
+                    return Mono.just(new AuthorityAuthorizationDecision(false, List.of()));
+                });
         // @formatter:on
     }
 
