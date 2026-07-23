@@ -8,10 +8,16 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.filters;
+package org.zowe.apiml.gateway.config;
 
-public class ForbidSlashException extends RuntimeException {
-    public ForbidSlashException(String message) {
+public class InvalidForwardException extends RuntimeException {
+    
+    private static final long serialVersionUID = 2717623179179277677L;
+
+    public InvalidForwardException(String message) {
         super(message);
+    }
+    public InvalidForwardException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

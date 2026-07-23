@@ -30,14 +30,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
+
 @Service
 @Slf4j
 public class MetadataFilterService implements InitializingBean {
 
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
-    private static final String[] DEFAULT_ALLOWED_DOMAINS = { "www.ibm.com", "zowe.github.io", "www.zowe.org", "techdocs.broadcom.com" };
 
-    @Value("${apiml.security.allowedDomains:${apiml.service.hostname}}")
+    @Value("${apiml.security.allowedDomains:${apiml.service.hostname:localhost}}")
     private String allowedDomains;
 
     private boolean onlyWarn = false;
