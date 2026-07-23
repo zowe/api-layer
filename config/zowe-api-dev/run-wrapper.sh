@@ -5,7 +5,6 @@ export PATH=$PATH:$JAVA_HOME/bin
 # Variables required on shell:
 # This list should be exhaustive, with variables that are not needed commented
 # sorted alphabetically for easier maintenance where possible
-export APIML_ALLOW_ENCODED_SLASHES=true
 export APIML_CORS_ENABLED=true
 export APIML_DEBUG_MODE_ENABLED=true
 export APIML_DIAG_MODE_ENABLED=false
