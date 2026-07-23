@@ -17,24 +17,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataFilterServiceTest {
@@ -133,6 +134,87 @@ class MetadataFilterServiceTest {
                 });
 
                 verify(apimlLogger).log("org.zowe.apiml.common.urlNotAllowed", "API ML CORS Allowed Origin", "https://invalid.org:3000", "test-instance");
+            }
+
+        }
+
+        @Nested
+        class IpAddress {
+
+            @ParameterizedTest
+            @EmptySource
+            @NullSource
+            void givenNoAddress_whenCheckIpAddress_thenReturnTrue(String emptyAddress) {
+                var service = new MetadataFilterService();
+                ReflectionTestUtils.setField(service,"allowedDomains", "localhost");
+                service.afterPropertiesSet();
+                assertTrue(service.isAllowedIpAddress(emptyAddress));
+            }
+
+            @ParameterizedTest
+            @CsvSource(delimiterString = "|", value = {
+                "domain1,192.168.0.1",
+                "192.168.000.001"
+            })
+            void givenIpAddressAllowedDomains_whenCheckIpAddress_thenReturnTrue(String allowedDomain) {
+                var service = new MetadataFilterService();
+                ReflectionTestUtils.setField(service,"allowedDomains", allowedDomain);
+                service.afterPropertiesSet();
+                assertTrue(service.isAllowedIpAddress("192.168.0.1"));
+            }
+
+            @ParameterizedTest
+            @CsvSource({
+                "127.0.0.1",
+                "0.0.0.0"
+            })
+            void givenLocalAddress_whenCheckIpAddress_thenReturnTrue(String address) {
+                var service = new MetadataFilterService();
+                ReflectionTestUtils.setField(service,"allowedDomains", "localhost");
+                service.afterPropertiesSet();
+                assertTrue(service.isAllowedIpAddress(address));
+            }
+
+            @Test
+            void givenMatchingNonLocalAddress_whenCheckIpAddress_thenReturnTrue() throws UnknownHostException {
+                var service = new MetadataFilterService();
+                ReflectionTestUtils.setField(service,"allowedDomains", InetAddress.getLocalHost().getHostName());
+                service.afterPropertiesSet();
+                assertTrue(service.isAllowedIpAddress(InetAddress.getLocalHost().getHostAddress()));
+            }
+
+            @ParameterizedTest
+            @CsvSource({
+                "192.168.0.2",
+                "10.0.1.100",
+                "1.0.1.0"
+            })
+            void givenNotMatchingNAddress_whenCheckIpAddress_thenReturnFalse(String address) {
+                var service = new MetadataFilterService();
+                ReflectionTestUtils.setField(service,"allowedDomains", "https://google.com,192.168.0.1,example.com,localhost");
+                service.afterPropertiesSet();
+                assertFalse(service.isAllowedIpAddress(address));
+            }
+
+            @ParameterizedTest(name = "Value: {0} -> Allowed: {1}")
+            @CsvSource({
+                "127.0.0.1,true",
+                "1.0.1.0,false"
+            })
+            void shouldVerifyHostname(String ipAddress, boolean isAllowed) {
+                when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
+                when(instanceInfo.getIPAddr()).thenReturn(ipAddress);
+                lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+
+                if (isAllowed) {
+                    metadataFilterService.verifyAllowedDomains(instanceInfo);
+                    verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
+                } else {
+                    assertThrows(MetadataValidationException.class, () -> {
+                        metadataFilterService.verifyAllowedDomains(instanceInfo);
+                    });
+                    verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
+                }
             }
 
         }

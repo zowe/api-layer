@@ -10,6 +10,9 @@
 
 package org.zowe.apiml.discovery.metadata;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.net.InetAddresses;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,12 +23,15 @@ import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -38,6 +44,15 @@ public class MetadataFilterService implements InitializingBean {
 
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
 
+    private static final Cache<String, InetAddress[]> DOMAIN_TO_IP_ADDRESSES = Caffeine.newBuilder()
+        .maximumSize(100)
+        .expireAfterWrite(5, TimeUnit.MINUTES)
+        .build();
+    private static final Cache<InetAddress, Boolean> IP_ALLOWED = Caffeine.newBuilder()
+        .maximumSize(100)
+        .expireAfterWrite(5, TimeUnit.MINUTES)
+        .build();
+
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname:localhost}}")
     private String allowedDomains;
 
@@ -49,7 +64,7 @@ public class MetadataFilterService implements InitializingBean {
     private Set<String> allowedDomainsSet;
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
         onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
 
@@ -72,6 +87,54 @@ public class MetadataFilterService implements InitializingBean {
                 return false;
             }
         });
+    }
+
+    private InetAddress[] getInetAddresses(String domain) {
+        try {
+            return InetAddress.getAllByName(domain);
+        } catch (UnknownHostException | SecurityException e) {
+            log.debug("Cannot list IP address of domain {}", domain, e);
+            return new InetAddress[0];
+        }
+    }
+
+    private boolean isAllowedIpAddress(String allowed, InetAddress address) {
+        try {
+            // check if the allowed domain is not written in IP format
+            if (InetAddresses.forString(allowed).equals(address)) {
+                return true;
+            }
+        } catch (IllegalArgumentException e) {
+            log.trace("Domain {} is not a IP address", allowed);
+        }
+
+        // obtain list of domain's IP address and check if any is matching
+        var allowedAddresses = DOMAIN_TO_IP_ADDRESSES.get(allowed, this::getInetAddresses);
+        return Arrays.stream(allowedAddresses).anyMatch(address::equals);
+    }
+
+    boolean isAllowedIpAddress(String ipAddress) {
+        if (StringUtils.isBlank(ipAddress)) {
+            return true;
+        }
+
+        // check if the domain list contains the same literal directly
+        if (isAllowedDomain(ipAddress)) {
+            return true;
+        }
+
+        InetAddress address = InetAddresses.forString(ipAddress);
+        if (address.isAnyLocalAddress() || address.isLoopbackAddress()) {
+            // local address (ie. loopback 127.0.0.1) is allowed as default
+            return true;
+        }
+
+        // check cache and if entry misses verify ip against all allowed domains
+        return IP_ALLOWED.get(address, ip ->
+            allowedDomainsSet.stream().anyMatch(allowedDomain ->
+                isAllowedIpAddress(allowedDomain, ip)
+            )
+        );
     }
 
     private boolean isAllowed(String allowedDomain, String domain) throws MalformedURLException {
@@ -132,6 +195,10 @@ public class MetadataFilterService implements InitializingBean {
 
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
+        if (!isAllowedIpAddress(info.getIPAddr())) {
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "IP Address", info.getIPAddr(), info.getInstanceId());
+            result.set(false);
+        }
         if (!isAllowedDomain(info.getHomePageUrl())) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Home Page URL", info.getHomePageUrl(), info.getInstanceId());
             result.set(false);
