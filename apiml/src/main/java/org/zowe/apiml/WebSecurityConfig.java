@@ -24,8 +24,11 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.ReactiveAuthenticationManagerAdapter;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableReactiveMethodSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
@@ -34,6 +37,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
@@ -42,7 +46,6 @@ import org.springframework.security.web.server.util.matcher.ServerWebExchangeMat
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.filter.BasicLoginFilter;
 import org.zowe.apiml.filter.CachedBodyFilter;
-import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.filter.LogoutHandler;
 import org.zowe.apiml.filter.OIDCAuthFilter;
 import org.zowe.apiml.filter.QueryWebFilter;
@@ -52,7 +55,10 @@ import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
+import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
@@ -61,15 +67,11 @@ import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import org.zowe.apiml.zaas.security.login.x509.X509AuthenticationProvider;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.query.TokenAuthenticationProvider;
+import reactor.core.publisher.Mono;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.ReactiveAuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import reactor.core.publisher.Mono;
 
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
@@ -87,6 +89,7 @@ public class WebSecurityConfig {
 
     private static final String CONTEXT_PATH = String.format("/%s", CoreService.GATEWAY.getServiceId());
     private static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
+    private static final String APPLICATION = "/application/**";
     private static final String APPLICATION_HEALTH = "/application/health";
     private static final String APPLICATION_INFO = "/application/info";
 
@@ -333,6 +336,11 @@ public class WebSecurityConfig {
         return http.build();
     }
 
+    @Bean
+    SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager(SafResourceAccessVerifying safResourceAccessVerifying) {
+        return new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL");
+    }
+
     /**
      * Security filter chain that protects all endpoints under the path "/application/**",
      * except for "/application/health" - which is handled separately based on the configuration - and "/application/info".
@@ -354,15 +362,26 @@ public class WebSecurityConfig {
     @Bean
     SecurityWebFilterChain applicationEndpointsProtected(ServerHttpSecurity http,
                                                          AuthConfigurationProperties authConfigurationProperties,
-                                                         AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+                                                         AuthExceptionHandlerReactive authExceptionHandlerReactive,
+                                                         SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager) {
+
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
-                pathMatchers("/application/**"),
+                pathMatchers(APPLICATION),
                 new NegatedServerWebExchangeMatcher(pathMatchers(APPLICATION_HEALTH, APPLICATION_INFO, "/application/version"))
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .authorizeExchange(exchange -> exchange.anyExchange().authenticated())
             .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable)
+            .authorizeExchange(exchange -> exchange.matchers(
+                new OrServerWebExchangeMatcher(
+                    pathMatchers(HttpMethod.GET, APPLICATION),
+                    pathMatchers(HttpMethod.HEAD, APPLICATION)
+                ))
+                .authenticated()
+            )
+            .authorizeExchange(exchange -> exchange.matchers(pathMatchers(APPLICATION))
+                .access(actuatorAuthorizationManager)
+            )
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
             .build();
