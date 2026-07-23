@@ -199,6 +199,10 @@ public class MetadataFilterService implements InitializingBean {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "IP Address", info.getIPAddr(), info.getInstanceId());
             result.set(false);
         }
+        if (!isAllowedDomain(info.getHostName())) {
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Instance Hostname", info.getHostName(), info.getInstanceId());
+            result.set(false);
+        }
         if (!isAllowedDomain(info.getHomePageUrl())) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Home Page URL", info.getHomePageUrl(), info.getInstanceId());
             result.set(false);

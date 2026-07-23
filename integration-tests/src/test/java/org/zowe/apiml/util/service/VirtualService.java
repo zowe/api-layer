@@ -100,6 +100,7 @@ public class VirtualService implements AutoCloseable {
 
     private final String serviceId;
     private String instanceId;
+    private String hostname;
 
     private boolean registered, started;
 
@@ -130,7 +131,7 @@ public class VirtualService implements AutoCloseable {
     public VirtualService start() throws IOException, LifecycleException, JSONException {
         // start Tomcat to get listening port
         tomcat.start();
-        instanceId = InetAddress.getLocalHost().getHostName() + ":" + serviceId + ":" + getPort();
+        instanceId = getHostname() + ":" + serviceId + ":" + getPort();
 
         // register into discovery service and start heart beating
         register(Status.UP.toString());
@@ -389,6 +390,28 @@ public class VirtualService implements AutoCloseable {
     }
 
     /**
+     * To obtain hostname where the service is listening to.
+     * @return configured hostname or a detected hostname by localhost IP
+     * @throws UnknownHostException
+     */
+    public String getHostname() throws UnknownHostException {
+        if (hostname != null) {
+            return hostname;
+        }
+        return InetAddress.getLocalHost().getHostAddress();
+    }
+
+    /**
+     * Configure a custom hostname
+     * @param hostname custom hostname of service
+     * @return the same instance of virtual service
+     */
+    public VirtualService hostname(String hostname) {
+        this.hostname = hostname;
+        return this;
+    }
+
+    /**
      * @return instance of Tomcat for special configuration etc.
      */
     public Tomcat getTomcat() {
@@ -411,15 +434,15 @@ public class VirtualService implements AutoCloseable {
     }
 
     public Response postRegistration(String status) throws UnknownHostException, JSONException {
-        return given().log().all().when()
+        var response = given().log().ifValidationFails().when()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(new JSONObject()
                 .put("instance", new JSONObject()
                     .put("instanceId", instanceId)
-                    .put("hostName", InetAddress.getLocalHost().getHostName())
+                    .put("hostName", getHostname())
                     .put("vipAddress", serviceId)
                     .put("app", serviceId)
-                    .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
+                    .put("ipAddr", getHostname())
                     .put("status", status)
                     .put("overriddenstatus", status)
                     .put("port", new JSONObject()
@@ -443,6 +466,10 @@ public class VirtualService implements AutoCloseable {
                 ).toString()
             )
             .post(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}", serviceId);
+        response.then()
+            .log().ifValidationFails()
+            .statusCode(SC_NO_CONTENT);
+        return response;
     }
 
     /**
