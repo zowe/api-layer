@@ -467,7 +467,7 @@ public class VirtualService implements AutoCloseable {
             )
             .post(DiscoveryUtils.getDiscoveryUrl() + "/eureka/apps/{appId}", serviceId);
         response.then()
-            .log().all()
+            .log().ifValidationFails()
             .statusCode(SC_NO_CONTENT);
         return response;
     }
