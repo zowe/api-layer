@@ -26,6 +26,6 @@ class ModulithAuthenticationServiceTest {
         when(instanceInfo.getSecurePort()).thenReturn(443);
         when(instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)).thenReturn(true);
         String invalidateUrl = service.getInvalidateUrl(instanceInfo);
-        assertEquals("https://localhost:443/gateway/api/v1/auth/invalidate/", invalidateUrl);
+        assertEquals("https://localhost:443/gateway/api/v1/auth/invalidate", invalidateUrl);
     }
 }
