@@ -2925,6 +2925,7 @@ jobs:
             CITestsModulith,CITestsModulithHA
         ]
         runs-on: ubuntu-latest
+        container: ubuntu:latest
         timeout-minutes: 20
 
         steps:
