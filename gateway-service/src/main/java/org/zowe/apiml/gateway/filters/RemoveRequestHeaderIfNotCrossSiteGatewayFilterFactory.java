@@ -54,7 +54,7 @@ public class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
-            if (preserveOrigin && CROSS_SITE.equals(request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER))) {
+            if (preserveOrigin && CROSS_SITE.equalsIgnoreCase(request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER))) {
                 // Cross-site browser request: keep the header so the southbound service can inspect it.
                 return chain.filter(exchange);
             }
