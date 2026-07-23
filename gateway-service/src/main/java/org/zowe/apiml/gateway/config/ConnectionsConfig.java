@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.circuitbreaker.resilience4j.ReactiveResilience4JCircuitBreakerFactory;
 import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JConfigBuilder;
 import org.springframework.cloud.client.circuitbreaker.Customizer;
@@ -334,6 +335,7 @@ public class ConnectionsConfig {
      * it rejects cross-site requests itself.
      */
     @Bean
+    @ConditionalOnProperty(name = "security.secFetch.enabled", havingValue = "true")
     WebFilter secFetchSiteFilter(@Value("${security.secFetch.safeNavigationDestinations:#{null}}") Set<String> safeNav) {
         return new SecFetchSiteFilter(gatewayCorsEnabled, safeNav);
     }
