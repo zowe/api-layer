@@ -420,7 +420,7 @@ public class VirtualService implements AutoCloseable {
     }
 
     /**
-     * @return base URL of this service (without slash), ie: http://localhost:65123
+     * @return base URL of this service (without slash), ie: https://localhost:65123
      */
     public String getUrl() {
         return "https://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
