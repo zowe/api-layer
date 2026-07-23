@@ -124,7 +124,10 @@ class ConnectionsConfigTest {
     @Nested
     @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"management.port=-1"},
+        properties = {
+            "management.port=-1",
+            "apiml.enabled=false"
+        },
         classes = {GatewayServiceApplication.class, ConnectionsConfigTest.SslDetectorConfig.class}
     )
     class ChooseAlias {

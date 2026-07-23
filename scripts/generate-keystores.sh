@@ -96,8 +96,10 @@ openssl genrsa -out local_ca.key 2048
 openssl req -x509 -new -nodes -key local_ca.key -sha256 -days 3650 \
     -out local_ca.pem \
     -subj "/C=CZ/ST=Prague/L=Prague/O=Zowe Sample/CN=Zowe Development Instances Certificate Authority" \
+    -addext "basicConstraints=critical,CA:TRUE" \
     -addext "keyUsage=critical,keyCertSign,cRLSign" \
-    -addext "basicConstraints=critical,CA:TRUE"
+    -addext "subjectKeyIdentifier=hash" \
+    -addext "authorityKeyIdentifier=none"
 
 # Create PKCS12 keystore for the CA
 openssl pkcs12 -export -out localca.keystore.p12 \
@@ -124,8 +126,10 @@ openssl genrsa -out local_ca2.key 2048
 openssl req -x509 -new -nodes -key local_ca2.key -sha256 -days 3650 \
     -out local_ca2.pem \
     -subj "/C=CZ/ST=Prague/L=Prague/O=Zowe Sample/CN=Zowe Secondary Development CA" \
+    -addext "basicConstraints=critical,CA:TRUE" \
     -addext "keyUsage=critical,keyCertSign,cRLSign" \
-    -addext "basicConstraints=critical,CA:TRUE"
+    -addext "subjectKeyIdentifier=hash" \
+    -addext "authorityKeyIdentifier=none"
 openssl x509 -in local_ca2.pem -outform DER -out localca2.cer
 rm -f local_ca2.key local_ca2.pem
 
@@ -383,8 +387,10 @@ rm -f does-not-matter.p12
 openssl req -x509 -newkey rsa:2048 -nodes -keyout untrusted_ca.key \
     -out untrusted_ca.crt -days 3650 -sha256 \
     -subj "/C=CZ/ST=Czechia/L=Prague/O=Untrusted/OU=IT/CN=Untrusted CA" \
+    -addext "basicConstraints=critical,CA:TRUE" \
     -addext "keyUsage=critical,keyCertSign,cRLSign" \
-    -addext "basicConstraints=critical,CA:TRUE"
+    -addext "subjectKeyIdentifier=hash" \
+    -addext "authorityKeyIdentifier=none"
 keytool -import -alias localca -file untrusted_ca.crt \
     -keystore "localhost-untrusted.truststore.p12" \
     -storetype pkcs12 -storepass "$PASSWORD" -noprompt
@@ -580,8 +586,10 @@ cd "$KEYSTORE_DIR/client_cert"
 openssl req -x509 -newkey rsa:2048 -nodes -keyout apiml_ca.key \
     -out apiml_ca.crt -days 3650 -sha256 \
     -subj "/C=CZ/ST=Czechia/L=Prague/O=OMF/OU=Zowe/CN=APIML CA" \
+    -addext "basicConstraints=critical,CA:TRUE" \
     -addext "keyUsage=critical,keyCertSign,cRLSign" \
-    -addext "basicConstraints=critical,CA:TRUE"
+    -addext "subjectKeyIdentifier=hash" \
+    -addext "authorityKeyIdentifier=none"
 
 openssl pkcs12 -export -out ca/apiml_ca.p12 \
     -in apiml_ca.crt -inkey apiml_ca.key \
