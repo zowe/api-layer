@@ -434,7 +434,7 @@ public class VirtualService implements AutoCloseable {
     }
 
     public Response postRegistration(String status) throws UnknownHostException, JSONException {
-        var response = given().log().all().when()
+        var response = given().log().ifValidationFails().when()
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .body(new JSONObject()
                 .put("instance", new JSONObject()
