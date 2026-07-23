@@ -26,10 +26,14 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
+import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import reactor.core.publisher.Mono;
@@ -39,7 +43,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 
-import static io.restassured.RestAssured.basePath;
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.hc.core5.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
@@ -113,8 +116,16 @@ class ActuatorConfigTest {
             "apiml.security.auth.provider=dummy"
         }
     )
-    @ActiveProfiles({"default", "test"})
-    @AcceptanceTest
+    @ActiveProfiles({"default", "test", "ApimlModulithAcceptanceTest"})
+    @DirtiesContext
+    @SpringBootTest(
+        classes = {
+            ApimlApplication.class,
+            FreeMarkerConfigurer.class,
+            TestConfig.class
+        },
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class GivenDefaultProfile extends ActuatorAcceptanceTest {
 
@@ -158,7 +169,7 @@ class ActuatorConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({"test", "debug"})
+    @ActiveProfiles({"test", "debug", "ApimlModulithAcceptanceTest"})
     @TestPropertySource(
         properties = {
             "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
@@ -171,7 +182,15 @@ class ActuatorConfigTest {
             "org.springframework.web.reactive.socket=DEBUG"
         }
     )
-    @AcceptanceTest
+    @DirtiesContext
+    @SpringBootTest(
+        classes = {
+            ApimlApplication.class,
+            FreeMarkerConfigurer.class,
+            TestConfig.class
+        },
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class GivenDebugProfile extends ActuatorAcceptanceTest {
 
@@ -245,7 +264,7 @@ class ActuatorConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({"test", "debug", "debug-control"})
+    @ActiveProfiles({"test", "debug", "debug-control", "ApimlModulithAcceptanceTest"})
     @TestPropertySource(
         properties = {
             "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
@@ -259,7 +278,15 @@ class ActuatorConfigTest {
         }
     )
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-    @AcceptanceTest
+    @DirtiesContext
+    @SpringBootTest(
+        classes = {
+            ApimlApplication.class,
+            FreeMarkerConfigurer.class,
+            TestConfig.class
+        },
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+    )
     class GivenDebugControlProfile extends ActuatorAcceptanceTest {
 
         @Autowired
