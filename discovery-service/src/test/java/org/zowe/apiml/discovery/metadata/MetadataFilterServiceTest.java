@@ -121,6 +121,20 @@ class MetadataFilterServiceTest {
             }
         }
 
+        @ParameterizedTest
+        @CsvSource(delimiterString = "|", value = {
+            "localhost,192.168.0.2,example.com|192.168.0.2|true",
+            "localhost,192.168.0.2,example.com|192.168.0.1|false",
+            "localhost|127.0.0.1|false",
+            "localhost|invalid#1|false"
+        })
+        void givenIpAddressInAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed) {
+            var service = new MetadataFilterService();
+            ReflectionTestUtils.setField(service,"allowedDomains", allowList);
+            service.afterPropertiesSet();
+            assertEquals(isAllowed, service.isAllowedDomain(domain));
+        }
+
         @Nested
         class OnCors {
 
@@ -227,7 +241,7 @@ class MetadataFilterServiceTest {
                 "127.0.0.1,true",
                 "1.0.1.0,false"
             })
-            void shouldVerifyHostname(String ipAddress, boolean isAllowed) {
+            void givenIpAddress_whenOnboarding_thenVerify(String ipAddress, boolean isAllowed) {
                 when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
                 when(instanceInfo.getIPAddr()).thenReturn(ipAddress);
                 lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
