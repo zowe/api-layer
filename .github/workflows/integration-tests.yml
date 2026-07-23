@@ -2925,12 +2925,9 @@ jobs:
             CITestsModulith,CITestsModulithHA
         ]
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 20
 
         steps:
-            -   name: Install git
-                run: apt-get update && apt-get install -y git
             -   uses: actions/checkout@v4
                 with:
                     fetch-depth: 0
