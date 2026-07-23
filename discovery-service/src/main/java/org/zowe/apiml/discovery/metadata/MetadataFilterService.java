@@ -167,6 +167,9 @@ public class MetadataFilterService implements InitializingBean {
 
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
+        if (!validateUrl("Instance Hostname", info.getHostName(), info)) {
+            result.set(false);
+        }
         if (!validateUrl("Home Page URL", info.getHomePageUrl(), info)) {
             result.set(false);
         }
