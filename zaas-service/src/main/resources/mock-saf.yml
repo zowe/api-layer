@@ -10,3 +10,7 @@
 #
 # This file could be replaced with `saf.yml` located in root folder of application (outside the JAR file), which replaces this file.
 safAccess:
+    ZOWE:
+        APIML.DEBUG:
+            CONTROL:
+                - USER
