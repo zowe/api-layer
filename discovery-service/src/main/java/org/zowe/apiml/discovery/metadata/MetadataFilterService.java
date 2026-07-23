@@ -132,6 +132,10 @@ public class MetadataFilterService implements InitializingBean {
 
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
+        if (!isAllowedDomain(info.getHostName())) {
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Instance Hostname", info.getHostName(), info.getInstanceId());
+            result.set(false);
+        }
         if (!isAllowedDomain(info.getHomePageUrl())) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Home Page URL", info.getHomePageUrl(), info.getInstanceId());
             result.set(false);

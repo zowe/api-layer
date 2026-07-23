@@ -78,6 +78,15 @@ class ServiceHaModeTest implements TestWithStartedInstances {
         return Stream.concat(retryableHttpMethods(), nonRetryableHttpMethods());
     }
 
+    private static VirtualService virtualService(String serviceId, int port) {
+        var service = new VirtualService(serviceId, port);
+        var hostname = System.getProperty("test.hostname");
+        if (hostname != null) {
+            service.hostname(hostname);
+        }
+        return service;
+    }
+
     @Nested
     class GivenTwoServices {
 
@@ -92,8 +101,8 @@ class ServiceHaModeTest implements TestWithStartedInstances {
             void setUp() throws LifecycleException, IOException, JSONException {
                 List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
-                service1 = new VirtualService("testhamodeservice1", ports.get(0));
-                service2 = new VirtualService("testhamodeservice1", ports.get(1));
+                service1 = virtualService("testhamodeservice1", ports.get(0));
+                service2 = virtualService("testhamodeservice1", ports.get(1));
 
                 service1.start();
                 service2.start().waitForGatewayRegistration(TIMEOUT);
@@ -151,8 +160,8 @@ class ServiceHaModeTest implements TestWithStartedInstances {
             void setUp() throws LifecycleException, IOException, JSONException {
                 List<Integer> ports = RandomPorts.generateUniquePorts(2);
 
-                service1 = new VirtualService("testhamodeservice2", ports.get(0));
-                service2 = new VirtualService("testhamodeservice2", ports.get(1));
+                service1 = virtualService("testhamodeservice2", ports.get(0));
+                service2 = virtualService("testhamodeservice2", ports.get(1));
 
                 service1.addInstanceServlet("Http503", "/httpCode");
                 service2.addHttpStatusCodeServlet(HttpStatus.SC_SERVICE_UNAVAILABLE);
