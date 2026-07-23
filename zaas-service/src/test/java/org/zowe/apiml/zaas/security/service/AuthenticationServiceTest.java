@@ -39,7 +39,6 @@ import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -79,6 +78,7 @@ import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpMethod.DELETE;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
@@ -498,7 +498,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
             ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
             when(restTemplate.exchange("http://localhost:0/zaas/api/v1/auth/invalidate",
-                HttpMethod.DELETE,
+                DELETE,
                 requestEntity,
                 Void.class)).thenReturn(responseEntity);
             doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
@@ -743,8 +743,16 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             authService.distributeInvalidate(instanceInfo.getInstanceId());
 
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate/{}", "a");
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate/{}", "b");
+            verify(restTemplate, times(1))
+                .exchange(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
+                    DELETE,
+                    getHeaders("a"),
+                    Void.class);
+            verify(restTemplate, times(1))
+                .exchange(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
+                    DELETE,
+                    getHeaders("b"),
+                    Void.class);
         }
 
         @Test
@@ -779,5 +787,12 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             assertFalse(authService.invalidateJwtToken(token, true));
 
         }
+    }
+
+    private HttpEntity<Void> getHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, "Bearer " + token);
+        return new HttpEntity<>(headers);
+
     }
 }
