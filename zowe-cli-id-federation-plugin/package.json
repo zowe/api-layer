@@ -73,7 +73,7 @@
     "jest-junit": "16.0.0",
     "jest-stare": "2.5.3",
     "madge": "8.0.0",
-    "ts-jest": "29.4.11",
+    "ts-jest": "29.4.12",
     "ts-node": "10.9.2",
     "typedoc": "0.28.20",
     "typescript": "5.9.3"
