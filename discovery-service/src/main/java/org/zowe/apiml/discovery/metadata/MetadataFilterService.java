@@ -76,17 +76,11 @@ public class MetadataFilterService implements InitializingBean {
 
     }
 
-    private boolean isAllowedDomain(String domain) {
+    boolean isAllowedDomain(String domain) {
         if (StringUtils.isBlank(domain)) {
             return true;
         }
-        return allowedDomainsSet.stream().anyMatch(allowedDomain -> {
-            try {
-                return isAllowed(allowedDomain, domain);
-            } catch (MalformedURLException e) {
-                return false;
-            }
-        });
+        return allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, domain));
     }
 
     private InetAddress[] getInetAddresses(String domain) {
@@ -137,13 +131,20 @@ public class MetadataFilterService implements InitializingBean {
         );
     }
 
-    private boolean isAllowed(String allowedDomain, String domain) throws MalformedURLException {
+    private String extractDomain(String url) {
+        try {
+            return new URL(url).getHost().toLowerCase();
+        } catch (MalformedURLException e) {
+            log.debug("'{}' is not a valid URL", url);
+            return url;
+        }
+    }
+
+    private boolean isAllowed(String allowedDomain, String domain) {
         log.debug("checking URL {} against domain {}", domain, allowedDomain);
         allowedDomain = allowedDomain.toLowerCase();
         domain = domain.toLowerCase();
-        if (isUrl(domain)) {
-            domain = new URL(domain).getHost().toLowerCase();
-        }
+        domain = extractDomain(domain);
         if (domain.equals(allowedDomain)) {
             return true;
         }
@@ -236,17 +237,6 @@ public class MetadataFilterService implements InitializingBean {
 
         if (!result.get() && !onlyWarn) {
             throw new MetadataValidationException("URLs not allowed found for instance " + info.getInstanceId());
-        }
-
-    }
-
-    private boolean isUrl(String value) {
-        try {
-            new URL(value);
-            return true;
-        } catch (MalformedURLException e) {
-            log.debug("'{}' is not a valid URL", value);
-            return false;
         }
 
     }
