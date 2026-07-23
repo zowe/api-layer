@@ -37,6 +37,7 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
@@ -335,6 +336,11 @@ public class WebSecurityConfig {
         return http.build();
     }
 
+    @Bean
+    SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager(SafResourceAccessVerifying safResourceAccessVerifying) {
+        return new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL");
+    }
+
     /**
      * Security filter chain that protects all endpoints under the path "/application/**",
      * except for "/application/health" - which is handled separately based on the configuration - and "/application/info".
@@ -357,7 +363,7 @@ public class WebSecurityConfig {
     SecurityWebFilterChain applicationEndpointsProtected(ServerHttpSecurity http,
                                                          AuthConfigurationProperties authConfigurationProperties,
                                                          AuthExceptionHandlerReactive authExceptionHandlerReactive,
-                                                         SafResourceAccessVerifying safResourceAccessVerifying) {
+                                                         SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager) {
 
         return http
             .securityMatcher(new AndServerWebExchangeMatcher(
@@ -374,7 +380,7 @@ public class WebSecurityConfig {
                 .authenticated()
             )
             .authorizeExchange(exchange -> exchange.matchers(pathMatchers(APPLICATION))
-                .access(new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL"))
+                .access(actuatorAuthorizationManager)
             )
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)

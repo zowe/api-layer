@@ -22,6 +22,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authorization.AuthorityAuthorizationDecision;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -29,6 +31,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.handler.LocalTokenProvider;
+import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import reactor.core.publisher.Mono;
 
@@ -36,6 +39,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_FORBIDDEN;
@@ -60,6 +64,9 @@ class ActuatorConfigTest {
 
         @MockitoBean
         private LocalTokenProvider tokenProvider;
+
+        @MockitoBean
+        SafAuthorizationManager<AuthorizationContext> safAuthorizationManager;
 
         @BeforeEach
         void mockTokenValidation() {
@@ -191,6 +198,8 @@ class ActuatorConfigTest {
             "/application/gateway"
         })
         void whenAccessDangerousActuatorWithCredentials_thenBlockModify(String endpoint) {
+            when(safAuthorizationManager.check(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(true, List.of())));
+
             var jwt = login(USER);
             // change the level of the ROOT logger
             given()
@@ -282,6 +291,8 @@ class ActuatorConfigTest {
 
         @Test
         void whenAccessDangerousActuatorWithCredentialsWithPermission_thenAllowModify() {
+            when(safAuthorizationManager.check(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(true, List.of())));
+
             var jwt = login(USER);
             // change the level of the ROOT logger
             given()
@@ -304,6 +315,8 @@ class ActuatorConfigTest {
 
         @Test
         void whenAccessDangerousActuatorWithCredentialsWithoutPermission_thenBlock() {
+            when(safAuthorizationManager.check(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(false, List.of())));
+
             var jwt = login(USER_NO_PERMISSION);
             String endpoint = "/application/loggers";
             // update a logger level

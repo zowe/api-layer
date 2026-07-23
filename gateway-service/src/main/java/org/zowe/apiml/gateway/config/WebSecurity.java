@@ -66,6 +66,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.firewall.StrictServerWebExchangeFirewall;
 import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
@@ -438,13 +439,18 @@ public class WebSecurity {
     }
 
     @Bean
+    SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager(SafResourceAccessVerifying safResourceAccessVerifying) {
+        return new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL");
+    }
+
+    @Bean
     @Order(1)
     @ConditionalOnMissingBean(name = "modulithConfig")
     SecurityWebFilterChain securityWebFilterChain(
         ServerHttpSecurity http,
         AuthConfigurationProperties authConfigurationProperties,
         AuthExceptionHandlerReactive authExceptionHandlerReactive,
-        SafResourceAccessVerifying safResourceAccessVerifying
+        SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager
     ) {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
@@ -476,7 +482,7 @@ public class WebSecurity {
                 .authenticated()
             )
             .authorizeExchange(exchange -> exchange.matchers(pathMatchers(APPLICATION))
-                .access(new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL"))
+                .access(actuatorAuthorizationManager)
             )
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec
