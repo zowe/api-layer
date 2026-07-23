@@ -50,7 +50,7 @@ dependencyResolutionManagement {
             version('jakartaInject', '2.0.1')
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
-            version('openTelemetry-starter', '2.29.0')
+            version('openTelemetry-starter', '2.30.0')
             version('openTelemetry-core', '1.64.0')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
@@ -110,7 +110,7 @@ dependencyResolutionManagement {
             version('micronautPlatform', '4.9.0')
             version('micronaut', '4.10.26')
             version('micronautPlugin', '4.6.2')
-            version('shadow', '9.6.0')
+            version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
             version('jacoco', '0.8.11')
             version('gradle', '9.0')
@@ -119,7 +119,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.82.2')
+            version('ioGrpc', '1.83.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
