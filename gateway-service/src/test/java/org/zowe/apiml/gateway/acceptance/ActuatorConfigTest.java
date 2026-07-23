@@ -27,8 +27,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.NestedTestConfiguration;
-import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithBasePath;
@@ -53,15 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@MicroservicesAcceptanceTest
-@TestPropertySource(
-    properties = {
-        "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
-        "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
-        "apiml.security.auth.provider=dummy"
-    }
-)
-@NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
+
 class ActuatorConfigTest {
 
     private static final String USER = "USER";
@@ -123,7 +113,8 @@ class ActuatorConfigTest {
             "apiml.security.auth.provider=dummy"
         }
     )
-    @ActiveProfiles("default")
+    @ActiveProfiles({"default", "test"})
+    @MicroservicesAcceptanceTest
     class GivenDefaultProfile extends ActuatorAcceptanceTest {
 
         @Autowired
@@ -166,7 +157,7 @@ class ActuatorConfigTest {
     }
 
     @Nested
-    @ActiveProfiles("debug")
+    @ActiveProfiles({"debug", "test"})
     @TestPropertySource(
         properties = {
             "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
@@ -174,6 +165,7 @@ class ActuatorConfigTest {
             "apiml.security.auth.provider=dummy"
         }
     )
+    @MicroservicesAcceptanceTest
     class GivenDebugProfile extends ActuatorAcceptanceTest {
 
         @Autowired
@@ -246,7 +238,7 @@ class ActuatorConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({"debug", "debug-control"})
+    @ActiveProfiles({"test", "debug", "debug-control"})
     @TestPropertySource(
         properties = {
             "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
@@ -254,6 +246,7 @@ class ActuatorConfigTest {
             "apiml.security.auth.provider=dummy"
         }
     )
+    @MicroservicesAcceptanceTest
     class GivenDebugControlProfile extends ActuatorAcceptanceTest {
 
         @Autowired

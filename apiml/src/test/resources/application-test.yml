@@ -10,15 +10,6 @@ logging:
 eureka:
     server:
         max-threads-for-peer-replication: 2
-management:
-    endpoint:
-        gateway:
-            access: unrestricted
-    endpoints:
-        web:
-            base-path: /application
-            exposure:
-                include: "*"
 
 apiml:
     discovery:

@@ -112,7 +112,7 @@ class ActuatorConfigTest {
             "caching.storage.mode=inMemory"
         }
     )
-    @ActiveProfiles("default")
+    @ActiveProfiles({"default", "test"})
     @AcceptanceTest
     class GivenDefaultProfile extends ActuatorAcceptanceTest {
 
@@ -156,7 +156,7 @@ class ActuatorConfigTest {
     }
 
     @Nested
-    @ActiveProfiles("debug")
+    @ActiveProfiles({"test", "debug"})
     @TestPropertySource(
         properties = {
             "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
@@ -238,7 +238,7 @@ class ActuatorConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({"debug", "debug-control"})
+    @ActiveProfiles({"test", "debug", "debug-control"})
     @TestPropertySource(
         properties = {
             "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
