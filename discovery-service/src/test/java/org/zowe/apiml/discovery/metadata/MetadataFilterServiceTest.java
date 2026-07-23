@@ -23,6 +23,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -91,6 +92,32 @@ class MetadataFilterServiceTest {
                     metadataFilterService.verifyAllowedDomains(instanceInfo);
                 });
                 verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq(metadataKey), eq(metadataValue), anyString());
+            }
+        }
+
+        @ParameterizedTest(name = "Value: {0} -> Allowed: {1}")
+        @CsvSource({
+            "https://localhost:8080, true",
+            "https://example.com:8080, false",
+            "https://sub.zowe.org:8080, true",
+            "https://invalid.org:8080, false",
+            "invalid-url, false",
+            "HTTPS://LOCALHOST:8080, true",
+            "HTTPS://INVALID.ORG:8080, false"
+        })
+        void shouldVerifyHostname(String hostname, boolean isAllowed) {
+            when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
+            when(instanceInfo.getHostName()).thenReturn(hostname);
+            lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+
+            if (isAllowed) {
+                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname), anyString());
+            } else {
+                assertThrows(MetadataValidationException.class, () -> {
+                    metadataFilterService.verifyAllowedDomains(instanceInfo);
+                });
+                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname), anyString());
             }
         }
 

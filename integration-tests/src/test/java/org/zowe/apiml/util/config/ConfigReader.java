@@ -102,7 +102,8 @@ public class ConfigReader {
                             auxiliaryUserList,
                             null,
                             oidcConfiguration,
-                            safIdtConfiguration
+                            safIdtConfiguration,
+                            System.getProperty("test_hostname", "localhost")
                         );
                     }
 
