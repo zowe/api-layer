@@ -18,6 +18,7 @@ import io.restassured.config.HttpClientConfig;
 import io.restassured.config.RestAssuredConfig;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -87,7 +88,9 @@ class ActuatorConfigTest {
                 exception instanceof NoHttpResponseException && executionCount < 4;
             this.config = RestAssured.config;
             RestAssured.config = RestAssured.config
-                .httpClient(HttpClientConfig.httpClientConfig().setParam("http.method.retry-handler", retryHandler));
+                .httpClient(HttpClientConfig.httpClientConfig().httpClientFactory(() ->
+                    HttpClientBuilder.create().setRetryHandler(retryHandler).build()
+                ));
         }
 
         @AfterEach
