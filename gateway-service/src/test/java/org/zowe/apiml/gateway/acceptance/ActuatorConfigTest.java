@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 
+import static io.restassured.RestAssured.basePath;
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.hc.core5.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
@@ -115,6 +117,7 @@ class ActuatorConfigTest {
     )
     @ActiveProfiles({"default", "test"})
     @MicroservicesAcceptanceTest
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class GivenDefaultProfile extends ActuatorAcceptanceTest {
 
         @Autowired
@@ -162,10 +165,16 @@ class ActuatorConfigTest {
         properties = {
             "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
             "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
-            "apiml.security.auth.provider=dummy"
+            "apiml.security.auth.provider=dummy",
+            "logging.level.reactor.netty=ERROR",
+            "org.springframework.http.server.reactive=DEBUG",
+            "org.springframework.security=DEBUG",
+            "org.springframework.web.reactive=DEBUG",
+            "org.springframework.web.reactive.socket=DEBUG"
         }
     )
     @MicroservicesAcceptanceTest
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class GivenDebugProfile extends ActuatorAcceptanceTest {
 
         @Autowired
@@ -243,10 +252,16 @@ class ActuatorConfigTest {
         properties = {
             "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
             "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
-            "apiml.security.auth.provider=dummy"
+            "apiml.security.auth.provider=dummy",
+            "logging.level.reactor.netty=ERROR",
+            "org.springframework.http.server.reactive=DEBUG",
+            "org.springframework.security=DEBUG",
+            "org.springframework.web.reactive=DEBUG",
+            "org.springframework.web.reactive.socket=DEBUG"
         }
     )
     @MicroservicesAcceptanceTest
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     class GivenDebugControlProfile extends ActuatorAcceptanceTest {
 
         @Autowired
