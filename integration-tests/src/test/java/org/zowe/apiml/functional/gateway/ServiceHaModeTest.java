@@ -80,7 +80,7 @@ class ServiceHaModeTest implements TestWithStartedInstances {
 
     private static VirtualService virtualService(String serviceId, int port) {
         var service = new VirtualService(serviceId, port);
-        var hostname = System.getProperty("test_hostname");
+        var hostname = System.getProperty("test.hostname");
         if (hostname != null) {
             service.hostname(hostname);
         }
