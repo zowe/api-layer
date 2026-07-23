@@ -13,13 +13,6 @@ package org.zowe.apiml.gateway.acceptance;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
-import io.restassured.RestAssured;
-import io.restassured.config.HttpClientConfig;
-import io.restassured.config.RestAssuredConfig;
-import org.apache.http.NoHttpResponseException;
-import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,7 +35,6 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 
-import static io.restassured.RestAssured.basePath;
 import static io.restassured.RestAssured.given;
 import static org.apache.hc.core5.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.hc.core5.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
@@ -67,7 +59,6 @@ class ActuatorConfigTest {
 
         @MockitoBean
         private TokenProvider tokenProvider;
-        private RestAssuredConfig config;
 
         @BeforeEach
         void mockTokenValidation() {
@@ -79,22 +70,6 @@ class ActuatorConfigTest {
                     QueryResponse.Source.ZOWE.value, Collections.emptyList(), QueryResponse.Source.ZOWE
                 ));
             });
-        }
-
-        @BeforeEach
-        void retryOnDroppedConnection() {
-            HttpRequestRetryHandler retryHandler = (exception, executionCount, context) ->
-                exception instanceof NoHttpResponseException && executionCount < 4;
-            this.config = RestAssured.config;
-            RestAssured.config = RestAssured.config
-                .httpClient(HttpClientConfig.httpClientConfig().httpClientFactory(() ->
-                    HttpClientBuilder.create().setRetryHandler(retryHandler).build()
-                ));
-        }
-
-        @AfterEach
-        void restoreConfig() {
-            RestAssured.config = this.config;
         }
 
     }
