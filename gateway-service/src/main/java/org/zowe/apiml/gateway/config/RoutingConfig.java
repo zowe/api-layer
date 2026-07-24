@@ -49,7 +49,10 @@ public class RoutingConfig {
 
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
-            removeHeaders.setName("RemoveRequestHeader");
+            // When preserving Origin for cross-site requests, use the conditional filter that keeps the
+            // header for Sec-Fetch-Site: cross-site so the southbound service can make its own CSRF
+            // decision; otherwise fall back to the unconditional built-in removal.
+            removeHeaders.setName("RemoveRequestHeaderIfNotCrossSite");
             Map<String, String> args = new HashMap<>();
             args.put("name", headerName);
             removeHeaders.setArgs(args);

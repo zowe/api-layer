@@ -39,11 +39,15 @@ public class CachedBodyFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         return DataBufferUtils.join(exchange.getRequest().getBody())
-            .flatMap(dataBuffer -> {
+            .map(dataBuffer -> {
                 var bytes = new byte[dataBuffer.readableByteCount()];
                 dataBuffer.read(bytes);
                 DataBufferUtils.release(dataBuffer);
                 exchange.getAttributes().put(CACHED_BODY_ATTR, new String(bytes, StandardCharsets.UTF_8));
+                return bytes;
+            })
+            .defaultIfEmpty(new byte[0])
+            .flatMap(bytes -> {
                 var decoratedRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
                     @Override
                     public Flux<DataBuffer> getBody() {
@@ -51,13 +55,7 @@ public class CachedBodyFilter implements WebFilter {
                     }
                 };
                 return chain.filter(exchange.mutate().request(decoratedRequest).build());
-            })
-            .switchIfEmpty(chain.filter(exchange.mutate().request(new ServerHttpRequestDecorator(exchange.getRequest()) {
-                @Override
-                    public Flux<DataBuffer> getBody() {
-                        return Flux.just(exchange.getResponse().bufferFactory().wrap(new byte[]{}));
-                    }
-            }).build()));
+            });
     }
 
 }
