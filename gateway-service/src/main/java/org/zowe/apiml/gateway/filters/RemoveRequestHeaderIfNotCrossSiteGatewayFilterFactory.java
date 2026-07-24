@@ -24,7 +24,7 @@ import java.util.List;
  * Removes the configured request header before the request is routed to the southbound service,
  * <b>unless</b> the request is a cross-site browser request (i.e. {@code Sec-Fetch-Site: cross-site}).
  * <p>
- * The Gateway strips CORS request headers (notably {@code Origin}) so that it remains the sole CORS
+ * The Gateway strips CORS request headers (notably {@code Origin} and {@code Access-Control-Request-*}) so that it remains the sole CORS
  * terminator and southbound services do not perform their own CORS processing. Only cross-site requests
  * carry a CSRF risk that a southbound service may want to inspect, so for those the header is preserved,
  * allowing the service to examine {@code Origin} together with {@code Sec-Fetch-Site} and make its own
@@ -53,13 +53,12 @@ public class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory
     @Override
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
-            ServerHttpRequest request = exchange.getRequest();
+            var request = exchange.getRequest();
             if (preserveOrigin && CROSS_SITE.equalsIgnoreCase(request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER))) {
-                // Cross-site browser request: keep the header so the southbound service can inspect it.
                 return chain.filter(exchange);
             }
 
-            ServerHttpRequest mutatedRequest = request.mutate()
+            var mutatedRequest = request.mutate()
                 .headers(headers -> headers.remove(config.getName()))
                 .build();
             return chain.filter(exchange.mutate().request(mutatedRequest).build());
