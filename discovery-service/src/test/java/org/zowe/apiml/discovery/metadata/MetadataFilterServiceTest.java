@@ -231,7 +231,7 @@ class MetadataFilterServiceTest {
                 "10.0.1.100",
                 "1.0.1.0"
             })
-            void givenNotMatchingNAddress_whenCheckIpAddress_thenReturnFalse(String address) {
+            void givenNotMatchingAddress_whenCheckIpAddress_thenReturnFalse(String address) {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", "https://google.com,192.168.0.1,example.com,localhost");
                 service.afterPropertiesSet();
