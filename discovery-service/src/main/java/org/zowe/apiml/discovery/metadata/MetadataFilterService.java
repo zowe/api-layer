@@ -24,10 +24,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.net.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -151,13 +148,12 @@ public class MetadataFilterService implements InitializingBean {
         }
     }
 
-    private boolean isUrl(String url) {
+    private String getScheme(String url) {
         try {
-            new URL(url);
-            return true;
-        } catch (MalformedURLException e) {
+            return new URL(url).toURI().getScheme().toLowerCase(Locale.ROOT);
+        } catch (MalformedURLException | URISyntaxException e) {
             log.debug("'{}' is not a valid URL", url);
-            return false;
+            return null;
         }
     }
 
@@ -174,9 +170,9 @@ public class MetadataFilterService implements InitializingBean {
             return true;
         }
 
-        if (isUrl(url)) {
-            String scheme = URI.create(url).getScheme();
-            return !"http".equalsIgnoreCase(scheme) || isClientAttlsEnabled;
+        var scheme = getScheme(url);
+        if (scheme != null) {
+            return !scheme.equals(scheme) || isClientAttlsEnabled;
         }
 
         return true;
