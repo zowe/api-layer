@@ -70,7 +70,7 @@ safIdtConfiguration:
     enabled: true
 instanceEnv:
     # Try to avoid adding quotes to the values of these env variables
-    ZWE_ALLOWED_DOMAINS: localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com
+    ZWE_ALLOWED_DOMAINS: localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com,testrunner
     CMMN_LB: build/libs/api-layer-lite-lib-all/BOOT-INF/lib/
     ZWE_haInstance_hostname: localhost
     ZOWE_PREFIX: ZWE
