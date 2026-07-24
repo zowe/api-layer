@@ -27,10 +27,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -183,14 +180,16 @@ class MetadataFilterServiceTest {
         @Nested
         class IpAddress {
 
+            private static final String LOCALHOST = "localhost";
+
             @ParameterizedTest
             @EmptySource
             @NullSource
             void givenNoAddress_whenCheckIpAddress_thenReturnTrue(String emptyAddress) {
                 var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", "localhost");
+                ReflectionTestUtils.setField(service,"allowedDomains", LOCALHOST);
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(emptyAddress));
+                assertTrue(service.isAllowedIpAddress(emptyAddress, LOCALHOST));
             }
 
             @ParameterizedTest
@@ -202,7 +201,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", allowedDomain);
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress("192.168.0.1"));
+                assertTrue(service.isAllowedIpAddress("192.168.0.1", LOCALHOST));
             }
 
             @ParameterizedTest
@@ -214,7 +213,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", "localhost");
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(address));
+                assertTrue(service.isAllowedIpAddress(address, LOCALHOST));
             }
 
             @Test
@@ -222,7 +221,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", InetAddress.getLocalHost().getHostName());
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(InetAddress.getLocalHost().getHostAddress()));
+                assertTrue(service.isAllowedIpAddress(InetAddress.getLocalHost().getHostAddress(), LOCALHOST));
             }
 
             @ParameterizedTest
@@ -235,7 +234,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", "https://google.com,192.168.0.1,example.com,localhost");
                 service.afterPropertiesSet();
-                assertFalse(service.isAllowedIpAddress(address));
+                assertFalse(service.isAllowedIpAddress(address, LOCALHOST));
             }
 
             @ParameterizedTest(name = "Value: {0} -> Allowed: {1}")
@@ -257,6 +256,21 @@ class MetadataFilterServiceTest {
                     });
                     verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 }
+            }
+
+            @Test
+            void givenMatchingWildcardWithHostName_whenCheckIpAddress_thenCheckAgainstHostName() throws UnknownHostException {
+                var hostname = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT);
+                var mockWildcard = "*." + hostname;
+                var service = new MetadataFilterService() {
+                    @Override
+                    boolean isMatchingWildCard(String hostname, String wildCard) {
+                        // wildcard assume `*.` and then verify without first character, so the dot is problem for the test
+                        return mockWildcard.equals(wildCard);
+                    }
+                };
+                ReflectionTestUtils.setField(service,"allowedDomainsSet", Collections.singleton(mockWildcard));
+                assertTrue(service.isAllowedIpAddress(InetAddress.getLocalHost().getHostAddress(), hostname));
             }
 
         }
