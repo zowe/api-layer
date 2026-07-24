@@ -50,14 +50,9 @@ jobs:
 
     Register:
         runs-on: ubuntu-latest
-        container:
-            image: ubuntu:latest
-            options: "--hostname testrunner"
         timeout-minutes: 20
 
         steps:
-            -   name: Install git, docker and curl
-                run: apt-get update && apt-get install -y git docker.io docker-compose docker-compose-v2 curl
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
