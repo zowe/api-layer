@@ -148,6 +148,7 @@ logbackServiceName: ZWEAGW1
 # Use a dedicated profile below or create a new one to configure logging levels.
 logging:
     level:
+        ROOT: INFO
         com.netflix.discovery.DiscoveryClient: OFF
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         reactor.netty.http.client.HttpClientConnect: OFF
