@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 
 /**
  * Rejects requests that carry a body with HTTP 415 unless they declare a {@code Content-Type}
- * compatible with {@code application/json}. Bodyless requests (e.g. cert or Basic-Auth login,
+ * equals to {@code application/json}. Bodyless requests (e.g. cert or Basic-Auth login,
  * logout) pass through unchecked, since they have nothing to be misinterpreted as JSON.
  * <p>
  * Must run after {@link CachedBodyFilter}: whether a body was actually sent is determined from
@@ -34,7 +34,7 @@ public class ContentTypeFilter implements WebFilter, Ordered {
         boolean hasBody = exchange.getAttribute(CachedBodyFilter.CACHED_BODY_ATTR) != null;
         if (hasBody) {
             MediaType contentType = exchange.getRequest().getHeaders().getContentType();
-            if (contentType == null || !contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+            if (contentType == null || !MediaType.APPLICATION_JSON.equalsTypeAndSubtype(contentType)) {
                 exchange.getResponse().setStatusCode(HttpStatus.UNSUPPORTED_MEDIA_TYPE);
                 return exchange.getResponse().setComplete();
             }

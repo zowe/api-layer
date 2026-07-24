@@ -25,7 +25,7 @@ import java.io.IOException;
 
 /**
  * Rejects requests that carry a body with HTTP 415 unless they declare a {@code Content-Type}
- * compatible with {@code application/json}. Bodyless requests (e.g. cert or Basic-Auth login,
+ * equals to {@code application/json}. Bodyless requests (e.g. cert or Basic-Auth login,
  * logout) pass through unchecked, since they have nothing to be misinterpreted as JSON.
  * <p>
  * Body presence is determined from the {@code Content-Length}/{@code Transfer-Encoding} headers

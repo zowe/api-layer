@@ -14,9 +14,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
@@ -44,23 +46,6 @@ class ContentTypeFilterTest {
     class WhenRequestHasBody {
 
         @Test
-        void givenJsonContentType_thenRequestProceeds() {
-            var request = MockServerHttpRequest.post("/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body("{}");
-
-            var exchange = MockServerWebExchange.from(request);
-            exchange.getAttributes().put(CachedBodyFilter.CACHED_BODY_ATTR, "{}");
-            var chain = mock(WebFilterChain.class);
-            when(chain.filter(any())).thenReturn(Mono.empty());
-
-            StepVerifier.create(filter.filter(exchange, chain))
-                .verifyComplete();
-
-            verify(chain).filter(exchange);
-        }
-
-        @Test
         void givenNoContentType_thenRejectedWithUnsupportedMediaType() {
             var request = MockServerHttpRequest.post("/auth/login")
                 .body("{}");
@@ -76,21 +61,39 @@ class ContentTypeFilterTest {
             verifyNoInteractions(chain);
         }
 
-        @Test
-        void givenNonJsonContentType_thenRejectedWithUnsupportedMediaType() {
+        @ParameterizedTest(name = "[{index}] Content-Type=\"{0}\" -> accepted={1}")
+        @CsvSource({
+            "application/json, true",
+            "APPLICATION/JSON, true",
+            "Application/Json, true",
+            "application/json;charset=UTF-8, true",
+            "'*/*', false",
+            "application/*, false",
+            "application/*+json, false",
+            "application/merge-patch+json, false",
+            "application/x-www-form-urlencoded, false",
+        })
+        void givenContentType_thenRequestIsAcceptedOrRejectedAccordingly(String contentType, boolean accepted) {
             var request = MockServerHttpRequest.post("/auth/login")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body("username=a&password=b");
+                .header(HttpHeaders.CONTENT_TYPE, contentType)
+                .body("{}");
 
             var exchange = MockServerWebExchange.from(request);
-            exchange.getAttributes().put(CachedBodyFilter.CACHED_BODY_ATTR, "username=a&password=b");
+            exchange.getAttributes().put(CachedBodyFilter.CACHED_BODY_ATTR, "{}");
             var chain = mock(WebFilterChain.class);
+            if (accepted) {
+                when(chain.filter(any())).thenReturn(Mono.empty());
+            }
 
             StepVerifier.create(filter.filter(exchange, chain))
                 .verifyComplete();
 
-            assertEquals(HttpStatus.UNSUPPORTED_MEDIA_TYPE, exchange.getResponse().getStatusCode());
-            verifyNoInteractions(chain);
+            if (accepted) {
+                verify(chain).filter(exchange);
+            } else {
+                assertEquals(HttpStatus.UNSUPPORTED_MEDIA_TYPE, exchange.getResponse().getStatusCode());
+                verifyNoInteractions(chain);
+            }
         }
 
     }
