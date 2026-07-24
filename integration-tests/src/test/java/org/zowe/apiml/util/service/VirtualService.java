@@ -173,7 +173,8 @@ public class VirtualService implements AutoCloseable {
     private void createTomcat(int port) {
         httpConnector = new Connector();
         httpConnector.setPort(port);
-        httpConnector.setScheme("http");
+        httpConnector.setScheme("https");
+        httpConnector.setSecure(true);
 
         tomcat = new Tomcat();
         tomcat.setConnector(httpConnector);
@@ -419,10 +420,10 @@ public class VirtualService implements AutoCloseable {
     }
 
     /**
-     * @return base URL of this service (without slash), ie: http://localhost:65123
+     * @return base URL of this service (without slash), ie: https://localhost:65123
      */
     public String getUrl() {
-        return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
+        return "https://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
     }
 
     public void register(String status) throws UnknownHostException, JSONException {
