@@ -25,6 +25,9 @@ buildscript {
             }
         }
         maven {
+            url "https://talend-update.talend.com/nexus/content/repositories/libraries/"
+        }
+        maven {
             url artifactoryPlugins
         }
     }
