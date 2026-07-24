@@ -23,11 +23,7 @@ import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -155,6 +151,16 @@ public class MetadataFilterService implements InitializingBean {
         }
     }
 
+    private boolean isUrl(String url) {
+        try {
+            new URL(url);
+            return true;
+        } catch (MalformedURLException e) {
+            log.debug("'{}' is not a valid URL", url);
+            return false;
+        }
+    }
+
     boolean isWildCard(String allowedDomain) {
         return allowedDomain.startsWith("*.");
     }
@@ -175,7 +181,7 @@ public class MetadataFilterService implements InitializingBean {
 
         return true;
     }
-  
+
     private boolean isAllowed(String allowedDomain, String domain) {
         log.debug("checking URL {} against domain {}", domain, allowedDomain);
         allowedDomain = allowedDomain.toLowerCase();
