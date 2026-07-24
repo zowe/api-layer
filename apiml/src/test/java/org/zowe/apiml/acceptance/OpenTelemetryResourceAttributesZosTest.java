@@ -86,7 +86,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
     @Nested
     @AcceptanceTest
-    @ActiveProfiles({"OpenTelemetryTest", "zos"})
+    @ActiveProfiles({"test", "OpenTelemetryTest", "zos"})
     @TestPropertySource(
         properties = {
             "otel.sdk.disabled=false",
@@ -135,7 +135,7 @@ class OpenTelemetryResourceAttributesZosTest {
             "apiml.security.personalAccessToken.enabled=true"
         }
     )
-    @ActiveProfiles({"OpenTelemetryTest", "zos"})
+    @ActiveProfiles({"test", "OpenTelemetryTest", "zos"})
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
     class WhenOnboardedService extends AcceptanceTestWithMockServices {

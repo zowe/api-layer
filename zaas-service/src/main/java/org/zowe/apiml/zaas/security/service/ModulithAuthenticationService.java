@@ -42,8 +42,8 @@ public class ModulithAuthenticationService extends AuthenticationService {
     }
 
     @Override
-    protected String getInvalidateUrl(InstanceInfo instanceInfo, String jwtToken) {
-        return EurekaUtils.getUrl(instanceInfo) + "/gateway/api/v1/auth/invalidate/" + jwtToken;
+    protected String getInvalidateUrl(InstanceInfo instanceInfo) {
+        return EurekaUtils.getUrl(instanceInfo) + "/gateway/api/v1/auth/invalidate";
     }
 
 }
