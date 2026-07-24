@@ -39,11 +39,11 @@ public class MetadataFilterService implements InitializingBean {
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
     private static final String ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED = "org.zowe.apiml.common.schemeNotAllowed";
 
-    private final Cache<String, InetAddress[]> DOMAIN_TO_IP_ADDRESSES = Caffeine.newBuilder()
+    private final Cache<String, InetAddress[]> domainToIpAddresses = Caffeine.newBuilder()
         .maximumSize(100)
         .expireAfterWrite(5, TimeUnit.MINUTES)
         .build();
-    private final Cache<InetAddress, Boolean> IP_ALLOWED = Caffeine.newBuilder()
+    private final Cache<InetAddress, Boolean> ipAllowed = Caffeine.newBuilder()
         .maximumSize(100)
         .expireAfterWrite(5, TimeUnit.MINUTES)
         .build();
@@ -111,7 +111,7 @@ public class MetadataFilterService implements InitializingBean {
         }
 
         // obtain list of domain's IP address and check if any is matching
-        var allowedAddresses = DOMAIN_TO_IP_ADDRESSES.get(allowed, this::getInetAddresses);
+        var allowedAddresses = domainToIpAddresses.get(allowed, this::getInetAddresses);
         return Arrays.stream(allowedAddresses).anyMatch(address::equals);
     }
 
@@ -133,7 +133,7 @@ public class MetadataFilterService implements InitializingBean {
 
         // check cache and if entry misses verify ip against all allowed domains
         String hostname = info.getHostName();
-        var allowed = IP_ALLOWED.get(address, ip ->
+        boolean allowed = ipAllowed.get(address, ip ->
             allowedDomainsSet.stream().anyMatch(allowedDomain ->
                 isAllowedIpAddress(allowedDomain, ip, hostname)
             )
