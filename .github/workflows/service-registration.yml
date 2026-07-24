@@ -56,8 +56,8 @@ jobs:
         timeout-minutes: 20
 
         steps:
-            -   name: Install git
-                run: apt-get update && apt-get install -y git
+            -   name: Install git, docker and curl
+                run: apt-get update && apt-get install -y git docker curl
             -   uses: actions/checkout@v4
                 with:
                     ref: ${{ github.head_ref }}
