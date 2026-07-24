@@ -113,6 +113,8 @@ apiml:
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        csrf:
+            preserveOriginForCrossSite: true
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
         rauditx:
@@ -121,6 +123,9 @@ apiml:
     health:
         protected: true
     webClientConfig.enabled: true
+security:
+    secFetch:
+        enabled: true
 server:
     http2:
         enabled: false
