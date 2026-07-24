@@ -38,7 +38,7 @@ class ProtectedHealthEndpointTest {
     protected int port;
 
     @BeforeEach
-    public void setBasePath() {
+    void setBasePath() {
         basePath = String.format("https://localhost:%d", port);
     }
 
