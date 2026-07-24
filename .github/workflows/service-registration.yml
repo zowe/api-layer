@@ -50,6 +50,9 @@ jobs:
 
     Register:
         runs-on: ubuntu-latest
+        container:
+            image: ubuntu:latest
+            options: "--hostname testrunner"
         timeout-minutes: 20
 
         steps:
