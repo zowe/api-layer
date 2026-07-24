@@ -115,7 +115,7 @@ public class MetadataFilterService implements InitializingBean {
         return Arrays.stream(allowedAddresses).anyMatch(address::equals);
     }
 
-    boolean isAllowedIpAddress(String ipAddress, String hostname) {
+    boolean isAllowedIpAddress(String label, String ipAddress, InstanceInfo info) {
         if (StringUtils.isBlank(ipAddress)) {
             return true;
         }
@@ -132,11 +132,18 @@ public class MetadataFilterService implements InitializingBean {
         }
 
         // check cache and if entry misses verify ip against all allowed domains
-        return IP_ALLOWED.get(address, ip ->
+        String hostname = info.getHostName();
+        var allowed = IP_ALLOWED.get(address, ip ->
             allowedDomainsSet.stream().anyMatch(allowedDomain ->
                 isAllowedIpAddress(allowedDomain, ip, hostname)
             )
         );
+
+        if (!allowed) {
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, info.getIPAddr(), info.getInstanceId());
+        }
+
+        return allowed;
     }
 
     private String extractDomain(String url) {
@@ -172,7 +179,7 @@ public class MetadataFilterService implements InitializingBean {
 
         var scheme = getScheme(url);
         if (scheme != null) {
-            return !scheme.equals(scheme) || isClientAttlsEnabled;
+            return !"http".equals(scheme) || isClientAttlsEnabled;
         }
 
         return true;
@@ -209,6 +216,7 @@ public class MetadataFilterService implements InitializingBean {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED, label, url, info.getInstanceId());
             isValid = false;
         }
+
         if (isValid && log.isTraceEnabled()) {
             log.trace("URL {} is allowed for {}", url, label);
         }
@@ -249,12 +257,10 @@ public class MetadataFilterService implements InitializingBean {
 
     public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
-        if (!isAllowedIpAddress(info.getIPAddr(), info.getHostName())) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "IP Address", info.getIPAddr(), info.getInstanceId());
+        if (!isAllowedIpAddress("IP Address", info.getIPAddr(), info)) {
             result.set(false);
         }
         if (!validateUrl("Instance Hostname", info.getHostName(), info)) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, "Instance Hostname", info.getHostName(), info.getInstanceId());
             result.set(false);
         }
         if (!validateUrl("Home Page URL", info.getHomePageUrl(), info)) {

@@ -225,7 +225,13 @@ class MetadataFilterServiceTest {
         @Nested
         class IpAddress {
 
+            private static final String IP_LABEL = "IP Address";
             private static final String LOCALHOST = "localhost";
+
+            private static final InstanceInfo INSTANCE_INFO = InstanceInfo.Builder.newBuilder()
+                .setAppName("test")
+                .setHostName(LOCALHOST)
+                .build();
 
             @ParameterizedTest
             @EmptySource
@@ -234,7 +240,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", LOCALHOST);
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(emptyAddress, LOCALHOST));
+                assertTrue(service.isAllowedIpAddress(IP_LABEL, emptyAddress, INSTANCE_INFO));
             }
 
             @ParameterizedTest
@@ -246,7 +252,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", allowedDomain);
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress("192.168.0.1", LOCALHOST));
+                assertTrue(service.isAllowedIpAddress(IP_LABEL, "192.168.0.1", INSTANCE_INFO));
             }
 
             @ParameterizedTest
@@ -258,7 +264,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", "localhost");
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(address, LOCALHOST));
+                assertTrue(service.isAllowedIpAddress(IP_LABEL, address, INSTANCE_INFO));
             }
 
             @Test
@@ -266,7 +272,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", InetAddress.getLocalHost().getHostName());
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(InetAddress.getLocalHost().getHostAddress(), LOCALHOST));
+                assertTrue(service.isAllowedIpAddress(IP_LABEL, InetAddress.getLocalHost().getHostAddress(), INSTANCE_INFO));
             }
 
             @ParameterizedTest
@@ -279,7 +285,7 @@ class MetadataFilterServiceTest {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", "https://google.com,192.168.0.1,example.com,localhost");
                 service.afterPropertiesSet();
-                assertFalse(service.isAllowedIpAddress(address, LOCALHOST));
+                assertFalse(service.isAllowedIpAddress(IP_LABEL, address, INSTANCE_INFO));
             }
 
             @ParameterizedTest(name = "Value: {0} -> Allowed: {1}")
@@ -315,7 +321,8 @@ class MetadataFilterServiceTest {
                     }
                 };
                 ReflectionTestUtils.setField(service,"allowedDomainsSet", Collections.singleton(mockWildcard));
-                assertTrue(service.isAllowedIpAddress(InetAddress.getLocalHost().getHostAddress(), hostname));
+                InstanceInfo info = InstanceInfo.Builder.newBuilder().setAppName("test").setHostName(hostname).build();
+                assertTrue(service.isAllowedIpAddress(IP_LABEL, InetAddress.getLocalHost().getHostAddress(), info));
             }
 
         }
