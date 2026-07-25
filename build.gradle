@@ -29,6 +29,10 @@ buildscript {
         }
         maven {
             url artifactoryPlugins
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
         }
     }
 
