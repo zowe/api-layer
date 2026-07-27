@@ -1,9 +1,5 @@
 buildscript {
-    repositories {
-        maven {
-            setUrl('https://plugins.gradle.org/m2/')
-        }
-    }
+    repositories mavenRepositories
     dependencies {
         classpath libs.gradle.test.logger
     }

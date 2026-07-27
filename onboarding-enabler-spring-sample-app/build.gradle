@@ -1,12 +1,5 @@
 buildscript {
-    repositories {
-        mavenCentral()
-        maven { url "https://repo.spring.io/libs-milestone" }
-        maven { setUrl(artifactoryMavenRepo) }
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
+    repositories mavenRepositories
     dependencies {
         classpath libs.spring.boot.gradle.plugin
     }
