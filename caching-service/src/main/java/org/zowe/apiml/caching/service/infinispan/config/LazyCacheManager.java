@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service.infinispan.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.codehaus.commons.compiler.util.Producer;
 import org.infinispan.Cache;
@@ -376,8 +377,6 @@ public class LazyCacheManager extends DefaultCacheManager {
 
             log.info("Attempting migration of legacy store for cache {} at {}", cacheName, cacheDir);
             try {
-                // clear any leftover from a previous failed attempt so the migrator starts from an empty target
-                FileUtils.deleteDirectory(migratedDir.toFile());
                 new StoreMigrator(migrationProperties(cacheName, cacheDir, migratedDir)).run();
 
                 // clear any leftover backup, otherwise the move below fails (target already exists)
@@ -392,6 +391,13 @@ public class LazyCacheManager extends DefaultCacheManager {
                         "inconsistent; the original store at {} was left untouched.",
                     cacheName, cacheDir, e
                 );
+            } finally {
+                try {
+                    // clear any leftover migrated dir
+                    FileUtils.deleteDirectory(migratedDir.toFile());
+                } catch (IOException e) {
+                    log.warn("Failed to clean up temporary migration directory {}", migratedDir, e);
+                }
             }
         }
 
@@ -419,12 +425,7 @@ public class LazyCacheManager extends DefaultCacheManager {
          * permissions, etc.) would not be fixed by migrating the store, so it's not worth attempting.
          */
         static boolean isLegacyStoreFailure(Throwable t) {
-            for (Throwable cause = t; cause != null; cause = cause.getCause()) {
-                if (cause instanceof PersistenceException) {
-                    return true;
-                }
-            }
-            return false;
+            return ExceptionUtils.indexOfType(t, PersistenceException.class) != -1;
         }
 
         private boolean createCache(String cacheName, ConfigurationBuilder cacheBuilder) {
