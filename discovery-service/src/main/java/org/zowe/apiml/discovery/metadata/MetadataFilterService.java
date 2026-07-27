@@ -125,15 +125,15 @@ public class MetadataFilterService implements InitializingBean {
             return true;
         }
 
-        InetAddress address = InetAddresses.forString(ipAddress);
+        var address = InetAddresses.forString(ipAddress);
         if (address.isAnyLocalAddress() || address.isLoopbackAddress()) {
             // local address (ie. loopback 127.0.0.1) is allowed as default
             return true;
         }
 
         // check cache and if entry misses verify ip against all allowed domains
-        String hostname = info.getHostName();
-        boolean allowed = ipAllowed.get(address, ip ->
+        var hostname = info.getHostName();
+        var allowed = ipAllowed.get(address, ip ->
             allowedDomainsSet.stream().anyMatch(allowedDomain ->
                 isAllowedIpAddress(allowedDomain, ip, hostname)
             )
