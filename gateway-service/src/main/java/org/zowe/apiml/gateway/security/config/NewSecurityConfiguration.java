@@ -624,9 +624,9 @@ public class NewSecurityConfiguration {
 
             /**
              * Strict URL validation is enabled by default. Setting
-             * apiml.security.enableStrictUrlValidation=false reverts to the original, relaxed
-             * behavior where routed requests allow encoded slashes, backslashes, percent, period
-             * and semicolon characters.
+             * apiml.security.enableStrictUrlValidation=false reverts to the relaxed behavior where
+             * routed requests allow encoded (single and double) slashes, backslashes, percent,
+             * period and semicolon characters.
              */
             private StrictHttpFirewall buildHttpFirewall() {
                 if (isStrictUrlValidationEnabled) {
@@ -635,6 +635,7 @@ public class NewSecurityConfiguration {
 
                 ApimlStrictServerWebExchangeFirewall firewall = new ApimlStrictServerWebExchangeFirewall();
                 firewall.setAllowUrlEncodedSlash(true);
+                firewall.setAllowUrlEncodedDoubleSlash(true);
                 firewall.setAllowBackSlash(true);
                 firewall.setAllowUrlEncodedPercent(true);
                 firewall.setAllowUrlEncodedPeriod(true);

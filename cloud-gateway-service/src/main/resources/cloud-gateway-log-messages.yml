@@ -49,13 +49,6 @@ messages:
       reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
       action: "Contact the system administrator and request enablement of encoded characters in the service."
 
-    - key: org.zowe.apiml.gateway.requestContainEncodedSlash
-      number: ZWEAG702
-      type: ERROR
-      text: "Gateway does not allow encoded slashes in request: '%s'."
-      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
-      action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
-
     - key: org.zowe.apiml.gateway.jwtInitConfigError
       number: ZWEAG704
       type: ERROR
