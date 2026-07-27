@@ -44,6 +44,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ReactiveAuthenticationControllerTest {
 
+    private static final String BEARER = "Bearer ";
     @Mock private AuthenticationService authenticationService;
     @Mock private PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
     @Mock private HttpUtils httpUtils;
@@ -91,7 +92,7 @@ class ReactiveAuthenticationControllerTest {
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(true);
 
-        var result = controller.invalidateJwtToken(jwtToInvalidate);
+        var result = controller.invalidateJwtToken(BEARER + jwtToInvalidate);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.OK.equals(responseEntity.getStatusCode()))
@@ -107,7 +108,7 @@ class ReactiveAuthenticationControllerTest {
         when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(false);
 
-        var result = controller.invalidateJwtToken(jwtToInvalidate);
+        var result = controller.invalidateJwtToken(BEARER + jwtToInvalidate);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.SERVICE_UNAVAILABLE.equals(responseEntity.getStatusCode()))
@@ -124,7 +125,7 @@ class ReactiveAuthenticationControllerTest {
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class)))
             .thenThrow(new TokenNotValidException("Token is not valid"));
 
-        var result = controller.invalidateJwtToken(jwtToInvalidate);
+        var result = controller.invalidateJwtToken(BEARER + jwtToInvalidate);
 
         StepVerifier.create(result)
             .expectNextMatches(responseEntity -> HttpStatus.BAD_REQUEST.equals(responseEntity.getStatusCode()))

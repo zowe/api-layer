@@ -65,6 +65,7 @@ dependencies {
     implementation libs.apache.commons.lang3
     implementation libs.jackson.dataformat.yaml
     implementation libs.caffeine
+    implementation libs.guava
 
     testImplementation(testFixtures(project(":apiml-common")))
 

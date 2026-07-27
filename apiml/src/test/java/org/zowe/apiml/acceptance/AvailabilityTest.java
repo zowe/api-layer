@@ -31,7 +31,7 @@ import static org.hamcrest.Matchers.notNullValue;
  */
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles({ "ApimlModulithAcceptanceTest", "AvailabilityTest" })
+@ActiveProfiles({ "test", "ApimlModulithAcceptanceTest", "AvailabilityTest" })
 class AvailabilityTest extends AcceptanceTestWithBasePath {
 
     @ParameterizedTest(name = "{0} is available at port {1} with status {2}")

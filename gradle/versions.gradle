@@ -50,7 +50,7 @@ dependencyResolutionManagement {
             version('jakartaInject', '2.0.1')
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
-            version('openTelemetry-starter', '2.29.0')
+            version('openTelemetry-starter', '2.30.0')
             version('openTelemetry-core', '1.64.0')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
@@ -65,11 +65,11 @@ dependencyResolutionManagement {
             version('jbossLogging', '3.6.3.Final')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '12.1.11')
-            version('jettison', '1.5.6')
+            version('jettison', '1.5.7')
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
             version('jose4j', '0.9.6')
-            version('jodaTime', '2.14.2')
+            version('jodaTime', '2.14.3')
             version('jsonPath', '2.10.0')
             version('jsonSmart', '2.6.0')
             version('junitJupiter', '5.14.4')
@@ -98,7 +98,7 @@ dependencyResolutionManagement {
             version('thymeleaf', '3.1.5.RELEASE')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.1')
-            version('jgit', '7.7.0.202606012155-r')
+            version('jgit', '7.7.1.202607240634-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.3.1.8318')
             version('gradleRelease', '3.1.0')
@@ -110,7 +110,7 @@ dependencyResolutionManagement {
             version('micronautPlatform', '4.9.0')
             version('micronaut', '4.10.26')
             version('micronautPlugin', '4.6.2')
-            version('shadow', '9.6.0')
+            version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
             version('jacoco', '0.8.11')
             version('gradle', '9.0')
@@ -119,7 +119,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.82.2')
+            version('ioGrpc', '1.83.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
@@ -298,7 +298,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.38')
+            version('logback', '1.6.0')
             version('mockitoCore', '5.23.0')
             version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')

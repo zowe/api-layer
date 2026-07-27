@@ -1,6 +1,4 @@
 # for back-compatibility
-spring.profiles.group.attls: attlsServer,attlsClient
-
 eureka:
     dashboard:
         path: /eureka
@@ -18,6 +16,10 @@ eureka:
         useReadOnlyResponseCache: false
         peer-node-read-timeout-ms: 15000
 spring:
+    profiles:
+        group:
+            attls: attlsServer,attlsClient
+            debug-control: debug
     cloud:
         gateway:
             server:
@@ -110,6 +112,7 @@ apiml:
             instance:
                 instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
                 hostname: ${apiml.service.hostname}
+                ip-address: ${apiml.service.ipAddress:${server.address:}}
                 #ports are computed in code
                 homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
                 healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
@@ -192,7 +195,6 @@ apiml:
         apimlId: apiml1
         corsEnabled: true
         corsAllowedEndpoints: /gateway/**,/apicatalog/**,/cachingservice/**,/v3/api-docs/**
-        allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
         hostname: localhost
@@ -205,6 +207,8 @@ apiml:
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
+        csrf:
+            preserveOriginForCrossSite: true
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
@@ -380,11 +384,24 @@ logging:
 management:
     endpoint:
         gateway:
-            access: unrestricted
+            access: read-only
+        loggers:
+            access: read-only
     endpoints:
         web:
             exposure:
                 include: health,info,gateway,loggers
+
+---
+spring.config.activate.on-profile: debug-control
+
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+        loggers:
+            access: unrestricted
+
 ---
 spring.config.activate.on-profile: wiretap
 

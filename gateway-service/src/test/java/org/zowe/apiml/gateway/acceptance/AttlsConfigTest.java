@@ -59,7 +59,7 @@ class AttlsConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({ "attlsServer", "attlsClient" })
+    @ActiveProfiles({ "test", "attlsServer", "attlsClient" })
     @DirtiesContext
     @SpringBootTest(
         classes = GatewayServiceApplication.class,
@@ -133,7 +133,7 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles({ "attlsServer", "attlsClient" })
+    @ActiveProfiles({ "test", "attlsServer", "attlsClient" })
     @DirtiesContext
     @SpringBootTest(
         classes = GatewayServiceApplication.class,

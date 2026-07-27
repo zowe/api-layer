@@ -1,9 +1,3 @@
-eureka:
-    client:
-        registerWithEureka: false
-        serviceUrl:
-            defaultZone: https://localhost:999/eureka/
-
 apiml:
     service:
         id: gateway
@@ -13,13 +7,11 @@ server:
     port: ${apiml.service.port}
     ssl:
         keyAlias: localhost
-        keyPassword: password
         keyStore: ../keystore/localhost/localhost.keystore.p12
-        keyStorePassword: password
-        keyStoreType: PKCS12
         trustStore: ../keystore/localhost/localhost.truststore.p12
-        trustStorePassword: password
-        trustStoreType: PKCS12
+        clientKeyStore: ../keystore/client_cert/client-certs.p12
+        clientCN: apimtst # case-sensitive
+        clientKeyStorePassword: password
 
 spring:
     main:
@@ -40,13 +32,7 @@ logging:
         org.springframework.cloud.gateway: DEBUG
         reactor.netty: DEBUG
 
+test:
+    proxyAddress: 6.6.6.6
+    trustedProxiesPattern: 6\.6\.6\.6
 
-management:
-    endpoint:
-        gateway:
-            access: unrestricted
-    endpoints:
-        web:
-            base-path: /application
-            exposure:
-                include: health,gateway

@@ -5,6 +5,7 @@ eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
+        ip-address: ${apiml.service.ipAddress:${server.address:}}
         #ports are computed in code
         homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
@@ -100,7 +101,6 @@ apiml:
         apimlId: apiml1
         corsEnabled: true
         corsAllowedEndpoints: /gateway/**
-        allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: true
         hostname: localhost
@@ -114,6 +114,8 @@ apiml:
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        csrf:
+            preserveOriginForCrossSite: true
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
         rauditx:
@@ -122,6 +124,9 @@ apiml:
     health:
         protected: true
     webClientConfig.enabled: true
+security:
+    secFetch:
+        enabled: true
 server:
     http2:
         enabled: false
@@ -144,6 +149,7 @@ logbackServiceName: ZWEAGW1
 # Use a dedicated profile below or create a new one to configure logging levels.
 logging:
     level:
+        ROOT: INFO
         com.netflix.discovery.DiscoveryClient: OFF
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         reactor.netty.http.client.HttpClientConnect: OFF
@@ -222,14 +228,28 @@ logging:
 management:
     endpoint:
         gateway:
-            access: unrestricted
+            access: read-only
+        loggers:
+            access: read-only
     endpoints:
         web:
             exposure:
                 include: health,info,gateway,loggers
 
 ---
+spring.config.activate.on-profile: debug-control
+spring.profiles.active: debug
+
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+        loggers:
+            access: unrestricted
+
+---
 spring.config.activate.on-profile: wiretap
+
 spring:
     cloud:
         gateway:
