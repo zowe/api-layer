@@ -13,10 +13,8 @@ package org.zowe.apiml.caching.service.infinispan.config;
 import org.infinispan.persistence.spi.PersistenceException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletionException;
 
@@ -73,29 +71,6 @@ class LazyCacheManagerTest {
             assertEquals("invalidatedJwtTokens", properties.getProperty("target.cache_name"));
             assertEquals(targetDir.resolve("data").toString(), properties.getProperty("target.location"));
             assertEquals(targetDir.resolve("index").toString(), properties.getProperty("target.index_location"));
-        }
-    }
-
-    @Nested
-    class DeleteRecursively {
-
-        @Test
-        void whenDirHasNestedFiles_thenDeletesEverything(@TempDir Path tempDir) throws IOException {
-            var nested = tempDir.resolve("data/sub");
-            Files.createDirectories(nested);
-            Files.writeString(nested.resolve("file.txt"), "content");
-            Files.writeString(tempDir.resolve("data/other.txt"), "content");
-
-            LazyCacheManager.CacheInitializer.deleteRecursively(tempDir.resolve("data"));
-
-            assertFalse(Files.exists(tempDir.resolve("data")));
-        }
-
-        @Test
-        void whenDirDoesNotExist_thenDoesNothing(@TempDir Path tempDir) throws IOException {
-            var missing = tempDir.resolve("does-not-exist");
-
-            assertDoesNotThrow(() -> LazyCacheManager.CacheInitializer.deleteRecursively(missing));
         }
     }
 }

@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service.infinispan.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.codehaus.commons.compiler.util.Producer;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheConfigurationException;
@@ -43,11 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Phaser;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
@@ -380,11 +377,11 @@ public class LazyCacheManager extends DefaultCacheManager {
             log.info("Attempting migration of legacy store for cache {} at {}", cacheName, cacheDir);
             try {
                 // clear any leftover from a previous failed attempt so the migrator starts from an empty target
-                deleteRecursively(migratedDir);
+                FileUtils.deleteDirectory(migratedDir.toFile());
                 new StoreMigrator(migrationProperties(cacheName, cacheDir, migratedDir)).run();
 
                 // clear any leftover backup, otherwise the move below fails (target already exists)
-                deleteRecursively(legacyBackupDir);
+                FileUtils.deleteDirectory(legacyBackupDir.toFile());
                 Files.move(cacheDir, legacyBackupDir);
                 Files.move(migratedDir, cacheDir);
                 log.info("Migration of legacy store for cache {} is completed.", cacheName);
@@ -428,22 +425,6 @@ public class LazyCacheManager extends DefaultCacheManager {
                 }
             }
             return false;
-        }
-
-        static void deleteRecursively(Path dir) throws IOException {
-            if (!Files.exists(dir)) {
-                return;
-            }
-            try (var paths = Files.walk(dir)) {
-                paths.sorted(java.util.Comparator.reverseOrder())
-                    .forEach(p -> {
-                        try {
-                            Files.delete(p);
-                        } catch (IOException e) {
-                            log.warn("Cannot delete {}", p, e);
-                        }
-                    });
-            }
         }
 
         private boolean createCache(String cacheName, ConfigurationBuilder cacheBuilder) {
