@@ -80,7 +80,7 @@ class AttlsConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({"attlsClient", "attlsServer"})
+    @ActiveProfiles({"test", "attlsClient", "attlsServer"})
     @DirtiesContext
     @SpringBootTest(
         classes = ApimlApplication.class,
@@ -164,7 +164,7 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles({"attlsServer", "attlsClient", "ApimlModulithAcceptanceTest"})
+    @ActiveProfiles({"test", "attlsServer", "attlsClient", "ApimlModulithAcceptanceTest"})
     @DirtiesContext
     @SpringBootTest(
         classes = {

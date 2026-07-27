@@ -31,6 +31,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -44,11 +45,20 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.*;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -56,10 +66,12 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
+import org.springframework.security.web.server.authorization.AuthorizationContext;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.firewall.StrictServerWebExchangeFirewall;
 import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
 import org.springframework.security.web.server.savedrequest.CookieServerRequestCache;
+import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.web.server.ServerWebExchange;
@@ -77,6 +89,8 @@ import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.HttpsConfig;
+import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
+import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.config.CustomHstsServerHttpHeadersWriter;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
@@ -90,12 +104,19 @@ import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers.pathMatchers;
 import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_FULL_URL;
 import static org.zowe.apiml.gateway.services.ServicesInfoController.SERVICES_SHORT_URL;
@@ -108,6 +129,7 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class WebSecurity {
 
+    private static final String APPLICATION = "/application/**";
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
     public static final String COOKIE_NONCE = "oidc_nonce";
@@ -417,9 +439,19 @@ public class WebSecurity {
     }
 
     @Bean
+    SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager(SafResourceAccessVerifying safResourceAccessVerifying) {
+        return new SafAuthorizationManager<>(safResourceAccessVerifying, "ZOWE", "APIML.DEBUG", "CONTROL");
+    }
+
+    @Bean
     @Order(1)
     @ConditionalOnMissingBean(name = "modulithConfig")
-    SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, AuthConfigurationProperties authConfigurationProperties, AuthExceptionHandlerReactive authExceptionHandlerReactive) {
+    SecurityWebFilterChain securityWebFilterChain(
+        ServerHttpSecurity http,
+        AuthConfigurationProperties authConfigurationProperties,
+        AuthExceptionHandlerReactive authExceptionHandlerReactive,
+        SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager
+    ) {
         return defaultSecurityConfig(http)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
                 REGISTRY_PATH,
@@ -428,7 +460,7 @@ public class WebSecurity {
                 SERVICES_SHORT_URL + "/**",
                 SERVICES_FULL_URL,
                 SERVICES_FULL_URL + "/**",
-                "/application/**"
+                APPLICATION
             ))
             .authorizeExchange(authorizeExchangeSpec -> {
                     if (!isHealthEndpointProtected) {
@@ -441,6 +473,16 @@ public class WebSecurity {
                             .permitAll();
                     }
                 }
+            )
+            .authorizeExchange(exchange -> exchange.matchers(
+                new OrServerWebExchangeMatcher(
+                    pathMatchers(HttpMethod.GET, APPLICATION),
+                    pathMatchers(HttpMethod.HEAD, APPLICATION)
+                ))
+                .authenticated()
+            )
+            .authorizeExchange(exchange -> exchange.matchers(pathMatchers(APPLICATION))
+                .access(actuatorAuthorizationManager)
             )
             .authorizeExchange(authorizeExchangeSpec ->
                 authorizeExchangeSpec

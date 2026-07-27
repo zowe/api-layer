@@ -27,7 +27,7 @@ apiml:
                 metadata-map:
                     apiml:
                         corsEnabled: true
-                        corsAllowedOrigins: http://localhost:5173
+                        corsAllowedOrigins: https://localhost:5173
     internal-discovery:
         port: 10011
     health:

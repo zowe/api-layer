@@ -28,8 +28,6 @@ public class RoutingConfig {
 
     @Value("${apiml.security.x509.acceptForwardedCert:false}")
     private boolean acceptForwardedCert;
-    @Value("${apiml.service.allowEncodedSlashes:true}")
-    private boolean allowEncodedSlashes;
 
     @Bean
     public List<FilterDefinition> commonNoRetryFilters() {
@@ -39,12 +37,6 @@ public class RoutingConfig {
             FilterDefinition acceptForwardedClientCertFilter = new FilterDefinition();
             acceptForwardedClientCertFilter.setName("AcceptForwardedClientCertFilterFactory");
             filters.add(acceptForwardedClientCertFilter);
-        }
-
-        if (!allowEncodedSlashes) {
-            var encodedSlashesFilter = new FilterDefinition();
-            encodedSlashesFilter.setName("ForbidEncodedSlashesFilterFactory");
-            filters.add(encodedSlashesFilter);
         }
 
         var secureHeaders = new FilterDefinition();
@@ -57,7 +49,10 @@ public class RoutingConfig {
 
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
-            removeHeaders.setName("RemoveRequestHeader");
+            // When preserving Origin for cross-site requests, use the conditional filter that keeps the
+            // header for Sec-Fetch-Site: cross-site so the southbound service can make its own CSRF
+            // decision; otherwise fall back to the unconditional built-in removal.
+            removeHeaders.setName("RemoveRequestHeaderIfNotCrossSite");
             Map<String, String> args = new HashMap<>();
             args.put("name", headerName);
             removeHeaders.setArgs(args);

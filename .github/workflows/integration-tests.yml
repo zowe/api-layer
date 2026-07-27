@@ -134,7 +134,9 @@ jobs:
     CITestsModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
+        container:
+            image: ubuntu:latest
+            options: "--hostname testrunner"
         timeout-minutes: 15
 
         services:
@@ -194,6 +196,7 @@ jobs:
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests -PskipKeystoreGeneration --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
@@ -475,7 +478,9 @@ jobs:
     CITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
+        container:
+            image: ubuntu:latest
+            options: "--hostname testrunner"
         timeout-minutes: 15
 
         services:
@@ -566,6 +571,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runContainerTests -PskipKeystoreGeneration -Denvironment.config=-docker
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
@@ -3022,7 +3028,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --scan coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,ContainerCITestsZaas/results"
+                    ./gradlew --scan --info coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -3039,7 +3045,6 @@ jobs:
                     path: |
                         build/reports/problems/problems-report.html
                         results/**
-                        apiml/build/reports/tests/**
-                        apiml-security-common/build/reports/tests/**
+                        **/build/reports/tests/**
 
             -   uses: ./.github/actions/teardown

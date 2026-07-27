@@ -214,6 +214,13 @@ messages:
       reason: "The pattern '*' is not recommended in apiml.corsAllowedOrigins."
       action: "Use a specific URL instead of a pattern."
 
+    - key: org.zowe.apiml.common.schemeNotAllowed
+      number: ZWEAM603
+      type: WARNING
+      text: "'%s' %s is not allowed for instance '%s'"
+      reason: "Using HTTP scheme in the URL is not allowed without AT-TLS."
+      action: "Use HTTPS protocol or enable AT-TLS."
+
     # Service specific messages
     # 700-999
 

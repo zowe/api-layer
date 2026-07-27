@@ -32,6 +32,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -85,6 +86,7 @@ class ConnectionsConfigTest {
     @Nested
     @SpringBootTest
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class WhenCreateEurekaJerseyClientBuilder {
 
         @Autowired
@@ -100,6 +102,7 @@ class ConnectionsConfigTest {
     @Nested
     @SpringBootTest
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class WhenInitializeEurekaClient {
 
         @Autowired
@@ -130,6 +133,7 @@ class ConnectionsConfigTest {
         },
         classes = {GatewayServiceApplication.class, ConnectionsConfigTest.SslDetectorConfig.class}
     )
+    @ActiveProfiles("test")
     class ChooseAlias {
 
         @LocalServerPort
@@ -427,6 +431,7 @@ class ConnectionsConfigTest {
         properties = {"apiml.service.corsEnabled=true"}
     )
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class GivenCorsEnabled {
 
         @Nested
