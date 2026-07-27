@@ -45,7 +45,6 @@ export default defineConfig(({ mode }) => {
             strictPort: true,
             https: true,
             proxy: {
-                // REGEX DINAMICA: Intercetta qualsiasi rotta TRANNE le risorse statiche della UI (/apicatalog/ui/...)
                 '^/(?!apicatalog/ui).*': {
                     target: gatewayUrl,
                     secure: false,
