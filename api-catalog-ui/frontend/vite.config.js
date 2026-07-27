@@ -45,30 +45,8 @@ export default defineConfig(({ mode }) => {
             strictPort: true,
             https: true,
             proxy: {
-                '/apicatalog/api': {
-                    target: gatewayUrl,
-                    secure: false,
-                    changeOrigin: true,
-                    cookieDomainRewrite: 'localhost',
-                    cookiePathRewrite: '/',
-                    headers: {
-                        Origin: gatewayUrl,
-                    },
-                    configure: (proxy) => {
-                        proxy.on('proxyRes', (proxyRes) => {
-                            const setCookie = proxyRes.headers['set-cookie'];
-                            if (setCookie) {
-                                proxyRes.headers['set-cookie'] = setCookie.map(cookie =>
-                                    cookie
-                                        .replace(/Path=[^;]+;/i, 'Path=/;')
-                                        .replace(/Domain=[^;]+;/i, 'Domain=localhost;')
-                                        .replace(/SameSite=Lax/i, 'SameSite=None')
-                                );
-                            }
-                        });
-                    },
-                },
-                '/gateway': {
+                // REGEX DINAMICA: Intercetta qualsiasi rotta TRANNE le risorse statiche della UI (/apicatalog/ui/...)
+                '^/(?!apicatalog/ui).*': {
                     target: gatewayUrl,
                     secure: false,
                     changeOrigin: true,
