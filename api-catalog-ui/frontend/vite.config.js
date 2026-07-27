@@ -9,6 +9,7 @@
  */
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import basicSsl from '@vitejs/plugin-basic-ssl';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -23,6 +24,7 @@ export default defineConfig(({ mode }) => {
         root: __dirname,
         plugins: [
             react(),
+            basicSsl(),
             nodePolyfills({
                 include: ['buffer', 'process', 'stream', 'util', 'url', 'querystring'],
                 globals: {
@@ -39,17 +41,55 @@ export default defineConfig(({ mode }) => {
             assetsDir: 'static',
         },
         server: {
-            https: false,
+            port: 3000,
+            strictPort: true,
+            https: true,
             proxy: {
-                '/apicatalog': {
+                '/apicatalog/api': {
                     target: gatewayUrl,
                     secure: false,
                     changeOrigin: true,
+                    cookieDomainRewrite: 'localhost',
+                    cookiePathRewrite: '/',
+                    headers: {
+                        Origin: gatewayUrl,
+                    },
+                    configure: (proxy) => {
+                        proxy.on('proxyRes', (proxyRes) => {
+                            const setCookie = proxyRes.headers['set-cookie'];
+                            if (setCookie) {
+                                proxyRes.headers['set-cookie'] = setCookie.map(cookie =>
+                                    cookie
+                                        .replace(/Path=[^;]+;/i, 'Path=/;')
+                                        .replace(/Domain=[^;]+;/i, 'Domain=localhost;')
+                                        .replace(/SameSite=Lax/i, 'SameSite=None')
+                                );
+                            }
+                        });
+                    },
                 },
                 '/gateway': {
                     target: gatewayUrl,
                     secure: false,
                     changeOrigin: true,
+                    cookieDomainRewrite: 'localhost',
+                    cookiePathRewrite: '/',
+                    headers: {
+                        Origin: gatewayUrl,
+                    },
+                    configure: (proxy) => {
+                        proxy.on('proxyRes', (proxyRes) => {
+                            const setCookie = proxyRes.headers['set-cookie'];
+                            if (setCookie) {
+                                proxyRes.headers['set-cookie'] = setCookie.map(cookie =>
+                                    cookie
+                                        .replace(/Path=[^;]+;/i, 'Path=/;')
+                                        .replace(/Domain=[^;]+;/i, 'Domain=localhost;')
+                                        .replace(/SameSite=Lax/i, 'SameSite=None')
+                                );
+                            }
+                        });
+                    },
                 },
             },
         },
