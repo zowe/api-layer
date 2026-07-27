@@ -363,7 +363,7 @@ task runChaoticHATests(dependsOn: ":integration-tests:runChaoticHATests") {
 
 clean.dependsOn nodejsClean
 
-def generateKeystores = tasks.register('generateKeystores', Exec) {
+tasks.register('generateKeystores', Exec) {
     group = 'build'
     description = 'Generate TLS keystores for local development and testing'
     workingDir = rootProject.projectDir
