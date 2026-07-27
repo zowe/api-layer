@@ -324,6 +324,7 @@ public class ConnectionsConfig {
     }
 
     @Bean
+    @ConditionalOnProperty(name = "apiml.service.corsEnabled", havingValue = "true")
     WebFilter corsWebFilter(ServiceCorsUpdater serviceCorsUpdater) {
         return new CorsWebFilter(serviceCorsUpdater.getUrlBasedCorsConfigurationSource());
     }

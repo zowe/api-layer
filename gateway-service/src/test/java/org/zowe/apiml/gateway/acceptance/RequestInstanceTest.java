@@ -61,7 +61,7 @@ class RequestInstanceTest extends AcceptanceTestWithMockServices {
         .when()
             .get(basePath + "/test")
         .then()
-            .statusCode(Matchers.is(SC_FORBIDDEN));
+            .statusCode(Matchers.is(SC_OK));
     }
 
     @Test

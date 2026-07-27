@@ -39,6 +39,7 @@ class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactoryTest {
         config.setName(HttpHeaders.ORIGIN);
         GatewayFilter filter = factory.apply(config);
 
+        ReflectionTestUtils.setField(factory, "gatewayCorsEnabled", true);
         AtomicReference<ServerWebExchange> captured = new AtomicReference<>();
         GatewayFilterChain chain = ex -> {
             captured.set(ex);

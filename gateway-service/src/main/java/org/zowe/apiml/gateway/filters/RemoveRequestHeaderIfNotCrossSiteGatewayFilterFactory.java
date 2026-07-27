@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -31,6 +32,7 @@ import java.util.List;
  * the previous behavior of having the header removed.
  */
 @Component
+@Slf4j
 public class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory
     extends AbstractGatewayFilterFactory<RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory.Config> {
 
@@ -39,6 +41,9 @@ public class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory
 
     @Value("${apiml.security.csrf.preserveOriginForCrossSite:true}")
     private boolean preserveOrigin;
+
+    @Value("${apiml.service.corsEnabled:false}")
+    private boolean gatewayCorsEnabled;
 
     public RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory() {
         super(Config.class);
@@ -54,6 +59,9 @@ public class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory
         return (exchange, chain) -> {
             var request = exchange.getRequest();
             if (preserveOrigin && CROSS_SITE.equalsIgnoreCase(request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER))) {
+                return chain.filter(exchange);
+            }
+            if (!gatewayCorsEnabled) {
                 return chain.filter(exchange);
             }
 
