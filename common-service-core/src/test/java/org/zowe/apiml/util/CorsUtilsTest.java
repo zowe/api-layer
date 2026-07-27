@@ -43,7 +43,7 @@ class CorsUtilsTest {
     class GivenCorsEnabled {
 
         @Nested
-        class givenDefaultCorsAllowedMethods {
+        class GivenDefaultCorsAllowedMethods {
 
             private CorsUtils corsUtils;
 
