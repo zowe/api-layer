@@ -170,3 +170,9 @@ publishing {
         }
     }
 }
+
+
+test {
+    useJUnitPlatform()
+    jvmArgs '--add-opens=java.base/sun.security.ssl=ALL-UNNAMED'
+}
