@@ -19,19 +19,24 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @Slf4j
 @Component
 public class GatewayWebSocketConfigurer implements WebSocketConfigurer {
-    private WebSocketProxyServerHandler webSocketProxyServerHandler;
+    private final WebSocketProxyServerHandler webSocketProxyServerHandler;
+    private final SecFetchSiteHandshakeInterceptor secFetchSiteHandshakeInterceptor;
 
     @Autowired
-    public GatewayWebSocketConfigurer(WebSocketProxyServerHandler webSocketProxyServerHandler) {
+    public GatewayWebSocketConfigurer(WebSocketProxyServerHandler webSocketProxyServerHandler,
+                                       SecFetchSiteHandshakeInterceptor secFetchSiteHandshakeInterceptor) {
         this.webSocketProxyServerHandler = webSocketProxyServerHandler;
+        this.secFetchSiteHandshakeInterceptor = secFetchSiteHandshakeInterceptor;
     }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         String webSocketPath = "/ws/**";    // NOSONAR
         String webSocketOldPath = "/*/ws/**";
-        log.debug("Registering WebSocket proxy handler to " + webSocketPath);
-        registry.addHandler(webSocketProxyServerHandler, webSocketPath);
-        registry.addHandler(webSocketProxyServerHandler, webSocketOldPath);
+        log.debug("Registering WebSocket proxy handler to {}", webSocketPath);
+        registry.addHandler(webSocketProxyServerHandler, webSocketPath)
+            .addInterceptors(secFetchSiteHandshakeInterceptor);
+        registry.addHandler(webSocketProxyServerHandler, webSocketOldPath)
+            .addInterceptors(secFetchSiteHandshakeInterceptor);
     }
 }
