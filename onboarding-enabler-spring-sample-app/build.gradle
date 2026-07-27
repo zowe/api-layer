@@ -26,11 +26,6 @@ jar {
     archiveFileName = archiveBaseName.get() + ".jar"
 }
 
-repositories {
-    mavenCentral()
-    maven { url "https://repo.spring.io/libs-milestone" }
-}
-
 dependencies {
     api project(':onboarding-enabler-spring')
 

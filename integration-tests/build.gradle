@@ -13,10 +13,6 @@ plugins {
     alias(libs.plugins.test.logger)
 }
 
-repositories {
-    mavenCentral()
-}
-
 configurations.all {
     // Remove Spring Cloud enabler
     exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-eureka-client"
