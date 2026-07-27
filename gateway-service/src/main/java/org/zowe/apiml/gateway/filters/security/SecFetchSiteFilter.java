@@ -53,7 +53,7 @@ public class SecFetchSiteFilter implements WebFilter, Ordered {
     private static final Set<String> SAFE_SEC_FETCH_SITE_VALUES = Set.of("same-origin", "same-site", "none");
     private static final Set<String> SAFE_MODE = Set.of("navigate", "same-origin", "websocket");
 
-    private static final String REJECTION_MESSAGE = "Invalid CORS request";
+    private static final String REJECTION_MESSAGE = "Access denied.";
 
     private final Set<String> safeNavigationDestinations;
     private final boolean corsEnabled;

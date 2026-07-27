@@ -71,7 +71,7 @@ class SecFetchSiteFilterTest {
         filter.filter(exchange, chain).block();
         assertFalse(chainCalled.get(), "expected the filter chain to be short-circuited");
         assertEquals(HttpStatus.FORBIDDEN, exchange.getResponse().getStatusCode());
-        assertEquals("Invalid CORS request", exchange.getResponse().getBodyAsString().block());
+        assertEquals("Access denied.", exchange.getResponse().getBodyAsString().block());
     }
 
     @Nested
