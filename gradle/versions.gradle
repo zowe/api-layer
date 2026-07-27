@@ -65,11 +65,11 @@ dependencyResolutionManagement {
             version('jbossLogging', '3.6.3.Final')
             version('jerseySun', '1.19.4')
             version('jettyWebSocketClient', '12.1.11')
-            version('jettison', '1.5.6')
+            version('jettison', '1.5.7')
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
             version('jose4j', '0.9.6')
-            version('jodaTime', '2.14.2')
+            version('jodaTime', '2.14.3')
             version('jsonPath', '2.10.0')
             version('jsonSmart', '2.6.0')
             version('junitJupiter', '5.14.4')
@@ -98,7 +98,7 @@ dependencyResolutionManagement {
             version('thymeleaf', '3.1.5.RELEASE')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.1')
-            version('jgit', '7.7.0.202606012155-r')
+            version('jgit', '7.7.1.202607240634-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.3.1.8318')
             version('gradleRelease', '3.1.0')
@@ -297,7 +297,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.5.38')
+            version('logback', '1.6.0')
             version('mockitoCore', '5.23.0')
             version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')
