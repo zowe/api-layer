@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -92,6 +93,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class NewSecurityConfiguration {
 
     private final ObjectMapper securityObjectMapper;
@@ -605,6 +607,13 @@ public class NewSecurityConfiguration {
 
                 return web -> {
                     web.httpFirewall(firewall);
+                    // Return 400 Bad Request (instead of the default 500) when the firewall rejects a request.
+                    // setStatus rather than sendError, to avoid an error dispatch that Zuul turns into a 404.
+                    web.requestRejectedHandler((request, response, ex) -> {
+                        log.debug("Request '{}' was rejected because it contains restricted encoded characters: {}",
+                            request.getRequestURI(), ex.getMessage());
+                        response.setStatus(HttpStatus.BAD_REQUEST.value());
+                    });
                     // Endpoints that skip Spring Security completely
                     // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
                     web.ignoring()
