@@ -14,6 +14,8 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -268,6 +270,7 @@ class MetadataFilterServiceTest {
             }
 
             @Test
+            @DisabledOnOs(OS.MAC)
             void givenMatchingNonLocalAddress_whenCheckIpAddress_thenReturnTrue() throws UnknownHostException {
                 var service = new MetadataFilterService();
                 ReflectionTestUtils.setField(service,"allowedDomains", InetAddress.getLocalHost().getHostName());

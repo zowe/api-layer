@@ -6,10 +6,6 @@ plugins {
 version "0.1"
 group "org.zowe.apiml"
 
-repositories {
-    mavenCentral()
-}
-
 micronaut {
     importMicronautPlatform = true
     version = libs.versions.micronautPlatform.get()
