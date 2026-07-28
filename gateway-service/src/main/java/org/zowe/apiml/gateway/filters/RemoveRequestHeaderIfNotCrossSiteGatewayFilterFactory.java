@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.filters;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -31,6 +32,7 @@ import java.util.List;
  * the previous behavior of having the header removed.
  */
 @Component
+@Slf4j
 public class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory
     extends AbstractGatewayFilterFactory<RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory.Config> {
 

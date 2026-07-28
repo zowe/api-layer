@@ -8,19 +8,18 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.acceptance.corsTests;
+package org.zowe.apiml.acceptance.corsTests;
 
 import com.google.common.net.HttpHeaders;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.zowe.apiml.acceptance.AcceptanceTest;
+import org.zowe.apiml.acceptance.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.MockService.MockServiceBuilder;
 import org.zowe.apiml.gateway.MockService.Scope;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
-import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
 import java.util.Collection;
 import java.util.List;
@@ -35,13 +34,15 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@MicroservicesAcceptanceTest
-@ActiveProfiles({"CorsPerServiceWithDefaultsTest", "test"})
+/**
+ * Modulith counterpart of {@code org.zowe.apiml.gateway.acceptance.corsTests.CorsDefaultTest}.
+ */
+@AcceptanceTest
 @TestPropertySource(properties = {
     "apiml.service.corsEnabled=true",
     "apiml.service.corsDefaultAllowedOrigins="
 })
-class CorsPerServiceWithDefaultsTest extends AcceptanceTestWithMockServices {
+class CorsDefaultTest extends AcceptanceTestWithMockServices {
 
     private MockServiceBuilder mockCorsService(String serviceId, Headers responseHeaders, Map<String, String> metadata, Collection<Consumer<HttpExchange>> assertions) {
         var builder = mockService(serviceId);
@@ -76,6 +77,8 @@ class CorsPerServiceWithDefaultsTest extends AcceptanceTestWithMockServices {
 
         given()
             .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
+            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "origin, x-requested-with"))
             .log().all()
         .when()
             .post(basePath + "/servicecors5/api/v1/fullheaders")
@@ -101,6 +104,8 @@ class CorsPerServiceWithDefaultsTest extends AcceptanceTestWithMockServices {
 
         given()
             .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
+            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "origin, x-requested-with"))
             .log().all()
         .when()
             .post(basePath + "/servicecors8/api/v1/fullheaders")
