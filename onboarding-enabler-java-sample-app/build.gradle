@@ -1,8 +1,5 @@
 buildscript {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
-    }
+    repositories mavenRepositories
     dependencies {
         classpath libs.gradle.tomcat.plugin
     }
@@ -14,10 +11,6 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'war'
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     api project(':onboarding-enabler-java')
