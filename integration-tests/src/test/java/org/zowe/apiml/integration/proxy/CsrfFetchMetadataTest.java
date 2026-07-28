@@ -79,7 +79,7 @@ class CsrfFetchMetadataTest {
             .header("Origin", NOT_ALLOWED_ORIGIN)
             .header(SEC_FETCH_SITE_HEADER, CROSS_SITE)
         .when()
-            .post(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_2_STATUS_CODE))
+            .post(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_1_STATUS_CODE))
         .then()
             .log().all()
             .statusCode(FORBIDDEN);
