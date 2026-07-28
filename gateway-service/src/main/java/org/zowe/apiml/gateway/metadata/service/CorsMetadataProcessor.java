@@ -45,7 +45,11 @@ public class CorsMetadataProcessor extends MetadataProcessor {
 
         if (metadata != null && corsEnabled) {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
-            corsUtils.setCorsConfiguration(instanceInfo.getVIPAddress().toLowerCase(), metadata, (entry, serviceId, config) -> cors.registerCorsConfiguration("/" + entry + "/" + serviceId + "/**", config));
+            corsUtils.setCorsConfiguration(
+                instanceInfo.getVIPAddress().toLowerCase(),
+                metadata,
+                (entry, serviceId, config) -> cors.registerCorsConfiguration("/" + serviceId + "/" + entry + "/**", config)
+            );
         }
     }
 }
