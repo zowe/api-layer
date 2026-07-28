@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.config.GlobalCorsProperties;
 import org.springframework.cloud.gateway.event.RefreshRoutesEvent;
@@ -30,7 +29,6 @@ import reactor.core.publisher.Mono;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 
 @Component
-@ConditionalOnProperty(name = "apiml.service.corsEnabled", havingValue = "true")
 @RequiredArgsConstructor
 @Slf4j
 public class ServiceCorsUpdater implements InitializingBean {

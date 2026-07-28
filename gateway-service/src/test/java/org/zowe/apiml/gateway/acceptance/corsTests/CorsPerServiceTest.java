@@ -71,7 +71,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
         .and().start();
 
         given()
-            .header(HttpHeaders.ORIGIN, "https://localhost:3000")
+            .header(HttpHeaders.ORIGIN, "https://localhost:" + port)
             .header(HEADER_X_FORWARD_TO, "serviceid1")
         .when()
             .get(basePath + "/test")

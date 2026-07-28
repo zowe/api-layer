@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.acceptance.corsTests;
 import com.google.common.net.HttpHeaders;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
+import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,13 +30,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @MicroservicesAcceptanceTest
 @ActiveProfiles({"CorsPerServiceWithDisabledTest", "test"})
@@ -70,7 +68,6 @@ class CorsPerServiceWithDisabledTest extends AcceptanceTestWithMockServices {
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
                 httpExchange -> {
-                    assertNotNull(httpExchange.getRequestHeaders().get(HttpHeaders.ORIGIN));
                     called.set(true);
                 }
             );
@@ -78,14 +75,15 @@ class CorsPerServiceWithDisabledTest extends AcceptanceTestWithMockServices {
 
         given()
             .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
+            .contentType(ContentType.TEXT)
             .log().all()
         .when()
             .post(basePath + "/servicecors6/api/v1/fullheaders")
         .then()
         .log().all()
-            .statusCode(is(SC_OK));
+            .statusCode(is(SC_FORBIDDEN));
 
-        assertTrue(called.get());
+        assertFalse(called.get());
     }
 
     @Test

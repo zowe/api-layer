@@ -56,7 +56,7 @@ class RequestInstanceTest extends AcceptanceTestWithMockServices {
     @Test
     void routeToServiceWithCorsDisabled() {
         given()
-            .header("Origin", "https://localhost:3000")
+            .header("Origin", "https://localhost:" + port)
             .header(HEADER_X_FORWARD_TO, "serviceid1")
         .when()
             .get(basePath + "/test")
