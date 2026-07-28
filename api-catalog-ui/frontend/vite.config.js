@@ -20,9 +20,23 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
     const gatewayUrl = env.VITE_GATEWAY_URL || 'https://localhost:10010';
     console.log('gatewayUrl', gatewayUrl);
+    const base = '/apicatalog/ui/v1/';
     return {
         root: __dirname,
         plugins: [
+            {
+                name: 'redirect-missing-trailing-slash',
+                configureServer(server) {
+                    server.middlewares.use((req, res, next) => {
+                        const [path, search = ''] = (req.url || '').split('?');
+                        if (path === base.slice(0, -1)) {
+                            res.writeHead(301, { Location: base + (search ? `?${search}` : '') });
+                            return res.end();
+                        }
+                        next();
+                    });
+                },
+            },
             react(),
             basicSsl(),
             nodePolyfills({
@@ -34,7 +48,7 @@ export default defineConfig(({ mode }) => {
                 },
             }),
         ],
-        base: '/apicatalog/ui/v1/',
+        base,
         build: {
             outDir: 'build',
             sourcemap: false,
