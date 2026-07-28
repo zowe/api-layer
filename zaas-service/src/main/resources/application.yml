@@ -203,8 +203,6 @@ logging:
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
-        org.eclipse.jetty.util.ssl: ERROR
         org.ehcache: WARN
         org.springframework: WARN
         org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
@@ -237,8 +235,6 @@ logging:
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        org.eclipse.jetty: WARN
-        org.eclipse.jetty.util.ssl: ERROR
         org.ehcache: DEBUG
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
