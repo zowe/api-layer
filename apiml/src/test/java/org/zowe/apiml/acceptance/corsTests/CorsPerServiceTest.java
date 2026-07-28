@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.acceptance.corsTests;
+package org.zowe.apiml.acceptance.corsTests;
 
 import com.google.common.net.HttpHeaders;
 import com.sun.net.httpserver.Headers;
@@ -16,10 +16,10 @@ import com.sun.net.httpserver.HttpExchange;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
+import org.zowe.apiml.acceptance.AcceptanceTest;
+import org.zowe.apiml.acceptance.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.MockService.MockServiceBuilder;
 import org.zowe.apiml.gateway.MockService.Scope;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
-import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -35,7 +35,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@MicroservicesAcceptanceTest
+/**
+ * Modulith counterpart of {@code org.zowe.apiml.gateway.acceptance.corsTests.CorsPerServiceTest}.
+ */
+@AcceptanceTest
 @TestPropertySource(properties = {
     "apiml.service.corsEnabled=true",
     "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org"
