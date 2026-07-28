@@ -42,9 +42,6 @@ public class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory
     @Value("${apiml.security.csrf.preserveOriginForCrossSite:true}")
     private boolean preserveOrigin;
 
-    @Value("${apiml.service.corsEnabled:false}")
-    private boolean gatewayCorsEnabled;
-
     public RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory() {
         super(Config.class);
     }
@@ -59,9 +56,6 @@ public class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactory
         return (exchange, chain) -> {
             var request = exchange.getRequest();
             if (preserveOrigin && CROSS_SITE.equalsIgnoreCase(request.getHeaders().getFirst(SEC_FETCH_SITE_HEADER))) {
-                return chain.filter(exchange);
-            }
-            if (!gatewayCorsEnabled) {
                 return chain.filter(exchange);
             }
 
