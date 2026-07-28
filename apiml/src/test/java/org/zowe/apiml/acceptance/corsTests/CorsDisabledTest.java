@@ -8,19 +8,18 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.gateway.acceptance.corsTests;
+package org.zowe.apiml.acceptance.corsTests;
 
 import com.google.common.net.HttpHeaders;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.zowe.apiml.acceptance.AcceptanceTest;
+import org.zowe.apiml.acceptance.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.MockService.MockServiceBuilder;
 import org.zowe.apiml.gateway.MockService.Scope;
-import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
-import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
 import java.util.Collection;
 import java.util.List;
@@ -31,17 +30,18 @@ import java.util.function.Consumer;
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-@MicroservicesAcceptanceTest
-@ActiveProfiles({"CorsPerServiceWithDefaultsTest", "test"})
+/**
+ * Modulith counterpart of {@code org.zowe.apiml.gateway.acceptance.corsTests.CorsDisabledTest}.
+ */
+@AcceptanceTest
 @TestPropertySource(properties = {
-    "apiml.service.corsEnabled=true",
+    "apiml.service.corsEnabled=false",
     "apiml.service.corsDefaultAllowedOrigins="
 })
-class CorsPerServiceWithDefaultsTest extends AcceptanceTestWithMockServices {
+class CorsDisabledTest extends AcceptanceTestWithMockServices {
 
     private MockServiceBuilder mockCorsService(String serviceId, Headers responseHeaders, Map<String, String> metadata, Collection<Consumer<HttpExchange>> assertions) {
         var builder = mockService(serviceId);
@@ -63,32 +63,30 @@ class CorsPerServiceWithDefaultsTest extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenReject() {
+    void givenCorsIsDisabledInGateway_whenSimpleCorsRequestArrives_thenRouteToService() {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
                 httpExchange -> {
-                    assertNull(httpExchange.getRequestHeaders().get(HttpHeaders.ORIGIN));
                     called.set(true);
                 }
             );
-        mockCorsService("servicecors5", headers, Map.of("apiml.corsEnabled", "false"), assertions).start();
+        mockCorsService("servicecors6", headers, Map.of("apiml.corsEnabled", "false"), assertions).start();
 
         given()
             .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
             .log().all()
         .when()
-            .post(basePath + "/servicecors5/api/v1/fullheaders")
+            .post(basePath + "/servicecors6/api/v1/fullheaders")
         .then()
         .log().all()
-            .statusCode(is(SC_FORBIDDEN))
-            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is(nullValue()));
+            .statusCode(is(SC_FORBIDDEN));
 
         assertFalse(called.get());
     }
 
     @Test
-    void givenCorsIsDelegatedToGatewayAndServiceAllowCors_whenSimpleCorsRequestArrives_thenReject() {
+    void givenCorsIsDisabledInGateway_whenPreflightRequestArrives_thenReject() {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
@@ -97,17 +95,18 @@ class CorsPerServiceWithDefaultsTest extends AcceptanceTestWithMockServices {
                     called.set(true);
                 }
             );
-        mockCorsService("servicecors8", headers, Map.of("apiml.corsEnabled", "true"), assertions).start();
+        mockCorsService("servicecors7", headers, Map.of("apiml.corsEnabled", "false"), assertions).start();
 
         given()
-            .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
+            .header(new Header(HttpHeaders.ORIGIN, "https://localhost:10010"))
+            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "origin, x-requested-with"))
             .log().all()
         .when()
-            .post(basePath + "/servicecors8/api/v1/fullheaders")
+            .options(basePath + "/servicecors7/api/v1/fullheaders")
         .then()
-        .log().all()
-            .statusCode(is(SC_FORBIDDEN))
-            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is(nullValue()));
+            .log().all()
+            .statusCode(SC_FORBIDDEN);
 
         assertFalse(called.get());
     }
