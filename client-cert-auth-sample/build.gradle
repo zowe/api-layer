@@ -5,9 +5,7 @@ plugins {
 group = 'org.zowe.apiml'
 version = '2.18.12-SNAPSHOT'
 
-repositories {
-    mavenCentral()
-}
+repositories mavenRepositories
 
 dependencies {
     implementation libs.http.client
