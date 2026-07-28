@@ -279,7 +279,7 @@ public class LazyCacheManager extends DefaultCacheManager {
         private static final List<String> GLOBAL_STATE_FILE_NAMES = List.of("___global.state", "___global.lck");
 
         // Infinispan's Soft Index File Store on-disk format is unchanged from version 12.
-        private static final int LEGACY_STORE_FORMAT_VERSION = 12;
+        private static final String LEGACY_STORE_FORMAT_VERSION = "12";
 
         private DefaultCacheManager startDefaultCacheManager() {
             var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
@@ -464,7 +464,7 @@ public class LazyCacheManager extends DefaultCacheManager {
             properties.setProperty("source.cache_name", cacheName);
             properties.setProperty("source.location", sourceDir.resolve("data").toString());
             properties.setProperty("source.index_location", sourceDir.resolve("index").toString());
-            properties.setProperty("source.version", String.valueOf(LEGACY_STORE_FORMAT_VERSION));
+            properties.setProperty("source.version", LEGACY_STORE_FORMAT_VERSION);
 
             properties.setProperty("target.type", "SOFT_INDEX_FILE_STORE");
             properties.setProperty("target.cache_name", cacheName);
