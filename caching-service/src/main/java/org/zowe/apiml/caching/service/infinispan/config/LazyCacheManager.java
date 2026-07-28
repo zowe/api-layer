@@ -276,6 +276,8 @@ public class LazyCacheManager extends DefaultCacheManager {
         // avoids retrying the global-state reset forever if it doesn't fix the underlying issue
         private final AtomicBoolean globalStateRecoveryAttempted = new AtomicBoolean(false);
 
+        private static final List<String> GLOBAL_STATE_FILE_NAMES = List.of("___global.state", "___global.lck");
+
         private DefaultCacheManager startDefaultCacheManager() {
             var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
             try {
@@ -319,25 +321,26 @@ public class LazyCacheManager extends DefaultCacheManager {
         /**
          * The global state lives as two flat files directly under the root ("___global.state" and
          * "___global.lck"), structurally separate from each cache's own subdirectory ("&lt;root&gt;/&lt;cacheName&gt;/..").
-         * Removing only those two files discards the corrupted state without touching any cache's persisted data.
+         * Moving only those two files aside discards the corrupted state - so Infinispan
+         * recreates it fresh - without touching any cache's persisted data, and keeps a backup of the corrupted files.
          */
         static void resetCorruptedGlobalState(Path rootDir) {
             if (!Files.isDirectory(rootDir)) {
                 return;
             }
-            try (var entries = Files.list(rootDir)) {
-                entries
-                    .filter(path -> path.getFileName().toString().startsWith("___global"))
-                    .forEach(path -> {
-                        try {
-                            Files.delete(path);
-                            log.info("Removed corrupted Infinispan global state file {}", path);
-                        } catch (IOException e) {
-                            log.error("Failed to remove corrupted global state file {}", path, e);
-                        }
-                    });
-            } catch (IOException e) {
-                log.error("Could not scan {} for corrupted global state files", rootDir, e);
+            long timestamp = System.currentTimeMillis();
+            for (String fileName : GLOBAL_STATE_FILE_NAMES) {
+                var path = rootDir.resolve(fileName);
+                if (!Files.exists(path)) {
+                    continue;
+                }
+                try {
+                    var backupPath = rootDir.resolve(fileName + "-corrupt-" + timestamp);
+                    Files.move(path, backupPath);
+                    log.info("Backed up corrupted Infinispan global state file {} to {}", path, backupPath);
+                } catch (IOException e) {
+                    log.error("Failed to back up corrupted global state file {}", path, e);
+                }
             }
         }
 
