@@ -28,7 +28,11 @@ buildscript {
             url "https://talend-update.talend.com/nexus/content/repositories/libraries/"
         }
         maven {
-            url "https://plugins.gradle.org/m2/"
+            url artifactoryPlugins
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
         }
     }
 
