@@ -34,6 +34,7 @@ import org.springframework.security.core.SpringSecurityMessageSource;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 
@@ -82,12 +83,12 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Bean
     public WebSecurityCustomizer httpWebSecurityCustomizer() {
-        String[] noSecurityAntMatchers = {
-            "/favicon.ico",
-            "/eureka/css/**",
-            "/eureka/js/**",
-            "/eureka/fonts/**",
-            "/eureka/images/**"
+        AntPathRequestMatcher[] noSecurityAntMatchers = {
+            new AntPathRequestMatcher("/favicon.ico"),
+            new AntPathRequestMatcher("/eureka/css/**"),
+            new AntPathRequestMatcher("/eureka/js/**"),
+            new AntPathRequestMatcher("/eureka/fonts/**"),
+            new AntPathRequestMatcher("/eureka/images/**")
         };
         return web -> web.ignoring().requestMatchers(noSecurityAntMatchers);
     }
@@ -97,17 +98,17 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
         if (!isHealthEndpointProtected) {
             http.authorizeHttpRequests(requests -> requests
-                .requestMatchers("/application/health").permitAll());
+                .requestMatchers(new AntPathRequestMatcher("/application/health")).permitAll());
         }
 
         baseConfigure(http)
-                .httpBasic(basic -> basic.realmName(DISCOVERY_REALM))
-                .authorizeHttpRequests(requests -> requests
-                        .requestMatchers("/application/info").permitAll()
-                        .requestMatchers("/**").authenticated());
+            .httpBasic(basic -> basic.realmName(DISCOVERY_REALM))
+            .authorizeHttpRequests(requests -> requests
+                .requestMatchers(new AntPathRequestMatcher("/application/info")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/**")).authenticated());
 
         if (isMetricsEnabled) {
-            http.authorizeHttpRequests(requests -> requests.requestMatchers("/application/hystrixstream").permitAll());
+            http.authorizeHttpRequests(requests -> requests.requestMatchers(new AntPathRequestMatcher("/application/hystrixstream")).permitAll());
         }
 
         return http.apply(new CustomSecurityFilters()).and().build();
