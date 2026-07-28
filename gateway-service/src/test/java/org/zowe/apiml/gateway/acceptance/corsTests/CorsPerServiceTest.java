@@ -21,7 +21,6 @@ import org.zowe.apiml.gateway.MockService.Scope;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +63,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void routeToServiceWithCorsEnabled() throws IOException {
+    void routeToServiceWithCorsEnabled() {
         mockService("serviceid1")
             .addEndpoint("/test")
             .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.ORIGIN)))
