@@ -207,15 +207,7 @@ public class AuthenticationService {
 
             final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
             try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.set(AUTHORIZATION, "Bearer " + jwtToken);
-                HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-                restTemplate.exchange(
-                    url,
-                    HttpMethod.DELETE,
-                    requestEntity,
-                    Void.class
-                );
+                deleteJwt(jwtToken, url);
             } catch (HttpClientErrorException e) {
                 log.debug("Problem invalidating token on another instance url " + url, e);
             }
@@ -223,6 +215,18 @@ public class AuthenticationService {
         }
 
         return Boolean.TRUE;
+    }
+
+    private void deleteJwt(String jwtToken, String url) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, "Bearer " + jwtToken);
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+        restTemplate.exchange(
+            url,
+            HttpMethod.DELETE,
+            requestEntity,
+            Void.class
+        );
     }
 
     /**
@@ -324,15 +328,7 @@ public class AuthenticationService {
 
         final Collection<String> invalidated = cacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.set(com.google.common.net.HttpHeaders.AUTHORIZATION, "Bearer " + invalidatedToken);
-            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
-            restTemplate.exchange(
-                url,
-                HttpMethod.DELETE,
-                requestEntity,
-                Void.class
-            );
+            deleteJwt(invalidatedToken, url);
         }
 
         return true;
