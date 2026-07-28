@@ -44,7 +44,6 @@ class CsrfFetchMetadataTest {
 
     private static final String SEC_FETCH_SITE_HEADER = "Sec-Fetch-Site";
     private static final String CROSS_SITE = "cross-site";
-    // Origin explicitly whitelisted for the staticclient service via its Eureka metadata
     private static final String ALLOWED_ORIGIN = "https://discoverable-client:10012";
     private static final String NOT_ALLOWED_ORIGIN = "https://localhost:10012";
 
@@ -60,41 +59,37 @@ class CsrfFetchMetadataTest {
     @Test
     void givenCrossSiteRequest_whenServiceAllowsOriginViaMetadata_thenRequestSucceeds() {
         given()
-            .log().all()
+            .log().ifValidationFails()
             .header("Origin", ALLOWED_ORIGIN)
             .header(SEC_FETCH_SITE_HEADER, CROSS_SITE)
         .when()
             .post(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_1_STATUS_CODE))
         .then()
-            .log().all()
+            .log().ifValidationFails()
             .statusCode(OK);
     }
 
     @Test
     void givenCrossSiteRequest_whenServiceDoesNotAllowOrigin_thenRejectedAsForbidden() {
-        // Identical to the succeeding request above except for the target service, which does not
-        // whitelist this Origin, so the CSRF filter rejects it before it is routed downstream.
         given()
-            .log().all()
+            .log().ifValidationFails()
             .header("Origin", NOT_ALLOWED_ORIGIN)
             .header(SEC_FETCH_SITE_HEADER, CROSS_SITE)
         .when()
             .post(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_1_STATUS_CODE))
         .then()
-            .log().all()
+            .log().ifValidationFails()
             .statusCode(FORBIDDEN);
     }
 
     @Test
     void givenNonBrowserRequest_whenNoFetchMetadataHeader_thenNotRejected() {
-        // No Sec-Fetch-Site header (a non-browser client) must never be blocked, even for a service
-        // that would reject a cross-site browser request. Confirms the 403 above is driven by the header.
         given()
-            .log().all()
+            .log().ifValidationFails()
         .when()
             .post(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_2_STATUS_CODE))
         .then()
-            .log().all()
+            .log().ifValidationFails()
             .statusCode(not(equalTo(FORBIDDEN)));
     }
 

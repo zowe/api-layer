@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
+import static org.zowe.apiml.gateway.filters.pre.SecFetchSitePolicy.REJECTION_MESSAGE;
 
 /**
  * Applies {@link SecFetchSitePolicy} to proxied HTTP requests going through the Zuul pipeline.
@@ -31,8 +32,6 @@ import static org.springframework.cloud.netflix.zuul.filters.support.FilterConst
 @Component
 @RequiredArgsConstructor
 public class SecFetchSiteFilter extends PreZuulFilter {
-
-    private static final String REJECTION_MESSAGE = "Access denied.";
 
     private final SecFetchSitePolicy secFetchSitePolicy;
 
@@ -46,10 +45,9 @@ public class SecFetchSiteFilter extends PreZuulFilter {
 
         if (!secFetchSitePolicy.isAllowed(request::getHeader)) {
             context.setSendZuulResponse(false);
+            context.setResponseBody(REJECTION_MESSAGE);
             context.addZuulResponseHeader("Content-Type", MediaType.TEXT_PLAIN_VALUE);
             context.setResponseStatusCode(HttpStatus.FORBIDDEN.value());
-
-            context.setResponseBody(REJECTION_MESSAGE);
 
             log.debug("Blocked cross-site {} {} - Sec-Fetch-Site={}, CORS is not enabled",
                 request.getMethod(), request.getRequestURI(), request.getHeader(SecFetchSitePolicy.SEC_FETCH_SITE_HEADER));

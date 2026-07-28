@@ -42,6 +42,7 @@ public class SecFetchSitePolicy {
     public static final String SEC_FETCH_SITE_HEADER = "Sec-Fetch-Site";
     public static final String SEC_FETCH_MODE_HEADER = "Sec-Fetch-Mode";
     public static final String SEC_FETCH_DEST_HEADER = "Sec-Fetch-Dest";
+    public static final String REJECTION_MESSAGE = "Access denied.";
 
     private static final Set<String> SAFE_SEC_FETCH_SITE_VALUES = new HashSet<>();
     private static final Set<String> SAFE_MODE = new HashSet<>();
