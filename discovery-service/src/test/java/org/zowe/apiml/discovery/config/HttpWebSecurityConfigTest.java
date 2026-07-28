@@ -20,6 +20,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -95,6 +96,40 @@ class HttpWebSecurityConfigTest {
 
         }
 
+        @Nested
+        class Conversion {
+
+            private static final String HELLO_WORLD = "helloWorld";
+
+            @Test
+            void givenNull_whenGetBytes_thenEmptyArray() {
+                assertArrayEquals(new byte[0], HttpWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(null));
+            }
+
+            @Test
+            void givenString_whenGetBytes_thenGetArray() {
+                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(HELLO_WORLD));
+            }
+
+            @Test
+            void givenCharArray_whenGetBytes_thenGetArray() {
+                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(HELLO_WORLD.toCharArray()));
+            }
+
+            @Test
+            void givenObject_whenGetBytes_thenGetArray() {
+                Object object = new Object() {
+                    @Override
+                    public String toString() {
+                        return HELLO_WORLD;
+                    }
+                };
+                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(object));
+            }
+
+        }
+
     }
 
 }
+
