@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -44,7 +45,7 @@ class SecFetchSiteFilterTest {
 
         request = new MockHttpServletRequest();
         context.setRequest(request);
-
+        context.setResponse(new MockHttpServletResponse());
         underTest = new SecFetchSiteFilter(secFetchSitePolicy);
     }
 
