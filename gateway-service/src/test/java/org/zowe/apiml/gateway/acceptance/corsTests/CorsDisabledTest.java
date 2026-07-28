@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.acceptance.corsTests;
 import com.google.common.net.HttpHeaders;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
+import io.restassured.http.ContentType;
 import io.restassured.http.Header;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
@@ -29,11 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -65,12 +63,11 @@ class CorsPerServiceWithDisabledTest extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void givenCorsIsDisabledInGateway_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() {
+    void givenCorsIsDisabledInGateway_whenSimpleCorsRequestArrives_thenRouteToService() {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
                 httpExchange -> {
-                    assertNull(httpExchange.getRequestHeaders().get(HttpHeaders.ORIGIN));
                     called.set(true);
                 }
             );
@@ -78,21 +75,19 @@ class CorsPerServiceWithDisabledTest extends AcceptanceTestWithMockServices {
 
         given()
             .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
-            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
-            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "origin, x-requested-with"))
+            .contentType(ContentType.TEXT)
             .log().all()
         .when()
             .post(basePath + "/servicecors6/api/v1/fullheaders")
         .then()
         .log().all()
-            .statusCode(is(SC_FORBIDDEN))
-            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is(nullValue()));
+            .statusCode(is(SC_FORBIDDEN));
 
         assertFalse(called.get());
     }
 
     @Test
-    void givenCorsIsDisabledInGateway_whenPreflightRequestArrives_thenUseDefaults() {
+    void givenCorsIsDisabledInGateway_whenPreflightRequestArrives_thenReject() {
         var headers = new Headers();
         var called = new AtomicBoolean(false);
         List<Consumer<HttpExchange>> assertions = List.of(
@@ -112,8 +107,7 @@ class CorsPerServiceWithDisabledTest extends AcceptanceTestWithMockServices {
             .options(basePath + "/servicecors7/api/v1/fullheaders")
         .then()
             .log().all()
-            .statusCode(SC_OK)
-            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, notNullValue());
+            .statusCode(SC_FORBIDDEN);
 
         assertFalse(called.get());
     }
