@@ -1584,8 +1584,6 @@ jobs:
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
             gateway-service:
                 image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_CORSENABLED: true
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
             metrics-service:
