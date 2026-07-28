@@ -608,9 +608,10 @@ public class NewSecurityConfiguration {
                 return web -> {
                     web.httpFirewall(firewall);
                     // Return 400 Bad Request (instead of the default 500) when the firewall rejects a request.
-                    // setStatus rather than sendError, to avoid an error dispatch that Zuul turns into a 404.
+                    // Handled inline so the exception is not propagated to the servlet (which logs it as an ERROR)
+                    // and setStatus is used rather than sendError, to avoid an error dispatch that Zuul turns into a 404.
                     web.requestRejectedHandler((request, response, ex) -> {
-                        log.debug("Request '{}' was rejected because it contains restricted encoded characters: {}",
+                        log.debug("Request '{}' was rejected because it contains restricted characters: {}",
                             request.getRequestURI(), ex.getMessage());
                         response.setStatus(HttpStatus.BAD_REQUEST.value());
                     });
