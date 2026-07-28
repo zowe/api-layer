@@ -16,6 +16,26 @@ import { dirname } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// to support redirecting from https://localhost:3000 to /apicatalog/ui/v1
+const redirectMissingTrailingSlashPlugin = (basePath) => {
+    const pathWithoutSlash = basePath.slice(0, -1);
+    return {
+        name: 'redirect-missing-trailing-slash',
+        configureServer: (server) => {
+            server.middlewares.use((req, res, next) => {
+                const [path, search = ''] = (req.url || '').split('?');
+                if (path === pathWithoutSlash) {
+                    res.writeHead(302, {
+                        Location: basePath + (search ? `?${search}` : ''),
+                    });
+                    return res.end();
+                }
+                next();
+            });
+        },
+    }
+};
+
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
     const gatewayUrl = env.VITE_GATEWAY_URL || 'https://localhost:10010';
@@ -24,19 +44,7 @@ export default defineConfig(({ mode }) => {
     return {
         root: __dirname,
         plugins: [
-            {
-                name: 'redirect-missing-trailing-slash',
-                configureServer(server) {
-                    server.middlewares.use((req, res, next) => {
-                        const [path, search = ''] = (req.url || '').split('?');
-                        if (path === base.slice(0, -1)) {
-                            res.writeHead(301, { Location: base + (search ? `?${search}` : '') });
-                            return res.end();
-                        }
-                        next();
-                    });
-                },
-            },
+            redirectMissingTrailingSlashPlugin(base),
             react(),
             basicSsl(),
             nodePolyfills({
@@ -67,19 +75,6 @@ export default defineConfig(({ mode }) => {
                     cookiePathRewrite: '/',
                     headers: {
                         Origin: gatewayUrl,
-                    },
-                    configure: (proxy) => {
-                        proxy.on('proxyRes', (proxyRes) => {
-                            const setCookie = proxyRes.headers['set-cookie'];
-                            if (setCookie) {
-                                proxyRes.headers['set-cookie'] = setCookie.map(cookie =>
-                                    cookie
-                                        .replace(/Path=[^;]+;/i, 'Path=/;')
-                                        .replace(/Domain=[^;]+;/i, 'Domain=localhost;')
-                                        .replace(/SameSite=Lax/i, 'SameSite=None')
-                                );
-                            }
-                        });
                     },
                 },
             },
