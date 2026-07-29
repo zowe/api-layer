@@ -26,7 +26,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
 @SpringBootTest(classes = CloudGatewayServiceTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"management.server.port=10091","server.internal.enabled=false"})
+    properties = {
+        "management.server.port=-1",
+        "server.internal.enabled=false"
+    }
+)
 @Import(DiscoveryClientTestConfig.class)
 @DirtiesContext
 public @interface AcceptanceTest {

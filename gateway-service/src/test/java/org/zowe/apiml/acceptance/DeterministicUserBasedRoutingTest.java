@@ -23,6 +23,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
@@ -41,6 +42,7 @@ import static org.mockito.Mockito.*;
  * Verify that the behavior configured for the routing chooses for the same user the same service instance.
  */
 @AcceptanceTest
+@ActiveProfiles("DeterministicUserBasedRoutingTest")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DeterministicUserBasedRoutingTest extends AcceptanceTestWithTwoServices {
     @Autowired

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.socket.client.jetty.JettyWebSocketClient;
@@ -46,7 +47,8 @@ import static org.mockito.Mockito.verify;
 )
 @MockBean(SslContextFactory.Client.class)
 @ActiveProfiles("WebSocketClientFactoryContextTest")
-public class WebSocketClientFactoryContextTest {
+@DirtiesContext
+class WebSocketClientFactoryContextTest {
 
     @Autowired
     private WebSocketClientFactory webSocketClientFactory;

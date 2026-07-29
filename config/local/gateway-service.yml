@@ -1,4 +1,4 @@
-spring.profiles.include: diag
+spring.profiles.include: diag,debug
 apiml:
     service:
         apimlId: apiml1
@@ -6,6 +6,7 @@ apiml:
         ipAddress: 127.0.0.1
         port: 10010
         discoveryServiceUrls: https://localhost:10011/eureka/
+        corsEnabled: true
 
     security:
         allowTokenRefresh: true

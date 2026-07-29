@@ -11,11 +11,11 @@
 package org.zowe.apiml.acceptance.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.zuul.filters.ZuulProperties;
 import org.springframework.cloud.netflix.zuul.filters.discovery.ServiceRouteMapper;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.acceptance.netflix.ApimlRouteLocatorStub;
 import org.zowe.apiml.acceptance.netflix.ApplicationRegistry;
 import org.zowe.apiml.gateway.filters.post.PageRedirectionFilter;
@@ -26,7 +26,7 @@ import org.zowe.apiml.product.routing.RoutedServicesUser;
 import java.util.ArrayList;
 import java.util.List;
 
-@Configuration
+@TestConfiguration
 public class ApimlRoutingConfig {
 
     @Bean

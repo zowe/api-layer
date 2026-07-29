@@ -139,7 +139,7 @@ public class ConnectionsConfig {
     private int requestTimeout;
 
     @Value("${apiml.service.corsEnabled:false}")
-    private boolean corsEnabled;
+    private boolean gatewayCorsEnabled;
 
     @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
     private List<String> corsAllowedMethods;
@@ -385,7 +385,10 @@ public class ConnectionsConfig {
 
     @Bean
     public CorsUtils corsUtils() {
-        return new CorsUtils(corsEnabled, corsAllowedMethods, null);
+        return CorsUtils.builder()
+            .gatewayCorsEnabled(gatewayCorsEnabled)
+            .defaultAllowedCorsHttpMethods(corsAllowedMethods)
+            .build();
     }
 
     @Bean

@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.acceptance.common;
 
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
@@ -23,11 +25,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+@Execution(ExecutionMode.SAME_THREAD)
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @SpringBootTest(classes = GatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"management.server.port=10090","server.internal.enabled=false","apiml.routing.instanceIdHeader=true"})
-@Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
+    properties = {
+        "management.server.port=-1",
+        "server.internal.enabled=false",
+        "apiml.routing.instanceIdHeader=true"
+    }
+)
 @DirtiesContext
+@Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
 public @interface AcceptanceTest {
 }

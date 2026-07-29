@@ -3,6 +3,7 @@ apiml:
         apimlId: apiml1
         hostname: gateway-service
         discoveryServiceUrls: https://discovery-service:10011/eureka/
+        corsEnabled: true
     security:
         allowTokenRefresh: true
         personalAccessToken:

@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.jcache.JCacheCacheManager;
 import org.springframework.cache.support.NoOpCacheManager;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,8 +27,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CacheConfigTest {
 
     @Nested
-    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = CacheConfig.class)
+    @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = CacheConfig.class, properties = {
+        "apiml.caching.enabled=true"
+    })
     @ActiveProfiles("test")
+    @DirtiesContext
     class EnabledCache {
 
         @Autowired
@@ -46,8 +50,8 @@ class CacheConfigTest {
         "apiml.caching.enabled=false"
     })
     @ActiveProfiles("test")
+    @DirtiesContext
     class DisabledCache {
-
 
         @Autowired
         private CacheManager cacheManager;

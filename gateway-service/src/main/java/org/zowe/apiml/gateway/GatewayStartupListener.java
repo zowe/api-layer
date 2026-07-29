@@ -21,6 +21,7 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import java.time.Duration;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 @RequiredArgsConstructor
@@ -29,14 +30,21 @@ public class GatewayStartupListener implements ApplicationListener<ApplicationRe
     @Value("${apiml.startupCheckInterval:15}")
     private int interval;
 
+    private AtomicReference<Timer> timer = new AtomicReference<>();
+
     private final Providers providers;
 
     public void onApplicationEvent(ApplicationReadyEvent event) {
         if (providers.isZosfmUsed()) {
-            new Timer().scheduleAtFixedRate(new TimerTask() {
+            timer.set(new Timer());
+            timer.get().scheduleAtFixedRate(new TimerTask() {
 
                 @Override
                 public void run() {
+                    if (event.getApplicationContext() != null && !event.getApplicationContext().isActive()) {
+                        cancel();
+                        return;
+                    }
                     if (providers.isZosmfAvailableAndOnline()) {
                         cancel();
                         notifyStartup();
@@ -49,8 +57,16 @@ public class GatewayStartupListener implements ApplicationListener<ApplicationRe
         }
     }
 
+    void onContextClosed() {
+        if (timer.get() != null) {
+            timer.get().cancel();
+            timer.set(null);
+        }
+    }
+
     private void notifyStartup() {
         new ServiceStartupEventHandler().onServiceStartup("Gateway Service",
             ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
+
 }
