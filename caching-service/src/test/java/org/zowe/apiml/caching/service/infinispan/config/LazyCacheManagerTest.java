@@ -141,7 +141,7 @@ class LazyCacheManagerTest {
             assertEquals("invalidatedJwtTokens", properties.getProperty("source.cache_name"));
             assertEquals(sourceDir.resolve("data").toString(), properties.getProperty("source.location"));
             assertEquals(sourceDir.resolve("index").toString(), properties.getProperty("source.index_location"));
-            assertEquals("15", properties.getProperty("source.version"));
+            assertEquals("12", properties.getProperty("source.version"));
 
             assertEquals("SOFT_INDEX_FILE_STORE", properties.getProperty("target.type"));
             assertEquals("invalidatedJwtTokens", properties.getProperty("target.cache_name"));
