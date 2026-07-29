@@ -46,6 +46,11 @@
                                                     "type": "object",
                                                     "description": "Authentication and authorization options",
                                                     "properties": {
+                                                        "enableStrictUrlValidation": {
+                                                            "type": "boolean",
+                                                            "description": "When enabled, the Gateway strictly validates request URLs and rejects encoded characters such as encoded slashes, backslashes, and semicolons. When disabled, validation is relaxed for routed traffic, while Gateway-internal endpoints remain strictly validated.",
+                                                            "default": true
+                                                        },
                                                         "useInternalMapper": {
                                                             "type": "boolean",
                                                             "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
@@ -192,11 +197,6 @@
                                                 "service": {
                                                     "type": "object",
                                                     "properties": {
-                                                        "allowEncodedSlashes": {
-                                                            "type": "boolean",
-                                                            "description": "Allow URLs on gateway to contain encoded slashes.",
-                                                            "default": true
-                                                        },
                                                         "additionalRegistration": {
                                                             "type": "array",
                                                             "description": "List of additional Discovery Services URLs to register with and the routing patterns.",
@@ -219,6 +219,16 @@
                                                             "type": "boolean",
                                                             "description": "Allow CORS on gateway.",
                                                             "default": true
+                                                        },
+                                                        "corsDefaultAllowedOrigins": {
+                                                            "type": "string",
+                                                            "description": "Default allowed origins for CORS.",
+                                                            "default": ""
+                                                        },
+                                                        "corsDefaultAllowedHeaders": {
+                                                            "type": "string",
+                                                            "description": "Default allowed headers for CORS.",
+                                                            "default": "*"
                                                         }
                                                     }
                                                 }

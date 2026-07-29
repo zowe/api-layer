@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
@@ -42,6 +43,7 @@ import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
  * by the {@link org.zowe.apiml.security.common.filter.CategorizeCertsFilter CategorizeCertsFilter}.
  */
 @AcceptanceTest
+@ActiveProfiles("X509SchemeTest")
 class X509SchemeTest extends AcceptanceTestWithTwoServices {
 
     @Value("${server.ssl.keyStorePassword:password}")

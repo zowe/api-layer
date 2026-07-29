@@ -11,6 +11,7 @@
 package org.zowe.apiml.cloudgatewayservice.acceptance;
 
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.cloudgatewayservice.acceptance.common.AcceptanceTestWithMockServices;
@@ -27,6 +28,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
     @Test
+    @Disabled("CORS Not supported in SCGW. Using Spring's defaults")
     void routeToServiceWithCorsEnabled() throws IOException {
         mockService("serviceid1")
             .addEndpoint("/test")

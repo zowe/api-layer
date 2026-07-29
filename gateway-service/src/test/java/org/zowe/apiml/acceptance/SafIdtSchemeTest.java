@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
@@ -57,6 +58,7 @@ import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
     "apiml.security.x509.enabled=true",
     "apiml.security.x509.externalMapperUrl="
 })
+@ActiveProfiles("SafIdtSchemeTest")
 class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;

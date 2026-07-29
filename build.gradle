@@ -64,6 +64,7 @@ allprojects {
 
     eclipse {
         classpath {
+            defaultOutputDir = file('build/classes/java/main')
             file {
                 whenMerged { classpath ->
                     for (ClasspathEntry entry : classpath.getEntries()) {
@@ -71,6 +72,12 @@ allprojects {
                             AbstractClasspathEntry theEntry = (AbstractClasspathEntry) entry
                             if (theEntry.path != null && theEntry.path.contains('org.eclipse.jdt.launching.JRE_CONTAINER')) {
                                 theEntry.accessRules.add(new AccessRule('accessible', 'com/sun/net/httpserver/**'))
+                            }
+                            if (theEntry.path != null && (theEntry.path == 'src/main/java' || theEntry.path == 'src/main/resources')) {
+                                theEntry.output = 'build/classes/java/main'
+                            }
+                            if (theEntry.path != null && (theEntry.path == 'src/test/java' || theEntry.path == 'src/test/resources')) {
+                                theEntry.output = 'build/classes/java/test'
                             }
                         }
                     }
@@ -150,7 +157,14 @@ subprojects {
 
     tasks.withType(Test) {
         maxParallelForks = 1
+        maxHeapSize = '2g'
+        systemProperty 'spring.test.context.cache.maxSize', '5'
     }
+
+    tasks.withType(Jar) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
 }
 
 task buildCore(dependsOn: [':gateway-service:build', ':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',

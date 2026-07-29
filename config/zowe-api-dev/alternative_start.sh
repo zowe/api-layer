@@ -58,7 +58,6 @@ _BPX_JOBNAME=${ZOWE_PREFIX}${GATEWAY_CODE} java \
     -Dapiml.service.port=${GATEWAY_PORT} \
     -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.service.preferIpAddress=${APIML_PREFER_IP_ADDRESS} \
-    -Dapiml.service.allowEncodedSlashes=${APIML_ALLOW_ENCODED_SLASHES} \
     -Dapiml.service.corsEnabled=${APIML_CORS_ENABLED} \
     -Dapiml.catalog.serviceId=${APIML_GATEWAY_CATALOG_ID} \
     -Dapiml.cache.storage.location=${WORKSPACE_DIR}/api-mediation/ \

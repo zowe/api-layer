@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
@@ -28,6 +29,7 @@ import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.hamcrest.core.Is.is;
 
 @AcceptanceTest
+@ActiveProfiles("RequestInstanceTest")
 public class RequestInstanceTest extends AcceptanceTestWithTwoServices {
 
     @BeforeEach

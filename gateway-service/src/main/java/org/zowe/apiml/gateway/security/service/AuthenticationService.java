@@ -31,7 +31,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -51,6 +53,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.zowe.apiml.gateway.security.service.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.gateway.security.service.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.gateway.security.service.zosmf.ZosmfService.TokenType.JWT;
@@ -202,9 +205,9 @@ public class AuthenticationService {
         for (final InstanceInfo instanceInfo : application.getInstances()) {
             if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) continue;
 
-            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/" + jwtToken;
+            final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
             try {
-                restTemplate.delete(url);
+                deleteJwt(jwtToken, url);
             } catch (HttpClientErrorException e) {
                 log.debug("Problem invalidating token on another instance url " + url, e);
             }
@@ -212,6 +215,18 @@ public class AuthenticationService {
         }
 
         return Boolean.TRUE;
+    }
+
+    private void deleteJwt(String jwtToken, String url) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, "Bearer " + jwtToken);
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+        restTemplate.exchange(
+            url,
+            HttpMethod.DELETE,
+            requestEntity,
+            Void.class
+        );
     }
 
     /**
@@ -309,11 +324,11 @@ public class AuthenticationService {
         final InstanceInfo instanceInfo = application.getByInstanceId(toInstanceId);
         if (instanceInfo == null) return false;
 
-        final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
+        final String url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
 
         final Collection<String> invalidated = cacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {
-            restTemplate.delete(url, invalidatedToken);
+            deleteJwt(invalidatedToken, url);
         }
 
         return true;

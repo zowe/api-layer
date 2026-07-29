@@ -12,9 +12,13 @@ package org.zowe.apiml.acceptance.corsTests;
 
 import io.restassured.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.NestedTestConfiguration;
+import org.springframework.test.context.NestedTestConfiguration.EnclosingConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 
@@ -23,128 +27,152 @@ import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-/*
- * Verify default state
- *    - With pre-flight request
- *       The No Access Control Allow Origin header
- *    - Without pre-flight request
- *       The header for Access Control Allow Origin isn't present
- *  Verify changed state
- *    - With pre-flight request
- *      - Verify that the downstream headers for CORS are ignored
- *    - Without pre-flight request
- *      - Verify that the downstream headers for CORS are ignored
- *
- *  The case for downstream headers will be?
- *     With disabled by default not much.
- *     Is there case when disabled cors would mean that we will have to change it?
- *     When allowed the headers are also irelevant as the headers adds no behavior
- *  What can the headers do?
- *  If the pre-flight request comes and we
- */
-@AcceptanceTest
-@ActiveProfiles("test")
-class CorsPerServiceTest extends AcceptanceTestWithTwoServices {
-    @Test
-        // Verify the header to allow CORS isn't set
+class CorsPerServiceTest {
+
+    @Nested
+    @AcceptanceTest
+    @ActiveProfiles({"CorsPerServiceTest", "test"})
+    @TestPropertySource(properties = {
+        "apiml.service.corsEnabled=true",
+        "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org"
+    })
+    @NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
+    class GivenDefaultIsSet extends AcceptanceTestWithTwoServices {
+
+        @Test
+        // Verify the header to allow CORS is set according to the default foo.bar.org allowed
         // Verify there was no call to southbound service
-    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenPreflightRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
-        applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
-        mockValid200HttpResponse();
-        discoveryClient.createRefreshCacheEvent();
+        void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenPreflightRequestArrives_thenAccessControlAllowOriginIsSet() throws Exception {
+            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+            mockValid200HttpResponse();
+            discoveryClient.createRefreshCacheEvent();
 
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-            .header(new Header("Access-Control-Request-Method", "POST"))
-            .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-        .when()
-            .options(basePath + serviceWithDefaultConfiguration.getPath())
-        .then()
-            .statusCode(is(SC_FORBIDDEN))
-            .header("Access-Control-Allow-Origin", is(nullValue()));
+            given()
+                .header(new Header("Origin", "https://foo.bar.org"))
+                .header(new Header("Access-Control-Request-Method", "POST"))
+                .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
+            .when()
+                .options(basePath + serviceWithDefaultConfiguration.getPath())
+            .then()
+                .statusCode(is(SC_OK))
+                .header("Access-Control-Allow-Origin", is("https://foo.bar.org"))
+                .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"))
+                .header("Access-Control-Allow-Headers", is("origin, x-requested-with"));
 
-        verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
-    }
+            verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
+        }
 
-    @Test
-        // Verify the header to allow CORS isn't set
+        @Test
+        // Verify the header to allow CORS is set according to the default allowed foo.bar.org
         // Verify there was no call to southbound service
-    void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
-        applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
-        mockValid200HttpResponse();
-        discoveryClient.createRefreshCacheEvent();
+        void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenAccessControlAllowOriginIsSet() throws Exception {
+            applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+            mockValid200HttpResponse();
+            discoveryClient.createRefreshCacheEvent();
 
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-            .header(new Header("Access-Control-Request-Method", "POST"))
-            .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-        .when()
-            .get(basePath + serviceWithDefaultConfiguration.getPath())
-        .then()
-            .statusCode(is(SC_FORBIDDEN))
-            .header("Access-Control-Allow-Origin", is(nullValue()));
+            given()
+                .header(new Header("Origin", "https://foo.bar.org"))
+            .when()
+                .post(basePath + serviceWithDefaultConfiguration.getPath())
+            .then()
+                .statusCode(is(SC_OK))
+                .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
 
-        verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
-    }
+            verify(mockClient).execute(ArgumentMatchers.any(HttpUriRequest.class));
+        }
 
-
-    @Test
+        @Test
         // There is no request to the southbound server for preflight
         // There is request to the southbound server for the second request
-    void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() throws Exception {
-        mockValid200HttpResponse();
-        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        discoveryClient.createRefreshCacheEvent();
-        // Preflight request
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-            .header(new Header("Access-Control-Request-Method", "POST"))
-            .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
-        .when()
-            .options(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
-            .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"))
-            .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"))
-            .header("Access-Control-Allow-Headers", is("origin, x-requested-with"));
+        void givenCorsIsAllowedForSpecificService_whenPreFlightRequestArrives_thenCorsHeadersAreSet() throws Exception {
+            mockValid200HttpResponse();
+            applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
+            discoveryClient.createRefreshCacheEvent();
 
-        // The preflight request isn't passed to the southbound service
-        verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
+            // Preflight request
+            given()
+                .header(new Header("Origin", "https://foo.bar.org"))
+                .header(new Header("Access-Control-Request-Method", "POST"))
+                .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
+            .when()
+                .options(basePath + serviceWithCustomConfiguration.getPath())
+            .then()
+                .statusCode(is(SC_OK))
+                .header("Access-Control-Allow-Origin", is("https://foo.bar.org"))
+                .header("Access-Control-Allow-Methods", is("GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS"))
+                .header("Access-Control-Allow-Headers", is("origin, x-requested-with"));
 
-        // Actual request
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-        .when()
-            .post(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
-            .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
+            // The preflight request isn't passed to the southbound service
+            verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
 
-        // The actual request is passed to the southbound service
-        verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
-    }
+            // Actual request
+            given()
+                .header(new Header("Origin", "https://foo.bar.org"))
+            .when()
+                .post(basePath + serviceWithCustomConfiguration.getPath())
+            .then()
+                .statusCode(is(SC_OK))
+                .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
 
-    @Test
+            // The actual request is passed to the southbound service
+            verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
+        }
+
+        @Test
         // There is request to the southbound server for the request
         // The CORS header is properly set.
-    void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() throws Exception {
-        // There is request to the southbound server and the CORS headers are properly set on the response
-        mockValid200HttpResponse();
-        applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
-        discoveryClient.createRefreshCacheEvent();
+        void givenCorsIsAllowedForSpecificService_whenSimpleRequestArrives_thenCorsHeadersAreSet() throws Exception {
+            // There is request to the southbound server and the CORS headers are properly set on the response
+            mockValid200HttpResponse();
+            applicationRegistry.setCurrentApplication(serviceWithCustomConfiguration.getId());
+            discoveryClient.createRefreshCacheEvent();
 
-        // Preflight request
-        given()
-            .header(new Header("Origin", "https://foo.bar.org"))
-        .when()
-            .get(basePath + serviceWithCustomConfiguration.getPath())
-        .then()
-            .statusCode(is(SC_OK))
-            .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
+            // Preflight request
+            given()
+                .header(new Header("Origin", "https://foo.bar.org")) // This can't work anymore with the defaults (cors enabled on gateway + service with cors enabled + default list of origins)
+            .when()
+                .get(basePath + serviceWithCustomConfiguration.getPath())
+            .then()
+                .statusCode(is(SC_OK))
+                .header("Access-Control-Allow-Origin", is("https://foo.bar.org"));
 
-        // The actual request is passed to the southbound service
-        verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
+            // The actual request is passed to the southbound service
+            verify(mockClient, times(1)).execute(ArgumentMatchers.any(HttpUriRequest.class));
+        }
+
+        @Nested
+        @AcceptanceTest
+        @ActiveProfiles({"CorsPerServiceTestWithDefaults", "test"})
+        @TestPropertySource(properties = {
+            "apiml.service.corsEnabled=true"
+        })
+        class CorsPerServiceTestWithDefaults extends AcceptanceTestWithTwoServices {
+
+            @Test
+            void givenCorsIsDelegatedToGatewayButServiceDoesntAllowCors_whenSimpleCorsRequestArrives_thenNoAccessControlAllowOriginIsSet() throws Exception {
+                applicationRegistry.setCurrentApplication(serviceWithDefaultConfiguration.getId());
+                mockValid200HttpResponse();
+                discoveryClient.createRefreshCacheEvent();
+
+                given()
+                    .header(new Header("Origin", "https://foo.bar.org"))
+                    .header(new Header("Access-Control-Request-Method", "POST"))
+                    .header(new Header("Access-Control-Request-Headers", "origin, x-requested-with"))
+                .when()
+                    .post(basePath + serviceWithDefaultConfiguration.getPath())
+                .then()
+                    .statusCode(is(SC_FORBIDDEN))
+                    .header("Access-Control-Allow-Origin", is(nullValue()));
+
+                verify(mockClient, never()).execute(ArgumentMatchers.any(HttpUriRequest.class));
+            }
+
+        }
+
     }
+
 }

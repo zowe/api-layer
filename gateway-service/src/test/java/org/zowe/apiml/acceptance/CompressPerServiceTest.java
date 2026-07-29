@@ -14,6 +14,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.common.AcceptanceTest;
 import org.zowe.apiml.acceptance.common.AcceptanceTestWithTwoServices;
 import org.zowe.apiml.acceptance.netflix.MetadataBuilder;
@@ -25,6 +26,7 @@ import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 
 @AcceptanceTest
+@ActiveProfiles("CompressPerServiceTest")
 class CompressPerServiceTest extends AcceptanceTestWithTwoServices {
     @Nested
     class GivenServiceAcceptsCompression {

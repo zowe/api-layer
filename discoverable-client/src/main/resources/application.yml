@@ -8,11 +8,11 @@ logging:
         org.springframework: WARN
         org.springdoc: WARN
         org.apache.catalina: WARN
-        com.netflix: WARN
-        com.netflix.discovery: ERROR
-        com.netflix.config: ERROR
+        com.netflix: DEBUG
+        com.netflix.discovery: DEBUG
+        com.netflix.config: DEBUG
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
-        com.netflix.discovery.DiscoveryClient: OFF
+        com.netflix.discovery.DiscoveryClient: DEBUG
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR # For running with java 17

@@ -29,11 +29,10 @@ import java.util.Map;
 public class CorsMetadataProcessor extends MetadataProcessor {
 
     @Value("${apiml.service.corsEnabled:false}")
-    private boolean corsEnabled;
+    private boolean gatewayCorsEnabled;
     private final EurekaApplications applications;
     private final CorsConfigurationSource corsConfigurationSource;
     private final CorsUtils corsUtils;
-
 
     @Override
     List<Application> getApplications() {
@@ -43,13 +42,18 @@ public class CorsMetadataProcessor extends MetadataProcessor {
     protected void checkInstanceInfo(InstanceInfo instanceInfo) {
         Map<String, String> metadata = instanceInfo.getMetadata();
 
-        if (metadata != null && corsEnabled) {
+        if (metadata != null && gatewayCorsEnabled) {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
             corsUtils.setCorsConfiguration(
-                instanceInfo.getVIPAddress().toLowerCase(),
+                instanceInfo.getAppName(),
                 metadata,
-                (entry, serviceId, config) -> cors.registerCorsConfiguration("/" + serviceId + "/" + entry + "/**", config)
+                (gatewayRoute, config) -> {
+                    cors.registerCorsConfiguration("/" + instanceInfo.getVIPAddress().toLowerCase() + "/" + gatewayRoute + "/**", config); // i.e. /staticcors1/api/v1/**
+                    cors.registerCorsConfiguration("/" + gatewayRoute + "/" + instanceInfo.getVIPAddress().toLowerCase() + "/**", config); // i.e. /api/v1/staticcors1/**
+                }
             );
         }
+
     }
+
 }

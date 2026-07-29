@@ -31,7 +31,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.util.CorsUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,15 +48,18 @@ class ConnectionsConfigTest {
 
     @Nested
     class WhenCreateEurekaJerseyClientBuilder {
+
         @Test
         void thenIsNotNull() {
             assertThat(connectionsConfig).isNotNull();
             assertThat(connectionsConfig.getEurekaJerseyClient()).isNotNull();
         }
+
     }
 
     @Nested
     class WhenInitializeEurekaClient {
+
         @Mock
         private ApplicationInfoManager manager;
 
@@ -74,6 +76,7 @@ class ConnectionsConfigTest {
         void thenCreateIt() {
             assertThat(connectionsConfig.primaryEurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler)).isNotNull();
         }
+
     }
 
     @Nested
@@ -131,12 +134,10 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+            void validateDefaultCorsAllowedMethods()  {
                 CorsUtils corsUtils = connectionsConfig.corsUtils();
-
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                @SuppressWarnings("unchecked")
+                List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
                 assertEquals(7, corsAllowedMethods.size());
             }
         }
@@ -152,18 +153,19 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
+            void validateCorsAllowedMethods()  {
                 CorsUtils corsUtils = connectionsConfig.corsUtils();
 
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                @SuppressWarnings("unchecked")
+                List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
                 assertEquals(3, corsAllowedMethods.size());
                 assertEquals("GET", corsAllowedMethods.get(0));
                 assertEquals("POST", corsAllowedMethods.get(1));
                 assertEquals("PATCH", corsAllowedMethods.get(2));
             }
+
         }
+
     }
 
 }

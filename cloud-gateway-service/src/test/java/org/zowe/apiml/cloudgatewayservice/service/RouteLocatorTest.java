@@ -10,35 +10,43 @@
 
 package org.zowe.apiml.cloudgatewayservice.service;
 
-import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.cloud.gateway.route.RouteDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.cloudgatewayservice.service.routing.RouteDefinitionProducer;
 import org.zowe.apiml.cloudgatewayservice.service.scheme.SchemeHandler;
-import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.routing.RoutedService;
-import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 
-import java.util.*;
-import java.util.function.Consumer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_SUPPORTING_CLIENT_CERT_FORWARDING;
 
 class RouteLocatorTest {
@@ -58,7 +66,6 @@ class RouteLocatorTest {
     };
 
     private UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = mock(UrlBasedCorsConfigurationSource.class);
-    private CorsUtils corsUtils = mock(CorsUtils.class);
     private ReactiveDiscoveryClient discoveryClient = mock(ReactiveDiscoveryClient.class);
 
     private RouteLocator routeLocator;
@@ -69,8 +76,6 @@ class RouteLocatorTest {
         doReturn(urlBasedCorsConfigurationSource).when(context).getBean(UrlBasedCorsConfigurationSource.class);
 
         routeLocator = spy(new RouteLocator(
-            context,
-            corsUtils,
             discoveryClient,
             Arrays.asList(COMMON_FILTERS),
             Arrays.asList(SCHEME_HANDLER_FILTERS),
@@ -101,7 +106,6 @@ class RouteLocatorTest {
     }
 
     private static RouteDefinitionProducer createRouteDefinitionProducer(int order, String id) {
-        EurekaMetadataParser metadataParser = new EurekaMetadataParser();
         RouteDefinitionProducer rdp = mock(RouteDefinitionProducer.class);
         doReturn(order).when(rdp).getOrder();
         doAnswer(answer -> {
@@ -163,35 +167,6 @@ class RouteLocatorTest {
             verify(SCHEME_HANDLER_FILTERS[0]).apply(MOCK_SERVICE, routeDefinition, authentication);
         }
 
-        private TriConsumer<String, String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
-            ServiceInstance serviceInstance = createServiceInstance("myservice", "api/v1");
-            metadataProcessor.accept(serviceInstance.getMetadata());
-
-            routeLocator.setCors(serviceInstance);
-            ArgumentCaptor<TriConsumer<String, String, CorsConfiguration>> lambdaCaptor = ArgumentCaptor.forClass(TriConsumer.class);
-            verify(corsUtils).setCorsConfiguration(anyString(), any(), lambdaCaptor.capture());
-
-            return lambdaCaptor.getValue();
-        }
-
-        @Test
-        void givenApimlId_whenSetCors_thenServiceIdIsReplacedWithApimlId() {
-            TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> md.put(APIML_ID, "apimlid"));
-
-            corsLambda.accept(null, "myservice", null);
-
-            verify(urlBasedCorsConfigurationSource).registerCorsConfiguration("/apimlid/**", null);
-        }
-
-        @Test
-        void givenNoApimlId_whenSetCors_thenServiceIdIsUsed() {
-            TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> {});
-
-            corsLambda.accept(null, "myservice", null);
-
-            verify(urlBasedCorsConfigurationSource).registerCorsConfiguration("/myservice/**", null);
-        }
-
         @Test
         void givenGateway_whenGetRoutedService_thenReturnDefaultRouting() {
             ServiceInstance gw = createServiceInstance("gateway", "api/v1");
@@ -245,7 +220,6 @@ class RouteLocatorTest {
 
             int index = 0;
             for (String serviceId : new String[] {"service1", "service2"}) {
-                verify(corsUtils).setCorsConfiguration(eq(serviceId), any(), any());
 
                 for (String gatewayUrl : new String[] {"a/b", ""}) {
                     for (String producerId : new String[] {"id0", "id5", "id10"}) {
@@ -263,7 +237,7 @@ class RouteLocatorTest {
         class PostRoutingFilterDefinition {
 
             private final List<FilterDefinition> COMMON_FILTERS = Collections.singletonList(mock(FilterDefinition.class));
-            private final RouteLocator routeLocator = new RouteLocator(null, null, null, COMMON_FILTERS, Collections.emptyList(), null);
+            private final RouteLocator routeLocator = new RouteLocator(null, COMMON_FILTERS, Collections.emptyList(), null);
 
             private ServiceInstance createServiceInstance(Boolean forwardingEnabled) {
                 Map<String, String> metadata = new HashMap<>();
