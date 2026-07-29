@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -45,13 +46,16 @@ public class ConfigReader {
                     ClassLoader classLoader = ClassLoader.getSystemClassLoader();
                     File configFile = null;
                     try {
-                        Path path = Paths.get(Objects.requireNonNull(classLoader.getResource(configFileName)).toURI());
-                        configFile = path.toFile();
+                        URL resource = classLoader.getResource(configFileName);
+                        if (resource != null) {
+                            Path path = Paths.get(classLoader.getResource(configFileName).toURI());
+                            configFile = path.toFile();
+                        } else {
+                            configFile = new File("src/test/resources/" + configFileName);
+                        }
                     } catch (URISyntaxException exception) {
                         log.error("Incorrect environment-configuration.yml location: " + exception.getMessage(), exception);
                         configFile = new File(Objects.requireNonNull(classLoader.getResource(configFileName)).getFile());
-                    } catch (NullPointerException exception) {
-                        configFile = new File("src/test/resources/" + configFileName);
                     }
                     ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
                     EnvironmentConfiguration configuration;

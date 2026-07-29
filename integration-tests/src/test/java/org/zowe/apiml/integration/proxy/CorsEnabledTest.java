@@ -49,7 +49,7 @@ class CorsEnabledTest implements TestWithStartedInstances {
             given()
                 .log().all()
                 .header("Origin", origin)
-                .header("Access-Control-Request-Method", "GET")
+                .header("Access-Control-Request-Method", "POST")
                 .header("Access-Control-Request-Headers", "Origin")
             .when()
                 .options(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_1_REQUEST))
