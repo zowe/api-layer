@@ -49,3 +49,7 @@ dependencies {
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 }
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
