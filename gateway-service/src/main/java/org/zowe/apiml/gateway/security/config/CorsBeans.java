@@ -49,14 +49,17 @@ public class CorsBeans implements InitializingBean {
     @Value("${apiml.service.corsDefaultAllowedOrigins:#{null}}")
     private String corsDefaultAllowedOrigins;
 
-    @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
-    private List<String> corsDefaultAllowedMethods;
-
     @Value("${apiml.service.corsDefaultAllowedHeaders:*}")
     private String corsDefaultAllowedHeaders;
 
     @Value("${apiml.service.ignoredHeadersWhenCorsEnabled}")
     private String ignoredHeadersWhenCorsEnabled;
+
+    @Value("${apiml.service.corsAllowedEndpoints:/*/*/gateway/**,/gateway/*/*/**,/gateway/version}")
+    private List<String> corsEnabledEndpoints;
+
+    @Value("${apiml.service.corsAllowedMethods:GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}")
+    private List<String> corsAllowedMethods;
 
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
@@ -129,9 +132,11 @@ public class CorsBeans implements InitializingBean {
     ) throws URISyntaxException {
         return CorsUtils.builder()
             .gatewayCorsEnabled(gatewayCorsEnabled)
-            .defaultAllowedCorsHttpMethods(corsDefaultAllowedMethods)
-            .defaultAllowedHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
-            .defaultAllowedOrigins(getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList(externalUrl)), hostname, port)).build();
+            .corsAllowedEndpoints(corsEnabledEndpoints)
+            .defaultAllowedCorsHttpMethods(corsAllowedMethods)
+            .defaultAllowedCorsHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
+            .defaultAllowedCorsOrigins(getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList(externalUrl)), hostname, port))
+            .build();
 
     }
 

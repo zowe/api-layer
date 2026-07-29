@@ -29,10 +29,11 @@ import static org.hamcrest.core.Is.is;
     },
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
-public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
+class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
     @Nested
     @ActiveProfiles("http")
     class GivenProtectedHealthEndpointWithHttp {
+
     @Test
     void applicationHealthEndpointsWhenProtected() {
         given()
@@ -40,12 +41,14 @@ public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
             .get(getDiscoveryUriWithPath("/application/health"))
             .then()
             .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
-      }
+        }
+
     }
 
     @Nested
     @ActiveProfiles("https")
     class GivenProtectedHealthEndpointWithHttps {
+
         @Test
         void applicationHealthEndpointsWhenProtected() {
             given()
@@ -54,5 +57,7 @@ public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
                 .then()
                 .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
         }
+
     }
+
 }

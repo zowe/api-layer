@@ -48,15 +48,18 @@ class ConnectionsConfigTest {
 
     @Nested
     class WhenCreateEurekaJerseyClientBuilder {
+
         @Test
         void thenIsNotNull() {
             assertThat(connectionsConfig).isNotNull();
             assertThat(connectionsConfig.getEurekaJerseyClient()).isNotNull();
         }
+
     }
 
     @Nested
     class WhenInitializeEurekaClient {
+
         @Mock
         private ApplicationInfoManager manager;
 
@@ -73,6 +76,7 @@ class ConnectionsConfigTest {
         void thenCreateIt() {
             assertThat(connectionsConfig.primaryEurekaClient(manager, config, eurekaJerseyClient, healthCheckHandler)).isNotNull();
         }
+
     }
 
     @Nested

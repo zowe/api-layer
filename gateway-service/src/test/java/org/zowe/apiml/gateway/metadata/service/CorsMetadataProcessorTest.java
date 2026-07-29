@@ -50,8 +50,8 @@ class CorsMetadataProcessorTest {
         corsUtils = CorsUtils.builder()
             .gatewayCorsEnabled(true)
             .defaultAllowedCorsHttpMethods(Arrays.asList("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"))
-            .defaultAllowedOrigins(Collections.emptyList())
-            .defaultAllowedHeaders(Collections.singletonList("*"))
+            .defaultAllowedCorsOrigins(Collections.emptyList())
+            .defaultAllowedCorsHeaders(Collections.singletonList("*"))
             .build();
     }
 
@@ -64,7 +64,7 @@ class CorsMetadataProcessorTest {
             metadata.put("apiml.corsEnabled", "true");
             metadata.put("apiml.corsAllowedOrigins", "http://local1,http://local2");
             metadata.put("apiml.routes.0.gateway", "gateway");
-            corsUtils.setCorsConfiguration(metadata, (entry, config) -> configurationSource.registerCorsConfiguration("/cors-enabled-origins-allowed/" + entry + "/**", config));
+            corsUtils.setCorsConfiguration("cors-enabled-origins-allowed", metadata, (entry, config) -> configurationSource.registerCorsConfiguration("/cors-enabled-origins-allowed/" + entry + "/**", config));
 
             verify(configurationSource).registerCorsConfiguration(any(), configurationCaptor.capture());
 
@@ -82,7 +82,7 @@ class CorsMetadataProcessorTest {
             Map<String, String> metadata = new HashMap<>();
             metadata.put("apiml.corsEnabled", "true");
             metadata.put("apiml.routes.0.gateway", "gateway");
-            corsUtils.setCorsConfiguration(metadata, (routeEntry, config) -> configurationSource.registerCorsConfiguration("/cors-enabled-all-origins/" + routeEntry + "/**", config));
+            corsUtils.setCorsConfiguration("cors-enabled-all-origins", metadata, (routeEntry, config) -> configurationSource.registerCorsConfiguration("/cors-enabled-all-origins/" + routeEntry + "/**", config));
 
             verify(configurationSource).registerCorsConfiguration(any(), configurationCaptor.capture());
 
@@ -109,7 +109,7 @@ class CorsMetadataProcessorTest {
             Map<String, String> metadata = new HashMap<>();
             metadata.put("apiml.corsEnabled", "false");
             metadata.put("apiml.routes.0.gateway", "gateway");
-            corsUtils.setCorsConfiguration(metadata, (entry, config) -> configurationSource.registerCorsConfiguration("/cors-disabled/" + entry + "/**", config));
+            corsUtils.setCorsConfiguration("cors-disabled", metadata, (entry, config) -> configurationSource.registerCorsConfiguration("/cors-disabled/" + entry + "/**", config));
             verify(configurationSource).registerCorsConfiguration(any(), configurationCaptor.capture());
 
         }

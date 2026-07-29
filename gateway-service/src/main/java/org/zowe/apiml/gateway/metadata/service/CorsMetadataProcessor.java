@@ -45,6 +45,7 @@ public class CorsMetadataProcessor extends MetadataProcessor {
         if (metadata != null && gatewayCorsEnabled) {
             UrlBasedCorsConfigurationSource cors = (UrlBasedCorsConfigurationSource) this.corsConfigurationSource;
             corsUtils.setCorsConfiguration(
+                instanceInfo.getAppName(),
                 metadata,
                 (gatewayRoute, config) -> {
                     cors.registerCorsConfiguration("/" + instanceInfo.getVIPAddress().toLowerCase() + "/" + gatewayRoute + "/**", config); // i.e. /staticcors1/api/v1/**

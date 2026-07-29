@@ -28,21 +28,22 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public class CorsUtils {
 
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes.*.gateway\\S*");
-    private static final List<String> CORS_ENABLED_ENDPOINTS = Arrays.asList("/*/*/gateway/**", "/gateway/*/*/**", "/gateway/version");
 
-    private final boolean gatewayCorsEnabled;
     private final List<String> defaultAllowedCorsHttpMethods;
-    private final List<String> defaultAllowedOrigins;
-    private final List<String> defaultAllowedHeaders;
+    private final boolean gatewayCorsEnabled;
+    private final List<String> corsAllowedEndpoints;
+    private final List<String> defaultAllowedCorsOrigins;
+    private final List<String> defaultAllowedCorsHeaders;
+    private final boolean defaultAllowCredentials;
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
         String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
         return Boolean.parseBoolean(isCorsEnabledForService);
     }
 
-    public void setCorsConfiguration(Map<String, String> metadata, BiConsumer<String, CorsConfiguration> routeEntryMapper) {
+    public void setCorsConfiguration(String serviceId, Map<String, String> metadata, BiConsumer<String, CorsConfiguration> routeEntryMapper) {
         if (gatewayCorsEnabled) {
-            CorsConfiguration corsConfiguration = setCorsHeadersForService(metadata);
+            CorsConfiguration corsConfiguration = createCorsConfigurationForService(serviceId, metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
@@ -52,34 +53,46 @@ public class CorsUtils {
         }
     }
 
-    private CorsConfiguration setCorsHeadersForService(Map<String, String> metadata) {
+    private CorsConfiguration createCorsConfigurationForService(String serviceId, Map<String, String> metadata) {
         // Check if the configuration specifies allowed origins for this service
         final CorsConfiguration config = new CorsConfiguration();
         if (isCorsEnabledForService(metadata)) {
-            defaultAllowedOrigins.forEach(config::addAllowedOrigin);
+            defaultAllowedCorsOrigins.forEach(config::addAllowedOrigin);
             String corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
+            String allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
+            String allowedCredentialsForService = metadata.get("apiml.corsAllowCredentials");
+            String allowedMethodsForService = metadata.get("apiml.corsAllowedMethods");
+
             if (isNotBlank(corsAllowedOriginsForService)) {
                 // Origins specified: split by comma, add to whitelist
-                // apiml.corsAllowedOrigins = https://www.google.com:443,https://foo.bar:1234,*
+                log.debug("For service {}, set [{}] as allowed origins", serviceId, Arrays.toString(corsAllowedOriginsForService.split(",")));
                 Arrays.stream(corsAllowedOriginsForService.split(","))
-                    .forEach(config::addAllowedOrigin)
-                    ;
+                    .forEach(config::addAllowedOrigin);
             }
-            config.setAllowCredentials(true);
 
-            String allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
+            if (isNotBlank(allowedCredentialsForService)) {
+                config.setAllowCredentials(Boolean.parseBoolean(allowedCredentialsForService));
+            } else {
+                config.setAllowCredentials(defaultAllowCredentials);
+            }
+
+            if (isNotBlank(allowedMethodsForService)) {
+                config.setAllowedMethods(Arrays.asList(allowedMethodsForService.split(",")));
+            } else {
+                config.setAllowedMethods(defaultAllowedCorsHttpMethods);
+            }
+
             if (isNotBlank(allowedHeadersForService)) {
                 config.setAllowedHeaders(Arrays.asList(allowedHeadersForService.split(",")));
             } else {
-                config.setAllowedHeaders(defaultAllowedHeaders);
+                config.setAllowedHeaders(defaultAllowedCorsHeaders);
             }
-
-            config.setAllowedMethods(defaultAllowedCorsHttpMethods);
-
-            log.debug("CORS enabled for service {}: {}", metadata.get("apiml.service.title"), config);
         } else {
-            config.setAllowedOrigins(defaultAllowedOrigins);
-            log.debug("CORS is not enabled for service {}. Using defaults {}", metadata.get("apiml.service.title"), defaultAllowedOrigins);
+            config.setAllowedOrigins(defaultAllowedCorsOrigins);
+            config.setAllowedHeaders(defaultAllowedCorsHeaders);
+            config.setAllowCredentials(defaultAllowCredentials);
+            config.setAllowedMethods(defaultAllowedCorsHttpMethods);
+            log.debug("CORS is not enabled for service {}, using defaults", serviceId);
         }
         return config;
     }
@@ -88,12 +101,13 @@ public class CorsUtils {
         final CorsConfiguration config = new CorsConfiguration();
         List<String> pathsToEnable;
 
-        config.setAllowedOrigins(defaultAllowedOrigins);
         if (gatewayCorsEnabled) {
+            config.setAllowedOrigins(defaultAllowedCorsOrigins);
             config.setAllowCredentials(true);
-            config.setAllowedHeaders(defaultAllowedHeaders);
+            config.setAllowedHeaders(defaultAllowedCorsHeaders);
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
-            pathsToEnable = CORS_ENABLED_ENDPOINTS;
+            // When gateway has CORS handling enabled, defaults go to the /gateway/** endpoints plus any routes that southbound services register. If a service does not register its routes with apiml.corsEnabled metadata entry, the behaviour is really not recommended as there is no CORS configuration set for the service (if the service receives requests with Origin header)
+            pathsToEnable = corsAllowedEndpoints;
         } else {
             pathsToEnable = Collections.singletonList("/**");
         }
