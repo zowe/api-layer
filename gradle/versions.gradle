@@ -64,7 +64,6 @@ dependencyResolutionManagement {
             }
             version('jbossLogging', '3.6.3.Final')
             version('jerseySun', '1.19.4')
-            version('jettyWebSocketClient', '12.1.11')
             version('jettison', '1.5.7')
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
@@ -204,13 +203,6 @@ dependencyResolutionManagement {
             library('jaxbApi', 'jakarta.xml.bind', 'jakarta.xml.bind-api').versionRef('jaxbApi')
             library('jaxbImpl', 'com.sun.xml.bind', 'jaxb-impl').versionRef('jaxbImpl')
             library('jboss_logging', 'org.jboss.logging', 'jboss-logging').versionRef('jbossLogging') // to define minimum version and avoid duplicity libraries in the classpath
-            library('jetty_client', 'org.eclipse.jetty', 'jetty-client').versionRef('jettyWebSocketClient')
-            library('jetty_http', 'org.eclipse.jetty', 'jetty-http').versionRef('jettyWebSocketClient')
-            library('jetty_io', 'org.eclipse.jetty', 'jetty-io').versionRef('jettyWebSocketClient')
-            library('jetty_util', 'org.eclipse.jetty', 'jetty-util').versionRef('jettyWebSocketClient')
-            library('jetty_websocket_api', 'org.eclipse.jetty.websocket', 'jetty-websocket-jetty-api').versionRef('jettyWebSocketClient')
-            library('jetty_websocket_client', 'org.eclipse.jetty.websocket', 'jetty-websocket-jetty-client').versionRef('jettyWebSocketClient')
-            library('jetty_websocket_common', 'org.eclipse.jetty.websocket', 'jetty-websocket-jetty-common').versionRef('jettyWebSocketClient')
             library('jettison', 'org.codehaus.jettison', 'jettison').versionRef('jettison')
             library('joda_time', 'joda-time', 'joda-time').versionRef('jodaTime') // to define minimum version and avoid duplicity libraries in the classpath
             library('json_smart', 'net.minidev', 'json-smart').versionRef('jsonSmart')
@@ -298,7 +290,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.6.0')
+            version('logback', '1.6.1')
             version('mockitoCore', '5.23.0')
             version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')

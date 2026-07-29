@@ -156,7 +156,6 @@ logging:
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
         org.ehcache: WARN
         org.springframework: WARN
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
@@ -189,7 +188,6 @@ logging:
         org.apache.http: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
         org.ehcache: INFO
         org.springframework: INFO
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
