@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.cors.CorsConfiguration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -107,7 +108,7 @@ public class CorsUtils {
             config.setAllowedHeaders(defaultAllowedCorsHeaders);
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
             // When gateway has CORS handling enabled, defaults go to the /gateway/** endpoints plus any routes that southbound services register. If a service does not register its routes with apiml.corsEnabled metadata entry, the behaviour is really not recommended as there is no CORS configuration set for the service (if the service receives requests with Origin header)
-            pathsToEnable = corsAllowedEndpoints;
+            pathsToEnable = corsAllowedEndpoints == null ? new ArrayList<>() : corsAllowedEndpoints;
         } else {
             pathsToEnable = Collections.singletonList("/**");
         }
