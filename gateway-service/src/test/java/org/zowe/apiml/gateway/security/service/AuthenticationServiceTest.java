@@ -30,7 +30,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
@@ -59,8 +62,10 @@ import java.security.PublicKey;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpMethod.DELETE;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
@@ -260,12 +265,12 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         void givenJwtInAuthorizationHeader_thenReadJwtFromRequestHeader() {
             String jwtToken = "token";
             MockHttpServletRequest request = new MockHttpServletRequest();
-            request.addHeader("Authorization", "Bearer ");
+            request.addHeader(AUTHORIZATION, "Bearer ");
             Optional<String> optionalToken = authService.getJwtTokenFromRequest(request);
             assertFalse(optionalToken.isPresent());
 
             request = new MockHttpServletRequest();
-            request.addHeader("Authorization", String.format("Bearer %s", jwtToken));
+            request.addHeader(AUTHORIZATION, String.format("Bearer %s", jwtToken));
             optionalToken = authService.getJwtTokenFromRequest(request);
             assertTrue(optionalToken.isPresent());
             assertEquals(optionalToken.get(), jwtToken);
@@ -279,7 +284,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             @BeforeEach
             void setup() {
                 request = new MockHttpServletRequest();
-                request.addHeader(HttpHeaders.AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwtInAuthHeader");
+                request.addHeader(AUTHORIZATION, ApimlConstants.BEARER_AUTHENTICATION_PREFIX + " jwtInAuthHeader");
             }
 
             @Test
@@ -445,7 +450,15 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", DOMAIN, null);
-            doNothing().when(restTemplate).delete("http://localhost:0/gateway/auth/invalidate/" + token);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + token);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
+            when(restTemplate.exchange("http://localhost:0/gateway/auth/invalidate",
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class)).thenReturn(responseEntity);
+
             Mockito.doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             assertTrue(authService.invalidateJwtToken(token, true));
@@ -628,9 +641,23 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             authService.distributeInvalidate(instanceInfo.getInstanceId());
 
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "a");
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate/{}", "b");
+            verify(restTemplate, times(1))
+                .exchange(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate",
+                    DELETE,
+                    getHeaders("a"),
+                    Void.class);
+            verify(restTemplate, times(1))
+                .exchange(EurekaUtils.getUrl(instanceInfo) + "/gateway/auth/invalidate",
+                    DELETE,
+                    getHeaders("b"),
+                    Void.class);
         }
+    }
+
+    private HttpEntity<Void> getHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, "Bearer " + token);
+        return new HttpEntity<>(headers);
 
     }
 
