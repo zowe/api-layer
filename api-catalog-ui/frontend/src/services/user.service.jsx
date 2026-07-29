@@ -63,7 +63,7 @@ function query() {
     const requestOptions = {
         method: 'GET',
         credentials: 'include',
-        header: {
+        headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Access-Control-Allow-Credentials': 'true',
         }
