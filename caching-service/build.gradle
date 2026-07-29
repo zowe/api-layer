@@ -73,6 +73,7 @@ dependencies {
     implementation libs.janino
     implementation libs.jakarta.servlet.api
     implementation libs.lettuce
+
     testImplementation(testFixtures(project(":apiml-common")))
 
     testImplementation libs.spring.boot.starter.test
