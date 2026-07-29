@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -92,6 +93,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
+@Slf4j
 public class NewSecurityConfiguration {
 
     private final ObjectMapper securityObjectMapper;
@@ -119,6 +121,9 @@ public class NewSecurityConfiguration {
 
     @Value("${apiml.health.protected:false}")
     private boolean isHealthEndpointProtected;
+
+    @Value("${apiml.security.enableStrictUrlValidation:true}")
+    private boolean isStrictUrlValidationEnabled;
 
     /**
      * Login and Logout endpoints
@@ -598,15 +603,18 @@ public class NewSecurityConfiguration {
             // Web security only needs to be configured once, putting it to multiple filter chains causes multiple evaluations of the same rules
             @Bean
             public WebSecurityCustomizer webSecurityCustomizer() {
-                StrictHttpFirewall firewall = new ApimlStrictServerWebExchangeFirewall();
-                firewall.setAllowUrlEncodedSlash(true);
-                firewall.setAllowBackSlash(true);
-                firewall.setAllowUrlEncodedPercent(true);
-                firewall.setAllowUrlEncodedPeriod(true);
-                firewall.setAllowSemicolon(true);
+                final StrictHttpFirewall firewall = buildHttpFirewall();
 
                 return web -> {
                     web.httpFirewall(firewall);
+                    // Return 400 Bad Request (instead of the default 500) when the firewall rejects a request.
+                    // Handled inline so the exception is not propagated to the servlet (which logs it as an ERROR)
+                    // and setStatus is used rather than sendError, to avoid an error dispatch that Zuul turns into a 404.
+                    web.requestRejectedHandler((request, response, ex) -> {
+                        log.debug("Request '{}' was rejected because it contains restricted characters: {}",
+                            request.getRequestURI(), ex.getMessage());
+                        response.setStatus(HttpStatus.BAD_REQUEST.value());
+                    });
                     // Endpoints that skip Spring Security completely
                     // There is no CORS filter on these endpoints. If you require CORS processing, use a defined filter chain
                     web.ignoring()
@@ -622,6 +630,27 @@ public class NewSecurityConfiguration {
                         web.ignoring().antMatchers("/application/health");
                     }
                 };
+            }
+
+            /**
+             * Strict URL validation is enabled by default. Setting
+             * apiml.security.enableStrictUrlValidation=false reverts to the relaxed behavior where
+             * routed requests allow encoded (single and double) slashes, backslashes, percent,
+             * period and semicolon characters.
+             */
+            private StrictHttpFirewall buildHttpFirewall() {
+                if (isStrictUrlValidationEnabled) {
+                    return new StrictHttpFirewall();
+                }
+
+                ApimlStrictServerWebExchangeFirewall firewall = new ApimlStrictServerWebExchangeFirewall();
+                firewall.setAllowUrlEncodedSlash(true);
+                firewall.setAllowUrlEncodedDoubleSlash(true);
+                firewall.setAllowBackSlash(true);
+                firewall.setAllowUrlEncodedPercent(true);
+                firewall.setAllowUrlEncodedPeriod(true);
+                firewall.setAllowSemicolon(true);
+                return firewall;
             }
         }
 
