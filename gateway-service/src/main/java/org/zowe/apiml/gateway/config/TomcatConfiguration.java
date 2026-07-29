@@ -70,6 +70,7 @@ public class TomcatConfiguration {
     @Bean
     public ServletWebServerFactory servletContainer(List<TomcatConnectorCustomizer> connectorCustomizers) throws UnknownHostException {
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
+        System.setProperty("org.apache.catalina.connector.CoyoteAdapter.ALLOW_BACKSLASH","true");
         TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
         tomcat.setProtocol(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
         tomcat.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
