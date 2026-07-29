@@ -160,6 +160,11 @@ subprojects {
         maxHeapSize = '2g'
         systemProperty 'spring.test.context.cache.maxSize', '5'
     }
+
+    tasks.withType(Jar) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+
 }
 
 task buildCore(dependsOn: [':gateway-service:build', ':discovery-service:build', ':api-catalog-services:build', ':api-catalog-ui:build',

@@ -108,5 +108,8 @@ dependencies {
 
 }
 
+tasks.withType(Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
 
 bootJar.archiveFileName = bootJar.archiveBaseName.get() + ".jar"

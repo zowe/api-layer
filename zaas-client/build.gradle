@@ -20,7 +20,3 @@ dependencies {
     testImplementation libs.logback.classic
     testImplementation libs.mock.server
 }
-
-jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
