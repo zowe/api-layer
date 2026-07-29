@@ -679,7 +679,7 @@ public class NewSecurityConfiguration {
             .headers(headers -> headers
                 .httpStrictTransportSecurity(HeadersConfigurer.HstsConfig::disable)
                 .addHeaderWriter(new CustomHstsHeadersWriter())
-                .frameOptions().disable())
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
             .exceptionHandling(handling -> handling
                 .authenticationEntryPoint(handlerInitializer.getBasicAuthUnauthorizedHandler()))
             .sessionManagement(management -> management
