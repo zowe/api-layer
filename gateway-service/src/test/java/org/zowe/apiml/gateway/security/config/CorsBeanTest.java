@@ -50,7 +50,7 @@ class CorsBeanTest {
             ReflectionTestUtils.setField(corsBeans, "port", "10010");
             corsBeans.afterPropertiesSet();
 
-            List<String> allowedOrigins = corsBeans.getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList("https://dvipahost:10010")), "lparhost", 10010);
+            List<String> allowedOrigins = corsBeans.getDefaultAllowedOrigins(new ArrayList<>(Arrays.asList("https://dvipahost:10010")));
             assertEquals(2, allowedOrigins.size());
             assertTrue(allowedOrigins.contains("https://dvipahost:10010"));
             assertTrue(allowedOrigins.contains("https://lparhost:10010"));

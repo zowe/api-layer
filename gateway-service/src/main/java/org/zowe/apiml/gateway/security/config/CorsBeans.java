@@ -25,7 +25,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.zowe.apiml.util.CorsUtils;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -93,12 +92,7 @@ public class CorsBeans implements InitializingBean {
         ));
     }
 
-    List<String> getDefaultAllowedOrigins(
-        Environment environment,
-        List<String> externalDomains,
-        String hostname,
-        int port
-    ) throws URISyntaxException {
+    List<String> getDefaultAllowedOrigins(List<String> externalDomains) {
         Set<String> defaultAllowedOrigins = new HashSet<>();
         if (corsDefaultAllowedOrigins != null) {
             defaultAllowedOrigins.addAll(Arrays.asList(corsDefaultAllowedOrigins.split(",")));
@@ -114,13 +108,13 @@ public class CorsBeans implements InitializingBean {
         @Value("${apiml.service.externalUrl:}") String externalUrl,
         @Value("${server.hostname:${apiml.service.hostname}}") String hostname,
         @Value("${server.port}") int port
-    ) throws URISyntaxException {
+    ) {
         return CorsUtils.builder()
             .gatewayCorsEnabled(gatewayCorsEnabled)
             .corsAllowedEndpoints(corsEnabledEndpoints)
             .defaultAllowedCorsHttpMethods(corsAllowedMethods)
             .defaultAllowedCorsHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
-            .defaultAllowedCorsOrigins(getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList(externalUrl)), hostname, port))
+            .defaultAllowedCorsOrigins(getDefaultAllowedOrigins(new ArrayList<>(Arrays.asList(externalUrl))))
             .build();
 
     }
