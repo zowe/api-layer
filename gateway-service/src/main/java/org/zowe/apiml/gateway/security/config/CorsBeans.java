@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.security.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.utils.URIBuilder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,7 +31,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Externalized configuration of CORS behavior
@@ -105,20 +103,7 @@ public class CorsBeans implements InitializingBean {
         if (corsDefaultAllowedOrigins != null) {
             defaultAllowedOrigins.addAll(Arrays.asList(corsDefaultAllowedOrigins.split(",")));
         }
-        boolean isClientAttlsEnabled = Arrays.asList(environment.getActiveProfiles()).contains("attlsClient");
-        if (gatewayCorsEnabled || !isClientAttlsEnabled) {
-            defaultAllowedOrigins.addAll(externalDomains.stream()
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.toList()));
-        }
-
         externalDomains.stream().filter(StringUtils::isNotBlank).forEach(defaultAllowedOrigins::add);
-        defaultAllowedOrigins.add(new URIBuilder()
-            .setScheme("https")
-            .setHost(hostname)
-            .setPort(port)
-            .build().toString()
-        );
 
         return new ArrayList<>(defaultAllowedOrigins);
     }

@@ -32,7 +32,6 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
 
 // For now, it's only to verify at-tls settings are the correct ones
 @ExtendWith(MockitoExtension.class)
@@ -45,9 +44,11 @@ class CorsBeanTest {
     class GivenATTLSIsEnabled {
 
         @Test
-        void whenGetDefaultOrigins_thenAllowHttps() throws URISyntaxException {
+        void whenGetDefaultOrigins_thenAllowHttps() throws Exception {
             CorsBeans corsBeans = new CorsBeans(new ZuulProperties());
-            when(environment.getActiveProfiles()).thenReturn(new String[]{ "attlsServer", "attlsClient" });
+            ReflectionTestUtils.setField(corsBeans, "hostname", "lparhost");
+            ReflectionTestUtils.setField(corsBeans, "port", "10010");
+            corsBeans.afterPropertiesSet();
 
             List<String> allowedOrigins = corsBeans.getDefaultAllowedOrigins(environment, new ArrayList<>(Arrays.asList("https://dvipahost:10010")), "lparhost", 10010);
             assertEquals(2, allowedOrigins.size());
