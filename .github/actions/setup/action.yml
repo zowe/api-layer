@@ -6,6 +6,10 @@ inputs:
         description: "JDK version"
         required: false
         default: "17"
+    requireKeystores:
+        description: "Fail the job if the keystore artifact is missing. Set for jobs that pass -PskipKeystoreGeneration and therefore cannot regenerate."
+        required: false
+        default: "false"
 
 runs:
     using: "composite"
@@ -21,8 +25,25 @@ runs:
             uses: actions/download-artifact@v4
             with:
                 name: keystores-${{ env.JOB_ID }}
-                path: keystore/
+                path: .
             continue-on-error: true
+        -   name: Verify keystores are present
+            if: inputs.requireKeystores == 'true'
+            shell: bash
+            run: |
+                missing=0
+                for f in keystore/localhost/localhost.keystore.p12 \
+                         keystore/localhost/localhost.truststore.p12 \
+                         keystore/docker/all-services.keystore.p12; do
+                    if [ ! -f "$f" ]; then
+                        echo "::error::Missing $f"
+                        missing=1
+                    fi
+                done
+                if [ "$missing" -ne 0 ]; then
+                    echo "::error::Keystore artifact missing or incomplete, and this job runs with -PskipKeystoreGeneration so it cannot regenerate."
+                    exit 1
+                fi
         -   name: Set up JDK ${{ inputs.jdkVersion }}
             uses: actions/setup-java@v4
             with:

@@ -40,14 +40,39 @@ plugins {
     id 'net.minecraftforge.licenser' version '1.2.0' apply false
 }
 
+import org.gradle.api.services.BuildService
+import org.gradle.api.services.BuildServiceParameters
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 import org.gradle.plugins.ide.eclipse.model.ClasspathEntry
 
 import java.util.regex.Matcher
 
+/**
+ * Mutual-exclusion lock, not an ordering rule. api-catalog-ui, zowe-cli-id-federation-plugin,
+ * onboarding-enabler-nodejs and onboarding-enabler-nodejs-sample-app all point workDir/npmWorkDir
+ * at the same ${rootDir}/tools tree. With org.gradle.parallel=true their nodeSetup/npmSetup tasks
+ * install into that shared tree concurrently and clobber each other — one gets SIGKILLed mid-write
+ * and the build fails with a misleading "exit value 137 ... out of memory".
+ *
+ * A shared build service with maxParallelUsages = 1 lets only one of them run at a time while
+ * leaving the task graph untouched: no task gains a dependency on any other, so asking for a
+ * single npmSetup still runs only that task.
+ */
+abstract class NodeToolchainLock implements BuildService<BuildServiceParameters.None> {}
+
 //noinspection GroovyAssignabilityCheck
 group 'org.zowe.apiml'
+
+def nodeToolchainLock = gradle.sharedServices.registerIfAbsent('nodeToolchainLock', NodeToolchainLock) {
+    maxParallelUsages = 1
+}
+
+allprojects {
+    tasks.matching { it.name in ['nodeSetup', 'npmSetup'] }.configureEach {
+        usesService(nodeToolchainLock)
+    }
+}
 
 apply plugin: 'java-library'
 
@@ -145,10 +170,6 @@ configure(subprojects.findAll { it.name in [
 
 configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
-
-    tasks.withType(JavaCompile).configureEach {
-        dependsOn generateKeystores
-    }
 
     java {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -372,14 +393,27 @@ tasks.register('generateKeystores', Exec) {
     } else {
         commandLine 'bash', 'scripts/generate-keystores.sh'
     }
+    inputs.file(layout.projectDirectory.file('scripts/generate-keystores.sh'))
+    outputs.dir(layout.projectDirectory.dir('keystore'))
     onlyIf {
         if (project.hasProperty('skipKeystoreGeneration')) {
             logger.lifecycle('Keystore generation skipped: skipKeystoreGeneration property is set')
             return false
         }
-        def keystoreDir = file('keystore')
-        if (keystoreDir.exists() && !fileTree(keystoreDir).matching { include '**/*.p12' }.empty) {
-            logger.lifecycle('Keystore generation skipped: keystores already exist in {}', keystoreDir)
+        // Check for a representative set rather than "any *.p12 exists": a partial tree
+        // (interrupted run, incomplete CI artifact) must regenerate, not silently skip.
+        def required = [
+            'keystore/localhost/localhost.keystore.p12',
+            'keystore/localhost/localhost.truststore.p12',
+            'keystore/localhost/nonlocalhost.keystore.p12',
+            'keystore/docker/all-services.keystore.p12',
+            'keystore/client_cert/client-certs.p12',
+            'zaas-client/src/test/resources/localhost.keystore.p12',
+            'common-service-core/src/test/resources/jwt-public-key.pub'
+        ]
+        def missing = required.findAll { !file(it).exists() }
+        if (missing.isEmpty()) {
+            logger.lifecycle('Keystore generation skipped: all keystores already present')
             return false
         }
         try {
@@ -397,46 +431,45 @@ tasks.register('generateKeystores', Exec) {
     }
 }
 
-// Copy generated keystores to zaas-client test resources
-// Runs when keystore/ is populated (generation OR artifact download)
-tasks.register('copyTestKeystores', Copy) {
-    group = 'build'
-    description = 'Copy generated keystores to zaas-client test resources'
-    from('keystore/localhost') {
-        include 'localhost.keystore.p12', 'localhost.truststore.p12'
+// The generated test fixtures under zaas-client/src/test/resources and
+// common-service-core/src/test/resources are produced by generate-keystores.sh itself.
+// They are deliberately NOT modelled as Gradle task outputs: doing so would make those
+// source directories task outputs, and every task that reads them (checkLicenseTest,
+// processTestResources, ...) would need an explicit ordering. Licence checking has
+// nothing to do with TLS material and must not wait on it.
+//
+// Keystores are TLS material needed to RUN the services — locally, under test, or baked
+// into a container image. Nothing else should wait on them: compiling, licence checking,
+// javadoc, jars, packaging and publishing all work fine without any TLS material.
+allprojects {
+    // Tests start real services over TLS. 21 of the ~25 Java modules read keystore
+    // material from their tests, so this is hooked wholesale rather than allowlisted.
+    tasks.withType(Test).configureEach {
+        dependsOn ':generateKeystores'
     }
-    into layout.projectDirectory.dir('zaas-client/src/test/resources')
-    onlyIf {
-        file('keystore/localhost/localhost.keystore.p12').exists()
-    }
-}
 
-// Extract JWT public key from localhost keystore for common-service-core tests
-tasks.register('extractJwtPublicKey', Exec) {
-    group = 'build'
-    description = 'Extract JWT public key for common-service-core tests'
-    workingDir = rootProject.projectDir
-    commandLine 'bash', '-c', """
-        openssl pkcs12 -in keystore/localhost/localhost.keystore.p12 \\
-            -passin pass:password -nokeys 2>/dev/null \\
-            | openssl x509 -pubkey -noout 2>/dev/null \\
-            | openssl pkey -pubin -outform DER 2>/dev/null \\
-            | base64 -w0 > "common-service-core/src/test/resources/jwt-public-key.pub"
-    """
-    onlyIf {
-        file('keystore/localhost/localhost.keystore.p12').exists()
+    tasks.matching {
+        // bootRun     — runs a service locally
+        // jib*        — gradle/jib.gradle puts ../keystore in jib.extraDirectories.paths,
+        //               so the keystore is baked into the image
+        // build       — the documented entry point: after it the repo must be runnable,
+        //               including when tests are skipped (`build -x test`)
+        it.name in ['bootRun', 'jib', 'jibDockerBuild', 'jibBuildTar', 'build']
+    }.configureEach {
+        dependsOn ':generateKeystores'
     }
 }
-
-// Wire tasks into subproject build lifecycle
-project(':zaas-client') {
-    tasks.named('processTestResources') {
-        dependsOn rootProject.tasks.named('copyTestKeystores')
-    }
-}
-project(':common-service-core') {
-    tasks.named('processTestResources') {
-        dependsOn rootProject.tasks.named('extractJwtPublicKey')
+//
+// In CI the script does not run in downstream jobs, so those two fixtures travel in the
+// keystore artifact — see the Upload keystores step in integration-tests.yml.
+//
+// processTestResources does need them: common-service-core loads jwt-public-key.pub from
+// the classpath, so it must be on disk before the resources are copied into build/.
+['zaas-client', 'common-service-core'].each { name ->
+    project(":$name") {
+        tasks.named('processTestResources') {
+            dependsOn ':generateKeystores'
+        }
     }
 }
 

@@ -41,23 +41,44 @@ if [ -z "$KEYTOOL" ]; then
     exit 1
 fi
 
-# Use the keytool directory for the Java bin path (needed for openssl to find keystore provider sometimes)
-JAVA_BIN="$(dirname "$KEYTOOL")"
-export PATH="$JAVA_BIN:$PATH"
+# Resolve the Java bin directory. When keytool was found on PATH, dirname would yield "."
+# and prepending that to PATH would put the working directory on the search path.
+if [ "$KEYTOOL" = "keytool" ]; then
+    JAVA_BIN="$(dirname "$(command -v keytool)")"
+else
+    JAVA_BIN="$(dirname "$KEYTOOL")"
+    export PATH="$JAVA_BIN:$PATH"
+fi
 
 if ! command -v openssl &>/dev/null; then
     echo "ERROR: openssl not found. Please install openssl." >&2
     exit 1
 fi
 
-echo "Using keytool: $KEYTOOL ($(keytool -version 2>&1 || true))"
+# Report the JDK via `java -version`: keytool has no -version option and prints its
+# entire usage text when given one, which buries the rest of the build output.
+JAVA_VERSION=""
+if [ -x "$JAVA_BIN/java" ]; then
+    JAVA_VERSION="$("$JAVA_BIN/java" -version 2>&1 || true)"
+    JAVA_VERSION="${JAVA_VERSION%%$'\n'*}"
+fi
+echo "Using keytool: $KEYTOOL${JAVA_VERSION:+ ($JAVA_VERSION)}"
 echo "Using openssl: $(openssl version)"
 
-# Find Java cacerts for importing public CA certificates
-JAVA_CACERTS="${JAVA_HOME:+$JAVA_HOME/lib/security/cacerts}"
-if [ ! -f "$JAVA_CACERTS" ]; then
-    JAVA_CACERTS=$(find / -name "cacerts" -path "*/security/*" -not -path "/mnt/*" 2>/dev/null | head -1)
-fi
+# Find Java cacerts for importing public CA certificates. KEYTOOL is already resolved,
+# so derive the JDK root from it rather than scanning the filesystem.
+find_cacerts() {
+    local java_home="${JAVA_HOME:-$(cd "$JAVA_BIN/.." && pwd)}"
+    [ -z "$java_home" ] && return
+    for candidate in "$java_home/lib/security/cacerts" "$java_home/jre/lib/security/cacerts"; do
+        if [ -f "$candidate" ]; then
+            echo "$candidate"
+            return
+        fi
+    done
+}
+
+JAVA_CACERTS="$(find_cacerts)"
 if [ -n "$JAVA_CACERTS" ]; then
     echo "Found Java cacerts: $JAVA_CACERTS"
 else
@@ -71,6 +92,32 @@ KEYSTORE_DIR="$REPO_ROOT/keystore"
 # ── Passwords ──────────────────────────────────────────────────────────────
 PASSWORD="password"
 CA_PASSWORD="local_ca_password"
+
+# ── Shared helpers ─────────────────────────────────────────────────────────
+# Import only the public CA certificates needed for OIDC provider connections.
+# Importing all JDK cacerts (~150 certs) bloats the truststore and causes
+# startup timing regressions in CI.
+import_cacerts() {
+    local truststore="$1"
+    if [ -z "$JAVA_CACERTS" ] || [ ! -f "$JAVA_CACERTS" ]; then
+        echo "WARNING: Java cacerts not found; skipping public CA import into $truststore"
+        return
+    fi
+    echo "Importing required public CA certificates into $truststore"
+    local alias tmpcert
+    for alias in \
+        "cn_digicert_global_root_ca,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+        "cn_digicert_global_root_g2,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+        "cn_digicert_global_root_g3,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
+        "cn_isrg_root_x1,o_internet_security_research_group,c_us [jdk]"; do
+        tmpcert=$(mktemp)
+        keytool -exportcert -keystore "$JAVA_CACERTS" -storepass changeit \
+            -alias "$alias" -file "$tmpcert" 2>/dev/null && \
+        keytool -importcert -keystore "$truststore" \
+            -storepass "$PASSWORD" -alias "$alias" -file "$tmpcert" -noprompt 2>/dev/null
+        rm -f "$tmpcert"
+    done
+}
 
 # ── Clean up previous generated artifacts ──────────────────────────────────
 echo "=== Cleaning previously generated keystores ==="
@@ -146,13 +193,15 @@ generate_localhost_keystore() {
     local ca_cert="$5"     # CA certificate to trust
     local ca_key="$6"      # CA private key file
     local ca_pass="$7"     # CA keystore password
-    local extra_san="${8:-}" # Optional extra SAN entries
+    # SAN entries for the certificate. Override for certificates that must NOT
+    # match "localhost" — see the nonlocalhost keystore below.
+    local san_entries="${8:-DNS.1 = localhost
+DNS.2 = 127.0.0.1}"
 
     # Generate server key and CSR
     local san_config
-    if [ -n "$extra_san" ]; then
-        san_config=$(mktemp)
-        cat > "$san_config" << EOF
+    san_config=$(mktemp)
+    cat > "$san_config" << EOF
 [req]
 default_bits = 2048
 prompt = no
@@ -174,38 +223,8 @@ extendedKeyUsage = clientAuth, serverAuth
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1 = localhost
-DNS.2 = 127.0.0.1
-$extra_san
+$san_entries
 EOF
-    else
-        san_config=$(mktemp)
-        cat > "$san_config" << EOF
-[req]
-default_bits = 2048
-prompt = no
-default_md = sha256
-distinguished_name = dn
-req_extensions = v3_req
-
-[dn]
-C = CZ
-ST = Czechia
-L = Prague
-O = Broadcom Inc
-OU = IT
-CN = $cn
-
-[v3_req]
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment
-extendedKeyUsage = clientAuth, serverAuth
-subjectAltName = @alt_names
-
-[alt_names]
-DNS.1 = localhost
-DNS.2 = 127.0.0.1
-EOF
-    fi
 
     # Generate private key
     openssl genrsa -out "${cn}.key" 2048
@@ -264,10 +283,14 @@ keytool -import -alias localca -file "$KEYSTORE_DIR/local_ca/localca2.cer" \
     -keystore localhost2.truststore.p12 -storetype pkcs12 -storepass "$PASSWORD" -noprompt
 
 # --- nonlocalhost ---
+# Intentionally does NOT match "localhost". This keystore exists to prove that strict
+# hostname verification rejects a service whose certificate is for another host, so a
+# SAN entry for localhost here silently disables the tests that depend on it.
 generate_localhost_keystore \
-    "nonlocalhost" "nonlocalhost" \
+    "nonlocalhost.local" "nonlocalhost" \
     "nonlocalhost.keystore.p12" "does-not-matter.p12" \
-    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD"
+    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD" \
+    "DNS.1 = nonlocalhost.local"
 rm -f does-not-matter.p12
 
 # --- localhost-multi (uses different alias and CA alias) ---
@@ -279,27 +302,6 @@ generate_localhost_keystore \
 # Trusted CAs chain for NGINX proxy
 cat ../local_ca/localca.cer > trusted_CAs.cer
 
-# Import only the public CA certificates needed for OIDC provider connections
-# Importing all JDK cacerts (~150 certs) bloats the truststore and causes
-# startup timing regressions in CI
-import_cacerts() {
-    local truststore="$1"
-    if [ -n "$JAVA_CACERTS" ] && [ -f "$JAVA_CACERTS" ]; then
-        echo "Importing required public CA certificates into $truststore"
-        for alias in \
-            "cn_digicert_global_root_ca,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-            "cn_digicert_global_root_g2,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-            "cn_digicert_global_root_g3,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-            "cn_isrg_root_x1,o_internet_security_research_group,c_us [jdk]"; do
-            tmpcert="/tmp/cert-$(echo "$alias" | tr ' ,' '__' | tr '[' '_' | tr ']' '_').crt"
-            keytool -exportcert -keystore "$JAVA_CACERTS" -storepass changeit \
-                -alias "$alias" -file "$tmpcert" 2>/dev/null && \
-            keytool -importcert -keystore "$truststore" \
-                -storepass "$PASSWORD" -alias "$alias" -file "$tmpcert" -noprompt 2>/dev/null
-            rm -f "$tmpcert"
-        done
-    fi
-}
 for ts in localhost.truststore.p12 localhost2.truststore.p12 localhost-multi.truststore.p12; do
     if [ -f "$ts" ]; then
         import_cacerts "$ts"
@@ -498,26 +500,7 @@ keytool -import -alias "zowe development instances certificate authority" \
     -file local_ca.pem -keystore all-services.truststore.p12 \
     -storetype pkcs12 -storepass "$PASSWORD" -noprompt
 
-# Import only the public CA certificates needed for OIDC provider connections
-# Importing all JDK cacerts (~150 certs) bloats the truststore and causes
-# startup timing regressions in CI
-if [ -n "$JAVA_CACERTS" ] && [ -f "$JAVA_CACERTS" ]; then
-    echo "Importing required public CA certificates from $JAVA_CACERTS"
-    for alias in \
-        "cn_digicert_global_root_ca,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-        "cn_digicert_global_root_g2,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-        "cn_digicert_global_root_g3,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-        "cn_isrg_root_x1,o_internet_security_research_group,c_us [jdk]"; do
-        tmpcert="/tmp/cert-$(echo "$alias" | tr ' ,' '__' | tr '[' '_' | tr ']' '_').crt"
-        keytool -exportcert -keystore "$JAVA_CACERTS" -storepass changeit \
-            -alias "$alias" -file "$tmpcert" 2>/dev/null && \
-        keytool -importcert -keystore all-services.truststore.p12 \
-            -storepass "$PASSWORD" -alias "$alias" -file "$tmpcert" -noprompt 2>/dev/null
-        rm -f "$tmpcert"
-    done
-else
-    echo "WARNING: Could not find Java cacerts truststore. External TLS connections may fail."
-fi
+import_cacerts all-services.truststore.p12
 
 # Convenience exports
 cp all-services.crt all-services.keystore.cer
@@ -656,12 +639,47 @@ openssl pkcs12 -in "$KEYSTORE_DIR/localhost/localhost.keystore.p12" \
     -passin pass:"$PASSWORD" -nokeys 2>/dev/null \
     | openssl x509 -pubkey -noout 2>/dev/null \
     | openssl pkey -pubin -outform DER 2>/dev/null \
-    | base64 -w0 > "$REPO_ROOT/common-service-core/src/test/resources/jwt-public-key.pub"
+    | openssl base64 -A > "$REPO_ROOT/common-service-core/src/test/resources/jwt-public-key.pub"
+
+# ── 7. Sanity checks ───────────────────────────────────────────────────────
+# Assert the properties tests depend on, so a change to the generation logic fails
+# here instead of surfacing as an unrelated TLS test failure much later.
+echo ""
+echo "=== Verifying generated keystores ==="
+
+assert_san_absent() {
+    local ks="$1" host="$2"
+    if keytool -list -v -keystore "$ks" -storepass "$PASSWORD" 2>/dev/null \
+        | grep -q "DNSName: $host"; then
+        echo "ERROR: $ks must NOT carry a SAN entry for '$host'" >&2
+        exit 1
+    fi
+}
+
+assert_san_present() {
+    local ks="$1" host="$2"
+    if ! keytool -list -v -keystore "$ks" -storepass "$PASSWORD" 2>/dev/null \
+        | grep -q "DNSName: $host"; then
+        echo "ERROR: $ks is missing a SAN entry for '$host'" >&2
+        exit 1
+    fi
+}
+
+# Must not match localhost: backs the strict hostname verification tests
+assert_san_absent  "$KEYSTORE_DIR/localhost/nonlocalhost.keystore.p12"      localhost
+# Must match: normal service certificates
+assert_san_present "$KEYSTORE_DIR/localhost/localhost.keystore.p12"         localhost
+assert_san_present "$KEYSTORE_DIR/selfsigned/localhost.keystore.p12"        localhost
+assert_san_present "$KEYSTORE_DIR/docker/all-services.keystore.p12"         gateway-service
+assert_san_present "$KEYSTORE_DIR/docker/all-services.keystore.p12"         discovery-service
+
+echo "All checks passed."
 
 # ── Done ───────────────────────────────────────────────────────────────────
-# Fix permissions: OpenSSL creates .key files with 0600 which Docker containers
-# (like the OpenTelemetry collector used in the Register job) cannot read
-find "$KEYSTORE_DIR" -type f -name '*.key' -exec chmod 644 {} +
+# Fix permissions: OpenSSL creates .key files with 0600, which the OpenTelemetry
+# collector container (Register job) runs as a non-root user and cannot read.
+# Scope this to the one key that is actually mounted rather than every private key.
+chmod 644 "$KEYSTORE_DIR/localhost/localhost.keystore.key"
 
 echo ""
 echo "=== Keystore generation complete ==="
@@ -670,5 +688,5 @@ echo "Test resources copied to: zaas-client/src/test/resources/"
 echo ""
 echo "Generated keystores:"
 find "$KEYSTORE_DIR" -type f \( -name '*.p12' -o -name '*.cer' -o -name '*.key' -o -name '*.pem' \) | sort | while read -r f; do
-    echo "  $(realpath --relative-to="$REPO_ROOT" "$f")"
+    echo "  ${f#"$REPO_ROOT"/}"
 done

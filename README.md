@@ -113,6 +113,17 @@ To run integration tests, follow the instructions in [Integration Tests](integra
 
 ## Certificates
 
+Keystores are **not committed** to this repository. They are generated locally and are ignored by git.
+The Gradle build generates them automatically before running tests, but you can also generate them
+explicitly — do this after a fresh clone if you intend to run individual tests from an IDE:
+
+```shell
+./gradlew generateKeystores      # or: ./scripts/generate-keystores.sh
+```
+
+This also produces two generated test fixtures: `zaas-client/src/test/resources/localhost.*store.p12`
+and `common-service-core/src/test/resources/jwt-public-key.pub`.
+
 For more information about how the certificates between API ML services are set up for localhost, see [TLS Certificates for localhost](keystore/README.md).
 
 ## Contributor guidelines

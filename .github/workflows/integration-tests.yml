@@ -62,7 +62,11 @@ jobs:
                 uses: actions/upload-artifact@v4
                 with:
                     name: keystores-${{ env.JOB_ID }}
-                    path: keystore/**/*.p12
+                    path: |
+                        keystore/
+                        zaas-client/src/test/resources/localhost.keystore.p12
+                        zaas-client/src/test/resources/localhost.truststore.p12
+                        common-service-core/src/test/resources/jwt-public-key.pub
                     retention-days: 1
 
             -   uses: ./.github/actions/teardown
@@ -96,11 +100,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -175,11 +179,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -267,11 +271,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -395,11 +399,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -556,6 +560,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -663,6 +669,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -748,6 +756,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -862,6 +872,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -953,6 +965,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -1012,6 +1026,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -1086,6 +1102,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -1170,11 +1188,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -1226,11 +1244,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -1319,6 +1337,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -1396,6 +1416,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -1455,11 +1477,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -1499,6 +1521,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -1579,6 +1603,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -1722,6 +1748,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1818,11 +1846,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1947,6 +1975,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -2040,11 +2070,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -2212,6 +2242,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -2354,6 +2386,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -2492,6 +2526,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -2576,11 +2612,11 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Reload static API definitions
-                run: |
-                    sleep 10
-                    curl -sk -X POST https://apiml:10011/discovery/api/v1/staticApi || true
+                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -2689,6 +2725,8 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@v1
                 with:
@@ -2809,6 +2847,8 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@v1
                 with:
@@ -2900,6 +2940,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
@@ -2957,6 +2999,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    requireKeystores: 'true'
 
             -   name: Run Startup Check
                 if: always()
