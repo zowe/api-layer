@@ -20,7 +20,7 @@
   "homepage": ".",
   "dependencies": {
     "async": "3.2.6",
-    "js-yaml": "4.2.0",
+    "js-yaml": "4.3.0",
     "lodash": "4.18.1"
   },
   "overrides": {
@@ -55,7 +55,7 @@
     ]
   },
     "engines": {
-        "npm": ">=10.9.8 <11",
-        "node": ">=24.18.0 <25"
+        "npm": ">=10.9.9",
+        "node": ">=24.18.1"
     }
 }
