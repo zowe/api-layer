@@ -2,8 +2,9 @@ dependencyResolutionManagement {
     versionCatalogs {
         libs {
             // for node projects — keep in sync with .github/actions/setup/action.yml
-            version('projectNode', '24.18.0')
-            version('projectNpm', '10.9.8')     // keep in sync with .github/actions/setup/action.yml
+            // and with the engines of onboarding-enabler-nodejs/package.json
+            version('projectNode', '24.18.1')
+            version('projectNpm', '10.9.9')     // keep in sync with .github/actions/setup/action.yml
 
             version('springBoot', '3.5.16')
             version('springBootGraphQl', '3.5.16')

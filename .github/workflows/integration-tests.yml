@@ -67,7 +67,9 @@ jobs:
                         zaas-client/src/test/resources/localhost.keystore.p12
                         zaas-client/src/test/resources/localhost.truststore.p12
                         common-service-core/src/test/resources/jwt-public-key.pub
-                    retention-days: 1
+                    # Downstream jobs cannot regenerate these, so the artifact has to
+                    # outlive the run itself for "re-run failed jobs" to keep working.
+                    retention-days: 5
 
             -   uses: ./.github/actions/teardown
 
@@ -102,9 +104,6 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     requireKeystores: 'true'
-
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -181,9 +180,6 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     requireKeystores: 'true'
-
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -273,9 +269,6 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     requireKeystores: 'true'
-
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -401,9 +394,6 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     requireKeystores: 'true'
-
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -1191,9 +1181,6 @@ jobs:
                 with:
                     requireKeystores: 'true'
 
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
-
             -   name: Run Startup Check
                 if: always()
                 run: >
@@ -1246,9 +1233,6 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     requireKeystores: 'true'
-
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -1479,9 +1463,6 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     requireKeystores: 'true'
-
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()
@@ -1849,9 +1830,6 @@ jobs:
                 with:
                     requireKeystores: 'true'
 
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
-
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
                 run: |
@@ -2072,9 +2050,6 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     requireKeystores: 'true'
-
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -2614,9 +2589,6 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     requireKeystores: 'true'
-
-            -   name: Reload static API definitions
-                uses: ./.github/actions/reload-static-defs
 
             -   name: Run Startup Check
                 if: always()

@@ -21,7 +21,12 @@ runs:
                     else sudo apt-get update && sudo apt-get install -y openssl; fi
                 fi
             shell: bash
+        # Only the jobs that cannot generate their own keystores pull the artifact. Every
+        # other workflow using this action (docs, changelog, releases) has no such artifact
+        # to fetch, and an unconditional download would leave each of their jobs with a
+        # failed-but-ignored step.
         -   name: Download keystores
+            if: inputs.requireKeystores == 'true'
             uses: actions/download-artifact@v4
             with:
                 name: keystores-${{ env.JOB_ID }}
@@ -53,7 +58,7 @@ runs:
             uses: actions/setup-node@v4
             with:
                 node-version: '24.18.1'    # keep in sync with gradle/versions.gradle projectNode
-        -   run: npm install --ignore-scripts -g npm@10.9.8   # keep in sync with gradle/versions.gradle projectNpm
+        -   run: npm install --ignore-scripts -g npm@10.9.9   # keep in sync with gradle/versions.gradle projectNpm
             shell: bash
         -   name: Grant execute permission for gradlew
             run: chmod +x gradlew

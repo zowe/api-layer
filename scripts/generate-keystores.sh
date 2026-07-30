@@ -21,7 +21,7 @@ find_keytool() {
         return
     fi
     # Check sdkman Java 17
-    for sdk_java in "$HOME/.sdkman/candidates/java/"{17.*,21.*,current,current/bin}; do
+    for sdk_java in "$HOME/.sdkman/candidates/java/"{17.*,21.*,current}; do
         if [ -x "$sdk_java/bin/keytool" ]; then
             echo "$sdk_java/bin/keytool"
             return
@@ -86,37 +86,145 @@ else
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="$SCRIPT_DIR/$(basename "${BASH_SOURCE[0]}")"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 KEYSTORE_DIR="$REPO_ROOT/keystore"
+# Records which revision of this script produced the tree; see the Gradle task, which
+# regenerates when the checksum no longer matches the script it is about to run.
+STAMP_FILE="$KEYSTORE_DIR/generation.stamp"
 
 # ── Passwords ──────────────────────────────────────────────────────────────
 PASSWORD="password"
 CA_PASSWORD="local_ca_password"
 
 # ── Shared helpers ─────────────────────────────────────────────────────────
-# Import only the public CA certificates needed for OIDC provider connections.
-# Importing all JDK cacerts (~150 certs) bloats the truststore and causes
-# startup timing regressions in CI.
+# Generate a self-signed CA.
+#
+# The extensions come from a config file rather than from `-addext`, for portability:
+# LibreSSL (the openssl that ships with macOS) rejects `authorityKeyIdentifier=none`
+# outright, and OpenSSL 3 only auto-adds an authorityKeyIdentifier when no extension
+# section is supplied — so handing it a section is what keeps the AKI off the CA
+# certificate. A self-referential AKI on the root breaks `keytool -gencert` chains.
+generate_ca() {
+    local key_file="$1"    # private key to create
+    local out_pem="$2"     # certificate to create
+    local dn_block="$3"    # distinguished name, one "Field = value" per line
+
+    local ca_config
+    ca_config=$(mktemp)
+    cat > "$ca_config" << EOF
+[req]
+prompt = no
+default_md = sha256
+distinguished_name = dn
+x509_extensions = v3_ca
+
+[dn]
+$dn_block
+
+[v3_ca]
+basicConstraints = critical,CA:TRUE
+keyUsage = critical,keyCertSign,cRLSign
+subjectKeyIdentifier = hash
+EOF
+
+    openssl genrsa -out "$key_file" 2048
+    openssl req -x509 -new -nodes -key "$key_file" -sha256 -days 3650 \
+        -out "$out_pem" -config "$ca_config" -extensions v3_ca
+    rm -f "$ca_config"
+}
+
+# Public CA certificates that the generated truststores must trust: OIDC providers and
+# the other external endpoints the tests reach. Importing all JDK cacerts (~150 certs)
+# bloats the truststore and causes startup timing regressions in CI, so only these are
+# pulled in.
+#
+# Roots are looked up by subject, not by the JDK's alias: alias spelling differs between
+# JDK vendors and versions, so an alias list silently imports nothing on a JDK that names
+# them differently — leaving a truststore with no public roots and no error to show it.
+WANTED_PUBLIC_CAS=(
+    "DigiCert Global Root CA"
+    "DigiCert Global Root G2"
+    "DigiCert Global Root G3"
+    "ISRG Root X1"
+    "GTS Root R1"
+    "GTS Root R2"
+    "GTS Root R3"
+    "GTS Root R4"
+)
+
+# "<subject>\t<alias>" for every entry in the JDK truststore; built on first use.
+CACERTS_INDEX=""
+build_cacerts_index() {
+    [ -n "$CACERTS_INDEX" ] && return 0
+    CACERTS_INDEX="$(keytool -list -v -keystore "$JAVA_CACERTS" -storepass changeit 2>/dev/null | awk '
+        /^Alias name: / { alias = substr($0, 13) }
+        /^Owner: /      { print substr($0, 8) "\t" alias }')"
+}
+
+# Resolve a CA common name to its alias in the JDK truststore. Compares whole RDNs so
+# that "GTS Root R1" cannot match "GTS Root R11".
+cacerts_alias_for() {
+    printf '%s\n' "$CACERTS_INDEX" | awk -F'\t' -v want="CN=$1" '
+        {
+            n = split($1, rdns, ", ")
+            for (i = 1; i <= n; i++) if (rdns[i] == want) { print $2; exit }
+        }'
+}
+
 import_cacerts() {
     local truststore="$1"
     if [ -z "$JAVA_CACERTS" ] || [ ! -f "$JAVA_CACERTS" ]; then
         echo "WARNING: Java cacerts not found; skipping public CA import into $truststore"
         return
     fi
+    build_cacerts_index
     echo "Importing required public CA certificates into $truststore"
-    local alias tmpcert
-    for alias in \
-        "cn_digicert_global_root_ca,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-        "cn_digicert_global_root_g2,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-        "cn_digicert_global_root_g3,ou_wwwdigicertcom,o_digicert_inc,c_us [jdk]" \
-        "cn_isrg_root_x1,o_internet_security_research_group,c_us [jdk]"; do
+    local ca alias tmpcert imported=0
+    for ca in "${WANTED_PUBLIC_CAS[@]}"; do
+        alias="$(cacerts_alias_for "$ca")"
+        if [ -z "$alias" ]; then
+            echo "WARNING: '$ca' not found in $JAVA_CACERTS; TLS connections that rely on it will fail"
+            continue
+        fi
         tmpcert=$(mktemp)
-        keytool -exportcert -keystore "$JAVA_CACERTS" -storepass changeit \
-            -alias "$alias" -file "$tmpcert" 2>/dev/null && \
-        keytool -importcert -keystore "$truststore" \
-            -storepass "$PASSWORD" -alias "$alias" -file "$tmpcert" -noprompt 2>/dev/null
+        if keytool -exportcert -keystore "$JAVA_CACERTS" -storepass changeit \
+                -alias "$alias" -file "$tmpcert" 2>/dev/null &&
+           keytool -importcert -keystore "$truststore" -storetype pkcs12 \
+                -storepass "$PASSWORD" -alias "$ca" -file "$tmpcert" -noprompt 2>/dev/null; then
+            imported=$((imported + 1))
+        else
+            echo "WARNING: failed to import '$ca' (alias '$alias') into $truststore"
+        fi
         rm -f "$tmpcert"
     done
+    echo "  imported $imported of ${#WANTED_PUBLIC_CAS[@]} public CA certificates"
+}
+
+# Trust everything dropped into keystore/extra_ca. This is the supported way to restore
+# CAs that used to live inside the committed truststores and cannot be rebuilt from
+# public material — corporate/internal roots needed to reach an internal z/OSMF or OIDC
+# provider. Drop the PEM in and re-run; nothing internal is committed to the repository.
+import_extra_cas() {
+    local truststore="$1"
+    local extra_dir="$KEYSTORE_DIR/extra_ca"
+    # `return 0`, not a bare `return`: under `set -e` a bare one would propagate the
+    # failed test and abort the whole script when the directory is simply absent.
+    [ -d "$extra_dir" ] || return 0
+    local cert alias
+    for cert in "$extra_dir"/*.pem "$extra_dir"/*.cer "$extra_dir"/*.crt; do
+        [ -f "$cert" ] || continue
+        alias="extra_$(basename "${cert%.*}")"
+        echo "Importing extra CA $(basename "$cert") into $truststore"
+        keytool -importcert -keystore "$truststore" -storetype pkcs12 \
+            -storepass "$PASSWORD" -alias "$alias" -file "$cert" -noprompt
+    done
+}
+
+# Every truststore gets the same external trust material.
+finalize_truststore() {
+    import_cacerts "$1"
+    import_extra_cas "$1"
 }
 
 # ── Clean up previous generated artifacts ──────────────────────────────────
@@ -136,17 +244,16 @@ echo ""
 echo "=== Generating Local Certificate Authority ==="
 cd "$KEYSTORE_DIR/local_ca"
 
-# Generate CA private key
-openssl genrsa -out local_ca.key 2048
-
-# Generate self-signed CA certificate
-openssl req -x509 -new -nodes -key local_ca.key -sha256 -days 3650 \
-    -out local_ca.pem \
-    -subj "/C=CZ/ST=Prague/L=Prague/O=Zowe Sample/CN=Zowe Development Instances Certificate Authority" \
-    -addext "basicConstraints=critical,CA:TRUE" \
-    -addext "keyUsage=critical,keyCertSign,cRLSign" \
-    -addext "subjectKeyIdentifier=hash" \
-    -addext "authorityKeyIdentifier=none"
+# Generate the CA key and self-signed certificate. The distinguished name reproduces the
+# one the committed keystores carried: config/local/gateway-service.yml authorizes the
+# x509 registry by certificate common name, and docker/redis/run-redis.sh builds its own
+# CA with this exact DN.
+generate_ca local_ca.key local_ca.pem "C = CZ
+ST = Prague
+L = Prague
+O = Zowe Sample
+OU = API Mediation Layer
+CN = Zowe Development Instances Certificate Authority"
 
 # Create PKCS12 keystore for the CA
 openssl pkcs12 -export -out localca.keystore.p12 \
@@ -164,39 +271,45 @@ cp local_ca.pem localca.pem
 cp localca.cer "$KEYSTORE_DIR/localhost/localca.cer"
 cp localca.cer "$KEYSTORE_DIR/localhost/Zowe_Service_Zowe_Development_Instances_Certificate_Authority_.cer"
 
-# Generate a second CA for truststore mismatch tests (localhost2)
-# This CA is intentionally different from the main CA so that localhost2.truststore
-# does NOT trust certificates signed by the main local CA
+# Second, intentionally unrelated CA. It signs the whole localhost2 pair — keystore and
+# truststore — so that localhost2 is a self-consistent PKI that has nothing in common with
+# the main one. Both directions are load-bearing in TomcatHttpsTest:
+#   trustStoreWithDifferentCertificateAuthorityShouldFail — a client trusting only this CA
+#       must reject a server holding the main CA's certificate, and
+#   wrongClientCertificateShouldNotFailWhenClientAuthIsWant — the localhost2 certificate
+#       must be an untrusted client certificate as far as the main truststore is concerned.
+# Signing localhost2 with the main CA instead leaves the second test asserting nothing.
 echo ""
 echo "=== Generating Secondary Certificate Authority (for truststore mismatch tests) ==="
-openssl genrsa -out local_ca2.key 2048
-openssl req -x509 -new -nodes -key local_ca2.key -sha256 -days 3650 \
-    -out local_ca2.pem \
-    -subj "/C=CZ/ST=Prague/L=Prague/O=Zowe Sample/CN=Zowe Secondary Development CA" \
-    -addext "basicConstraints=critical,CA:TRUE" \
-    -addext "keyUsage=critical,keyCertSign,cRLSign" \
-    -addext "subjectKeyIdentifier=hash" \
-    -addext "authorityKeyIdentifier=none"
-openssl x509 -in local_ca2.pem -outform DER -out localca2.cer
-rm -f local_ca2.key local_ca2.pem
+generate_ca local_ca2.key localca2.pem "C = CZ
+ST = Prague
+L = Prague
+O = Zowe Sample
+OU = API Mediation Layer
+CN = Zowe Development Instances Certificate Authority 2"
+openssl x509 -in localca2.pem -outform DER -out localca2.cer
 
 # ── 2. Localhost keystores ─────────────────────────────────────────────────
 echo ""
 echo "=== Generating localhost keystores ==="
 cd "$KEYSTORE_DIR/localhost"
 
+# Default SAN block for a certificate that has to answer for the local machine.
+# 127.0.0.1 is listed as an IP entry, not a DNS one: a DNS name that happens to look like
+# an address is not what a hostname verifier consults when the URL holds an IP literal.
+LOCALHOST_SANS="DNS.1 = localhost
+DNS.2 = localhost.localdomain
+IP.1 = 127.0.0.1"
+
 generate_localhost_keystore() {
-    local cn="$1"          # Common Name for the certificate
-    local alias="$2"       # Alias in the keystore
-    local ks_name="$3"     # Output keystore filename
-    local ts_name="$4"     # Output truststore filename
-    local ca_cert="$5"     # CA certificate to trust
-    local ca_key="$6"      # CA private key file
-    local ca_pass="$7"     # CA keystore password
-    # SAN entries for the certificate. Override for certificates that must NOT
-    # match "localhost" — see the nonlocalhost keystore below.
-    local san_entries="${8:-DNS.1 = localhost
-DNS.2 = 127.0.0.1}"
+    local name="$1"        # base name for the intermediate files
+    local alias="$2"       # alias of the key entry in the keystore
+    local ks_name="$3"     # output keystore filename
+    local ts_name="$4"     # output truststore filename
+    local ca_cert="$5"     # CA certificate: signs the key entry, trusted by the truststore
+    local ca_key="$6"      # CA private key (unencrypted, next to the PEM)
+    local dn_block="$7"    # subject, one "Field = value" per line
+    local san_entries="$8" # SAN block; LOCALHOST_SANS for anything serving localhost
 
     # Generate server key and CSR
     local san_config
@@ -210,12 +323,7 @@ distinguished_name = dn
 req_extensions = v3_req
 
 [dn]
-C = CZ
-ST = Czechia
-L = Prague
-O = Broadcom Inc
-OU = IT
-CN = $cn
+$dn_block
 
 [v3_req]
 keyUsage = digitalSignature, nonRepudiation, keyEncipherment
@@ -227,15 +335,15 @@ $san_entries
 EOF
 
     # Generate private key
-    openssl genrsa -out "${cn}.key" 2048
+    openssl genrsa -out "${name}.key" 2048
 
     # Generate CSR
-    openssl req -new -key "${cn}.key" -out "${cn}.csr" -config "$san_config"
+    openssl req -new -key "${name}.key" -out "${name}.csr" -config "$san_config"
 
     # Sign with CA
-    openssl x509 -req -in "${cn}.csr" \
+    openssl x509 -req -in "${name}.csr" \
         -CA "$ca_cert" -CAkey "$ca_key" \
-        -out "${cn}.crt" -days 3650 -sha256 \
+        -out "${name}.crt" -days 3650 -sha256 \
         -extfile "$san_config" -extensions v3_req -CAcreateserial
 
     # Create truststore with CA cert
@@ -244,7 +352,7 @@ EOF
 
     # Create PKCS12 keystore with server cert + key
     openssl pkcs12 -export -out "$ks_name" \
-        -in "${cn}.crt" -inkey "${cn}.key" \
+        -in "${name}.crt" -inkey "${name}.key" \
         -name "$alias" -macalg SHA256 -passout "pass:$PASSWORD"
 
     # Import CA into keystore
@@ -252,14 +360,25 @@ EOF
         -file "$ca_cert" -noprompt -storepass "$PASSWORD" -storetype pkcs12
 
     # Clean up
-    rm -f "${cn}.key" "${cn}.csr" "${cn}.crt" "$san_config"
+    rm -f "${name}.key" "${name}.csr" "${name}.crt" "$san_config"
 }
+
+# Subject shared by the service certificates. CN=Zowe Service is what
+# config/local/gateway-service.yml lists in apiml.security.x509.registry.allowedUsers,
+# which is matched against the client certificate's common name.
+ZOWE_SERVICE_DN="C = CZ
+ST = Prague
+L = Prague
+O = Zowe Sample
+OU = API Mediation Layer
+CN = Zowe Service"
 
 # --- localhost standard ---
 generate_localhost_keystore \
     "localhost" "localhost" \
     "localhost.keystore.p12" "localhost.truststore.p12" \
-    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD"
+    "../local_ca/localca.pem" "../local_ca/local_ca.key" \
+    "$ZOWE_SERVICE_DN" "$LOCALHOST_SANS"
 
 # Export convenience files
 keytool -exportcert -keystore localhost.keystore.p12 -alias localhost \
@@ -270,17 +389,17 @@ openssl pkcs12 -in localhost.keystore.p12 -nocerts -nodes \
 openssl pkcs12 -in localhost.keystore.p12 -passin "pass:$PASSWORD" -nokeys 2>/dev/null \
     | openssl x509 -outform PEM -out localhost.keystore.cer 2>/dev/null || true
 
-# --- localhost2 ---
+# --- localhost2: signed by the secondary CA, and its truststore trusts only that CA ---
 generate_localhost_keystore \
     "localhost2" "localhost" \
     "localhost2.keystore.p12" "localhost2.truststore.p12" \
-    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD"
-
-# Overwrite localhost2 truststore with secondary CA (intentionally different from main CA)
-# so that trustStoreWithDifferentCertificateAuthorityShouldFail test works
-rm -f localhost2.truststore.p12
-keytool -import -alias localca -file "$KEYSTORE_DIR/local_ca/localca2.cer" \
-    -keystore localhost2.truststore.p12 -storetype pkcs12 -storepass "$PASSWORD" -noprompt
+    "../local_ca/localca2.pem" "../local_ca/local_ca2.key" \
+    "C = CZ
+ST = Prague
+L = Prague
+O = Zowe Sample
+OU = API Mediation Layer
+CN = Zowe Service 2" "$LOCALHOST_SANS"
 
 # --- nonlocalhost ---
 # Intentionally does NOT match "localhost". This keystore exists to prove that strict
@@ -289,23 +408,34 @@ keytool -import -alias localca -file "$KEYSTORE_DIR/local_ca/localca2.cer" \
 generate_localhost_keystore \
     "nonlocalhost.local" "nonlocalhost" \
     "nonlocalhost.keystore.p12" "does-not-matter.p12" \
-    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD" \
+    "../local_ca/localca.pem" "../local_ca/local_ca.key" \
+    "C = CZ
+ST = Czechia
+L = Prague
+O = Broadcom
+OU = MSD
+CN = nonlocalhost.local" \
     "DNS.1 = nonlocalhost.local"
 rm -f does-not-matter.p12
 
-# --- localhost-multi (uses different alias and CA alias) ---
+# --- localhost-multi ---
+# Serves the multi-instance local setup, where config/local-multi addresses the second
+# instance as https://localhost2:10021 — so the certificate has to answer for localhost2
+# and localhost3 as well, not just localhost.
 generate_localhost_keystore \
     "localhost-multi" "localhost-multi" \
     "localhost-multi.keystore.p12" "localhost-multi.truststore.p12" \
-    "../local_ca/localca.pem" "../local_ca/local_ca.key" "$CA_PASSWORD"
+    "../local_ca/localca.pem" "../local_ca/local_ca.key" \
+    "$ZOWE_SERVICE_DN" \
+    "$LOCALHOST_SANS
+DNS.3 = localhost2
+DNS.4 = localhost3"
 
 # Trusted CAs chain for NGINX proxy
 cat ../local_ca/localca.cer > trusted_CAs.cer
 
 for ts in localhost.truststore.p12 localhost2.truststore.p12 localhost-multi.truststore.p12; do
-    if [ -f "$ts" ]; then
-        import_cacerts "$ts"
-    fi
+    finalize_truststore "$ts"
 done
 
 # Import mockserver certificate for zaas-client tests
@@ -336,13 +466,9 @@ Gm5MBedhPkXrLWmwuoMJd7tzARRHHT6PBH/ZGw==
 -----END CERTIFICATE-----
 MOCKSERVER_CERT
 
-for ts in localhost.truststore.p12; do
-    if [ -f "$ts" ]; then
-        keytool -importcert -keystore "$ts" \
-            -storetype pkcs12 -storepass "$PASSWORD" \
-            -alias "www.mockserver.com" -file "$MOCKSERVER_TMP" -noprompt 2>/dev/null
-    fi
-done
+keytool -importcert -keystore localhost.truststore.p12 \
+    -storetype pkcs12 -storepass "$PASSWORD" \
+    -alias "www.mockserver.com" -file "$MOCKSERVER_TMP" -noprompt
 rm -f "$MOCKSERVER_TMP"
 
 # ── 3. Self-signed keystores ───────────────────────────────────────────────
@@ -351,48 +477,50 @@ echo "=== Generating self-signed keystores ==="
 cd "$KEYSTORE_DIR/selfsigned"
 
 generate_selfsigned_keystore() {
-    local cn="$1"
-    local alias="$2"
+    local name="$1"        # base name for the intermediate files
+    local alias="$2"       # alias of the key entry in the keystore
     local ks_name="$3"
     local ts_name="$4"
+    local subject="$5"     # subject in openssl -subj form
 
     # Generate self-signed cert (no CA)
-    openssl req -x509 -newkey rsa:2048 -nodes -keyout "${cn}.key" \
-        -out "${cn}.crt" -days 3650 -sha256 \
-        -subj "/C=CZ/ST=Czechia/L=Prague/O=Broadcom Inc/OU=IT/CN=$cn" \
-        -addext "subjectAltName=DNS:localhost,DNS:127.0.0.1" \
+    openssl req -x509 -newkey rsa:2048 -nodes -keyout "${name}.key" \
+        -out "${name}.crt" -days 3650 -sha256 \
+        -subj "$subject" \
+        -addext "subjectAltName=DNS:localhost,DNS:localhost.localdomain,IP:127.0.0.1" \
         -addext "keyUsage=digitalSignature,nonRepudiation,keyEncipherment" \
         -addext "extendedKeyUsage=clientAuth,serverAuth"
 
     # Create keystore
     openssl pkcs12 -export -out "$ks_name" \
-        -in "${cn}.crt" -inkey "${cn}.key" \
+        -in "${name}.crt" -inkey "${name}.key" \
         -name "$alias" -macalg SHA256 -passout "pass:$PASSWORD"
 
     # Create truststore with self-signed cert
-    keytool -import -alias localca -file "${cn}.crt" \
+    keytool -import -alias localca -file "${name}.crt" \
         -keystore "$ts_name" -storetype pkcs12 -storepass "$PASSWORD" -noprompt
 
-    rm -f "${cn}.key" "${cn}.crt"
+    rm -f "${name}.key" "${name}.crt"
 }
 
 # Standard self-signed
 generate_selfsigned_keystore "localhost" "localhost" \
-    "localhost.keystore.p12" "localhost.truststore.p12"
+    "localhost.keystore.p12" "localhost.truststore.p12" \
+    "/C=CZ/ST=Prague/L=Prague/O=Zowe Sample/OU=API Mediation Layer/CN=Zowe Service"
 
 # Untrusted self-signed (different CA, not trusted by any API ML service)
 generate_selfsigned_keystore "localhost-untrusted" "localhost" \
-    "localhost-untrusted.keystore.p12" "does-not-matter.p12"
+    "localhost-untrusted.keystore.p12" "does-not-matter.p12" \
+    "/C=CZ/ST=Brno/L=Brno/O=Zowe Sample/OU=API Mediation Layer/CN=Zowe Self-Signed Untrusted Service"
 rm -f does-not-matter.p12
 
 # Create an untrusted truststore from a different self-signed CA
-openssl req -x509 -newkey rsa:2048 -nodes -keyout untrusted_ca.key \
-    -out untrusted_ca.crt -days 3650 -sha256 \
-    -subj "/C=CZ/ST=Czechia/L=Prague/O=Untrusted/OU=IT/CN=Untrusted CA" \
-    -addext "basicConstraints=critical,CA:TRUE" \
-    -addext "keyUsage=critical,keyCertSign,cRLSign" \
-    -addext "subjectKeyIdentifier=hash" \
-    -addext "authorityKeyIdentifier=none"
+generate_ca untrusted_ca.key untrusted_ca.crt "C = CZ
+ST = Czechia
+L = Prague
+O = Untrusted
+OU = IT
+CN = Untrusted CA"
 keytool -import -alias localca -file untrusted_ca.crt \
     -keystore "localhost-untrusted.truststore.p12" \
     -storetype pkcs12 -storepass "$PASSWORD" -noprompt
@@ -485,22 +613,23 @@ openssl pkcs12 -export -out all-services.keystore.p12 \
 keytool -importcert -keystore all-services.keystore.p12 -alias "zowe development instances certificate authority" \
     -file local_ca.pem -noprompt -storepass "$PASSWORD" -storetype pkcs12
 
-# Create server-only.p12 (keystore without CA chain, used by Docker services)
+# server-only.p12 — the all-services certificate without the CA in its own chain,
+# used by the Docker services that present a leaf and let the truststore supply the CA.
 openssl pkcs12 -export -out server-only.p12 \
     -in all-services.crt -inkey all-services.key \
     -name localhost -macalg SHA256 \
     -passout "pass:$PASSWORD"
 
-# Import CA into server-only.p12 with two aliases (same as all-services)
+# The CA still goes in as a trusted entry, same alias as all-services.keystore.p12
 keytool -importcert -keystore server-only.p12 -alias "zowe development instances certificate authority" \
-    -file local_ca.pem -noprompt -storepass "$PASSWORD" -storetype PKCS12 2>/dev/null || true
+    -file local_ca.pem -noprompt -storepass "$PASSWORD" -storetype pkcs12
 
 # Create truststore
 keytool -import -alias "zowe development instances certificate authority" \
     -file local_ca.pem -keystore all-services.truststore.p12 \
     -storetype pkcs12 -storepass "$PASSWORD" -noprompt
 
-import_cacerts all-services.truststore.p12
+finalize_truststore all-services.truststore.p12
 
 # Convenience exports
 cp all-services.crt all-services.keystore.cer
@@ -509,10 +638,8 @@ cp all-services.crt all-services.cer
 cat all-services.key > all-services.pem
 cat all-services.crt >> all-services.pem
 
-# server-only.p12 — created after client-cert.p12 (see below)
-
-# client-cert.p12 — used by integration tests as the server keystore
-# Must contain a PrivateKeyEntry with the original subject DN matching test assertions
+# client-cert.p12 — used by integration tests as a client keystore. Its key entry keeps
+# the "CN=zowe component, O=OMP" subject that test assertions match on.
 echo ""
 echo "--- Generating client-cert keystore ---"
 
@@ -552,12 +679,8 @@ keytool -importcert -keystore client-cert.p12 \
     -alias "zowe development instances certificate authority" \
     -file local_ca.pem -noprompt -storepass "$PASSWORD" -storetype pkcs12
 
-# server-only.p12 — same as client-cert.p12 (used by mock-services)
-
 # Clean up
 rm -f client-cert.key client-cert.csr client-cert.crt client-cert-san.cnf
-
-# Clean up
 rm -f all-services.key all-services.csr all-services.crt all-services-chain.crt local_ca.key local_ca.pem "$san_config"
 
 # ── 5. Client certificates ─────────────────────────────────────────────────
@@ -566,13 +689,12 @@ echo "=== Generating client certificates ==="
 cd "$KEYSTORE_DIR/client_cert"
 
 # Generate APIML External CA
-openssl req -x509 -newkey rsa:2048 -nodes -keyout apiml_ca.key \
-    -out apiml_ca.crt -days 3650 -sha256 \
-    -subj "/C=CZ/ST=Czechia/L=Prague/O=OMF/OU=Zowe/CN=APIML CA" \
-    -addext "basicConstraints=critical,CA:TRUE" \
-    -addext "keyUsage=critical,keyCertSign,cRLSign" \
-    -addext "subjectKeyIdentifier=hash" \
-    -addext "authorityKeyIdentifier=none"
+generate_ca apiml_ca.key apiml_ca.crt "C = CZ
+ST = Czechia
+L = Prague
+O = OMF
+OU = Zowe
+CN = APIML CA"
 
 openssl pkcs12 -export -out ca/apiml_ca.p12 \
     -in apiml_ca.crt -inkey apiml_ca.key \
@@ -665,6 +787,24 @@ assert_san_present() {
     fi
 }
 
+assert_subject_cn() {
+    local ks="$1" cn="$2"
+    if ! keytool -list -v -keystore "$ks" -storepass "$PASSWORD" 2>/dev/null \
+        | grep -q "^Owner: CN=$cn,"; then
+        echo "ERROR: $ks is missing a certificate with common name '$cn'" >&2
+        exit 1
+    fi
+}
+
+assert_issuer_cn() {
+    local ks="$1" cn="$2"
+    if ! keytool -list -v -keystore "$ks" -storepass "$PASSWORD" 2>/dev/null \
+        | grep -q "^Issuer: CN=$cn,"; then
+        echo "ERROR: $ks must be signed by '$cn'" >&2
+        exit 1
+    fi
+}
+
 # Must not match localhost: backs the strict hostname verification tests
 assert_san_absent  "$KEYSTORE_DIR/localhost/nonlocalhost.keystore.p12"      localhost
 # Must match: normal service certificates
@@ -672,6 +812,15 @@ assert_san_present "$KEYSTORE_DIR/localhost/localhost.keystore.p12"         loca
 assert_san_present "$KEYSTORE_DIR/selfsigned/localhost.keystore.p12"        localhost
 assert_san_present "$KEYSTORE_DIR/docker/all-services.keystore.p12"         gateway-service
 assert_san_present "$KEYSTORE_DIR/docker/all-services.keystore.p12"         discovery-service
+# config/local-multi reaches the second instance as https://localhost2:10021
+assert_san_present "$KEYSTORE_DIR/localhost/localhost-multi.keystore.p12"   localhost2
+assert_san_present "$KEYSTORE_DIR/localhost/localhost-multi.keystore.p12"   localhost3
+# apiml.security.x509.registry.allowedUsers in config/local matches on this common name
+assert_subject_cn  "$KEYSTORE_DIR/localhost/localhost.keystore.p12"         "Zowe Service"
+# localhost2 belongs to the second CA — both TomcatHttpsTest cases that use it rely on it
+# being foreign to the main PKI
+assert_issuer_cn   "$KEYSTORE_DIR/localhost/localhost2.keystore.p12" \
+    "Zowe Development Instances Certificate Authority 2"
 
 echo "All checks passed."
 
@@ -680,6 +829,13 @@ echo "All checks passed."
 # collector container (Register job) runs as a non-root user and cannot read.
 # Scope this to the one key that is actually mounted rather than every private key.
 chmod 644 "$KEYSTORE_DIR/localhost/localhost.keystore.key"
+
+# Stamp the tree with the checksum of the script that produced it.
+if command -v sha256sum &>/dev/null; then
+    sha256sum "$SCRIPT_PATH" | cut -d' ' -f1 > "$STAMP_FILE"
+else
+    shasum -a 256 "$SCRIPT_PATH" | cut -d' ' -f1 > "$STAMP_FILE"
+fi
 
 echo ""
 echo "=== Keystore generation complete ==="

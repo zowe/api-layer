@@ -1,48 +1,71 @@
 # TLS Certificates for localhost
 
-This README describes how to generate certificates for default local configuration.
+TLS certificates are signed by a local certificate authority (CA) that is trusted by the
+HTTPS clients in integration tests. The root certificate of the local CA can also be
+imported to your browser.
 
-Such certificates can also be used for integration tests.
+**None of this material is committed to the repository.** It is generated locally and
+ignored by git.
 
-TLS certificates are signed by a local certificate authority (CA) that is created as part of steps outlined in this topic and trusted by HTTPS clients in integration tests.
+## Generating the key stores
 
-The root certificate of the local CA can also be imported to your browser.
+```shell
+./gradlew generateKeystores      # or: ./scripts/generate-keystores.sh
+```
 
-You can use the provided key store and trust store, or create your own version of the key stores and local CA.
+The Gradle build runs this automatically before anything that needs TLS material — tests,
+`bootRun`, `jib`, `build` — and skips it when the tree is already present and was produced
+by the current revision of the script. Run it explicitly after a fresh clone if you intend
+to run individual tests from an IDE. `openssl` and `keytool` must be on the `PATH`; on
+macOS the system LibreSSL works, as does Homebrew's OpenSSL.
 
-The last section of this README describes how to import and trust the local CA certificate on your system.
+Besides the tree described below, the script produces two generated test fixtures:
+`zaas-client/src/test/resources/localhost.*store.p12` and
+`common-service-core/src/test/resources/jwt-public-key.pub`.
+
+`keystore/generation.stamp` records which revision of the script produced the tree; delete
+it (or the key stores) to force regeneration.
+
+### Trusting additional certificate authorities
+
+Every generated trust store trusts the local CA plus a small set of public roots. To trust
+something else — a corporate root needed to reach an internal z/OSMF or OIDC provider —
+drop the certificate into `keystore/extra_ca/` as `.pem`, `.cer` or `.crt` and re-run the
+script. That directory is not cleaned between runs and nothing in it is committed.
 
 ## Key stores
 
-* `keystore/local/localhost.keystore.cer`
+* `keystore/localhost/localhost.keystore.cer`
   * convenience
   * contains the exported server certificate signed by the local CA and private key for the server
 
-* `keystore/local/localhost.keystore.key`
+* `keystore/localhost/localhost.keystore.key`
   * convenience
   * contains the exported private key
 
-* `keystore/local/localhost.pem`
+* `keystore/localhost/localhost.pem`
   * convenience
   * contains the exported server certificate in PEM format for use with http clients
 
-* `keystore/local/localhost.keystore.p12`
+* `keystore/localhost/localhost.keystore.p12`
   * password: `password`
   * used for the HTTPS server(s)
   * contains the server certificate signed by the local CA and private key for the server
 
-* `keystore/local/localhost.truststore.p12`
+* `keystore/localhost/localhost.truststore.p12`
   * password: `password`
   * used for HTTPS clients (e.g. integration tests, services using the gateway)
   * contains the root certificate of the local CA (not the server certificate)
 
-* `keystore/local/localhost2.keystore.p12`
+* `keystore/localhost/localhost2.keystore.p12`
   * password: `password`
-  * used for tests only, please refer to the particular tests for detils
+  * used for tests only — signed by a second, unrelated CA, so that it is *not* trusted
+    by `localhost.truststore.p12`
 
-* `keystore/local/localhost2.truststore.p12`
+* `keystore/localhost/localhost2.truststore.p12`
   * password: `password`
-  * used for tests only, please refer to the particular tests for detils
+  * used for tests only — trusts only the second CA, so it does *not* trust
+    `localhost.keystore.p12`
 
 ### Local CA
 
@@ -75,6 +98,10 @@ The following files are used by the NGINX proxy to simulate AT_TLS on the CI ser
 * `keystore/localhost/trusted_CAs.cer`
 
 ## Generate your own certificates for localhost
+
+The steps below are a reference for building a certificate by hand — for example one with
+a subject or SAN set that the generator does not produce. They are not needed for the
+normal workflow; `./gradlew generateKeystores` covers that.
 
 ### (Optional)Generate certificate authority
 
