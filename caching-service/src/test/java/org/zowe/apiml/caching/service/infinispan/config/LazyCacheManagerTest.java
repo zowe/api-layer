@@ -20,6 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mockStatic;
 
 class LazyCacheManagerTest {
 
@@ -80,6 +83,30 @@ class LazyCacheManagerTest {
         }
 
         @Test
+        void whenGlobalStateFilesExist_thenOnlyThoseAreBackedUp() throws IOException {
+            Files.createFile(rootDir.resolve("___global.state"));
+            Files.createFile(rootDir.resolve("___global.lck"));
+            var cacheDataDir = Files.createDirectories(rootDir.resolve("zoweCache").resolve("data"));
+            var cacheEntry = Files.createFile(cacheDataDir.resolve("some.dat"));
+
+            LazyCacheManager.CacheInitializer.resetCorruptedGlobalState(rootDir);
+
+            assertFalse(Files.exists(rootDir.resolve("___global.state")));
+            assertFalse(Files.exists(rootDir.resolve("___global.lck")));
+
+            try (var stream = Files.list(rootDir)) {
+                long backupCount = stream
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .filter(name -> name.startsWith("___global.state-corrupt-") || name.startsWith("___global.lck-corrupt-"))
+                    .count();
+                assertEquals(2, backupCount, "Expected exactly 2 backup files to be created");
+            }
+
+            assertTrue(Files.exists(cacheEntry));
+        }
+
+        @Test
         void whenRootDirDoesNotExist_thenDoesNotThrow() {
             var missingDir = rootDir.resolve("does-not-exist");
 
@@ -93,6 +120,23 @@ class LazyCacheManagerTest {
             LazyCacheManager.CacheInitializer.resetCorruptedGlobalState(rootDir);
 
             assertTrue(Files.exists(unrelated));
+        }
+
+        @Test
+        void whenFilesMoveFails_thenThrowsIllegalStateException() throws IOException {
+            Files.createFile(rootDir.resolve("___global.state"));
+
+            try (var filesMock = mockStatic(Files.class, CALLS_REAL_METHODS)) {
+                filesMock.when(() -> Files.move(any(Path.class), any(Path.class)))
+                    .thenThrow(new IOException("simulated move failure"));
+
+                IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                    LazyCacheManager.CacheInitializer.resetCorruptedGlobalState(rootDir)
+                );
+
+                assertEquals("Cannot start cache", ex.getMessage());
+                assertInstanceOf(IOException.class, ex.getCause());
+            }
         }
     }
 }

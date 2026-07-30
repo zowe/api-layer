@@ -336,6 +336,7 @@ public class LazyCacheManager extends DefaultCacheManager {
                     log.info("Backed up corrupted Infinispan global state file {} to {}", path, backupPath);
                 } catch (IOException e) {
                     log.error("Failed to back up corrupted global state file {}", path, e);
+                    throw new IllegalStateException("Cannot start cache", e);
                 }
             }
         }
