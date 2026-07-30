@@ -12,6 +12,7 @@ package org.zowe.apiml.caching.service.infinispan.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.commons.compiler.util.Producer;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheConfigurationException;
@@ -23,10 +24,7 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.health.Health;
 import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.manager.CacheContainer;
-import org.infinispan.manager.CacheManagerInfo;
-import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.manager.*;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.stats.CacheContainerStats;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -34,6 +32,9 @@ import org.springframework.context.event.EventListener;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,6 +42,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
@@ -267,6 +269,11 @@ public class LazyCacheManager extends DefaultCacheManager {
 
         private final Phaser threadCounter = new Phaser();
 
+        // avoids retrying the global-state reset forever if it doesn't fix the underlying issue
+        private final AtomicBoolean globalStateRecoveryAttempted = new AtomicBoolean(false);
+
+        private static final List<String> GLOBAL_STATE_FILE_NAMES = List.of("___global.state", "___global.lck");
+
         private DefaultCacheManager startDefaultCacheManager() {
             var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
             try {
@@ -279,7 +286,58 @@ public class LazyCacheManager extends DefaultCacheManager {
                 } catch (RuntimeException reStop) {
                     log.debug("Cannot stop failing caching manager", reStop);
                 }
+                if (isGlobalStateCorruption(reStart) && globalStateRecoveryAttempted.compareAndSet(false, true)) {
+                    log.warn(
+                        "Persistent global state under {} looks corrupted, most likely left behind by a process " +
+                            "that was killed before it could stop cleanly (e.g. an abrupt system IPL); removing " +
+                            "it and retrying cache manager startup once", InfinispanConfig.getRootFolder()
+                    );
+                    resetCorruptedGlobalState(Paths.get(InfinispanConfig.getRootFolder()));
+                    return startDefaultCacheManager();
+                }
                 throw reStart;
+            }
+        }
+
+        /**
+         * ISPN000516 means Infinispan deliberately refused to start rather than risk further corrupting a
+         * partially-written global state file. There is no way to repair the file, so the only way forward
+         * is to discard it and let Infinispan recreate it; per-cache persisted data lives in separate
+         * subdirectories and is left untouched.
+         */
+        static boolean isGlobalStateCorruption(Throwable t) {
+            int idx = ExceptionUtils.indexOfType(t, EmbeddedCacheManagerStartupException.class);
+            if (idx == -1) {
+                return false;
+            }
+            var startupException = ExceptionUtils.getThrowables(t)[idx];
+            return startupException.getMessage() != null && startupException.getMessage().contains("ISPN000516");
+        }
+
+        /**
+         * The global state lives as two flat files directly under the root ("___global.state" and
+         * "___global.lck"), structurally separate from each cache's own subdirectory ("&lt;root&gt;/&lt;cacheName&gt;/..").
+         * Moving only those two files aside discards the corrupted state - so Infinispan
+         * recreates it fresh - without touching any cache's persisted data, and keeps a backup of the corrupted files.
+         */
+        static void resetCorruptedGlobalState(Path rootDir) {
+            if (!Files.isDirectory(rootDir)) {
+                return;
+            }
+            long timestamp = System.currentTimeMillis();
+            for (String fileName : GLOBAL_STATE_FILE_NAMES) {
+                var path = rootDir.resolve(fileName);
+                if (!Files.exists(path)) {
+                    continue;
+                }
+                try {
+                    var backupPath = rootDir.resolve(fileName + "-corrupt-" + timestamp);
+                    Files.move(path, backupPath);
+                    log.info("Backed up corrupted Infinispan global state file {} to {}", path, backupPath);
+                } catch (IOException e) {
+                    log.error("Failed to back up corrupted global state file {}", path, e);
+                    throw new IllegalStateException("Cannot start cache", e);
+                }
             }
         }
 
