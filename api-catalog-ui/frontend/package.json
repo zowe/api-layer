@@ -164,7 +164,7 @@
         "immutable": "4.3.9"
     },
     "engines": {
-        "npm": "=10.9.8",
+        "npm": "=10.9.9",
         "node": "=20.20.2"
     },
     "browserslist": [
