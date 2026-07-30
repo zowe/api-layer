@@ -70,7 +70,7 @@ class AttlsConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({"attlsServer", "attlsClient"})
+    @ActiveProfiles({"test", "attlsServer", "attlsClient"})
     @TestPropertySource(
         properties = {
             "server.internal.enabled=false"
@@ -150,7 +150,7 @@ class AttlsConfigTest {
             "apiml.security.auth.provider=zosmf" // zosmf is the only authentication provider supported in this scenario
         }
     )
-    @ActiveProfiles({"attlsServer", "attlsClient"})
+    @ActiveProfiles({"test", "attlsServer", "attlsClient"})
     @TestInstance(Lifecycle.PER_CLASS)
     @DirtiesContext
     @SpringBootTest(
@@ -203,7 +203,7 @@ class AttlsConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({"attlsServer", "attlsClient"})
+    @ActiveProfiles({"test", "attlsServer", "attlsClient"})
     @TestInstance(Lifecycle.PER_CLASS)
     class WhenCorsEnabledService extends AcceptanceTestWithTwoServices {
 

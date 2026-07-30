@@ -46,7 +46,7 @@ import static org.mockito.Mockito.verify;
     classes = { WebSocketClientFactory.class }
 )
 @MockBean(SslContextFactory.Client.class)
-@ActiveProfiles("WebSocketClientFactoryContextTest")
+@ActiveProfiles({"test", "WebSocketClientFactoryContextTest"})
 @DirtiesContext
 class WebSocketClientFactoryContextTest {
 

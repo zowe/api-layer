@@ -10,27 +10,26 @@
 
 package org.zowe.apiml.client.api;
 
-import org.zowe.apiml.client.configuration.ApplicationConfiguration;
-import org.zowe.apiml.client.configuration.SecurityConfiguration;
-import org.zowe.apiml.client.configuration.SpringComponentsConfiguration;
-import org.zowe.apiml.client.model.RedirectLocation;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.zowe.apiml.client.configuration.ApplicationConfiguration;
+import org.zowe.apiml.client.configuration.SecurityConfiguration;
+import org.zowe.apiml.client.configuration.SpringComponentsConfiguration;
+import org.zowe.apiml.client.model.RedirectLocation;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(SpringExtension.class)
 @WebMvcTest(controllers = {PageRedirectionController.class})
 @Import(value = {SecurityConfiguration.class, SpringComponentsConfiguration.class, ApplicationConfiguration.class})
+@ActiveProfiles("test")
 class PageRedirectionControllerTest {
     private final ObjectMapper mapper = new ObjectMapper();
     @Autowired

@@ -53,7 +53,7 @@ class AttlsConfigTest {
         classes = CachingService.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
-    @ActiveProfiles({"AttlsConfigTestCachingService", "attlsServer", "attlsClient"})
+    @ActiveProfiles({"test", "AttlsConfigTestCachingService", "attlsServer", "attlsClient"})
     @TestPropertySource(
         properties = {
             "caching.storage.mode=inMemory"
@@ -128,7 +128,7 @@ class AttlsConfigTest {
             "apiml.service.discoveryServiceUrls=http://localhost:10011/eureka/" // Caching-service loads onboarding-enabler, which validates SSL configuration for Eureka client if it starts in https
         }
     )
-    @ActiveProfiles({"attlsServer", "attlsClient"})
+    @ActiveProfiles({"test", "attlsServer", "attlsClient"})
     @SpringBootTest(
         classes = CachingService.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT

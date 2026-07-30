@@ -46,7 +46,7 @@ import static org.mockito.Mockito.*;
 class AttlsConfigTest {
 
     @Nested
-    @ActiveProfiles({"AttlsConfigTestCatalog", "attlsServer", "attlsClient"})
+    @ActiveProfiles({"test", "AttlsConfigTestCatalog", "attlsServer", "attlsClient"})
     class GivenAttlsModeEnabled extends ApiCatalogFunctionalTest {
 
         @Mock

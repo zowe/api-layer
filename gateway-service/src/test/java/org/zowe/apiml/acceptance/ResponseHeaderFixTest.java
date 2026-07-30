@@ -36,7 +36,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
     },
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@ActiveProfiles("ResponseHeaderFixTest")
+@ActiveProfiles({"test", "ResponseHeaderFixTest"})
 @DirtiesContext
 class ResponseHeaderFixTest {
 

@@ -14,15 +14,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.cloudgatewayservice.service.CertificateChainService;
 
 import static org.mockito.Mockito.*;
 
-@WebFluxTest(controllers = CertificatesRestController.class, excludeAutoConfiguration = {ReactiveSecurityAutoConfiguration.class})
+@WebFluxTest(
+    controllers = CertificatesRestController.class,
+    excludeAutoConfiguration = {
+        ReactiveSecurityAutoConfiguration.class,
+        ReactiveOAuth2ClientAutoConfiguration.class
+    }
+)
+@ActiveProfiles("test")
 class CertificatesRestControllerTest {
     private static final String NO_CERTIFICATES = "";
 

@@ -26,6 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -48,10 +49,9 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 @TestPropertySource(locations = "/application.yml")
 @ContextConfiguration(initializers = ConfigDataApplicationContextInitializer.class, classes = InstanceServicesContextConfiguration.class)
+@ActiveProfiles("test")
 class InstanceRetrievalServiceTest {
 
-    private static final String APPS_ENDPOINT = "apps/";
-    private static final String DELTA_ENDPOINT = "delta";
     private static final String UNKNOWN = "unknown";
 
     private InstanceRetrievalService instanceRetrievalService;
@@ -65,8 +65,6 @@ class InstanceRetrievalServiceTest {
     private CloseableHttpResponse response;
     private StatusLine responseStatusLine;
     private BasicHttpEntity responseEntity;
-    private String discoveryServiceAllAppsUrl;
-    private String[] discoveryServiceList;
 
     @BeforeEach
     void setup() throws IOException {
@@ -79,8 +77,6 @@ class InstanceRetrievalServiceTest {
         when(response.getEntity()).thenReturn(responseEntity);
         when(httpClient.execute(any())).thenReturn(response);
         instanceRetrievalService = new InstanceRetrievalService(discoveryConfigProperties, httpClient);
-        discoveryServiceList = discoveryConfigProperties.getLocations();
-        discoveryServiceAllAppsUrl = discoveryServiceList[0] + APPS_ENDPOINT;
     }
 
     @Test

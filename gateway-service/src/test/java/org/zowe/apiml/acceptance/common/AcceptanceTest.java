@@ -15,6 +15,7 @@ import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
 import org.zowe.apiml.acceptance.config.DiscoveryClientTestConfig;
 import org.zowe.apiml.acceptance.config.GatewayOverrideConfig;
@@ -37,5 +38,6 @@ import java.lang.annotation.Target;
 )
 @DirtiesContext
 @Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
+@ActiveProfiles("test")
 public @interface AcceptanceTest {
 }
