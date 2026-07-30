@@ -13,7 +13,6 @@ package org.zowe.apiml.caching.service.infinispan.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.codehaus.commons.compiler.util.Producer;
 import org.infinispan.Cache;
 import org.infinispan.commons.CacheConfigurationException;
@@ -26,10 +25,8 @@ import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.health.Health;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.*;
-import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.stats.CacheContainerStats;
-import org.infinispan.tools.store.migrator.StoreMigrator;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 
@@ -40,9 +37,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.Phaser;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -270,16 +269,10 @@ public class LazyCacheManager extends DefaultCacheManager {
 
         private final Phaser threadCounter = new Phaser();
 
-        // avoids retrying migration forever if it doesn't fix the underlying issue
-        private final Set<String> migrationAttempted = ConcurrentHashMap.newKeySet();
-
         // avoids retrying the global-state reset forever if it doesn't fix the underlying issue
         private final AtomicBoolean globalStateRecoveryAttempted = new AtomicBoolean(false);
 
         private static final List<String> GLOBAL_STATE_FILE_NAMES = List.of("___global.state", "___global.lck");
-
-        // Infinispan's Soft Index File Store on-disk format is unchanged from version 12.
-        private static final String LEGACY_STORE_FORMAT_VERSION = "12";
 
         private DefaultCacheManager startDefaultCacheManager() {
             var defaultCacheManager = new DefaultCacheManager(cacheManagerConfig, false);
@@ -420,70 +413,6 @@ public class LazyCacheManager extends DefaultCacheManager {
             }
         }
 
-        /**
-         * Migrates the on-disk Soft Index File Store of a cache that failed to start, most likely because it
-         * was written by an older, incompatible Infinispan version. Source and target both live under the
-         * cache's own persistent folder so the swap below can put the migrated store back in the exact
-         * location the cache configuration expects.
-         */
-        private static void migrateLegacyStore(String cacheName) {
-            var cacheDir = Paths.get(InfinispanConfig.getRootFolder(), cacheName);
-            var migratedDir = Paths.get(InfinispanConfig.getRootFolder(), cacheName + "-migrated");
-            var legacyBackupDir = Paths.get(InfinispanConfig.getRootFolder(), cacheName + "-legacy");
-
-            log.info("Attempting migration of legacy store for cache {} at {}", cacheName, cacheDir);
-            try {
-                new StoreMigrator(migrationProperties(cacheName, cacheDir, migratedDir)).run();
-
-                // clear any leftover backup, otherwise the move below fails (target already exists)
-                FileUtils.deleteDirectory(legacyBackupDir.toFile());
-                Files.move(cacheDir, legacyBackupDir);
-                Files.move(migratedDir, cacheDir);
-                log.info("Migration of legacy store for cache {} is completed.", cacheName);
-            } catch (Exception e) {
-                log.error(
-                    "Migration failed for cache {}. The source Soft Index File Store could not be fully read " +
-                        "or the migrated store could not be put back in place. The store may be incomplete or " +
-                        "inconsistent; the original store at {} was left untouched.",
-                    cacheName, cacheDir, e
-                );
-            } finally {
-                try {
-                    // clear any leftover migrated dir
-                    FileUtils.deleteDirectory(migratedDir.toFile());
-                } catch (IOException e) {
-                    log.warn("Failed to clean up temporary migration directory {}", migratedDir, e);
-                }
-            }
-        }
-
-        static Properties migrationProperties(String cacheName, Path sourceDir, Path targetDir) {
-            var properties = new Properties();
-
-            properties.setProperty("source.type", "SOFT_INDEX_FILE_STORE");
-            properties.setProperty("source.cache_name", cacheName);
-            properties.setProperty("source.location", sourceDir.resolve("data").toString());
-            properties.setProperty("source.index_location", sourceDir.resolve("index").toString());
-            properties.setProperty("source.version", LEGACY_STORE_FORMAT_VERSION);
-
-            properties.setProperty("target.type", "SOFT_INDEX_FILE_STORE");
-            properties.setProperty("target.cache_name", cacheName);
-            properties.setProperty("target.location", targetDir.resolve("data").toString());
-            properties.setProperty("target.index_location", targetDir.resolve("index").toString());
-
-            return properties;
-        }
-
-        /**
-         * A failed store start is only worth retrying after a migration when the root cause is a
-         * {@link PersistenceException} - the signature of a Soft Index File Store written by an older,
-         * incompatible marshaller (e.g. "Found an invalid protobuf tag..."). Any other cause (bad config,
-         * permissions, etc.) would not be fixed by migrating the store, so it's not worth attempting.
-         */
-        static boolean isLegacyStoreFailure(Throwable t) {
-            return ExceptionUtils.indexOfType(t, PersistenceException.class) != -1;
-        }
-
         private boolean createCache(String cacheName, ConfigurationBuilder cacheBuilder) {
             var cacheConfig = cacheBuilder.build();
             log.debug("Initializing cache {} with config {}", cacheName, cacheConfig);
@@ -493,17 +422,6 @@ public class LazyCacheManager extends DefaultCacheManager {
                     .getOrCreateCache(cacheName, cacheConfig);
                 return true;
             } catch (CacheConfigurationException cce) {
-                // check the real cause first: migrationAttempted.add() has a side effect (marks the cache as
-                // attempted), so it must only run when the failure is actually worth migrating for - otherwise
-                // an unrelated error would burn the one-shot retry and a real legacy-store failure later
-                // wouldn't get a chance to be fixed
-                if (isLegacyStoreFailure(cce) && migrationAttempted.add(cacheName)) {
-                    log.warn("Cache {} failed to start due to an incompatible on-disk store, retrying once after migration", cacheName, cce);
-                    migrateLegacyStore(cacheName);
-                    // recurse once: migrationAttempted already contains cacheName, so a second failure falls
-                    // through to the existing fallback below instead of looping
-                    return createCache(cacheName, cacheBuilder);
-                }
                 log.warn("Error during initialization of cache {}", cacheName, cce);
                 try {
                     underInit.defineConfiguration(cacheName, cacheConfig);
