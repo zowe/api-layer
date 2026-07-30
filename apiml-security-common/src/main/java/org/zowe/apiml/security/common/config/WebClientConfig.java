@@ -101,6 +101,7 @@ public class WebClientConfig {
 
     @Bean
     WebClient webClientClientCert(HttpClient httpClient) {
+        httpClient = httpClient.followRedirect(true);
         boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isClientAttlsEnabled;
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, !isKeyLoadPrevented)))
