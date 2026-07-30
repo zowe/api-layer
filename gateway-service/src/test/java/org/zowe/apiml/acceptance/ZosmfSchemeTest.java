@@ -47,12 +47,12 @@ import static org.mockito.Mockito.*;
 @AcceptanceTest
 @TestPropertySource(properties = {
     "apiml.security.auth.provider=zosmf",
-    "spring.profiles.active=debug",
     "apiml.security.x509.enabled=true",
     "apiml.security.x509.externalMapperUrl="
 })
-@ActiveProfiles("ZosmfSchemeTest")
+@ActiveProfiles({"test", "ZosmfSchemeTest", "debug"})
 class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
+
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;
     @Value("${server.ssl.keyStore}")
@@ -63,7 +63,6 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
 
     @Autowired
     public ZosmfService zosmfService;
-
 
     @Nested
     class GivenClientCertificate {
@@ -194,6 +193,9 @@ class ZosmfSchemeTest extends AcceptanceTestWithTwoServices {
                     .statusCode(is(HttpStatus.SC_OK));
                 assertNoTransformation();
             }
+
         }
+
     }
+
 }

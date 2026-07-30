@@ -27,6 +27,7 @@ import org.springframework.boot.web.server.Ssl;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.util.CorsUtils;
@@ -41,6 +42,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @ComponentScan(basePackages = "org.zowe.apiml.cloudgatewayservice")
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 class ConnectionsConfigTest {
 
     @Autowired
@@ -125,6 +127,7 @@ class ConnectionsConfigTest {
     @SpringBootTest(
         properties = {"apiml.service.corsEnabled=true"}
     )
+    @ActiveProfiles("test")
     class GivenCorsEnabled {
 
         @Nested

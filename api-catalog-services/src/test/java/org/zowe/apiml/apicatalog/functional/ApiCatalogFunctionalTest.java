@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.zowe.apiml.apicatalog.ApiCatalogApplication;
 
@@ -23,6 +24,7 @@ import org.zowe.apiml.apicatalog.ApiCatalogApplication;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @ContextConfiguration
+@ActiveProfiles("test")
 public abstract class ApiCatalogFunctionalTest {
 
     @LocalServerPort
