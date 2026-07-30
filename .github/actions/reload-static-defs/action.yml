@@ -1,0 +1,31 @@
+name: "Reload static API definitions"
+description: "Asks Discovery to reload static API definitions, polling until it accepts the request"
+
+inputs:
+    url:
+        description: "staticApi endpoint of the Discovery service"
+        required: false
+        default: "https://apiml:10011/discovery/api/v1/staticApi"
+    attempts:
+        description: "How many times to try before giving up"
+        required: false
+        default: "30"
+    intervalSeconds:
+        description: "Delay between attempts"
+        required: false
+        default: "2"
+
+runs:
+    using: "composite"
+    steps:
+        -   shell: bash
+            run: |
+                for i in $(seq 1 "${{ inputs.attempts }}"); do
+                    if curl -sfk -X POST "${{ inputs.url }}"; then
+                        echo "Static API definitions reloaded (attempt $i)."
+                        exit 0
+                    fi
+                    sleep "${{ inputs.intervalSeconds }}"
+                done
+                echo "::error::Discovery did not accept the staticApi reload at ${{ inputs.url }}"
+                exit 1
