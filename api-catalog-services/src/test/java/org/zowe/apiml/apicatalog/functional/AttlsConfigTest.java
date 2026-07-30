@@ -51,7 +51,7 @@ class AttlsConfigTest {
 
     @Nested
     @DirtiesContext
-    @ActiveProfiles({"AttlsConfigTestCatalog", "attlsServer", "attlsClient"})
+    @ActiveProfiles({"test", "AttlsConfigTestCatalog", "attlsServer", "attlsClient"})
     class GivenAttlsModeEnabled extends ApiCatalogFunctionalTest {
 
         @Mock
@@ -105,7 +105,7 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles({ "attlsServer", "attlsClient", "debug" })
+    @ActiveProfiles({ "test", "attlsServer", "attlsClient", "debug" })
     @DirtiesContext
     @SpringBootTest(
         classes = ApiCatalogApplication.class,

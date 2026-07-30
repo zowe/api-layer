@@ -1,0 +1,38 @@
+apiml:
+    discovery:
+        allPeersUrls: http://${apiml.service.hostname}:${apiml.service.port}/eureka/
+    service:
+        id: discovery
+        hostname: localhost
+        port: 20011
+        ipAddress: 127.0.0.1
+    security:
+        allowedDomains: localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com
+
+spring:
+    config:
+        useLegacyProcessing: true
+
+management:
+    endpoint:
+        health:
+            status:
+                order: "DOWN,PARTIAL,UP"
+                http-mapping:
+                  DOWN: 503
+                  PARTIAL: 200
+
+logging:
+    level:
+        org.springframework: DEBUG
+
+---
+spring.config.activate.on-profile: https
+
+server:
+    ssl:
+        protocol: TLSv1.2
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        keyStore: ../keystore/localhost/localhost.keystore.p12
+        trustStore: ../keystore/localhost/localhost.truststore.p12

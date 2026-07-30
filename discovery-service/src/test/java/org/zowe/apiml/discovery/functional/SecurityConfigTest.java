@@ -33,7 +33,7 @@ import static io.restassured.RestAssured.given;
     classes = DiscoveryServiceApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@ActiveProfiles({"https"})
+@ActiveProfiles({"test", "https"})
 public class SecurityConfigTest {
 
     @BeforeAll

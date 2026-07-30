@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.util.JWTTestUtils;
@@ -36,7 +37,11 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(classes = ZaasApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    classes = ZaasApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
+@ActiveProfiles("test")
 class JwtValidationCacheTest {
 
     private static final String COOKIE = "apimlAuthenticationToken";
