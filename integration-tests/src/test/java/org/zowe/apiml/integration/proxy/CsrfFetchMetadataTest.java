@@ -90,7 +90,7 @@ class CsrfFetchMetadataTest {
             .post(HttpRequestUtils.getUriFromGateway(Endpoints.STATIC_CLIENT_2_STATUS_CODE))
         .then()
             .log().ifValidationFails()
-            .statusCode(not(equalTo(FORBIDDEN)));
+            .statusCode(equalTo(OK));
     }
 
 }
