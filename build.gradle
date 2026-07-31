@@ -40,39 +40,34 @@ plugins {
     id 'net.minecraftforge.licenser' version '1.2.0' apply false
 }
 
-import org.gradle.api.services.BuildService
-import org.gradle.api.services.BuildServiceParameters
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 import org.gradle.plugins.ide.eclipse.model.ClasspathEntry
 
 import java.util.regex.Matcher
 
-/**
- * Mutual-exclusion lock, not an ordering rule. api-catalog-ui, zowe-cli-id-federation-plugin,
- * onboarding-enabler-nodejs and onboarding-enabler-nodejs-sample-app all point workDir/npmWorkDir
- * at the same ${rootDir}/tools tree. With org.gradle.parallel=true their nodeSetup/npmSetup tasks
- * install into that shared tree concurrently and clobber each other — one gets SIGKILLed mid-write
- * and the build fails with a misleading "exit value 137 ... out of memory".
- *
- * A shared build service with maxParallelUsages = 1 lets only one of them run at a time while
- * leaving the task graph untouched: no task gains a dependency on any other, so asking for a
- * single npmSetup still runs only that task.
- */
-abstract class NodeToolchainLock implements BuildService<BuildServiceParameters.None> {}
-
 //noinspection GroovyAssignabilityCheck
 group 'org.zowe.apiml'
 
-def nodeToolchainLock = gradle.sharedServices.registerIfAbsent('nodeToolchainLock', NodeToolchainLock) {
-    maxParallelUsages = 1
-}
-
-allprojects {
-    tasks.matching { it.name in ['nodeSetup', 'npmSetup'] }.configureEach {
-        usesService(nodeToolchainLock)
-    }
-}
+/*
+ * A note for whoever is tempted to move the Node toolchains back under ${rootDir}/tools:
+ * api-catalog-ui, zowe-cli-id-federation-plugin, onboarding-enabler-nodejs and
+ * onboarding-enabler-nodejs-sample-app each keep their own <project>/tools/{nodejs,npm,yarn}.
+ *
+ * Sharing one tree breaks under org.gradle.parallel=true. Each project has a private
+ * nodeSetup -> npmSetup -> npmInstall chain, so with a shared tree all four npmSetup tasks
+ * declare the same output directory: every execution invalidates the other three, one of them
+ * reinstalls npm on practically every build, and a project's npmInstall ends up executing
+ * tools/npm/npm-v<version>/bin/npm while another project's npmSetup replaces that directory.
+ * The victim is SIGKILLed and the build reports "exit value 137 ... may indicate ... out of
+ * memory", which sends you looking in entirely the wrong place.
+ *
+ * Private directories cost disk (~210 MB per project: 195 MB unpacked node, 16 MB npm) and buy:
+ * no cross-project invalidation, setup tasks that stay up to date, full parallelism, and no
+ * coordination code here. They cost no extra download — Gradle resolves the distribution as
+ * org.nodejs:node:<version> and caches the 50 MB tarball once per machine in
+ * ~/.gradle/caches/modules-2, and npm caches its own tarball in ~/.npm/_cacache.
+ */
 
 apply plugin: 'java-library'
 
@@ -337,8 +332,11 @@ task publishAllSDKVersions {
 task nodejsClean(type: Delete) {
     group = 'npm'
     if (cleanNode == 'true') {
-        delete 'api-catalog-ui/tools/nodejs', 'api-catalog-ui/tools/npm', 'api-catalog-ui/tools/yarn'
-        delete 'onboarding-enabler-nodejs-sample-app/tools/nodejs', 'onboarding-enabler-nodejs-sample-app/tools/npm', 'onboarding-enabler-nodejs-sample-app/tools/yarn'
+        // Every project that applies the Node plugin keeps its toolchain in <project>/tools
+        ['api-catalog-ui', 'zowe-cli-id-federation-plugin',
+         'onboarding-enabler-nodejs', 'onboarding-enabler-nodejs-sample-app'].each { name ->
+            delete "$name/tools/nodejs", "$name/tools/npm", "$name/tools/yarn"
+        }
     }
 }
 
