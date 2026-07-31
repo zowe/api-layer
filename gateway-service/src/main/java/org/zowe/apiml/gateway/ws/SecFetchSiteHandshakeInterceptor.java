@@ -43,7 +43,7 @@ public class SecFetchSiteHandshakeInterceptor implements HandshakeInterceptor {
             return true;
         }
 
-        log.debug("Blocked cross-site WebSocket handshake {} {} - Sec-Fetch-Site={}, CORS is not enabled",
+        log.debug("Blocked cross-site WebSocket handshake {} {} - Sec-Fetch-Site={}",
             request.getMethod(), request.getURI(), request.getHeaders().getFirst(SecFetchSitePolicy.SEC_FETCH_SITE_HEADER));
         response.setStatusCode(HttpStatus.FORBIDDEN);
         return false;

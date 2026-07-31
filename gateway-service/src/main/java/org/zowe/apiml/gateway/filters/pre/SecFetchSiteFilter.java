@@ -49,7 +49,7 @@ public class SecFetchSiteFilter extends PreZuulFilter {
             context.addZuulResponseHeader("Content-Type", MediaType.TEXT_PLAIN_VALUE);
             context.setResponseStatusCode(HttpStatus.FORBIDDEN.value());
 
-            log.debug("Blocked cross-site {} {} - Sec-Fetch-Site={}, CORS is not enabled",
+            log.debug("Blocked cross-site {} {} - Sec-Fetch-Site={}",
                 request.getMethod(), request.getRequestURI(), request.getHeader(SecFetchSitePolicy.SEC_FETCH_SITE_HEADER));
 
             return null;

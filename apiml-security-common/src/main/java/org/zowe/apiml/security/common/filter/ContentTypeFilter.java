@@ -51,7 +51,7 @@ public class ContentTypeFilter extends OncePerRequestFilter {
             return false;
         }
         try {
-           MediaType mediaType = MediaType.parseMediaType(contentType);
+            MediaType mediaType = MediaType.parseMediaType(contentType);
             return MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mediaType);
         } catch (InvalidMediaTypeException e) {
             return false;
