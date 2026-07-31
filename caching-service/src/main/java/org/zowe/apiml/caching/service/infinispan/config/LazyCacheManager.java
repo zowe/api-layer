@@ -442,7 +442,7 @@ public class LazyCacheManager extends DefaultCacheManager {
             } catch (Exception e) {
                 if (isPersistenceException(e)) {
                     apimlLog.log("org.zowe.apiml.cache.corruptedPersistentStoreCache", cacheName, e);
-                    throw new CacheConfigurationException("Persistent store is corrupted", e);
+                    throw new IllegalStateException("Persistent store is corrupted", e);
                 }
                 log.warn("Error during initialization of cache {}", cacheName, e);
 

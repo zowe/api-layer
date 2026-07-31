@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
-import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.commons.api.CacheContainerAdmin;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -26,6 +25,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.io.IOException;
+import java.lang.IllegalStateException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -298,7 +298,7 @@ class LazyCacheManagerTest {
         }
 
         @Test
-        void whenPersistenceStoreIsCorrupted_thenThrowCacheConfigurationException() {
+        void whenPersistenceStoreIsCorrupted_thenThrowIllegalStateException() {
             var persistenceException = new PersistenceException("Found an invalid protobuf tag (1)");
 
             doThrow(persistenceException)
@@ -307,7 +307,7 @@ class LazyCacheManagerTest {
 
             var builder = new ConfigurationBuilder();
 
-            var ex = assertThrows(CacheConfigurationException.class,
+            var ex = assertThrows(IllegalStateException.class,
                 () -> ReflectionTestUtils.invokeMethod(
                     cacheInitializer,
                     "createCache",
