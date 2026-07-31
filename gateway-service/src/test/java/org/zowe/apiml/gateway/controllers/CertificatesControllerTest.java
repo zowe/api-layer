@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 )
 @AutoConfigureMockMvc(addFilters = false)
 @DirtiesContext
-@ActiveProfiles("CertificatesControllerTest")
+@ActiveProfiles({"test", "CertificatesControllerTest"})
 @NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
 class CertificatesControllerTest {
 

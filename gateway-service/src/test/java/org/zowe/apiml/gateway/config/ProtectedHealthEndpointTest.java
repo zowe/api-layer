@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.acceptance.config.ApimlRoutingConfig;
 import org.zowe.apiml.acceptance.config.DiscoveryClientTestConfig;
 import org.zowe.apiml.acceptance.config.GatewayOverrideConfig;
@@ -26,10 +27,20 @@ import org.zowe.apiml.acceptance.config.GatewayTestApplication;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@SpringBootTest(classes = GatewayTestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"apiml.health.protected=true"})
-@Import({GatewayOverrideConfig.class, DiscoveryClientTestConfig.class, ApimlRoutingConfig.class})
+@SpringBootTest(
+    classes = GatewayTestApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+        "apiml.health.protected=true"
+    }
+)
+@Import({
+    GatewayOverrideConfig.class,
+    DiscoveryClientTestConfig.class,
+    ApimlRoutingConfig.class
+})
 @DirtiesContext
+@ActiveProfiles("test")
 class ProtectedHealthEndpointTest {
 
     protected String basePath;

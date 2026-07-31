@@ -54,11 +54,10 @@ import static org.zowe.apiml.constants.ApimlConstants.AUTH_FAIL_HEADER;
  */
 @AcceptanceTest
 @TestPropertySource(properties = {
-    "spring.profiles.active=debug",
     "apiml.security.x509.enabled=true",
     "apiml.security.x509.externalMapperUrl="
 })
-@ActiveProfiles("SafIdtSchemeTest")
+@ActiveProfiles({"test", "SafIdtSchemeTest", "debug"})
 class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
     @Value("${server.ssl.keyStorePassword:password}")
     private char[] keystorePassword;

@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.client.service.ApiMediationClientService;
@@ -31,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(controllers = {ApiMediationClientTestController.class})
 @Import(SecurityConfiguration.class)
+@ActiveProfiles("test")
 class ApiMediationClientTestControllerTest {
 
     private static final String MEDIATION_CLIENT_URI = "/api/v1/apiMediationClient";

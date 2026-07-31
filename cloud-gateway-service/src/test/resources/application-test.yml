@@ -9,27 +9,30 @@ apiml:
         id: cloud-gateway
         port: 10023
         hostname: localhost
+        scheme: https
+    cloudGateway:
+        serviceRegistryEnabled: false
+        forwardClientCertEnabled: false
+
 server:
     port: ${apiml.service.port}
     ssl:
-        keyAlias: localhost
-        keyPassword: password
         keyStore: ../keystore/localhost/localhost.keystore.p12
-        keyStorePassword: password
-        keyStoreType: PKCS12
         trustStore: ../keystore/localhost/localhost.truststore.p12
-        trustStorePassword: password
-        trustStoreType: PKCS12
+        # Custom properties for tests only
+        clientKeyStore: ../keystore/client_cert/client-certs.p12
+        clientCN: apimtst # case-sensitive
+        clientKeyStorePassword: password
+
+#For testing forwarded headers with (un)trusted proxies
+test:
+    proxyAddress: 6.6.6.6
+    trustedProxiesPattern: 6\.6\.6\.6
 
 spring:
     main:
         allow-bean-definition-overriding: true
-    cloud:
-        gateway:
-            discovery:
-                locator:
-                    enabled: false
-                    lowerCaseServiceId: true
+        allow-circular-references: true
     application:
         name: cloudGateway
 
@@ -37,14 +40,10 @@ logging:
     level:
         org.springframework.cloud.gateway: DEBUG
         reactor.netty: DEBUG
+        org.springframework.security: DEBUG
 
 
 management:
     endpoint:
-        gateway:
-            enabled: true
-    endpoints:
-        web:
-            base-path: /application
-            exposure:
-                include: health,gateway
+      gateway:
+          enabled: true

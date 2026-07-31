@@ -16,12 +16,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 
 @SpringBootTest(
     classes = DiscoveryServiceApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
 )
+@ActiveProfiles("test")
 @DirtiesContext
 public abstract class DiscoveryFunctionalTest {
 
