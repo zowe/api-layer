@@ -280,6 +280,7 @@ class LazyCacheManagerTest {
 
         private LazyCacheManager.CacheInitializer cacheInitializer;
         private EmbeddedCacheManagerAdmin admin;
+        private final ConfigurationBuilder builder = new ConfigurationBuilder();
 
         @BeforeEach
         void setUp() {
@@ -304,8 +305,6 @@ class LazyCacheManagerTest {
                 .when(admin)
                 .getOrCreateCache(anyString(), any(Configuration.class));
 
-            var builder = new ConfigurationBuilder();
-
             var ex = assertThrows(IllegalStateException.class,
                 () -> ReflectionTestUtils.invokeMethod(
                     cacheInitializer,
@@ -327,7 +326,7 @@ class LazyCacheManagerTest {
                 cacheInitializer,
                 "createCache",
                 "testCache",
-                new ConfigurationBuilder()));
+                builder));
 
             assertFalse(result);
         }
