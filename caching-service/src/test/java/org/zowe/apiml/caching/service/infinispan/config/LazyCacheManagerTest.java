@@ -10,9 +10,15 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
+import org.infinispan.commons.CacheConfigurationException;
+import org.infinispan.commons.api.CacheContainerAdmin;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManagerAdmin;
 import org.infinispan.manager.EmbeddedCacheManagerStartupException;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -27,11 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
+import static org.zowe.apiml.caching.service.infinispan.config.LazyCacheManager.CacheInitializer.isPersistenceException;
 
 class LazyCacheManagerTest {
 
@@ -241,6 +244,93 @@ class LazyCacheManagerTest {
                 assertSame(corruptionFailure, thrown);
                 assertEquals(1, mocked.constructed().size());
             }
+        }
+    }
+
+    @Nested
+    class IsPersistenceException {
+
+        @Test
+        void whenCauseChainContainsPersistenceException_thenReturnTrue() {
+            var cause = new PersistenceException("Found an invalid protobuf tag (1)");
+            var wrapper = new RuntimeException("Failed to load SIFS store", cause);
+
+            assertTrue(isPersistenceException(wrapper));
+        }
+
+        @Test
+        void whenExceptionIsDirectlyPersistenceException_thenReturnTrue() {
+            assertTrue(isPersistenceException(new PersistenceException("Disk read error")));
+        }
+
+        @Test
+        void whenCauseChainHasNoPersistenceException_thenReturnFalse() {
+            var unrelated = new IllegalStateException("Permission denied", new IOException("Access denied"));
+
+            assertFalse(isPersistenceException(unrelated));
+        }
+
+        @Test
+        void whenThrowableIsNull_thenReturnFalse() {
+            assertFalse(isPersistenceException(null));
+        }
+    }
+
+    @Nested
+    class CreateCache {
+
+        private LazyCacheManager.CacheInitializer cacheInitializer;
+        private EmbeddedCacheManagerAdmin admin;
+
+        @BeforeEach
+        void setUp() {
+            LazyCacheManager lazyCacheManager = new LazyCacheManager(new ConfigurationBuilderHolder(), new HashMap<>());
+            cacheInitializer = (LazyCacheManager.CacheInitializer)
+                ReflectionTestUtils.getField(lazyCacheManager, "cacheInitializer");
+
+            DefaultCacheManager cacheManager = mock(DefaultCacheManager.class);
+            admin = mock(EmbeddedCacheManagerAdmin.class);
+
+            ReflectionTestUtils.setField(cacheInitializer, "underInit", cacheManager);
+
+            when(cacheManager.administration()).thenReturn(admin);
+            when(admin.withFlags(CacheContainerAdmin.AdminFlag.VOLATILE)).thenReturn(admin);
+        }
+
+        @Test
+        void whenPersistenceStoreIsCorrupted_thenThrowCacheConfigurationException() {
+            var persistenceException = new PersistenceException("Found an invalid protobuf tag (1)");
+
+            doThrow(persistenceException)
+                .when(admin)
+                .getOrCreateCache(anyString(), any(Configuration.class));
+
+            var builder = new ConfigurationBuilder();
+
+            var ex = assertThrows(CacheConfigurationException.class,
+                () -> ReflectionTestUtils.invokeMethod(
+                    cacheInitializer,
+                    "createCache",
+                    "invalidatedJwtTokens",
+                    builder));
+
+            assertEquals("Persistent store is corrupted", ex.getMessage());
+            assertSame(persistenceException, ex.getCause());
+        }
+
+        @Test
+        void whenGetOrCreateCacheThrowsUnexpectedException_thenReturnFalse() {
+            doThrow(new RuntimeException("boom"))
+                .when(admin)
+                .getOrCreateCache(anyString(), any(Configuration.class));
+
+            boolean result = Boolean.TRUE.equals(ReflectionTestUtils.invokeMethod(
+                cacheInitializer,
+                "createCache",
+                "testCache",
+                new ConfigurationBuilder()));
+
+            assertFalse(result);
         }
     }
 }

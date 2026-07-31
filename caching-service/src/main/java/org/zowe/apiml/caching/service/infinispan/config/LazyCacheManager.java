@@ -25,10 +25,13 @@ import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.health.Health;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.*;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.stats.CacheContainerStats;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
@@ -53,6 +56,9 @@ public class LazyCacheManager extends DefaultCacheManager {
 
     private final AtomicReference<Producer<DefaultCacheManager>> cacheManager;
     private final CacheInitializer cacheInitializer;
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     public LazyCacheManager(
         ConfigurationBuilderHolder cacheManagerConfig,
@@ -299,6 +305,10 @@ public class LazyCacheManager extends DefaultCacheManager {
             }
         }
 
+        static boolean isPersistenceException(Throwable t) {
+            return ExceptionUtils.indexOfType(t, PersistenceException.class) != -1;
+        }
+
         /**
          * ISPN000516 means Infinispan deliberately refused to start rather than risk further corrupting a
          * partially-written global state file. There is no way to repair the file, so the only way forward
@@ -430,7 +440,12 @@ public class LazyCacheManager extends DefaultCacheManager {
                     log.warn("Configuration for cache {} already exists", cacheName, e);
                 }
             } catch (Exception e) {
+                if (isPersistenceException(e)) {
+                    apimlLog.log("org.zowe.apiml.cache.corruptedPersistentStoreCache", cacheName, e);
+                    throw new CacheConfigurationException("Persistent store is corrupted", e);
+                }
                 log.warn("Error during initialization of cache {}", cacheName, e);
+
             }
             return false;
         }
