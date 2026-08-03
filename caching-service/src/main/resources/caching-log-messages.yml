@@ -76,11 +76,7 @@ messages:
         type: ERROR
         text: "The persistent store for cache '%s' is corrupted."
         reason: "Infinispan could not load the persisted data for the cache."
-        action: "To recover:
-               - Stop Zowe.
-               - Remove the persisted cache data from the caching-service workspace directory. This action clears all data stored by Infinispan, including revoked Personal Access Tokens and revoked Zowe JWT tokens.
-               - Restart Zowe to recreate the persistent store.
-               - Ask your Security Administrator to manually revoke the affected Personal Access Tokens again if required. Refer to the Zowe Troubleshooting documentation for additional details."
+        action: "Check available disk space in the caching-service workspace directory. If the issue persists, refer to the Zowe Troubleshooting documentation to reset the persistent store: https://docs.zowe.org/stable/troubleshoot/known-issues-with-apiml/#caching-service-fails-to-start-with-persistenceexception"
 
 # This is just a reference. The message below is defined in the utility-log-messages.yml file
 #    -   key: org.zowe.apiml.cache.errorOpeningCachingFiles
