@@ -22,7 +22,6 @@ import org.zowe.apiml.util.requests.Endpoints;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 
 /**
  * Verifies the token-free CSRF protection driven by the {@code Sec-Fetch-Site} request header.
