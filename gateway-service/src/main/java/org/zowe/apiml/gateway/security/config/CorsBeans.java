@@ -115,6 +115,7 @@ public class CorsBeans implements InitializingBean {
             .defaultAllowedCorsHttpMethods(corsAllowedMethods)
             .defaultAllowedCorsHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
             .defaultAllowedCorsOrigins(getDefaultAllowedOrigins(new ArrayList<>(Arrays.asList(externalUrl))))
+            .defaultAllowCredentials(true)
             .build();
 
     }
