@@ -69,6 +69,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
@@ -438,12 +439,15 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateDefaultCorsAllowedMethods() {
+            void validateDefaultCors() {
                 var corsUtils = connectionsConfig.corsUtils();
 
                 @SuppressWarnings("unchecked")
                 var corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
                 assertEquals(7, corsAllowedMethods.size());
+                var allowedCredentials = (boolean) ReflectionTestUtils.getField(corsUtils, "defaultAllowCredentials");
+                assertTrue(allowedCredentials);
+
             }
         }
 
