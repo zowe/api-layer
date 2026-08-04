@@ -320,7 +320,6 @@ logging:
         javax.net.ssl: ERROR
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
         org.ehcache: WARN
         org.springframework: WARN
         org.springframework.beans: WARN
@@ -359,7 +358,6 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
         org.infinispan: DEBUG
         org.jgroups: TRACE
         org.jgroups.protocols: ERROR
