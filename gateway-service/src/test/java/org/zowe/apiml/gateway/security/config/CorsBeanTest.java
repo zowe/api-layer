@@ -81,7 +81,7 @@ class CorsEnabledAcceptanceTest extends AcceptanceTestWithBasePath {
             @SuppressWarnings("unchecked")
             List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
             assertEquals(7, corsAllowedMethods.size());
-            Boolean allowCredentials = (Boolean) ReflectionTestUtils.getField(corsUtils, additionalGatewayAddress);
+            Boolean allowCredentials = (Boolean) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCredentials");
             assertTrue(allowCredentials);
         }
     }
