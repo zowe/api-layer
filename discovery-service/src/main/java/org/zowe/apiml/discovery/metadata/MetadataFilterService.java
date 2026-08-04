@@ -84,7 +84,14 @@ public class MetadataFilterService implements InitializingBean {
 
     private InetAddress[] getInetAddresses(String domain) {
         try {
-            return InetAddress.getAllByName(domain);
+            var addresses = InetAddress.getAllByName(domain);
+            if (log.isDebugEnabled()) {
+                log.debug("Addresses resolved for domain {}: {}", domain,
+                    Arrays.stream(addresses)
+                        .map(InetAddress::toString)
+                        .collect(Collectors.joining(", ")));
+            }
+            return addresses;
         } catch (UnknownHostException | SecurityException e) {
             log.debug("Cannot list IP address of domain {}", domain, e);
             return new InetAddress[0];
