@@ -46,7 +46,7 @@
         "rxjs": "7.8.2",
         "sass": "1.102.0",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.32.11",
+        "swagger-ui-react": "5.32.12",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -87,7 +87,7 @@
         "@testing-library/dom": "10.4.1",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "16.3.2",
-        "@testing-library/user-event": "14.6.1",
+        "@testing-library/user-event": "14.6.3",
         "@vitejs/plugin-basic-ssl": "2.3.0",
         "@vitejs/plugin-react": "4.7.0",
         "ajv": "8.20.0",
@@ -172,7 +172,7 @@
     },
     "engines": {
         "npm": "=10.9.9",
-        "node": "=24.18.1"
+        "node": "=24.19.0"
     },
     "notes": {
         "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"
