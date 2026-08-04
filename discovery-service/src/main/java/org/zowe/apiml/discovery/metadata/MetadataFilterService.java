@@ -88,7 +88,7 @@ public class MetadataFilterService implements InitializingBean {
             if (log.isDebugEnabled()) {
                 log.debug("Addresses resolved for domain {}: {}", domain,
                     Arrays.stream(addresses)
-                        .map(InetAddress::toString)
+                        .map(InetAddress::getHostAddress)
                         .collect(Collectors.joining(", ")));
             }
             return addresses;
