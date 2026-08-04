@@ -41,6 +41,8 @@ apiml:
 
     banner: console
 
+eureka.instance.ipAddress: ${apiml.service.ipAddress}
+
 spring:
     config:
         useLegacyProcessing: true

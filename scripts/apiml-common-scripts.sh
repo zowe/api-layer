@@ -290,3 +290,25 @@ fi
 if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
 fi
+
+################################################################################
+# # Eureka instance IP address override - falls back to Eureka's own auto-detection when none of these are set
+################################################################################
+if [ -n "${ZWE_configs_apiml_service_ipAddress}" ]; then
+    EUREKA_IP_ADDRESS="-Deureka.instance.ipaddress=${ZWE_configs_apiml_service_ipAddress}"
+elif [ -n "${ZWE_configs_zowe_network_server_listenAddresses}" ]; then
+    EUREKA_IP_ADDRESS="-Deureka.instance.ipaddress=${ZWE_configs_zowe_network_server_listenAddresses}"
+elif [ -n "${ZWE_zowe_network_server_listenAddresses}" ]; then
+    EUREKA_IP_ADDRESS="-Deureka.instance.ipaddress=${ZWE_zowe_network_server_listenAddresses}"
+fi
+
+################################################################################
+# # Eureka instance IP address override - falls back to Eureka's own auto-detection when none of these are set
+################################################################################
+if [ -n "${ZWE_configs_apiml_service_ipAddress}" ]; then
+    EUREKA_IP_ADDRESS="-Deureka.instance.ipaddress=${ZWE_configs_apiml_service_ipAddress}"
+elif [ -n "${ZWE_configs_zowe_network_server_listenAddresses}" ]; then
+    EUREKA_IP_ADDRESS="-Deureka.instance.ipaddress=${ZWE_configs_zowe_network_server_listenAddresses}"
+elif [ -n "${ZWE_zowe_network_server_listenAddresses}" ]; then
+    EUREKA_IP_ADDRESS="-Deureka.instance.ipaddress=${ZWE_zowe_network_server_listenAddresses}"
+fi

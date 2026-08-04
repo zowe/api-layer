@@ -8,6 +8,7 @@ apiml:
         apimlId: apiml1
         forwardClientCertEnabled: true
         hostname: localhost
+        ipAddress: 127.0.0.1
         port: 10010
     banner: console
     security:
@@ -17,6 +18,9 @@ eureka:
     client:
         serviceUrl:
             defaultZone: https://localhost:10011/eureka/
+    instance:
+        ipAddress: ${apiml.service.ipAddress}
+
 server:
     max-http-request-header-size: 16348
 

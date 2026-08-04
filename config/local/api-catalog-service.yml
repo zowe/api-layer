@@ -12,6 +12,7 @@ eureka:
     instance:
         leaseExpirationDurationInSeconds: 6
         leaseRenewalIntervalInSeconds: 1
+        ipAddress: ${apiml.service.ipAddress}
 
 server:
     ssl:

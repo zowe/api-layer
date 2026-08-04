@@ -15,6 +15,9 @@ server:
 eureka:
     server:
         myUrl: https://localhost:10021/eureka/
+    instance:
+        ipAddress: ${apiml.service.ipAddress}
+
 apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
@@ -30,13 +33,13 @@ apiml:
         cookieNameForRateLimiter: apimlAuthenticationToken
     service:
         apimlId: apiml2
-
         discoveryServiceUrls: https://localhost:10021/eureka/
         forwardClientCertEnabled: false
         hostname: localhost
         id: ${spring.application.name}
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         port: 10020
+        ipAddress: 127.0.0.1
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
         title: API ML 2
     security:

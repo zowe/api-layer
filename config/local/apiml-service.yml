@@ -63,6 +63,8 @@ apiml:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
         allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
+    service:
+        ipAddress: 127.0.0.1
 caching:
     storage:
         mode: infinispan
@@ -81,6 +83,8 @@ spring:
                     httpclient:
                         websocket:
                             max-frame-payload-length: 3145728
+
+eureka.instance.ipAddress: ${apiml.service.ipAddress}
 
 otel:
     resource:

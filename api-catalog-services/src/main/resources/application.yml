@@ -121,7 +121,6 @@ eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
-        ip-address: ${apiml.service.ipAddress:}
         statusPageUrlPath: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/info
         healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
         secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/health
@@ -234,6 +233,7 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.eclipse.jetty: WARN
         org.springdoc: WARN
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG

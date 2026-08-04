@@ -13,6 +13,8 @@ apiml:
         ssl.verifySslCertificatesOfServices: true
     banner: console
 
+eureka.instance.ipAddress: ${apiml.service.ipAddress}
+
 spring.output.ansi.enabled: always
 
 management:
