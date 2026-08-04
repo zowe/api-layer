@@ -75,12 +75,14 @@ class CorsEnabledAcceptanceTest extends AcceptanceTestWithBasePath {
         private CorsBeans corsBeans;
 
         @Test
-        void validateDefaultCorsAllowedMethods() throws URISyntaxException {
+        void validateDefaultCors() throws URISyntaxException {
             CorsUtils corsUtils = corsBeans.corsUtils(environment, "https://dvipahost:10010", "lparhost", 10010);
 
             @SuppressWarnings("unchecked")
             List<String> corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
             assertEquals(7, corsAllowedMethods.size());
+            Boolean allowCredentials = (Boolean) ReflectionTestUtils.getField(corsUtils, additionalGatewayAddress);
+            assertTrue(allowCredentials);
         }
     }
 
