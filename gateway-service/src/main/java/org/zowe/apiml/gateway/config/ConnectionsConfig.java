@@ -320,6 +320,7 @@ public class ConnectionsConfig {
             .defaultAllowedCorsHttpMethods(corsAllowedMethods)
             .defaultAllowedCorsOrigins(Arrays.asList(corsDefaultAllowedOrigins.split(",")))
             .defaultAllowedCorsHeaders(Arrays.asList(corsDefaultAllowedHeaders.split(",")))
+            .defaultAllowCredentials(true)
             .build();
     }
 
