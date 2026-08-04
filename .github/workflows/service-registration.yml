@@ -64,6 +64,8 @@ jobs:
                     ./gradlew clean build -x test -x npmTest -x npmInstall -x npmBuild --info --scan
 
             -   name: Run startup check for microservices
+                env:
+                    EUREKA_INSTANCE_IPADDRESS: 127.0.0.1
                 run: >
                     ./gradlew runStartUpCheck --info --scan -Denvironment.startServices=true
 
