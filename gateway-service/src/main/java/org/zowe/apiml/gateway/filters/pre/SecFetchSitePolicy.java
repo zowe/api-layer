@@ -14,10 +14,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 /**
  * Token-free CSRF protection decision based on the browser-supplied Fetch Metadata request headers
@@ -44,8 +45,17 @@ public class SecFetchSitePolicy {
     public static final String SEC_FETCH_DEST_HEADER = "Sec-Fetch-Dest";
     public static final String REJECTION_MESSAGE = "Access denied.";
 
-    private static final Set<String> SAFE_SEC_FETCH_SITE_VALUES = new HashSet<>();
-    private static final Set<String> SAFE_MODE = new HashSet<>();
+    private static final Set<String> SAFE_SEC_FETCH_SITE_VALUES = new HashSet<>(Arrays.asList(
+        "same-origin",
+        "same-site",
+        "none"
+    ));
+
+    private static final Set<String> SAFE_MODE = new HashSet<>(Arrays.asList(
+        "navigate",
+        "same-origin",
+        "websocket"
+    ));
 
     @Value("${security.secFetch.safeNavigationDestinations:#{null}}")
     private final Set<String> safeNavigationDestinations;
@@ -55,16 +65,7 @@ public class SecFetchSitePolicy {
     @Value("${security.secFetch.enabled:true}")
     private boolean secFetchEnabled;
 
-    {
-        SAFE_SEC_FETCH_SITE_VALUES.add("same-origin");
-        SAFE_SEC_FETCH_SITE_VALUES.add("same-site");
-        SAFE_SEC_FETCH_SITE_VALUES.add("none");
-        SAFE_MODE.add("navigate");
-        SAFE_MODE.add("same-origin");
-        SAFE_MODE.add("websocket");
-    }
-
-    public boolean isAllowed(Function<String, String> headerLookup) {
+    public boolean isAllowed(UnaryOperator<String> headerLookup) {
         if (!secFetchEnabled) {
             return true;
         }
@@ -85,12 +86,12 @@ public class SecFetchSitePolicy {
      * southbound service (which the gateway otherwise strips - see {@code CorsBeans}) for it to apply its
      * own CORS/Fetch-Metadata handling.
      */
-    public boolean isCrossSite(Function<String, String> headerLookup) {
+    public boolean isCrossSite(UnaryOperator<String> headerLookup) {
         String secFetchSite = headerLookup.apply(SEC_FETCH_SITE_HEADER);
         return secFetchSite != null && !SAFE_SEC_FETCH_SITE_VALUES.contains(secFetchSite.toLowerCase(Locale.ROOT));
     }
 
-    private boolean isSafeTopLevelNavigation(Function<String, String> headerLookup) {
+    private boolean isSafeTopLevelNavigation(UnaryOperator<String> headerLookup) {
         String mode = headerLookup.apply(SEC_FETCH_MODE_HEADER);
         if (mode == null || !SAFE_MODE.contains(mode.toLowerCase(Locale.ROOT))) {
             return false;
