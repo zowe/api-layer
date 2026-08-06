@@ -1,0 +1,22 @@
+spring:
+    mvc:
+        pathmatch:
+            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
+apiml:
+    service:
+        serviceIpAddress: 127.0.0.1
+        apiInfo:
+            -   apiId: zowe.apiml.discoverableclient
+                version: 1.0.0
+                gatewayUrl: api/v1
+                swaggerUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}${apiml.service.contextPath}/v2/api-docs
+                documentationUrl: https://www.zowe.org
+
+server:
+    ssl:
+        protocol: TLSv1.2
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+
+        keyStore: ../keystore/localhost/localhost.keystore.p12
+        trustStore: ../keystore/localhost/localhost.truststore.p12
