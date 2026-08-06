@@ -13,12 +13,14 @@ package org.zowe.apiml;
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.services.ServiceInfo;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +31,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class ModulithConfigTest {
@@ -74,6 +77,46 @@ class ModulithConfigTest {
         var basicInfoService = mc.basicInfoService(discoveryClient, eurekaParser);
         List<ServiceInfo> servicesInfo = basicInfoService.getServicesInfo();
         assertThat(servicesInfo, emptyIterable());
+    }
+
+    @Test
+    void givenIpAddressUnset_whenValidateIpAddress_thenResolveItFromInetUtils() throws Exception {
+        var resolvedIp = "1.2.3.4";
+        var inetAddressMock = mock(InetAddress.class);
+        var inetUtilsMock = mock(InetUtils.class);
+
+        when(inetAddressMock.getHostAddress()).thenReturn(resolvedIp);
+        when(inetUtilsMock.findFirstNonLoopbackAddress()).thenReturn(inetAddressMock);
+
+        var mc = new ModulithConfig(null, null, null, null, null, null, inetUtilsMock);
+        mc.validateIpAddress();
+
+        assertEquals(resolvedIp, getIpAddress(mc));
+    }
+
+    @Test
+    void givenIpAddressAlreadySet_whenValidateIpAddress_thenKeepIt() throws Exception {
+        var presetIp = "5.6.7.8";
+        var inetUtilsMock = mock(InetUtils.class);
+
+        var mc = new ModulithConfig(null, null, null, null, null, null, inetUtilsMock);
+        setIpAddress(mc, presetIp);
+        mc.validateIpAddress();
+
+        assertEquals(presetIp, getIpAddress(mc));
+        verifyNoInteractions(inetUtilsMock);
+    }
+
+    private static String getIpAddress(ModulithConfig mc) throws Exception {
+        var field = ModulithConfig.class.getDeclaredField("ipAddress");
+        field.setAccessible(true);
+        return (String) field.get(mc);
+    }
+
+    private static void setIpAddress(ModulithConfig mc, String value) throws Exception {
+        var field = ModulithConfig.class.getDeclaredField("ipAddress");
+        field.setAccessible(true);
+        field.set(mc, value);
     }
 
 }
