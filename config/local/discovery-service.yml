@@ -1,10 +1,13 @@
 spring.profiles.active: https,debug,diag
 
+eureka:
+    instance:
+        ipAddress: 127.0.0.1
+
 apiml:
     health.protected: true
     service:
         hostname: localhost
-        ipAddress: 127.0.0.1
         port: 10011
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
@@ -12,8 +15,6 @@ apiml:
         allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
         ssl.verifySslCertificatesOfServices: true
     banner: console
-
-eureka.instance.ipAddress: ${apiml.service.ipAddress}
 
 spring.output.ansi.enabled: always
 

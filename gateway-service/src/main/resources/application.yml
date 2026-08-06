@@ -103,6 +103,8 @@ apiml:
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: true
         hostname: localhost
+        # The apiml.service.ipAddress was replaced by eureka.instance.ipAddress. Because the value must remain unset (null) to allow eureka fallback
+        # its native ip address discovery the field cannot just reference a value from another due to spring limitation in processing properties from yml file.
         id: ${spring.application.name}
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Origin
         port: 10010

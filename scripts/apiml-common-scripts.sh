@@ -295,5 +295,5 @@ fi
 ################################################################################
 TMP_EUREKA_IP_ADDRESS=${ZWE_configs_apiml_service_ipAddress:-${ZWE_components_gateway_apiml_service_ipAddress:-${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0}}}}
 if [ -n "${TMP_EUREKA_IP_ADDRESS}" ] && [ "${TMP_EUREKA_IP_ADDRESS}" != "0.0.0.0" ]; then
-    EUREKA_IP_ADDRESS="-Deureka.instance.ipAddress=${ZWE_configs_apiml_service_ipAddress:-${ZWE_components_gateway_apiml_service_ipAddress:-${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0}}}}"
+    EUREKA_IP_ADDRESS="-Deureka.instance.ipAddress=${TMP_EUREKA_IP_ADDRESS}"
 fi

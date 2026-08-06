@@ -1,9 +1,12 @@
 spring.profiles.active: debug,diag
 
+eureka:
+    instance:
+        ipAddress: 127.0.0.1
+
 apiml:
     service:
         hostname: localhost
-        ipAddress: 127.0.0.1
         port: 10023
         discoveryServiceUrls: https://localhost:10011/eureka/
 
@@ -40,8 +43,6 @@ apiml:
         useDummyCNMapper: true
 
     banner: console
-
-eureka.instance.ipAddress: ${apiml.service.ipAddress}
 
 spring:
     config:

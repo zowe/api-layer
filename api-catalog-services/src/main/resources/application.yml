@@ -9,7 +9,7 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
+            ipAddress: ${server.address}
         gateway:
             mvc.enabled: false
     output:
@@ -49,7 +49,8 @@ apiml:
     service:
         id: apicatalog
         hostname: localhost
-        ipAddress: 0.0.0.0
+        # The apiml.service.ipAddress was replaced by eureka.instance.ipAddress. Because the value must remain unset (null) to allow eureka fallback
+        # to its native ip address discovery the field cannot just reference a value from another due to spring limitation in processing properties from yml file.
         port: 10014
         scheme: https
 
@@ -95,7 +96,7 @@ apiml:
 ##############################################################################################
 
 server:
-    address: ${apiml.service.ipAddress}
+    address: 0.0.0.0
     port: ${apiml.service.port}
     ssl:
         enabled: ${apiml.security.ssl.sslEnabled}

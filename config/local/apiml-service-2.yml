@@ -16,7 +16,7 @@ eureka:
     server:
         myUrl: https://localhost:10021/eureka/
     instance:
-        ipAddress: ${apiml.service.ipAddress}
+        ipAddress: 127.0.0.1
 
 apiml:
     discovery:
@@ -39,7 +39,6 @@ apiml:
         id: ${spring.application.name}
         ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
         port: 10020
-        ipAddress: 127.0.0.1
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
         title: API ML 2
     security:

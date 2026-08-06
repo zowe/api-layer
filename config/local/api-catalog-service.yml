@@ -12,7 +12,7 @@ eureka:
     instance:
         leaseExpirationDurationInSeconds: 6
         leaseRenewalIntervalInSeconds: 1
-        ipAddress: ${apiml.service.ipAddress}
+        ipAddress: 127.0.0.1
 
 server:
     ssl:
@@ -30,7 +30,6 @@ apiml:
     health.protected: true
     service:
         hostname: localhost
-        ipAddress: 127.0.0.1
         port: 10014
         discoveryServiceUrls: https://localhost:10011/eureka/
         dsIpAddress: 0.0.0.0

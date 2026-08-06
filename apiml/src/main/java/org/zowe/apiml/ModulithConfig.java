@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,7 @@ import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFacto
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
+import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
@@ -108,6 +110,7 @@ public class ModulithConfig {
     private final EurekaClientConfig eurekaConfig;
     private final CachingServiceEurekaInstanceConfigBean cachingServiceEurekaInstanceConfigBean;
     private final ApplicationEventPublisher eventPublisher;
+    private final InetUtils inetUtils;
 
     private final Timer timer = new Timer("PeerReplicated-StaticServices");
 
@@ -117,7 +120,7 @@ public class ModulithConfig {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
-    @Value("${apiml.service.ipAddress:127.0.0.1}")
+    @Value("${eureka.instance.ipaddress}")
     private String ipAddress;
 
     @Value("${apiml.service.port:10010}")
@@ -137,6 +140,14 @@ public class ModulithConfig {
         return ApplicationInfo.builder()
             .isModulith(true)
             .authServiceId(CoreService.GATEWAY.getServiceId()).build();
+    }
+
+    @PostConstruct
+    public void validateIpAddress() {
+        if (StringUtils.isBlank(ipAddress)) {
+            ipAddress = inetUtils.findFirstNonLoopbackAddress().getHostAddress();
+            log.debug("Using resolved ip address {} for eureka client", ipAddress);
+        }
     }
 
     private int getPort(String serviceId) {
@@ -183,7 +194,7 @@ public class ModulithConfig {
             .setHostName(hostname)
             .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
             .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setIPAddr(ipAddress)
+            .setIPAddr(ipAddress) // resolv real address like eureka
             .setPort(port)
             .setSecurePort(port)
             .enablePort(InstanceInfo.PortType.SECURE, https || isServerAttlsEnabled)
