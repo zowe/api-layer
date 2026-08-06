@@ -194,7 +194,7 @@ public class ModulithConfig {
             .setHostName(hostname)
             .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
             .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setIPAddr(ipAddress) // resolv real address like eureka
+            .setIPAddr(ipAddress)
             .setPort(port)
             .setSecurePort(port)
             .enablePort(InstanceInfo.PortType.SECURE, https || isServerAttlsEnabled)
