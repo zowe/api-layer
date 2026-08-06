@@ -48,7 +48,7 @@ class ModulithConfigTest {
         var serviceInstance = new EurekaServiceInstance(ii);
         when(discoveryClient.getInstances(CLIENT_SERVICE_ID))
             .thenReturn(Arrays.asList(serviceInstance));
-        ModulithConfig mc = new ModulithConfig(null, null, null, null, null, null);
+        ModulithConfig mc = new ModulithConfig(null, null, null, null, null, null, null);
         var eurekaParser = mock(EurekaMetadataParser.class);
         when(eurekaParser.parseAuthentication(any())).thenReturn(new Authentication(AuthenticationScheme.ZOWE_JWT, "appl"));
         var basicInfoService = mc.basicInfoService(discoveryClient, eurekaParser);
@@ -69,7 +69,7 @@ class ModulithConfigTest {
         when(discoveryClient.getServices())
             .thenReturn(Collections.emptyList());
 
-        ModulithConfig mc = new ModulithConfig(null, null, null, null, null, null);
+        ModulithConfig mc = new ModulithConfig(null, null, null, null, null, null, null);
         var eurekaParser = mock(EurekaMetadataParser.class);
         var basicInfoService = mc.basicInfoService(discoveryClient, eurekaParser);
         List<ServiceInfo> servicesInfo = basicInfoService.getServicesInfo();

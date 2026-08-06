@@ -120,7 +120,7 @@ public class ModulithConfig {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
-    @Value("${eureka.instance.ipaddress}")
+    @Value("${eureka.instance.ipaddress:#{null}}")
     private String ipAddress;
 
     @Value("${apiml.service.port:10010}")
