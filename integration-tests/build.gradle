@@ -834,17 +834,3 @@ task runNodeAndPythonSampleServiceTests(type: Test) {
         )
     }
 }
-
-// Gradle 9.7 introduced stricter task dependency validation that fails the
-// build when a task consumes output of another task without declaring a
-// dependency (validation_problems#implicit_dependency). The Sonar Gradle
-// plugin's SonarResolverTask reads class outputs of every project being
-// analyzed, including the transitive test fixtures consumed by this module.
-// Declare the missing task dependencies explicitly so sonarResolver succeeds.
-tasks.matching { it.name == 'sonarResolver' }.configureEach {
-    dependsOn ':apiml-security-common:compileJava',
-              ':zaas-client:compileJava',
-              ':apiml-common:compileJava',
-              ':apiml-common:compileTestFixturesJava',
-              ':apiml-utility:compileJava'
-}
