@@ -2,7 +2,6 @@ spring.profiles.include: diag
 apiml:
     service:
         hostname: localhost2
-        ipAddress: 0.0.0.0
         port: 10020
         discoveryServiceUrls: https://localhost:10011/eureka/,https://localhost2:10021/eureka/
     security:
@@ -24,6 +23,9 @@ eureka:
     client:
         instanceInfoReplicationIntervalSeconds: 30
         registryFetchIntervalSeconds: 30
+    instance:
+        ipAddress: 127.0.0.1
+
 spring:
     output:
         ansi:

@@ -283,10 +283,17 @@ if [ -n "${ZWE_configs_logging_config}" ]; then
     LOGBACK="-Dlogging.config=${ZWE_configs_logging_config}"
 fi
 
-
 ################################################################################
 # Java binary directory
 ################################################################################
 if [ -n "${ZWE_java_home}" ]; then
     JAVA_BIN_DIR=${ZWE_java_home}/bin/
+fi
+
+################################################################################
+# Eureka instance IP address override - falls back to Eureka's own auto-detection by leaving the value unset when none of envs below are set
+################################################################################
+TMP_EUREKA_IP_ADDRESS=${ZWE_configs_apiml_service_ipAddress:-${ZWE_components_gateway_apiml_service_ipAddress:-${ZWE_configs_zowe_network_server_listenAddresses_0:-${ZWE_zowe_network_server_listenAddresses_0}}}}
+if [ -n "${TMP_EUREKA_IP_ADDRESS}" ] && [ "${TMP_EUREKA_IP_ADDRESS}" != "0.0.0.0" ]; then
+    EUREKA_IP_ADDRESS="-Deureka.instance.ipAddress=${TMP_EUREKA_IP_ADDRESS}"
 fi

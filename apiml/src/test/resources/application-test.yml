@@ -10,6 +10,8 @@ logging:
 eureka:
     server:
         max-threads-for-peer-replication: 2
+    instance:
+        ipaddress: 127.0.0.1
 
 apiml:
     discovery:
