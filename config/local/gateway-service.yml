@@ -17,6 +17,9 @@ eureka:
     client:
         serviceUrl:
             defaultZone: https://localhost:10011/eureka/
+    instance:
+        ipAddress: 127.0.0.1
+
 server:
     max-http-request-header-size: 16348
 

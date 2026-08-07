@@ -1,9 +1,12 @@
 spring.profiles.include: diag
 
+eureka:
+    instance:
+        ipAddress: 127.0.0.1
+
 apiml:
     service:
         hostname: localhost2
-        ipAddress: 0.0.0.0
         port: 10021
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs

@@ -5,7 +5,6 @@ apiml:
         id: discovery
         hostname: localhost
         port: 20011
-        ipAddress: 127.0.0.1
     security:
         allowedDomains: localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com
 
