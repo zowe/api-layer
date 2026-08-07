@@ -5,6 +5,7 @@ eureka:
     instance:
         leaseExpirationDurationInSeconds: 6
         leaseRenewalIntervalInSeconds: 5
+        ipAddress: 127.0.0.1
 
 server:
     ssl:
@@ -19,7 +20,6 @@ server:
 apiml:
     service:
         hostname: localhost2
-        ipAddress: 127.0.0.1
         port: 10024
         discoveryServiceUrls: https://localhost2:10021/eureka/,https://localhost:10011/eureka/
         dsIpAddress: 0.0.0.0
