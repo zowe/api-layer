@@ -1,10 +1,13 @@
 spring.profiles.active: https,debug,diag
 
+eureka:
+    instance:
+        ipAddress: 127.0.0.1
+
 apiml:
     health.protected: true
     service:
         hostname: localhost
-        ipAddress: 127.0.0.1
         port: 10011
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
