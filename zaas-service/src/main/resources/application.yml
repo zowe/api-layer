@@ -84,7 +84,6 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
-            ipAddress: ${server.address}
         gateway:
             mvc.enabled: false
             server:
