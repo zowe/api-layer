@@ -1,4 +1,8 @@
 pluginManagement {
+    // keystore-plugin holds the Gradle task type this build configures itself with, so it has to
+    // be compiled before that configuration happens — hence a separate build, not a subproject.
+    includeBuild('keystore-plugin')
+
     repositories {
         maven {
             url artifactoryMavenSnapshotRepo

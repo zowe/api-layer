@@ -10,28 +10,33 @@ ignored by git.
 ## Generating the key stores
 
 ```shell
-./gradlew generateKeystores      # or: ./scripts/generate-keystores.sh
+./gradlew generateKeystores
 ```
 
 The Gradle build runs this automatically before anything that needs TLS material — tests,
-`bootRun`, `jib`, `build` — and skips it when the tree is already present and was produced
-by the current revision of the script. Run it explicitly after a fresh clone if you intend
-to run individual tests from an IDE. `openssl` and `keytool` must be on the `PATH`; on
-macOS the system LibreSSL works, as does Homebrew's OpenSSL.
+`bootRun`, `jib`, `build` — and skips it when the tree is already present and current. Run
+it explicitly after a fresh clone if you intend to run individual tests from an IDE.
 
-Besides the tree described below, the script produces two generated test fixtures:
+Generation happens inside the Gradle JVM, in
+`keystore-plugin/src/main/java/org/zowe/apiml/gradle/keystore/KeystoreGenerator.java`. It needs no
+external tools — no `openssl`, no `keytool`, no shell — so it behaves identically on Linux,
+macOS and Windows.
+
+Besides the tree described below, generation produces two test fixtures:
 `zaas-client/src/test/resources/localhost.*store.p12` and
 `common-service-core/src/test/resources/jwt-public-key.pub`.
 
-`keystore/generation.stamp` records which revision of the script produced the tree; delete
-it (or the key stores) to force regeneration.
+`keystore/generation.stamp` records the `GENERATOR_VERSION` that produced the tree, so that a
+tree built by an older generator is replaced even where Gradle has no execution history to
+consult — a fresh clone, or a CI job that unpacked a keystore artifact. Delete it (or the key
+stores) to force regeneration.
 
 ### Trusting additional certificate authorities
 
 Every generated trust store trusts the local CA plus a small set of public roots. To trust
 something else — a corporate root needed to reach an internal z/OSMF or OIDC provider —
-drop the certificate into `keystore/extra_ca/` as `.pem`, `.cer` or `.crt` and re-run the
-script. That directory is not cleaned between runs and nothing in it is committed.
+drop the certificate into `keystore/extra_ca/` as `.pem`, `.cer` or `.crt` and re-run
+generation. That directory is not cleaned between runs and nothing in it is committed.
 
 ## Key stores
 

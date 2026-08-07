@@ -1,0 +1,71 @@
+/*
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
+ */
+
+plugins {
+    id 'java-gradle-plugin'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+gradlePlugin {
+    plugins {
+        keystores {
+            id = 'org.zowe.apiml.keystores'
+            implementationClass = 'org.zowe.apiml.gradle.keystore.KeystorePlugin'
+        }
+    }
+}
+
+// This is a separate build, included from the root settings.gradle, because the classes here have
+// to exist as compiled bytecode before the main build is configured — the main build cannot compile
+// the task type it needs in order to configure itself. A consequence of running first is that
+// nothing of the main build exists yet to inherit: not its repositories, which the root build.gradle
+// declares, and not its gradle.properties. Both are therefore rebuilt here from that file directly,
+// so a mirror change in gradle.properties still reaches this build.
+def rootProperties = new Properties()
+file('../gradle.properties').withInputStream { rootProperties.load(it) }
+
+repositories {
+    [rootProperties.artifactoryMavenSnapshotRepo, rootProperties.artifactoryMavenRepo].each { repo ->
+        maven {
+            url = repo
+            // The Zowe repositories are readable anonymously; these properties are blank unless a
+            // developer has filled them in, and Gradle rejects a half-populated credentials block.
+            if (rootProperties.mavenUser) {
+                credentials {
+                    username = rootProperties.mavenUser
+                    password = rootProperties.mavenPassword
+                }
+            }
+        }
+    }
+}
+
+// The version catalog is created by the root settings.gradle, which has not been evaluated when
+// this build runs, so `libs` is unavailable here. Rather than repeat the version and let it drift
+// the next time Renovate bumps the catalog, read it out of the file the catalog is built from.
+def catalogSource = file('../gradle/versions.gradle')
+def bouncyCastleVersion = (catalogSource.text =~ /version\('bouncyCastle',\s*'([^']+)'\)/).with {
+    if (!it) {
+        throw new GradleException("No bouncyCastle version found in $catalogSource — has the "
+            + "version catalog changed shape? This build needs it to resolve BouncyCastle.")
+    }
+    it[0][1]
+}
+
+dependencies {
+    // Issuing an X.509 certificate with explicit extensions is the one thing the JDK has no public
+    // API for; everything else the keystore generator does comes out of java.base.
+    implementation "org.bouncycastle:bcpkix-jdk18on:$bouncyCastleVersion"
+}

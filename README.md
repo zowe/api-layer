@@ -118,8 +118,11 @@ The Gradle build generates them automatically before running tests, but you can 
 explicitly — do this after a fresh clone if you intend to run individual tests from an IDE:
 
 ```shell
-./gradlew generateKeystores      # or: ./scripts/generate-keystores.sh
+./gradlew generateKeystores
 ```
+
+Generation runs inside the Gradle JVM and needs no external tools — no `openssl`, no shell — so it
+behaves the same on Linux, macOS and Windows, including from the Git that IntelliJ and VS Code use.
 
 This also produces two generated test fixtures: `zaas-client/src/test/resources/localhost.*store.p12`
 and `common-service-core/src/test/resources/jwt-public-key.pub`.

@@ -14,13 +14,6 @@ inputs:
 runs:
     using: "composite"
     steps:
-        -   name: Install openssl if missing
-            run: |
-                if ! command -v openssl &>/dev/null; then
-                    if [ "$(id -u)" = "0" ]; then apt-get update && apt-get install -y openssl
-                    else sudo apt-get update && sudo apt-get install -y openssl; fi
-                fi
-            shell: bash
         # Only the jobs that cannot generate their own keystores pull the artifact. Every
         # other workflow using this action (docs, changelog, releases) has no such artifact
         # to fetch, and an unconditional download would leave each of their jobs with a
