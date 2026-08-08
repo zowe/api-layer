@@ -86,6 +86,36 @@ task npmLint(type: NpmTask) {
 }
 npmLint.dependsOn npmInstall
 
+// Stamps the real project version (from gradle.properties) into the frontend's
+// .env file before every build, so the API Catalog UI displays the same
+// version as the rest of API ML instead of a hand-copied, stale value.
+// See: https://github.com/zowe/api-layer/issues/4703
+task updateEnvVersion {
+    group = 'npm'
+    description = "Updates VITE_ZOWE_BUILD_INFO in .env with the current project version"
+
+    def envFile = file('frontend/.env')
+    inputs.property('projectVersion', project.version.toString())
+    outputs.file(envFile)
+
+    doLast {
+        def lines = envFile.readLines()
+        def versionLine = "VITE_ZOWE_BUILD_INFO=${project.version}"
+        def found = false
+        def updatedLines = lines.collect { line ->
+            if (line.startsWith('VITE_ZOWE_BUILD_INFO=')) {
+                found = true
+                return versionLine
+            }
+            return line
+        }
+        if (!found) {
+            updatedLines << versionLine
+        }
+        envFile.text = updatedLines.join('\n') + '\n'
+    }
+}
+
 task npmBuild(type: NpmTask) {
 
     group = 'npm'
@@ -107,6 +137,7 @@ task npmBuild(type: NpmTask) {
 
 npmBuild.dependsOn npmInstall
 npmBuild.dependsOn npmLint
+npmBuild.dependsOn updateEnvVersion
 build.dependsOn npmBuild
 
 npmBuild.dependsOn npmTest
