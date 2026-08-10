@@ -19,6 +19,68 @@ def certScript = new File(keystoreDir, 'generate-certificates.sh')
 def certPassword = project.findProperty('apiml.keystore.password') ?: 'password'
 def certCaPassword = project.findProperty('apiml.keystore.caPassword') ?: 'local_ca_password'
 
+/*
+ * Locates a POSIX shell able to run the generator.
+ *
+ * On Windows this cannot simply be 'bash'. A bare bash on the PATH is normally
+ * C:\Windows\System32\bash.exe, which is the WSL launcher rather than a shell, and
+ * running the generator through it fails with:
+ *
+ *     WSL ERROR: CreateProcessCommon:800: execvpe(/bin/bash) failed
+ *
+ * 'sh' is no better, because it is usually absent from the PATH outside Git Bash.
+ * So the shell that ships with Git for Windows is located explicitly, skipping
+ * anything under System32. Override with -Papiml.bash= or APIML_BASH if Git is
+ * installed somewhere unusual.
+ */
+def resolveShell = {
+    def override = project.findProperty('apiml.bash') ?: System.getenv('APIML_BASH')
+    if (override) {
+        return override.toString()
+    }
+
+    if (!System.getProperty('os.name').toLowerCase().contains('windows')) {
+        return 'sh'
+    }
+
+    def isWslLauncher = { File f ->
+        def p = f.absolutePath.toLowerCase().replace('\\', '/')
+        p.contains('/windows/system32/') || p.contains('/windows/sysnative/')
+    }
+
+    def candidates = []
+
+    (System.getenv('PATH') ?: '').split(java.io.File.pathSeparator).each { dir ->
+        if (dir) {
+            def candidate = new File(dir, 'bash.exe')
+            if (!isWslLauncher(candidate)) {
+                candidates << candidate
+            }
+        }
+    }
+
+    ['ProgramFiles', 'ProgramFiles(x86)', 'LOCALAPPDATA'].each { variable ->
+        def base = System.getenv(variable)
+        if (base) {
+            candidates << new File(base, 'Git/bin/bash.exe')
+            candidates << new File(base, 'Git/usr/bin/bash.exe')
+            candidates << new File(base, 'Programs/Git/bin/bash.exe')
+        }
+    }
+
+    def shell = candidates.find { it.isFile() }
+    if (shell == null) {
+        throw new GradleException(
+            'Cannot generate certificates: no usable shell was found.\n' +
+            'The generator is a POSIX shell script. On Windows it needs the bash that\n' +
+            'ships with Git for Windows - the bash.exe in System32 is the WSL launcher\n' +
+            'and cannot run it.\n' +
+            'Install Git for Windows, or point at its shell with\n' +
+            '  -Papiml.bash=C:/Program Files/Git/bin/bash.exe')
+    }
+    return shell.absolutePath
+}
+
 // A representative subset of the generated set. If any of these is missing the
 // certificates have not been generated, or were partially removed.
 def generatedCertificates = [
@@ -61,10 +123,10 @@ tasks.register('generateCertificates', Exec) {
     }
 
     workingDir = keystoreDir
-    // Invoked through bash by name rather than by absolute path, so that it works
-    // under Git Bash on Windows too: an absolute Windows path reaches bash with
-    // backslashes, and sh.exe is not always on the PATH there even when bash is.
-    commandLine 'bash', certScript.name, certPassword, certCaPassword
+    // The script is passed by name rather than by absolute path: the working
+    // directory is already keystore/, and an absolute Windows path would reach the
+    // shell with backslashes.
+    commandLine resolveShell(), certScript.name, certPassword, certCaPassword
 
     // The .ext files are the sole source of every DN, key usage and SAN, so a
     // change to any of them must produce a new certificate set.

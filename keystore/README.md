@@ -65,6 +65,23 @@ repository expects; pass different ones only if you are also changing those
 configurations — or override them with `-Papiml.keystore.password=` and
 `-Papiml.keystore.caPassword=`.
 
+### On Windows
+
+The generator is a POSIX shell script, so it needs the bash that ships with Git for
+Windows. Gradle locates it automatically, from the `PATH` and from the usual install
+locations, and works from both Git Bash and PowerShell.
+
+It deliberately ignores the `bash.exe` in `System32`: that is the WSL launcher rather
+than a shell, and it fails with
+`WSL ERROR: CreateProcessCommon:800: execvpe(/bin/bash) failed`. If Git is installed
+somewhere unusual, point at its shell directly:
+
+```bash
+./gradlew generateCertificates -Papiml.bash="C:/Program Files/Git/bin/bash.exe"
+```
+
+openssl also comes with Git for Windows, in the same `usr/bin` directory.
+
 The script verifies every chain it produces before finishing, including a negative
 check that the untrusted certificate does *not* validate against the service CA.
 
