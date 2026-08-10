@@ -73,11 +73,11 @@ public class ConfigReader {
                             .keyAlias("localhost")
                             .keyPassword(PASSWORD.toCharArray())
                             .keyStoreType("PKCS12")
-                            .keyStore("../keystore/localhost/localhost.keystore.p12")
-                            .serverKeyStore("../keystore/localhost/localhost.keystore.p12")
+                            .keyStore("../keystore/service/service.keystore.p12")
+                            .serverKeyStore("../keystore/service/service.keystore.p12")
                             .keyStorePassword(PASSWORD.toCharArray())
                             .trustStoreType("PKCS12")
-                            .trustStore("../keystore/localhost/localhost.truststore.p12")
+                            .trustStore("../keystore/service/service.truststore.p12")
                             .trustStorePassword(PASSWORD.toCharArray())
                             .build();
 

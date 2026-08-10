@@ -1,0 +1,46 @@
+name: "Restore certificates"
+description: "Downloads the certificate set generated once for this workflow run"
+
+# Certificates are generated rather than committed, and every run mints a fresh
+# certificate authority. Anything that takes part in a mutual TLS handshake has to
+# trust the same authority, so the set is generated once by the GenerateCertificates
+# job and every other job restores that same set instead of generating its own.
+#
+# Without this, the container images built by PublishJibContainers would carry one
+# authority while the test runner presented certificates from another. Both have the
+# same subject DN, so path building succeeds and validation then fails with
+# "PKIX path validation failed: signature check failed".
+
+runs:
+    using: "composite"
+    steps:
+        -   uses: actions/download-artifact@v4
+            with:
+                name: development-certificates
+                path: .
+
+        -   name: Verify the restored set and skip regeneration
+            run: |
+                for file in keystore/ca/service-ca.cer \
+                            keystore/service/service.keystore.p12 \
+                            keystore/service/service.truststore.p12 \
+                            keystore/client/client-certs.p12; do
+                    if [ ! -f "${file}" ]; then
+                        echo "The restored certificate artifact is missing ${file}" >&2
+                        exit 1
+                    fi
+                done
+
+                # Artifact upload does not preserve file modes, and the containers
+                # that bind-mount keystore/ run as an unprivileged user.
+                find keystore -type f \
+                    \( -name '*.p12' -o -name '*.cer' -o -name '*.crt' -o -name '*.key' -o -name '*.pem' \) \
+                    -exec chmod 644 {} +
+
+                # A fresh checkout has no Gradle task history, so generateCertificates
+                # would run again and replace what was just restored. This tells it not
+                # to - see gradle/certificates.gradle.
+                echo "APIML_CERTIFICATES_PREGENERATED=true" >> "$GITHUB_ENV"
+
+                echo "Restored the shared certificate set for this workflow run"
+            shell: bash

@@ -15,7 +15,38 @@ env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
+    # Certificates are generated rather than committed, and each run produces a fresh
+    # certificate authority. They are therefore generated once here and shared with
+    # every other job, so that the container images and the test runners all trust the
+    # same authority.
+    GenerateCertificates:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
+
+            -   name: Generate certificates
+                run: ./gradlew generateCertificates
+
+            -   uses: actions/upload-artifact@v4
+                with:
+                    name: development-certificates
+                    retention-days: 1
+                    if-no-files-found: error
+                    path: |
+                        keystore/ca/**
+                        keystore/service/**
+                        keystore/client/**
+                        keystore/negative/**
+                        zaas-client/src/test/resources/localhost.keystore.p12
+                        zaas-client/src/test/resources/localhost.truststore.p12
+                        common-service-core/src/test/resources/jwt-public-key.pub
+
     PublishJibContainers:
+        needs: GenerateCertificates
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
@@ -23,6 +54,7 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Build Nodejs Sample App
                 run: |
@@ -86,6 +118,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -141,6 +174,7 @@ jobs:
                     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
                     APIML_SERVICE_CORSENABLED: true
                     APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
+
                 #The memory is constrained to test large file upload memory issues (#4265)
                 #If the container runs oom, it is hard killed without printing any reasonable message in the log
                 options: --memory 640m --memory-swap 640m
@@ -160,6 +194,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -247,6 +282,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -370,6 +406,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -526,12 +563,13 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker -DcentralGateway.instances=0
-                    -DcentralHosts=discovery-service-2,gateway-service-2,zaas-service-2
+                    -DcentralHosts=discovery-service-2,gateway-service-2,zaas-service-2 --info
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -633,6 +671,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -718,6 +757,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -832,6 +872,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -923,6 +964,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -982,6 +1024,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -1056,6 +1099,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -1140,6 +1184,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -1191,6 +1236,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -1279,6 +1325,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -1356,6 +1403,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -1415,6 +1463,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -1454,6 +1503,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -1534,6 +1584,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -1677,6 +1728,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1773,6 +1825,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1897,6 +1950,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1990,6 +2044,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -2157,6 +2212,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -2299,6 +2355,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -2437,6 +2494,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -2521,6 +2579,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -2629,6 +2688,7 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@v1
                 with:
@@ -2749,6 +2809,7 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@v1
                 with:
@@ -2840,6 +2901,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -2897,6 +2959,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
                 if: always()
@@ -2940,6 +3003,7 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
 
             -   uses: actions/download-artifact@v4
                 with:

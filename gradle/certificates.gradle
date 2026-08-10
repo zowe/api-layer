@@ -1,0 +1,87 @@
+/*
+ * Generates the development certificates on demand.
+ *
+ * No private key material is committed to this repository, so the keystores and
+ * truststores under keystore/ do not exist in a fresh clone. This task creates
+ * them by running keystore/generate-certificates.sh, and every test task depends
+ * on it, so a clone-and-test works with no manual step.
+ *
+ * The task is up to date once the artifacts exist, so it runs once and then stays
+ * out of the way. Delete keystore/service/service.keystore.p12 (or run
+ * ./gradlew generateCertificates --rerun-tasks) to force a fresh set.
+ */
+
+def keystoreDir = rootProject.file('keystore')
+def certScript = new File(keystoreDir, 'generate-certificates.sh')
+
+// Password pair the checked-in configuration expects. Overridable for anyone
+// regenerating with different values, which also means changing those configs.
+def certPassword = project.findProperty('apiml.keystore.password') ?: 'password'
+def certCaPassword = project.findProperty('apiml.keystore.caPassword') ?: 'local_ca_password'
+
+// A representative subset of the generated set. If any of these is missing the
+// certificates have not been generated, or were partially removed.
+def generatedCertificates = [
+    'ca/service-ca.keystore.p12',
+    'ca/client-ca.keystore.p12',
+    'ca/untrusted-ca.keystore.p12',
+    'service/service.keystore.p12',
+    'service/service.truststore.p12',
+    'service/server-only.p12',
+    'service/client-cert.p12',
+    'client/client-certs.p12',
+    'negative/hostname-mismatch.keystore.p12',
+    'negative/untrusted-ca.keystore.p12',
+    'negative/selfsigned.keystore.p12',
+].collect { new File(keystoreDir, it) }
+
+// Copies the generator maintains outside keystore/, for modules that resolve
+// their stores by relative path rather than from the classpath.
+def generatedCopies = [
+    rootProject.file('zaas-client/src/test/resources/localhost.keystore.p12'),
+    rootProject.file('zaas-client/src/test/resources/localhost.truststore.p12'),
+    rootProject.file('common-service-core/src/test/resources/jwt-public-key.pub'),
+]
+
+tasks.register('generateCertificates', Exec) {
+    group = 'verification'
+    description = 'Generates the development certificates, keystores and truststores under keystore/'
+
+    // Every run mints a fresh certificate authority, so everything taking part in a
+    // mutual TLS handshake has to come from one run. CI generates the set once per
+    // workflow and restores it into each job, which sets this variable. A fresh
+    // checkout carries no Gradle task history, so without it the task would run
+    // again and replace the certificates already baked into the container images.
+    onlyIf {
+        if (System.getenv('APIML_CERTIFICATES_PREGENERATED') == 'true') {
+            logger.lifecycle('Certificates were restored for this workflow run - skipping generation')
+            return false
+        }
+        return true
+    }
+
+    workingDir = keystoreDir
+    // Invoked through bash by name rather than by absolute path, so that it works
+    // under Git Bash on Windows too: an absolute Windows path reaches bash with
+    // backslashes, and sh.exe is not always on the PATH there even when bash is.
+    commandLine 'bash', certScript.name, certPassword, certCaPassword
+
+    // The .ext files are the sole source of every DN, key usage and SAN, so a
+    // change to any of them must produce a new certificate set.
+    inputs.file certScript
+    inputs.files fileTree(keystoreDir) { include '**/*.ext' }
+    outputs.files(generatedCertificates + generatedCopies)
+
+    // Only surface the generator's output when something goes wrong; it is
+    // noisy, and openssl writes its key-generation progress to stderr.
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+        if (executionResult.get().exitValue != 0) {
+            logger.error(standardOutput.toString())
+            throw new GradleException('Certificate generation failed. See the output above.')
+        }
+    }
+}
