@@ -344,14 +344,28 @@ import_trusted "${ZAAS_RES}/localhost.truststore.p12" www.mockserver.com "${ZAAS
 # 0644 is also the mode these files had while they were committed, because git
 # records only the executable bit. There is nothing here to protect - they are
 # development certificates whose passwords are published in this repository.
+#
+# Done with shell globbing rather than find(1) on purpose. When Gradle launches this
+# from PowerShell, the inherited PATH has C:\Windows\System32 ahead of Git's usr/bin,
+# and System32 contains an unrelated find.exe that searches files for a string. It
+# rejects these arguments with "File not found". find is the only command used here
+# whose name collides with a different Windows tool.
 ###################################################################
 
 echo "Relaxing permissions for use inside containers"
-find . -type f \
-    \( -name '*.p12' -o -name '*.cer' -o -name '*.crt' -o -name '*.key' -o -name '*.pem' \) \
-    -exec chmod 644 {} +
-chmod 644 "${ZAAS_RES}/localhost.keystore.p12" "${ZAAS_RES}/localhost.truststore.p12" \
-          ../common-service-core/src/test/resources/jwt-public-key.pub
+relax_permissions() {
+    for file in "$@"; do
+        [ -f "${file}" ] || continue
+        chmod 644 "${file}"
+    done
+}
+
+for directory in ca service client negative public_ca; do
+    relax_permissions "${directory}"/*
+done
+relax_permissions "${ZAAS_RES}/localhost.keystore.p12" \
+                  "${ZAAS_RES}/localhost.truststore.p12" \
+                  ../common-service-core/src/test/resources/jwt-public-key.pub
 
 ###################################################################
 # Verification
