@@ -20,11 +20,13 @@ import lombok.experimental.Delegate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -177,15 +179,17 @@ public class ConnectionsConfig {
     @Bean(destroyMethod = "shutdown", name = "eurekaClient")
     @RefreshScope
     @ConditionalOnMissingBean(EurekaClient.class)
-    CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager, EurekaClientConfig config,
-                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler) {
+    CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager,
+                                        EurekaClientConfig config,
+                                        @Autowired(required = false) HealthCheckHandler healthCheckHandler,
+                                        @Qualifier("discoveryRestTemplatePooledConnectionManager") HttpClientConnectionManager httpClientConnectionManager) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
             appManager = ProxyUtils.getTargetObject(manager);
         } else {
             appManager = manager;
         }
-        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier());
+        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier(httpClientConnectionManager));
         RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
         final CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, config, factories, args1, this.context);
         cloudEurekaClient.registerHealthCheck(healthCheckHandler);
@@ -217,17 +221,18 @@ public class ConnectionsConfig {
     @Conditional(AdditionalRegistrationCondition.class)
     @RefreshScope
     AdditionalEurekaClientsHolder additionalEurekaClientsHolder(
-        ApplicationInfoManager manager,
+        ApplicationInfoManager applicationInfoManager,
         EurekaClientConfig config,
         List<AdditionalRegistration> additionalRegistrations,
         EurekaFactory eurekaFactory,
         @Autowired(required = false) HealthCheckHandler healthCheckHandler,
         AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry,
-        Optional<X509AndGwAwareXForwardedHeadersFilter> x509awareXForwardedHeadersFilter
+        Optional<X509AndGwAwareXForwardedHeadersFilter> x509awareXForwardedHeadersFilter,
+        @Qualifier("discoveryRestTemplatePooledConnectionManager") HttpClientConnectionManager httpClientConnectionManager
     ) {
         List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
-        for (AdditionalRegistration apimlRegistration : additionalRegistrations) {
-            CloudEurekaClient cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, manager, eurekaFactory);
+        for (var apimlRegistration : additionalRegistrations) {
+            var cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, applicationInfoManager, httpClientConnectionManager, eurekaFactory);
             additionalClients.add(cloudEurekaClient);
             cloudEurekaClient.registerHealthCheck(healthCheckHandler);
 
@@ -238,25 +243,25 @@ public class ConnectionsConfig {
         return new AdditionalEurekaClientsHolder(additionalClients);
     }
 
-    private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, EurekaFactory eurekaFactory) {
+    private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, HttpClientConnectionManager httpClientConnectionManager, EurekaFactory eurekaFactory) {
         log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
         Map<String, String> urls = new HashMap<>();
         urls.put(DEFAULT_ZONE, withBasicAuthFallback(apimlRegistration.getDiscoveryServiceUrls()));
 
-        EurekaClientConfigBean configBean = new EurekaClientConfigBean();
+        var configBean = new EurekaClientConfigBean();
         BeanUtils.copyProperties(config, configBean);
         configBean.setServiceUrl(urls);
         configBean.setRegisterWithEureka(true);
         configBean.setFetchRegistry(true);
 
-        EurekaInstanceConfig eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
-        InstanceInfo newInfo = create(eurekaInstanceConfig);
+        var eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
+        var newInstanceInfo = create(eurekaInstanceConfig);
 
-        updateMetadata(newInfo, apimlRegistration);
+        updateMetadata(newInstanceInfo, apimlRegistration);
 
-        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier());
-        RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
-        return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInfo), newInfo, configBean, context, factories, args1);
+        var args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier(httpClientConnectionManager));
+        var factories = new RestClientTransportClientFactories(args1);
+        return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInstanceInfo), newInstanceInfo, configBean, context, factories, args1);
     }
 
     /**
