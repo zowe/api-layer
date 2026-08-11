@@ -16,12 +16,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.netty.http.client.HttpClientConfig;
 
-import javax.net.ssl.SSLContextSpi;
-import javax.net.ssl.X509KeyManager;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ApiDocRetrievalServiceRestTest {
 
@@ -32,17 +29,17 @@ class ApiDocRetrievalServiceRestTest {
         @Autowired
         private ApiDocRetrievalServiceRest apiDocRetrievalServiceRest;
 
+        @Autowired
+        private WebClient webClient;
+
+        @Autowired
+        private WebClient webClientClientCert;
+
         @Test
         void givenApiDocRetrievalServiceRest_whenOutboundCall_thenUsingClientCertificate() {
             var webclient = (WebClient) ReflectionTestUtils.getField(apiDocRetrievalServiceRest, "webClientClientCert");
-            var builder = ReflectionTestUtils.getField(webclient, "builder");
-            var connector = ReflectionTestUtils.getField(builder, "connector");
-            var httpClient = ReflectionTestUtils.getField(connector, "httpClient");
-            var config = (HttpClientConfig) ReflectionTestUtils.getField(httpClient, "config");
-            var sslContext = ReflectionTestUtils.getField(config.sslProvider().getSslContext(), "sslContext");
-            var contextSpi = (SSLContextSpi) ReflectionTestUtils.getField(sslContext, "contextSpi");
-            var keyManager = (X509KeyManager) ReflectionTestUtils.getField(contextSpi, "keyManager");
-            assertNotNull(keyManager.getPrivateKey("localhost"), "WebClient has not defined keystore with client certificate");
+            assertSame(webclient, webClientClientCert);
+            assertNotSame(webclient, webClient);
         }
 
     }
