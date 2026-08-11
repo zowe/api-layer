@@ -14,10 +14,16 @@ description: "Downloads the certificate set generated once for this workflow run
 runs:
     using: "composite"
     steps:
+        # The artifact holds repository-relative paths - keystore/..., zaas-client/...,
+        # common-service-core/... - because the GenerateCertificates job uploads paths
+        # spanning several top level directories, and upload-artifact roots an artifact
+        # at the least common ancestor of what it was given. Unpacking at the workspace
+        # root therefore puts every file back where it came from, which is what the
+        # Gradle task's outputs and the relative paths in the tests both expect.
         -   uses: actions/download-artifact@v4
             with:
                 name: development-certificates
-                path: .
+                path: ${{ github.workspace }}
 
         -   name: Verify the restored set and skip regeneration
             run: |

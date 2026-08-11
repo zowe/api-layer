@@ -31,6 +31,11 @@ jobs:
             -   name: Generate certificates
                 run: ./gradlew generateCertificates
 
+            # These paths span several top level directories, so upload-artifact roots
+            # the artifact at the repository root and keeps them repository-relative.
+            # restore-certificates relies on that when it unpacks at github.workspace;
+            # narrowing this list to a single directory would change the artifact root
+            # and restore the files to the wrong place.
             -   uses: actions/upload-artifact@v4
                 with:
                     name: development-certificates
