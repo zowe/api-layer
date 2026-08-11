@@ -14,8 +14,6 @@
 def keystoreDir = rootProject.file('keystore')
 def certScript = new File(keystoreDir, 'generate-certificates.sh')
 
-// Password pair the checked-in configuration expects. Overridable for anyone
-// regenerating with different values, which also means changing those configs.
 def certPassword = project.findProperty('apiml.keystore.password') ?: 'password'
 def certCaPassword = project.findProperty('apiml.keystore.caPassword') ?: 'local_ca_password'
 

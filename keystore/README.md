@@ -93,7 +93,7 @@ re-run the script.
 ## Layout
 
 Directories group artifacts by **purpose**, not by deployment profile. There is no
-longer a local set and a container set: the same service certificate covers every
+local set and a container set: the same service certificate covers every
 hostname API ML is reached by in either.
 
 | Directory | Holds |
@@ -139,8 +139,7 @@ certificate.
   The single service certificate, used by every service in every profile. Its SAN
   list covers `localhost`, `localhost.localdomain`, the multi-instance local
   profile (`localhost2`, `localhost3`), `IP:127.0.0.1` and every container
-  hostname. It also carries the service CA as a trusted entry, which is required by
-  [zowe/api-layer#4420](https://github.com/zowe/api-layer/issues/4420).
+  hostname. It also carries the service CA as a trusted entry.
 
   The same certificate is the source of the JWT signing key when API ML is not
   using z/OSMF-issued tokens.
@@ -247,42 +246,6 @@ The proxy that simulates AT-TLS on the CI server reads these PEM files:
 
 * `ca/service-ca.cer` — the service CA
 * `service/trusted_CAs.cer` — the service CA and the client CA, bundled
-
-## Trusting the service CA on your system
-
-**Warning!** Only import this into a browser you use for development. The private
-key is public.
-
-Import [`ca/service-ca.cer`](ca/service-ca.cer) into your root certificate store
-and trust it.
-
-* **Windows**, as administrator:
-
-    ```bash
-    certutil -enterprise -f -v -AddStore "Root" keystore/ca/service-ca.cer
-    ```
-
-  You can also run `npm run register-certificates-win`, which requires `sudo` to be
-  installed. If you do not have it, install
-  [chocolatey](https://chocolatey.org/docs/installation#install-downloaded-nuget-package-from-powershell)
-  then run `chocolatey install sudo`.
-
-* **macOS**:
-
-    ```bash
-    sudo security add-trusted-cert -d -r trustRoot \
-        -k /Library/Keychains/System.keychain keystore/ca/service-ca.cer
-    ```
-
-Firefox uses its own truststore. Import the root through the Firefox settings, or
-force Firefox to use the Windows trust store by creating
-`firefox-windows-truststore.js` in
-`C:\Program Files (x86)\Mozilla Firefox\defaults\pref` containing:
-
-```js
-/* Enable experimental Windows trust store support */
-pref("security.enterprise_roots.enabled", true);
-```
 
 ## Trusting the certificates of other services
 

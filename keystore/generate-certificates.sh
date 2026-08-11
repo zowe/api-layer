@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-set -x
+
 ###################################################################
 # Regenerates every certificate, keystore and truststore used for local
 # development and for the integration tests.
