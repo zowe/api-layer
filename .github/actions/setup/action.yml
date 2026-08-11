@@ -14,7 +14,7 @@ runs:
         # rather than committed, and it needs openssl. The hosted runner image ships
         # it, but jobs that run in a bare container (container: ubuntu:latest) do not -
         # those fail with "openssl: not found". Guarded, so the hosted runners skip the
-        # apt-get entirely and only the containers pay for it.
+        # apt-get entirely and only the containers install it.
         -   name: Ensure openssl is available
             run: |
                 if command -v openssl > /dev/null 2>&1; then

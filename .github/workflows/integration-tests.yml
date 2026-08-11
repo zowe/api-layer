@@ -31,11 +31,6 @@ jobs:
             -   name: Generate certificates
                 run: ./gradlew generateCertificates
 
-            # These paths span several top level directories, so upload-artifact roots
-            # the artifact at the repository root and keeps them repository-relative.
-            # restore-certificates relies on that when it unpacks at github.workspace;
-            # narrowing this list to a single directory would change the artifact root
-            # and restore the files to the wrong place.
             -   uses: actions/upload-artifact@v4
                 with:
                     name: development-certificates
@@ -574,7 +569,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker -DcentralGateway.instances=0
-                    -DcentralHosts=discovery-service-2,gateway-service-2,zaas-service-2 --info
+                    -DcentralHosts=discovery-service-2,gateway-service-2,zaas-service-2
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
