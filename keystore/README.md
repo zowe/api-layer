@@ -247,6 +247,85 @@ The proxy that simulates AT-TLS on the CI server reads these PEM files:
 * `ca/service-ca.cer` — the service CA
 * `service/trusted_CAs.cer` — the service CA and the client CA, bundled
 
+## A certificate for your own service
+
+### Reuse the existing one
+
+Usually you do not need a new certificate. The service certificate already covers
+`localhost`, `localhost.localdomain`, `localhost2`, `localhost3`, `IP:127.0.0.1` and
+every container hostname, and carries both `clientAuth` and `serverAuth`. If your
+service runs on one of those names, point it at the existing pair:
+
+```yaml
+keyStore: <api-layer>/keystore/service/service.keystore.p12
+keyStorePassword: password
+keyAlias: localhost
+keyPassword: password
+trustStore: <api-layer>/keystore/service/service.truststore.p12
+trustStorePassword: password
+```
+
+### Issue a new one from the same authority
+
+Needed only when your hostname is not in that list, or when the service should
+present a distinct identity. API ML trusts anything signed by `service-ca`, because
+that authority is in `service/service.truststore.p12`. Run these from `keystore`.
+
+Take the authority's key out of its keystore, since openssl needs it in PEM form:
+
+```bash
+openssl pkcs12 -in ca/service-ca.keystore.p12 -passin pass:local_ca_password \
+    -nocerts -nodes -out /tmp/service-ca.key
+```
+
+Create a key and a request, declaring the hostnames inline. `127.0.0.1` has to be an
+`IP` entry rather than a `DNS` one, or no TLS stack will match it:
+
+```bash
+openssl req -newkey rsa:2048 -nodes -sha256 \
+    -subj "/CN=My Service/OU=MSD/O=Broadcom/C=CZ" \
+    -addext "subjectAltName=DNS:localhost,DNS:my-service,IP:127.0.0.1" \
+    -addext "extendedKeyUsage=serverAuth,clientAuth" \
+    -keyout myservice.key -out myservice.csr
+```
+
+Sign it. `-copy_extensions copy` is what carries those names into the certificate;
+without it they are silently dropped and API ML rejects the certificate on hostname
+verification:
+
+```bash
+openssl x509 -req -in myservice.csr -copy_extensions copy -sha256 -days 1825 \
+    -CA ca/service-ca.cer -CAkey /tmp/service-ca.key -CAcreateserial \
+    -out myservice.crt
+```
+
+Package it with the authority in the chain, and remove the extracted key:
+
+```bash
+openssl pkcs12 -export -out myservice.keystore.p12 \
+    -in myservice.crt -inkey myservice.key -certfile ca/service-ca.cer \
+    -name myservice -macalg SHA256 -password pass:password
+rm /tmp/service-ca.key
+```
+
+Use `service/service.truststore.p12` as the truststore, so your service trusts API ML
+in return. Check the result with the same validation API ML performs:
+
+```bash
+openssl verify -CAfile ca/service-ca.cer myservice.crt
+openssl x509 -in myservice.crt -noout -subject -ext subjectAltName,extendedKeyUsage
+```
+
+On Git Bash, prefix the `req` command with `MSYS2_ARG_CONV_EXCL="*"` so that the
+leading slash in `-subj` is not rewritten into a Windows path.
+
+**Regenerating invalidates this certificate.** `./gradlew generateCertificates
+--rerun-tasks` mints a new authority, so anything signed by the previous one has to
+be re-issued.
+
+If the common name also has to be accepted for the API ML registry endpoints, add it
+to `apiml.security.x509.registry.allowedUsers` — see `config/local/gateway-service.yml`.
+
 ## Trusting the certificates of other services
 
 API ML validates the full certificate chain of every service it routes to. For a
