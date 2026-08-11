@@ -79,6 +79,52 @@ def resolveShell = {
     return shell.absolutePath
 }
 
+/*
+ * Certificates are valid for 90 days, so their existence is not enough to consider
+ * them usable: a working copy left alone for three months holds a complete set that
+ * no longer validates, and the failures that follow point at handshakes rather than
+ * at the expiry.
+ *
+ * The task therefore reports itself out of date once they are close to expiring, and
+ * Gradle regenerates them like any other stale output. Renewal starts shortly before
+ * expiry rather than after it, so that a certificate cannot lapse midway through a
+ * long test run or under an already running local instance. Set
+ * -Papiml.keystore.renewBeforeDays=0 to renew only once they have actually expired.
+ */
+def renewBeforeDays = ((project.findProperty('apiml.keystore.renewBeforeDays') ?: '7') as String) as int
+
+// Public certificates, so no password is needed to read them. Every certificate in
+// the set is minted in one run with one validity, so these stand for all of them.
+def certificatesToDate = [
+    'ca/service-ca.cer',
+    'ca/client-ca.cer',
+    'ca/untrusted-ca.cer',
+    'service/service.cer',
+    'negative/selfsigned.cer',
+].collect { new File(keystoreDir, it) }
+
+def renewalDue = {
+    def factory = java.security.cert.CertificateFactory.getInstance('X.509')
+    def cutoff = new Date(System.currentTimeMillis() + renewBeforeDays * 86_400_000L)
+
+    certificatesToDate.any { certificate ->
+        if (!certificate.isFile()) {
+            return true
+        }
+        try {
+            def notAfter = certificate.withInputStream { factory.generateCertificate(it).notAfter }
+            if (notAfter.before(cutoff)) {
+                logger.lifecycle("Certificates expire on ${notAfter} - regenerating")
+                return true
+            }
+            return false
+        } catch (Exception failure) {
+            logger.lifecycle("Could not read ${certificate.name} (${failure.message}) - regenerating")
+            return true
+        }
+    }
+}
+
 // A representative subset of the generated set. If any of these is missing the
 // certificates have not been generated, or were partially removed.
 def generatedCertificates = [
@@ -131,6 +177,10 @@ tasks.register('generateCertificates', Exec) {
     inputs.file certScript
     inputs.files fileTree(keystoreDir) { include '**/*.ext' }
     outputs.files(generatedCertificates + generatedCopies)
+
+    // Existing output files are not sufficient - they also have to be valid for a
+    // while yet. See renewalDue above.
+    outputs.upToDateWhen { !renewalDue() }
 
     // Only surface the generator's output when something goes wrong; it is
     // noisy, and openssl writes its key-generation progress to stderr.

@@ -80,9 +80,15 @@ for tool in openssl keytool; do
     fi
 done
 
-# Leaf certificates are valid for 5 years, certificate authorities for 10.
-DAYS=1825
-DAYS_CA=3650
+# Everything is valid for 90 days. These are development certificates that are
+# regenerated on demand rather than committed, so a long validity buys nothing and a
+# short one keeps the habit of reissuing rather than depending on a stale set. The
+# authorities expire with the certificates they sign, since they are always minted in
+# the same run and an authority outliving its leaves serves no purpose here.
+#
+# Gradle notices the expiry and regenerates - see gradle/certificates.gradle.
+DAYS=90
+DAYS_CA=90
 
 cd "$(dirname "$0")"
 

@@ -15,7 +15,7 @@ no manual step:
 ./gradlew test          # generates certificates first, if missing
 ```
 
-Only three things under `keystore/` are tracked: this README, the generator, and
+Only three types of artifacts under `keystore/` are tracked: this README, the generator, and
 the `.ext` openssl configuration files that define each certificate. The one
 exception is [`public_ca/public-roots.p12`](public_ca), which holds real
 third-party roots — public entries only, no private key, and not derived from
@@ -24,6 +24,27 @@ anything we generate.
 Because regenerating mints fresh CA keypairs, the public certificates and
 truststores derived from them are generated too. Committing those would leave a
 fresh clone holding trust anchors that do not match its own keys.
+
+### Validity and renewal
+
+Everything is valid for **90 days**, authorities included. They are regenerated on
+demand rather than committed, so a long validity buys nothing, and an authority
+outliving the certificates it signs serves no purpose when both are minted in the
+same run.
+
+Expiry is handled by the build. Existing files are not sufficient for the generation
+task to be considered up to date — they also have to be valid for a while yet — so a
+working copy left alone for three months has its certificates reissued on the next
+Gradle invocation rather than failing with handshake errors that point nowhere near
+the cause:
+
+```
+> Task :generateCertificates
+Certificates expire on Mon Nov 09 16:14:01 CET 2026 - regenerating
+```
+
+Renewal never overrides a set restored from a CI artifact, since every job in a
+workflow run has to keep trusting the same authority.
 
 ### Entry points that are not driven by Gradle
 
