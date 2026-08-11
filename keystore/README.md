@@ -247,14 +247,18 @@ The proxy that simulates AT-TLS on the CI server reads these PEM files:
 * `ca/service-ca.cer` — the service CA
 * `service/trusted_CAs.cer` — the service CA and the client CA, bundled
 
-## A certificate for your own service
+## Certificates for a service onboarding to API ML
 
-### Reuse the existing one
+### Reusing the existing service certificate
 
-Usually you do not need a new certificate. The service certificate already covers
-`localhost`, `localhost.localdomain`, `localhost2`, `localhost3`, `IP:127.0.0.1` and
-every container hostname, and carries both `clientAuth` and `serverAuth`. If your
-service runs on one of those names, point it at the existing pair:
+The existing certificate can be reused when the onboarding service runs on
+`localhost`. Its subject alternative names cover `localhost`,
+`localhost.localdomain`, `localhost2`, `localhost3`, `IP:127.0.0.1` and every
+container hostname, and it carries both `clientAuth` and `serverAuth`, so it is valid
+for a service acting as a server, as a client, or as both.
+
+In that case the onboarding service requires no certificate of its own and is
+configured with the existing pair:
 
 ```yaml
 keyStore: <api-layer>/keystore/service/service.keystore.p12
@@ -265,21 +269,28 @@ trustStore: <api-layer>/keystore/service/service.truststore.p12
 trustStorePassword: password
 ```
 
-### Issue a new one from the same authority
+### Issuing a new certificate from the service authority
 
-Needed only when your hostname is not in that list, or when the service should
-present a distinct identity. API ML trusts anything signed by `service-ca`, because
-that authority is in `service/service.truststore.p12`. Run these from `keystore`.
+A separate certificate is required only when the onboarding service is reached by a
+hostname that is not among those names, or when it must present a distinct identity —
+for example to exercise certificate-based authorization.
 
-Take the authority's key out of its keystore, since openssl needs it in PEM form:
+API ML accepts any certificate signed by `service-ca`, because that authority is
+present in `service/service.truststore.p12`. The steps below are run from the
+`keystore` directory and produce a keystore for the onboarding service.
+
+First, export the authority's private key, which openssl requires in PEM form in
+order to sign:
 
 ```bash
 openssl pkcs12 -in ca/service-ca.keystore.p12 -passin pass:local_ca_password \
     -nocerts -nodes -out /tmp/service-ca.key
 ```
 
-Create a key and a request, declaring the hostnames inline. `127.0.0.1` has to be an
-`IP` entry rather than a `DNS` one, or no TLS stack will match it:
+Create a private key and a certificate signing request for the onboarding service.
+The hostnames by which API ML reaches it are declared inline; `127.0.0.1` must be
+given as an `IP` entry rather than a `DNS` one, as no TLS implementation matches a
+DNS name against a literal address:
 
 ```bash
 openssl req -newkey rsa:2048 -nodes -sha256 \
@@ -289,9 +300,10 @@ openssl req -newkey rsa:2048 -nodes -sha256 \
     -keyout myservice.key -out myservice.csr
 ```
 
-Sign it. `-copy_extensions copy` is what carries those names into the certificate;
-without it they are silently dropped and API ML rejects the certificate on hostname
-verification:
+Sign the request with the service authority. `-copy_extensions copy` transfers the
+subject alternative names and the extended key usage from the request into the
+certificate; without it they are silently discarded and API ML rejects the
+certificate during hostname verification:
 
 ```bash
 openssl x509 -req -in myservice.csr -copy_extensions copy -sha256 -days 1825 \
@@ -299,7 +311,8 @@ openssl x509 -req -in myservice.csr -copy_extensions copy -sha256 -days 1825 \
     -out myservice.crt
 ```
 
-Package it with the authority in the chain, and remove the extracted key:
+Package the certificate together with the authority, so that the onboarding service
+presents the complete chain, and remove the exported authority key:
 
 ```bash
 openssl pkcs12 -export -out myservice.keystore.p12 \
@@ -308,23 +321,25 @@ openssl pkcs12 -export -out myservice.keystore.p12 \
 rm /tmp/service-ca.key
 ```
 
-Use `service/service.truststore.p12` as the truststore, so your service trusts API ML
-in return. Check the result with the same validation API ML performs:
+The onboarding service uses `service/service.truststore.p12` as its truststore, which
+is what allows it to trust API ML in return. The result can be checked with the same
+validation API ML performs:
 
 ```bash
 openssl verify -CAfile ca/service-ca.cer myservice.crt
 openssl x509 -in myservice.crt -noout -subject -ext subjectAltName,extendedKeyUsage
 ```
 
-On Git Bash, prefix the `req` command with `MSYS2_ARG_CONV_EXCL="*"` so that the
-leading slash in `-subj` is not rewritten into a Windows path.
+On Git Bash the `req` command must be prefixed with `MSYS2_ARG_CONV_EXCL="*"`, so
+that the leading slash in `-subj` is not rewritten into a Windows path.
 
-**Regenerating invalidates this certificate.** `./gradlew generateCertificates
---rerun-tasks` mints a new authority, so anything signed by the previous one has to
-be re-issued.
+**Regenerating the certificate set invalidates a certificate issued this way.**
+`./gradlew generateCertificates --rerun-tasks` mints a new authority, after which
+anything signed by the previous one is no longer trusted and must be re-issued.
 
-If the common name also has to be accepted for the API ML registry endpoints, add it
-to `apiml.security.x509.registry.allowedUsers` — see `config/local/gateway-service.yml`.
+Where the common name must additionally be accepted for the API ML registry
+endpoints, it has to be added to `apiml.security.x509.registry.allowedUsers` — see
+`config/local/gateway-service.yml`.
 
 ## Trusting the certificates of other services
 
