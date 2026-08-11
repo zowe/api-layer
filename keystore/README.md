@@ -330,16 +330,12 @@ openssl verify -CAfile ca/service-ca.cer myservice.crt
 openssl x509 -in myservice.crt -noout -subject -ext subjectAltName,extendedKeyUsage
 ```
 
-On Git Bash the `req` command must be prefixed with `MSYS2_ARG_CONV_EXCL="*"`, so
-that the leading slash in `-subj` is not rewritten into a Windows path.
+**When using Git Bash on Windows** the `req` command must be prefixed with `MSYS2_ARG_CONV_EXCL="*"`, 
+so that the leading slash in `-subj` is not rewritten into a Windows path.
 
 **Regenerating the certificate set invalidates a certificate issued this way.**
 `./gradlew generateCertificates --rerun-tasks` mints a new authority, after which
 anything signed by the previous one is no longer trusted and must be re-issued.
-
-Where the common name must additionally be accepted for the API ML registry
-endpoints, it has to be added to `apiml.security.x509.registry.allowedUsers` — see
-`config/local/gateway-service.yml`.
 
 ## Trusting the certificates of other services
 
