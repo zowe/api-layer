@@ -294,7 +294,7 @@ DNS name against a literal address:
 
 ```bash
 openssl req -newkey rsa:2048 -nodes -sha256 \
-    -subj "/CN=My Service/OU=MSD/O=Broadcom/C=CZ" \
+    -subj "/CN=My Service/OU=API Mediation Layer/O=Zowe Sample/C=CZ" \
     -addext "subjectAltName=DNS:localhost,DNS:my-service,IP:127.0.0.1" \
     -addext "extendedKeyUsage=serverAuth,clientAuth" \
     -keyout myservice.key -out myservice.csr

@@ -100,7 +100,7 @@ class X509SchemeTest implements TestWithStartedInstances {
                     .when()
                     .get(X509SchemeTest.URL)
                     .then()
-                    .body("dn", containsString("CN=Zowe Component Client,OU=MSD,O=OMP"))
+                    .body("dn", containsString("CN=Zowe Component Client,OU=API Mediation Layer,O=OMP"))
                     .statusCode(200);
             }
         }

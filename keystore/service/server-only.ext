@@ -25,8 +25,8 @@ subjectAltName          = @alt_names
 C                       = "CZ"
 ST                      = "Czechia"
 L                       = "Prague"
-O                       = "Broadcom"
-OU                      = "MSD"
+O                       = "Zowe Sample"
+OU                      = "API Mediation Layer"
 CN                      = "Zowe Component"
 
 [ alt_names ]
