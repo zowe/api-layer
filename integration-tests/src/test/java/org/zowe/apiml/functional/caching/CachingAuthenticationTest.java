@@ -112,8 +112,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
 
         @NonModulithTest
         @Test
-        void givenCertificateButNoHeader_cachingApiEndpointsAreInaccessible() {
-
+        void givenCertificateButNoHeader_cachingApiEndpointsAreAccessible() {
             given()
                 .config(SslContext.clientCertApiml)
                 .when()
