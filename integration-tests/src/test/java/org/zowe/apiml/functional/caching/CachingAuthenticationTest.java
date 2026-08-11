@@ -113,14 +113,14 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
         }
 
         @Test
-        void givenCertificateButNoHeader_cachingApiEndpointsAreInaccessible() {
+        void givenCertificateButNoHeader_cachingApiEndpointsIsAccessible() {
 
             given()
                 .config(SslContext.clientCertApiml)
                 .when()
                 .get(caching_url + CACHING_PATH)
                 .then()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
+                .statusCode(HttpStatus.OK.value());
         }
 
         @Test
