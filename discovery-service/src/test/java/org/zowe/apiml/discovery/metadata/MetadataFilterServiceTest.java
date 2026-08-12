@@ -298,19 +298,20 @@ class MetadataFilterServiceTest {
                 "1.0.1.0,false"
             })
             void givenIpAddress_whenOnboarding_thenVerify(String ipAddress, boolean isAllowed) {
-                when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
-                when(instanceInfo.getIPAddr()).thenReturn(ipAddress);
-                lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+                var instanceInfo = InstanceInfo.Builder.newBuilder()
+                    .setInstanceId("test")
+                    .setAppName("test")
+                    .setIPAddr(ipAddress)
+                    .setHostName("localhost")
+                    .build();
 
+                instanceInfo = metadataFilterService.verifyAllowedDomains(instanceInfo);
                 if (isAllowed) {
-                    metadataFilterService.verifyAllowedDomains(instanceInfo);
                     verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 } else {
-                    assertThrows(MetadataValidationException.class, () -> {
-                        metadataFilterService.verifyAllowedDomains(instanceInfo);
-                    });
                     verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 }
+                assertEquals("127.0.0.1", instanceInfo.getIPAddr());
             }
 
             @Test
@@ -345,6 +346,37 @@ class MetadataFilterServiceTest {
                     .flatMap(networkInterface -> networkInterface.inetAddresses())
                     .map(ipAddress -> ipAddress.getHostAddress())
                     .map(Arguments::of);
+            }
+
+            @Test
+            void givenLocalHost_whenGetIpAddress_theReturnLoopback() {
+                assertEquals("127.0.0.1", metadataFilterService.getIpAddress("localhost"));
+            }
+
+            @Test
+            void givenUnknownDomain_whenGetIpAddress_theReturnNull() {
+                assertNull(metadataFilterService.getIpAddress("absolutellyunknowndomainatall"));
+            }
+
+            @Test
+            void givenInvalidIpAddress_whenValidate_thenReturnUpdatedInstanceInfo() {
+                var instanceInfo = InstanceInfo.Builder.newBuilder()
+                    .setInstanceId("testNotAllowedIpAddress")
+                    .setAppName("test-service")
+                    .setIPAddr("1.2.3.4")
+                    .setHostName("localhost")
+                    .build();
+
+                instanceInfo = metadataFilterService.verifyAllowedDomains(instanceInfo);
+                assertEquals("127.0.0.1", instanceInfo.getIPAddr());
+                assertEquals("localhost", instanceInfo.getHostName());
+            }
+
+            @ParameterizedTest
+            @EmptySource
+            @NullSource
+            void givenNoHostname_whenGetIpAddress_thenReturnNull(String hostname) {
+                assertNull(metadataFilterService.getIpAddress(hostname));
             }
 
         }
