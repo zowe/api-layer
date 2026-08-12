@@ -114,16 +114,24 @@ re-run the script.
 ## Layout
 
 Directories group artifacts by **purpose**, not by deployment profile. There is no
-local set and a container set: the same service certificate covers every
-hostname API ML is reached by in either.
+local set and a container set: one certificate covers every hostname an API ML
+component is reached by in either.
 
 | Directory | Holds |
 |---|---|
 | `ca/` | The three certificate authorities, with their private keys |
-| `service/` | The identities API ML presents, plus the default truststore |
+| `service/` | The identities the API ML components present, plus the default truststore |
 | `client/` | User certificates for client-certificate authentication |
 | `negative/` | Certificates that must fail validation, one per failure mode |
 | `public_ca/` | Real public roots — not generated, see below |
+
+Two different things are called a service in this area, so this document uses:
+
+* **API ML component** — the Gateway, Discovery Service, API Catalog, ZAAS, Caching
+  Service and the mock services. They present the certificate in `service/`.
+* **onboarded service** — an application that registers itself with API ML. It is not
+  part of API ML and normally supplies its own certificate; see
+  [Certificates for an onboarded service](#certificates-for-an-onboarded-service).
 
 ## Certificate authorities
 
@@ -133,52 +141,56 @@ always the one that signed them — none of these keystores is committed.
 
 | Authority | Signs | Alias | Password |
 |---|---|---|---|
-| `ca/service-ca.keystore.p12` | The service identity, both split-role identities, and the hostname-mismatch certificate | `service-ca` | `local_ca_password` |
+| `ca/service-ca.keystore.p12` | The API ML component identity, both split-role identities, and the hostname-mismatch certificate | `service-ca` | `local_ca_password` |
 | `ca/client-ca.keystore.p12` | Only the user certificates in `client/` | `client-ca` | `password` |
 | `ca/untrusted-ca.keystore.p12` | Only the untrusted negative certificate. Deliberately absent from every truststore except `negative/untrusted-ca.truststore.p12` | `untrusted-ca` | `local_ca_password` |
 
 Public certificates are exported alongside each keystore as `.cer`.
 
-### Why the service and client authorities are separate
+### Why `service-ca` and `client-ca` are separate
 
 Not for access control: **both** are present in `service/service.truststore.p12`,
-and `CategorizeCertsFilter` tells a service certificate from a user certificate by
-comparing the leaf public key against a configured set, not by looking at the
-issuer. Signing the user certificates with the service CA would break nothing.
+and `CategorizeCertsFilter` tells an API ML component certificate from a user
+certificate by comparing the leaf public key against a configured set, not by looking
+at the issuer. Signing the user certificates with `service-ca` would break nothing.
 
 The split exists for test fidelity. In a real deployment the certificates presented
 as user identities come from a different PKI — a corporate CA, or a
-mainframe-issued certificate — than the one that minted the service keypairs.
-Keeping two authorities means the fixtures exercise a multi-anchor truststore, so
-code cannot quietly assume a client certificate shares an issuer with the service
-certificate.
+mainframe-issued certificate — than the one that minted the keypairs of the API ML
+components. Keeping two authorities means the fixtures exercise a multi-anchor
+truststore, so code cannot quietly assume a user certificate shares an issuer with
+an API ML component certificate.
 
-## Service identity
+## API ML component identity
 
 * `service/service.keystore.p12` — password `password`, alias `localhost`
 
-  The single service certificate, used by every service in every profile. Its SAN
+  A single certificate presented by every API ML component in every profile. Its SAN
   list covers `localhost`, `localhost.localdomain`, the multi-instance local
   profile (`localhost2`, `localhost3`), `IP:127.0.0.1` and every container
-  hostname. It also carries the service CA as a trusted entry.
+  hostname. It also carries `service-ca` as a trusted entry.
 
   The same certificate is the source of the JWT signing key when API ML is not
   using z/OSMF-issued tokens.
 
+  An onboarded service running on one of those names may reuse it — see
+  [Certificates for an onboarded service](#certificates-for-an-onboarded-service).
+
 Convenience exports of the same certificate, for consumers that cannot read
 PKCS12 — the Node.js and Python enablers, the OpenTelemetry collector, the API
-Catalog UI development server and the ZSS sample service:
+Catalog UI development server and the ZSS sample:
 
-* `service/service.cer` — the service certificate alone, PEM
+* `service/service.cer` — the certificate alone, PEM
 * `service/service.key` — the private key, PEM, unencrypted
-* `service/service.pem` — the service certificate followed by the service CA
+* `service/service.pem` — the certificate followed by `service-ca`
 
 ## Split-role identities
 
-`config/docker/*.yml` deliberately splits the inbound and outbound identities by
-extended key usage, so that a listener certificate cannot be replayed as a client
-identity. `config/local/mock-services.yml` uses the serverAuth-only certificate
-too — the split is about role, not about where the service runs.
+`config/docker/*.yml` deliberately splits the inbound and outbound identities of an
+API ML component by extended key usage, so that a listener certificate cannot be
+replayed as a client identity. `config/local/mock-services.yml` uses the
+serverAuth-only certificate too — the split is about role, not about where the
+component runs.
 
 * `service/server-only.p12` — password `password`, alias `localhost`, `serverAuth` only
 * `service/client-cert.p12` — password `password`, alias `localhost`, `clientAuth` only, no SAN
@@ -194,8 +206,8 @@ image — `keystore/service/` becomes `/service/`, and the configurations refer 
 
 * `service/service.truststore.p12` — password `password`
 
-  The default truststore for every service and for the integration tests. Holds
-  `service-ca` and `client-ca`, plus the public anchors merged in from
+  The default truststore for every API ML component and for the integration tests.
+  Holds `service-ca` and `client-ca`, plus the public anchors merged in from
   `public_ca/public-roots.p12`.
 
   The public anchors have to be here rather than only in a separate store, because
@@ -208,7 +220,7 @@ image — `keystore/service/` becomes `/service/`, and the configurations refer 
 
   The maintained source of those public anchors, kept as its own file because these
   are real third-party certificates: they are not generated, and they expire on
-  their own schedule. The generator merges them into the service truststore.
+  their own schedule. The generator merges them into `service/service.truststore.p12`.
 
   **This store is not generated** and it expires on its own schedule — the
   Let's Encrypt `E7` intermediate in it is valid only until 2027-03-13. Refresh an
@@ -265,20 +277,20 @@ configuration that cannot be found by searching for a file name.
 
 The proxy that simulates AT-TLS on the CI server reads these PEM files:
 
-* `ca/service-ca.cer` — the service CA
-* `service/trusted_CAs.cer` — the service CA and the client CA, bundled
+* `ca/service-ca.cer` — the authority behind the API ML component certificates
+* `service/trusted_CAs.cer` — that authority and `client-ca`, bundled
 
-## Certificates for a service onboarding to API ML
+## Certificates for an onboarded service
 
-### Reusing the existing service certificate
+### Reusing the API ML component certificate
 
-The existing certificate can be reused when the onboarding service runs on
-`localhost`. Its subject alternative names cover `localhost`,
+The certificate the API ML components present can be reused when the onboarded
+service runs on `localhost`. Its subject alternative names cover `localhost`,
 `localhost.localdomain`, `localhost2`, `localhost3`, `IP:127.0.0.1` and every
 container hostname, and it carries both `clientAuth` and `serverAuth`, so it is valid
-for a service acting as a server, as a client, or as both.
+for an onboarded service acting as a server, as a client, or as both.
 
-In that case the onboarding service requires no certificate of its own and is
+In that case the onboarded service requires no certificate of its own and is
 configured with the existing pair:
 
 ```yaml
@@ -290,15 +302,15 @@ trustStore: <api-layer>/keystore/service/service.truststore.p12
 trustStorePassword: password
 ```
 
-### Issuing a new certificate from the service authority
+### Issuing a new certificate from `service-ca`
 
-A separate certificate is required only when the onboarding service is reached by a
+A separate certificate is required only when the onboarded service is reached by a
 hostname that is not among those names, or when it must present a distinct identity —
 for example to exercise certificate-based authorization.
 
 API ML accepts any certificate signed by `service-ca`, because that authority is
 present in `service/service.truststore.p12`. The steps below are run from the
-`keystore` directory and produce a keystore for the onboarding service.
+`keystore` directory and produce a keystore for the onboarded service.
 
 First, export the authority's private key, which openssl requires in PEM form in
 order to sign:
@@ -308,7 +320,7 @@ openssl pkcs12 -in ca/service-ca.keystore.p12 -passin pass:local_ca_password \
     -nocerts -nodes -out /tmp/service-ca.key
 ```
 
-Create a private key and a certificate signing request for the onboarding service.
+Create a private key and a certificate signing request for the onboarded service.
 The hostnames by which API ML reaches it are declared inline; `127.0.0.1` must be
 given as an `IP` entry rather than a `DNS` one, as no TLS implementation matches a
 DNS name against a literal address:
@@ -321,7 +333,7 @@ openssl req -newkey rsa:2048 -nodes -sha256 \
     -keyout myservice.key -out myservice.csr
 ```
 
-Sign the request with the service authority. `-copy_extensions copy` transfers the
+Sign the request with `service-ca`. `-copy_extensions copy` transfers the
 subject alternative names and the extended key usage from the request into the
 certificate; without it they are silently discarded and API ML rejects the
 certificate during hostname verification:
@@ -332,7 +344,7 @@ openssl x509 -req -in myservice.csr -copy_extensions copy -sha256 -days 1825 \
     -out myservice.crt
 ```
 
-Package the certificate together with the authority, so that the onboarding service
+Package the certificate together with the authority, so that the onboarded service
 presents the complete chain, and remove the exported authority key:
 
 ```bash
@@ -342,7 +354,7 @@ openssl pkcs12 -export -out myservice.keystore.p12 \
 rm /tmp/service-ca.key
 ```
 
-The onboarding service uses `service/service.truststore.p12` as its truststore, which
+The onboarded service uses `service/service.truststore.p12` as its truststore, which
 is what allows it to trust API ML in return. The result can be checked with the same
 validation API ML performs:
 
@@ -358,17 +370,18 @@ so that the leading slash in `-subj` is not rewritten into a Windows path.
 `./gradlew generateCertificates --rerun-tasks` mints a new authority, after which
 anything signed by the previous one is no longer trusted and must be re-issued.
 
-## Trusting the certificates of other services
+## Trusting the certificate of an onboarded service
 
-API ML validates the full certificate chain of every service it routes to. For a
-service to be accepted:
+API ML validates the full certificate chain of every service it routes to. For an
+onboarded service to be accepted:
 
-* the public certificate of the root authority that signed the service certificate
-  must be in the API ML truststore, and
-* the service must present its own certificate together with any intermediate CA
-  certificates in its keystore.
+* the public certificate of the root authority that signed the onboarded service's
+  certificate must be in the API ML truststore, and
+* the onboarded service must present its own certificate together with any
+  intermediate CA certificates in its keystore.
 
-Validation fails if a service does not present its intermediate CA certificates.
+Validation fails if an onboarded service does not present its intermediate CA
+certificates.
 You can work around that by importing the intermediates into the API ML truststore:
 
 ```bash
@@ -379,9 +392,9 @@ keytool -importcert -keystore service/service.truststore.p12 -storetype PKCS12 \
 ### Disabling certificate validation on localhost
 
 Services verify each other's certificates by default. To register an existing
-service without generating a certificate for it, set
+onboarded service without generating a certificate for it, set
 `apiml.security.ssl.verifySslCertificatesOfServices` to `false` for the API ML
-services, or add the following to each service's startup command in `package.json`
+components, or add the following to each component's startup command in `package.json`
 or in your IDE:
 
 ```bash
