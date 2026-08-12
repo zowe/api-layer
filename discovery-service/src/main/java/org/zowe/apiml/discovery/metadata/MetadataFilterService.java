@@ -141,7 +141,7 @@ public class MetadataFilterService implements InitializingBean {
     boolean isLocalIpAddress(InetAddress ipAddress) {
         try {
             return NetworkInterface.networkInterfaces()
-                .flatMap(networkInterface -> networkInterface.inetAddresses())
+                .flatMap(NetworkInterface::inetAddresses)
                 .anyMatch(ipAddress::equals);
         } catch (SocketException e) {
             log.debug("Cannot list local IP address: {}", e.getMessage());

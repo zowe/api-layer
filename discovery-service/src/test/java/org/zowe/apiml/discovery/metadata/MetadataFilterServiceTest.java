@@ -298,20 +298,20 @@ class MetadataFilterServiceTest {
                 "1.0.1.0,false"
             })
             void givenIpAddress_whenOnboarding_thenVerify(String ipAddress, boolean isAllowed) {
-                var instanceInfo = InstanceInfo.Builder.newBuilder()
+                var ii = InstanceInfo.Builder.newBuilder()
                     .setInstanceId("test")
                     .setAppName("test")
                     .setIPAddr(ipAddress)
                     .setHostName("localhost")
                     .build();
 
-                instanceInfo = metadataFilterService.verifyAllowedDomains(instanceInfo);
+                ii = metadataFilterService.verifyAllowedDomains(ii);
                 if (isAllowed) {
                     verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 } else {
                     verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 }
-                assertEquals("127.0.0.1", instanceInfo.getIPAddr());
+                assertEquals("127.0.0.1", ii.getIPAddr());
             }
 
             @Test
@@ -343,8 +343,8 @@ class MetadataFilterServiceTest {
 
             static Stream<Arguments> localIpAddresses() throws SocketException {
                 return NetworkInterface.networkInterfaces()
-                    .flatMap(networkInterface -> networkInterface.inetAddresses())
-                    .map(ipAddress -> ipAddress.getHostAddress())
+                    .flatMap(NetworkInterface::inetAddresses)
+                    .map(InetAddress::getHostAddress)
                     .map(Arguments::of);
             }
 
@@ -360,16 +360,16 @@ class MetadataFilterServiceTest {
 
             @Test
             void givenInvalidIpAddress_whenValidate_thenReturnUpdatedInstanceInfo() {
-                var instanceInfo = InstanceInfo.Builder.newBuilder()
+                var ii = InstanceInfo.Builder.newBuilder()
                     .setInstanceId("testNotAllowedIpAddress")
                     .setAppName("test-service")
                     .setIPAddr("1.2.3.4")
                     .setHostName("localhost")
                     .build();
 
-                instanceInfo = metadataFilterService.verifyAllowedDomains(instanceInfo);
-                assertEquals("127.0.0.1", instanceInfo.getIPAddr());
-                assertEquals("localhost", instanceInfo.getHostName());
+                ii = metadataFilterService.verifyAllowedDomains(ii);
+                assertEquals("127.0.0.1", ii.getIPAddr());
+                assertEquals("localhost", ii.getHostName());
             }
 
             @ParameterizedTest
