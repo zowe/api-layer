@@ -312,8 +312,11 @@ task publishAllSDKVersions {
 task nodejsClean(type: Delete) {
     group = 'npm'
     if (cleanNode == 'true') {
-        delete 'api-catalog-ui/tools/nodejs', 'api-catalog-ui/tools/npm', 'api-catalog-ui/tools/yarn'
-        delete 'onboarding-enabler-nodejs-sample-app/tools/nodejs', 'onboarding-enabler-nodejs-sample-app/tools/npm', 'onboarding-enabler-nodejs-sample-app/tools/yarn'
+        // Every project that applies the Node plugin keeps its toolchain in <project>/tools
+        ['api-catalog-ui', 'zowe-cli-id-federation-plugin',
+         'onboarding-enabler-nodejs', 'onboarding-enabler-nodejs-sample-app'].each { name ->
+            delete "$name/tools/nodejs", "$name/tools/npm", "$name/tools/yarn"
+        }
     }
 }
 
