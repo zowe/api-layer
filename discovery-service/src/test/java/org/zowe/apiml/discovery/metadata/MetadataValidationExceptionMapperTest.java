@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
@@ -36,11 +35,11 @@ class MetadataValidationExceptionMapperTest {
     @Mock
     private MessageService messageService;
 
-    private MetadataValidationExceptionMapper exceptionMapper;
+    private DomainAllowListExceptionMapper exceptionMapper;
 
     @BeforeEach
     void setUp() {
-        exceptionMapper = new MetadataValidationExceptionMapper(messageService, new ObjectMapper());
+        exceptionMapper = new DomainAllowListExceptionMapper(messageService, new ObjectMapper());
     }
 
     @Nested
@@ -51,7 +50,7 @@ class MetadataValidationExceptionMapperTest {
             var template = new MessageTemplate(MESSAGE_KEY, "ZWEAM604", MessageType.WARNING, "Invalid metadata found in registration");
             when(messageService.createMessage(MESSAGE_KEY)).thenReturn(Message.of(MESSAGE_KEY, template, new Object[0]));
 
-            var response = exceptionMapper.toResponse(new MetadataValidationException("URLs not allowed found for instance"));
+            var response = exceptionMapper.toResponse(new DomainAllowListMetadataException("URLs not allowed found for instance"));
 
             assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatus());
             assertEquals(MediaType.APPLICATION_JSON_TYPE, response.getMediaType());

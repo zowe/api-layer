@@ -19,20 +19,19 @@ import jakarta.ws.rs.ext.Provider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.core.MessageService;
 
 @Provider
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MetadataValidationExceptionMapper implements ExceptionMapper<MetadataValidationException> {
+public class DomainAllowListExceptionMapper implements ExceptionMapper<DomainAllowListMetadataException> {
 
     private final MessageService messageService;
     private final ObjectMapper objectMapper;
 
     @Override
-    public Response toResponse(MetadataValidationException exception) {
+    public Response toResponse(DomainAllowListMetadataException exception) {
         log.debug("Metadata validation exception: {}", exception.getMessage());
         var messageView = messageService.createMessage("org.zowe.apiml.common.metadataNotAllowedInRegistration").mapToView();
         try {

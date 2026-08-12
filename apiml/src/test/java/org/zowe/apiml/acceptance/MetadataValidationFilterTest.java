@@ -76,7 +76,7 @@ class MetadataValidationFilterTest {
                 .accept(ContentType.JSON)
                 .body(registrationRequest)
             .when()
-                .post(basePath + "/eureka/apps/" + serviceId)
+                .post("https://localhost:10011/eureka/apps/" + serviceId)
             .then()
                 .log().all()
                 .statusCode(SC_INTERNAL_SERVER_ERROR).and().extract().body().asString();
@@ -89,7 +89,7 @@ class MetadataValidationFilterTest {
                 .config(SslContext.clientCertApiml)
                 .accept(ContentType.JSON)
             .when()
-                .get(basePath + "/eureka/apps/" + serviceId)
+                .get("https://localhost:10011/eureka/apps/" + serviceId)
             .then()
                 .statusCode(404);
         }

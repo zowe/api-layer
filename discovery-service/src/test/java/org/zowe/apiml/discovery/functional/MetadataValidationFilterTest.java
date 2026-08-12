@@ -88,18 +88,7 @@ class MetadataValidationFilterTest extends DiscoveryFunctionalTest {
                 .statusCode(SC_INTERNAL_SERVER_ERROR).and().extract().body().asString();
 
             assertEquals("""
-                {
-                    "messages": [
-                        {
-                            "messageType": "WARNING",
-                            "messageNumber": "ZWEAM604W",
-                            "messageContent": "Invalid metadata found in registration",
-                            "messageAction": "Validate URL / IP Address against the allowed domains configuration.",
-                            "messageReason": "The URL / IP Address is not allowed",
-                            "messageKey": "org.zowe.apiml.common.metadataNotAllowedInRegistration"
-                        }
-                    ]
-                }
+                {"messages":[{"messageType":"WARNING","messageNumber":"ZWEAM604W","messageContent":"Invalid metadata found in registration","messageAction":"Validate URL / IP Address against the allowed domains configuration.","messageReason":"The URL / IP Address is not allowed","messageKey":"org.zowe.apiml.common.metadataNotAllowedInRegistration"}]}
                 """.trim(), responseBody);
 
             given()
