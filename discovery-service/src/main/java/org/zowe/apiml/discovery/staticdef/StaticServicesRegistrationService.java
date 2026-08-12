@@ -82,7 +82,7 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
         }
     }
 
-    private String getAllMessages(Throwable throwable) {
+    String getAllMessages(Throwable throwable) {
         Throwable lastThrowable = null;
         var messages = new StringBuilder();
         while ((throwable != null) && (lastThrowable != throwable)) {
