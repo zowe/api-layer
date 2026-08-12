@@ -18,9 +18,7 @@ import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EmptySource;
-import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.*;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -28,8 +26,11 @@ import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -326,6 +327,24 @@ class MetadataFilterServiceTest {
                 ReflectionTestUtils.setField(service,"allowedDomainsSet", Collections.singleton(mockWildcard));
                 InstanceInfo info = InstanceInfo.Builder.newBuilder().setAppName("test").setHostName(hostname).build();
                 assertTrue(service.isAllowedIpAddress(IP_LABEL, InetAddress.getLocalHost().getHostAddress(), info));
+            }
+
+            @ParameterizedTest(name = "Given local address {0} when validate then pass")
+            @MethodSource("localIpAddresses")
+            void givenLocalIpAddress_whenValidate_itIsAccepted(String ipAddress) {
+                when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
+                when(instanceInfo.getIPAddr()).thenReturn(ipAddress);
+                lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+
+                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
+            }
+
+            static Stream<Arguments> localIpAddresses() throws SocketException {
+                return NetworkInterface.networkInterfaces()
+                    .flatMap(networkInterface -> networkInterface.inetAddresses())
+                    .map(ipAddress -> ipAddress.getHostAddress())
+                    .map(Arguments::of);
             }
 
         }

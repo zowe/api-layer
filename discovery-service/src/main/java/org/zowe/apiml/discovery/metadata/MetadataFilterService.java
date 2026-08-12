@@ -122,6 +122,17 @@ public class MetadataFilterService implements InitializingBean {
         return Arrays.stream(allowedAddresses).anyMatch(address::equals);
     }
 
+    boolean isLocalIpAddress(InetAddress ipAddress) {
+        try {
+            return NetworkInterface.networkInterfaces()
+                .flatMap(networkInterface -> networkInterface.inetAddresses())
+                .anyMatch(ipAddress::equals);
+        } catch (SocketException e) {
+            log.debug("Cannot list local IP address: {}", e.getMessage());
+            return false;
+        }
+    }
+
     boolean isAllowedIpAddress(String label, String ipAddress, InstanceInfo info) {
         if (StringUtils.isBlank(ipAddress)) {
             return true;
@@ -133,7 +144,7 @@ public class MetadataFilterService implements InitializingBean {
         }
 
         var address = InetAddresses.forString(ipAddress);
-        if (address.isAnyLocalAddress() || address.isLoopbackAddress()) {
+        if (address.isAnyLocalAddress() || address.isLoopbackAddress() || isLocalIpAddress(address)) {
             // local address (ie. loopback 127.0.0.1) is allowed as default
             return true;
         }
