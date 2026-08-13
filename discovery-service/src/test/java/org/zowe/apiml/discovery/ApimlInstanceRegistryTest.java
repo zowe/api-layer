@@ -70,6 +70,8 @@ class ApimlInstanceRegistryTest {
         standardInstance = getStandardInstance("hostname:serviceclient:10010", "serviceclient");
         serverConfig = new DefaultEurekaServerConfig();
 
+        lenient().doAnswer(invocation -> invocation.getArgument(0)).when(metadataFilterService).verifyAllowedDomains(any());
+
         apimlInstanceRegistry = spy(init(new ApimlInstanceRegistry(
             serverConfig,
             clientConfig,
