@@ -26,6 +26,7 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.core.Is.is;
@@ -50,25 +51,43 @@ class SafAuthCheckTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
-    private final SafCheckRequest request = new SafCheckRequest(
+    private final SafCheckRequest requestRead = new SafCheckRequest(
         "ZOWE",
         "APIML.SERVICES",
         "READ"
+    );
+
+    private final SafCheckRequest requestControl = new SafCheckRequest(
+        "ZOWE",
+        "APIML.SERVICES",
+        "CONTROL"
     );
 
     @Nested
     class GivenClientCertAuthentication {
 
         @Test
-        void returnReturn204() {
+        void return204() {
             given()
                 .config(SslContext.clientCertUser)
                 .contentType(ContentType.JSON)
-                .body(request)
+                .body(requestRead)
             .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
             .then()
                 .statusCode(SC_NO_CONTENT);
+        }
+
+        @Test
+        void return403WhenDontHaveAccess() {
+            given()
+                .config(SslContext.clientCertUser)
+                .contentType(ContentType.JSON)
+                .body(requestControl)
+            .when()
+                .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
+            .then()
+                .statusCode(is(SC_FORBIDDEN));
         }
     }
 
@@ -80,12 +99,25 @@ class SafAuthCheckTest {
             String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
             given()
                 .contentType(ContentType.JSON)
-                .body(request)
+                .body(requestRead)
                 .header("Authorization", "Bearer " + token)
             .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
             .then()
                 .statusCode(is(SC_NO_CONTENT));
+        }
+
+        @Test
+        void return403WhenDontHaveAccess() {
+            String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+            given()
+                .contentType(ContentType.JSON)
+                .body(requestControl)
+                .header("Authorization", "Bearer " + token)
+            .when()
+                .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
+            .then()
+                .statusCode(is(SC_FORBIDDEN));
         }
     }
 
@@ -96,7 +128,7 @@ class SafAuthCheckTest {
         void return401() {
             given()
                 .contentType(ContentType.JSON)
-                .body(request)
+                .body(requestRead)
                 .header("Authorization", "Bearer invalidToken")
             .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
