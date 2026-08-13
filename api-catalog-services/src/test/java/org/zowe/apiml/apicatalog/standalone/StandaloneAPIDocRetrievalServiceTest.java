@@ -10,14 +10,18 @@
 
 package org.zowe.apiml.apicatalog.standalone;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.apicatalog.functional.ApiCatalogFunctionalTest;
+import org.zowe.apiml.apicatalog.services.status.APIDocRetrievalService;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class StandaloneAPIDocRetrievalServiceTest {
 
@@ -71,4 +75,28 @@ class StandaloneAPIDocRetrievalServiceTest {
             assertThrows(NullPointerException.class, () -> standaloneAPIDocRetrievalService.retrieveDefaultApiVersion((String )null));
         }
     }
+
+    @Nested
+    class Certificate extends ApiCatalogFunctionalTest {
+
+        @Autowired
+        private APIDocRetrievalService apiDocRetrievalService;
+
+        @Autowired
+        @Qualifier("secureHttpClientWithKeystore")
+        private CloseableHttpClient secureHttpClient;
+
+        @Autowired
+        @Qualifier("secureHttpClientWithoutKeystore")
+        private CloseableHttpClient secureHttpClientWithoutKeystore;
+
+        @Test
+        void givenApiDocRetrievalServiceRest_whenOutboundCall_thenUsingClientCertificate() {
+            CloseableHttpClient usedHttpClient = (CloseableHttpClient) ReflectionTestUtils.getField(apiDocRetrievalService, "secureHttpClient");
+            assertSame(usedHttpClient, secureHttpClient);
+            assertNotSame(usedHttpClient, secureHttpClientWithoutKeystore);
+        }
+
+    }
+
 }

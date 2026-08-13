@@ -21,7 +21,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -60,8 +59,7 @@ import java.util.Optional;
 public class APIDocRetrievalService {
 
     @Autowired
-    @Qualifier("secureHttpClientWithoutKeystore")
-    private final CloseableHttpClient secureHttpClientWithoutKeystore;
+    private final CloseableHttpClient secureHttpClient;
 
     private final InstanceRetrievalService instanceRetrievalService;
     private final GatewayClient gatewayClient;
@@ -323,7 +321,7 @@ public class APIDocRetrievalService {
         httpGet.setHeader(org.apache.http.HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 
         String responseBody = null;
-        try (CloseableHttpResponse response = secureHttpClientWithoutKeystore.execute(httpGet)) {
+        try (CloseableHttpResponse response = secureHttpClient.execute(httpGet)) {
             final HttpEntity responseEntity = response.getEntity();
             if (responseEntity != null) {
                 responseBody = EntityUtils.toString(responseEntity, StandardCharsets.UTF_8);
