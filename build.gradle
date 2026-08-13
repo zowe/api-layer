@@ -51,6 +51,7 @@ group 'org.zowe.apiml'
 
 apply plugin: 'java-library'
 
+apply from: 'gradle/certificates.gradle'
 apply from: 'gradle/license.gradle'
 apply from: 'gradle/publish.gradle'
 apply from: 'gradle/sonar.gradle'
@@ -185,10 +186,22 @@ subprojects {
     license {
         header = rootProject.file('.licence/EPL-2.0-license-header.txt')
         exclude '**/*.yml', '**/*.yaml', '**/*.json', '**/static', '**/*.sh', '**/*.txt', '**/*.p12', '**/*.xml', '**/*.jsp', '**/*.html', '**/*.jks', '**/*.properties'
+        exclude '**/*.pub', '**/*.cer', '**/*.crt', '**/*.pem', '**/*.key', '**/*.csr', '**/*.der'
     }
 
     tasks.withType(Test) {
         maxParallelForks = 1
+        // Certificates are not committed - generate them before anything reads them.
+        dependsOn rootProject.tasks.named('generateCertificates')
+    }
+
+    // These two modules resolve certificate material by relative path rather than
+    // from the classpath, so the generator writes copies into their test resources.
+    // Their resource processing therefore consumes generateCertificates' output.
+    if (project.name in ['zaas-client', 'common-service-core']) {
+        tasks.matching { it.name == 'processTestResources' }.configureEach {
+            dependsOn rootProject.tasks.named('generateCertificates')
+        }
     }
 }
 
