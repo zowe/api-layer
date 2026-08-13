@@ -293,6 +293,7 @@ public class MetadataFilterService implements InitializingBean {
         var result = new AtomicBoolean(true);
         if (!isAllowedIpAddress("IP Address", info.getIPAddr(), info)) {
             log.debug("IP address {} is not allowed. It is removed from the registration data.", info.getIPAddr());
+            // this is updating the same instance even it looks like creating a new instance of InstanceInfo
             info = new InstanceInfo.Builder(info).setIPAddr(getIpAddress(info.getHostName())).build();
         }
         if (!validateUrl("Instance Hostname", info.getHostName(), info)) {
