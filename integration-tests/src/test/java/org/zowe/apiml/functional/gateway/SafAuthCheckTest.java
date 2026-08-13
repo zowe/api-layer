@@ -26,7 +26,6 @@ import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.core.Is.is;
@@ -79,7 +78,7 @@ class SafAuthCheckTest {
         }
 
         @Test
-        void return403WhenDontHaveAccess() {
+        void return401WhenDontHaveAccess() {
             given()
                 .config(SslContext.clientCertUser)
                 .contentType(ContentType.JSON)
@@ -87,7 +86,7 @@ class SafAuthCheckTest {
             .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
             .then()
-                .statusCode(is(SC_FORBIDDEN));
+                .statusCode(is(SC_UNAUTHORIZED));
         }
     }
 
@@ -108,7 +107,7 @@ class SafAuthCheckTest {
         }
 
         @Test
-        void return403WhenDontHaveAccess() {
+        void return401WhenDontHaveAccess() {
             String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
             given()
                 .contentType(ContentType.JSON)
@@ -117,7 +116,7 @@ class SafAuthCheckTest {
             .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
             .then()
-                .statusCode(is(SC_FORBIDDEN));
+                .statusCode(is(SC_UNAUTHORIZED));
         }
     }
 
