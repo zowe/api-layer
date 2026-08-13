@@ -93,6 +93,7 @@ class StandaloneAPIDocRetrievalServiceTest {
         @Test
         void givenApiDocRetrievalServiceRest_whenOutboundCall_thenUsingClientCertificate() {
             CloseableHttpClient usedHttpClient = (CloseableHttpClient) ReflectionTestUtils.getField(apiDocRetrievalService, "secureHttpClient");
+
             assertSame(usedHttpClient, secureHttpClient);
             assertNotSame(usedHttpClient, secureHttpClientWithoutKeystore);
         }
