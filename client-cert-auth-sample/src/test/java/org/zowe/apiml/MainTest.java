@@ -39,13 +39,13 @@ class MainTest {
 
         var sslContext = SSLContext.getInstance("TLS");
         var ks = KeyStore.getInstance("PKCS12");
-        try (var fis = new FileInputStream("../keystore/localhost/localhost.keystore.p12")) {
+        try (var fis = new FileInputStream("../keystore/service/service.keystore.p12")) {
             ks.load(fis, "password".toCharArray());
         }
         var km = KeyManagerFactory.getInstance("SunX509");
         km.init(ks, "password".toCharArray());
         var ts = KeyStore.getInstance("PKCS12");
-        try (var fis = new FileInputStream("../keystore/localhost/localhost.truststore.p12")) {
+        try (var fis = new FileInputStream("../keystore/service/service.truststore.p12")) {
             ts.load(fis, "password".toCharArray());
         }
         var tm = TrustManagerFactory.getInstance("SunX509");
