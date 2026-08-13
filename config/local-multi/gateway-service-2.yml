@@ -34,14 +34,14 @@ server:
         enabled: true
         port: 10027
         ssl:
-            keyAlias: localhost-multi
-            keyStore: keystore/localhost/localhost-multi.keystore.p12
+            keyAlias: localhost
+            keyStore: keystore/service/service.keystore.p12
     ssl:
-        keyAlias: localhost-multi
+        keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost-multi.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-        trustStore: keystore/localhost/localhost-multi.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12

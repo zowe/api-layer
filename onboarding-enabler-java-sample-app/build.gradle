@@ -44,8 +44,8 @@ tomcat {
     stopPort = 8081
     contextPath = '/'
     enableSSL = true
-    tomcatRun.keystoreFile = file("${project.rootDir}/keystore/localhost/localhost.keystore.p12")
-    tomcatRun.truststoreFile = file("${project.rootDir}/keystore/localhost/localhost.truststore.p12")
+    tomcatRun.keystoreFile = file("${project.rootDir}/keystore/service/service.keystore.p12")
+    tomcatRun.truststoreFile = file("${project.rootDir}/keystore/service/service.truststore.p12")
     tomcatRun.keystorePass = "password"
     tomcatRun.truststorePass = "password"
     httpProtocol = 'org.apache.coyote.http11.Http11Nio2Protocol'

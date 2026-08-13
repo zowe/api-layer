@@ -65,13 +65,13 @@ class ClientCertificateAuthenticationTest {
 
         SSLContext sslContext = SSLContext.getInstance("TLS");
         KeyStore keyStore = KeyStore.getInstance("PKCS12");
-        try (FileInputStream fileInputStream = new FileInputStream("../keystore/localhost/localhost.keystore.p12")) {
+        try (FileInputStream fileInputStream = new FileInputStream("../keystore/service/service.keystore.p12")) {
             keyStore.load(fileInputStream, "password".toCharArray());
         }
         KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
         keyManagerFactory.init(keyStore, "password".toCharArray());
         KeyStore trustStore = KeyStore.getInstance("PKCS12");
-        try (FileInputStream fileInputStream = new FileInputStream("../keystore/localhost/localhost.truststore.p12")) {
+        try (FileInputStream fileInputStream = new FileInputStream("../keystore/service/service.truststore.p12")) {
             trustStore.load(fileInputStream, "password".toCharArray());
         }
         TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("SunX509");
@@ -117,7 +117,7 @@ class ClientCertificateAuthenticationTest {
     @Test
     void givenNoParameters_thenValidateDefaultValues() {
         Assertions.assertEquals("https://localhost:10010/gateway/api/v1/auth/login", clientCertificateAuthentication.getApiUrl());
-        Assertions.assertEquals("../keystore/client_cert/client-certs.p12", clientCertificateAuthentication.getClientCertPath());
+        Assertions.assertEquals("../keystore/client/client-certs.p12", clientCertificateAuthentication.getClientCertPath());
         Assertions.assertEquals("password", clientCertificateAuthentication.getClientCertPassword());
         Assertions.assertEquals("user", clientCertificateAuthentication.getClientCertAlias());
         Assertions.assertEquals("user", clientCertificateAuthentication.getPrivateKeyAlias());
@@ -213,7 +213,7 @@ class ClientCertificateAuthenticationTest {
 
     @Test
     void givenHttpsRequestWithUntrustedClientCertificate_thenValidateError() {
-        lenient().when(clientCertificateAuthentication.getClientCertPath()).thenReturn("../keystore/selfsigned/localhost.keystore.p12");
+        lenient().when(clientCertificateAuthentication.getClientCertPath()).thenReturn("../keystore/negative/selfsigned.keystore.p12");
         lenient().when(clientCertificateAuthentication.getClientCertAlias()).thenReturn("localhost");
         lenient().when(clientCertificateAuthentication.getPrivateKeyAlias()).thenReturn("localhost");
 

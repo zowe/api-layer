@@ -61,7 +61,7 @@ class ServletContextListenerTest {
         context.setInitParameter("apiml.ssl.verifySslCertificatesOfServices", "true");
         context.setInitParameter("apiml.ssl.keyPassword", "password123");
         context.setInitParameter("apiml.ssl.keyStorePassword", "password");
-        context.setInitParameter("apiml.ssl.trustStore", "../keystore/localhost/localhost.keystore.p12");
+        context.setInitParameter("apiml.ssl.trustStore", "../keystore/service/service.keystore.p12");
         context.setInitParameter("apiml.ssl.trustStorePassword", "password");
 
         return context;
