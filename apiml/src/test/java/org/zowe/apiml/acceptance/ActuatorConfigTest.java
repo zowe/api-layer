@@ -96,8 +96,8 @@ class ActuatorConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
-            "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
-            "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
+            "server.ssl.keyStore=../keystore/service/service.keystore.p12",
+            "server.ssl.trustStore=../keystore/service/service.truststore.p12",
             "apiml.security.auth.provider=dummy"
         }
     )
@@ -157,8 +157,8 @@ class ActuatorConfigTest {
     @ActiveProfiles({"test", "debug", "ApimlModulithAcceptanceTest"})
     @TestPropertySource(
         properties = {
-            "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
-            "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
+            "server.ssl.keyStore=../keystore/service/service.keystore.p12",
+            "server.ssl.trustStore=../keystore/service/service.truststore.p12",
             "apiml.security.auth.provider=dummy",
             "logging.level.reactor.netty=ERROR",
             "org.springframework.http.server.reactive=DEBUG",
@@ -254,8 +254,8 @@ class ActuatorConfigTest {
     @ActiveProfiles({"test", "debug", "debug-control", "ApimlModulithAcceptanceTest"})
     @TestPropertySource(
         properties = {
-            "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
-            "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
+            "server.ssl.keyStore=../keystore/service/service.keystore.p12",
+            "server.ssl.trustStore=../keystore/service/service.truststore.p12",
             "apiml.security.auth.provider=dummy",
             "logging.level.reactor.netty=ERROR",
             "org.springframework.http.server.reactive=DEBUG",

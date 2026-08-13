@@ -150,7 +150,7 @@ Only IANA ciphers names are supported. For more information, see [Cipher Suites]
 
 The API ML authentication token in the form of JWT is signed with an asymmetric private key that is generated during Zowe keystore configuration. The JWT is signed with the RS256 signature algorithm.
 
-You can find this private key under the alias `localhost`, in the PKCS12 keystore that is stored in `${KEYSTORE_DIRECTORY}/localhost/localhost.keystore.p12`. The public key necessary to validate the JWT signature is read from the keystore.
+You can find this private key under the alias `localhost`, in the PKCS12 keystore that is stored in `${KEYSTORE_DIRECTORY}/service/service.keystore.p12`. The public key necessary to validate the JWT signature is read from the keystore.
 
 You can also use the `/gateway/api/v1/auth/keys/public` endpoint to obtain a public key that can be used to verify the signature of the JWT in standard [JWK format](https://openid.net/specs/).
 

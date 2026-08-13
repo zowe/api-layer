@@ -55,7 +55,7 @@ class ConnectionUtilTest {
     @BeforeEach
     void setUp() {
         when(httpConfig.getTrustStoreType()).thenReturn("PKCS12");
-        when(httpConfig.getTrustStorePath()).thenReturn("../keystore/localhost/localhost.truststore.p12");
+        when(httpConfig.getTrustStorePath()).thenReturn("../keystore/service/service.truststore.p12");
         when(httpConfig.getTrustStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
         when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
     }
@@ -63,7 +63,7 @@ class ConnectionUtilTest {
     @Test
     void onGetSslContextWithKeystore_thenUse() throws UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException {
         when(httpConfig.getKeyStoreType()).thenReturn("PKCS12");
-        when(httpConfig.getKeyStorePath()).thenReturn("../keystore/localhost/localhost.keystore.p12");
+        when(httpConfig.getKeyStorePath()).thenReturn("../keystore/service/service.keystore.p12");
         when(httpConfig.getKeyStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
 
         try (MockedStatic<SslContextBuilder> sslContextBuilder = Mockito.mockStatic(SslContextBuilder.class)) {
@@ -142,7 +142,7 @@ class ConnectionUtilTest {
             when(httpConfig.isVerifySslCertificatesOfServices()).thenReturn(true);
             when(httpConfig.isNonStrictVerifySslCertificatesOfServices()).thenReturn(false);
             when(httpConfig.getKeyStoreType()).thenReturn("PKCS12");
-            when(httpConfig.getKeyStorePath()).thenReturn("../keystore/localhost/localhost.keystore.p12");
+            when(httpConfig.getKeyStorePath()).thenReturn("../keystore/service/service.keystore.p12");
             when(httpConfig.getKeyStorePassword()).thenReturn("password".toCharArray()); //NOSONAR
 
             var baseHttpClient = HttpClient.create();

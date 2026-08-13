@@ -26,8 +26,8 @@ import static org.mockito.Mockito.when;
 
 class ZosmfStoresTest {
 
-    private static final String TRUSTSTORE_PATH = "../keystore/localhost/localhost.truststore.p12";
-    private static final String KEYSTORE_PATH = "../keystore/localhost/localhost.keystore.p12";
+    private static final String TRUSTSTORE_PATH = "../keystore/service/service.truststore.p12";
+    private static final String KEYSTORE_PATH = "../keystore/service/service.keystore.p12";
     private static final String PASSWORD = "password";
 
     @Nested

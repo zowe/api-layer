@@ -122,7 +122,7 @@ class KeyringUtilsTest {
         @Test
         void givenValidPKCS12Stream_thenLoadsKeyStore() throws Exception {
             // Use the test keystore from the project
-            String truststorePath = "../keystore/localhost/localhost.truststore.p12";
+            String truststorePath = "../keystore/service/service.truststore.p12";
             java.io.File file = new java.io.File(truststorePath);
             if (!file.exists()) {
                 // Skip if keystore not available in this environment
@@ -138,7 +138,7 @@ class KeyringUtilsTest {
 
         @Test
         void givenInvalidPassword_thenThrowsIOException() throws Exception {
-            String truststorePath = "../keystore/localhost/localhost.truststore.p12";
+            String truststorePath = "../keystore/service/service.truststore.p12";
             java.io.File file = new java.io.File(truststorePath);
             if (!file.exists()) {
                 return;

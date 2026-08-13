@@ -31,7 +31,7 @@ class VersionsTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new Versions(USERNAMES, PASSWORDS, "keystore/localhost/localhost.keystore.p12", 60);
+        underTest = new Versions(USERNAMES, PASSWORDS, "keystore/service/service.keystore.p12", 60);
     }
 
     @ParameterizedTest
