@@ -292,7 +292,7 @@ public class MetadataFilterService implements InitializingBean {
     public InstanceInfo verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
         if (!isAllowedIpAddress("IP Address", info.getIPAddr(), info)) {
-            log.debug("IP address {} is not allowed. It would be removed during the registration.", info.getIPAddr());
+            log.debug("IP address {} is not allowed. It is removed from the registration data.", info.getIPAddr());
             info = new InstanceInfo.Builder(info).setIPAddr(getIpAddress(info.getHostName())).build();
         }
         if (!validateUrl("Instance Hostname", info.getHostName(), info)) {
