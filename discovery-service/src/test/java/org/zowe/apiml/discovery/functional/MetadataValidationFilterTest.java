@@ -40,6 +40,7 @@ class MetadataValidationFilterTest extends DiscoveryFunctionalTest {
     private String keystore;
 
     @BeforeEach
+    @Override
     void setUp() throws Exception {
         String clientKeystore = "../keystore/client/client-certs.p12";
         SslContextConfigurer configurer = new SslContextConfigurer(
