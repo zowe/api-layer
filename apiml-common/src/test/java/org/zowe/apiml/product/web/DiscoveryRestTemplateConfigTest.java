@@ -34,7 +34,7 @@ class DiscoveryRestTemplateConfigTest {
     private DiscoveryRestTemplateConfig discoveryRestTemplateConfig;
 
     @BeforeEach
-    void setUp() throws NoSuchAlgorithmException {
+    void setUp() {
         this.discoveryRestTemplateConfig = new DiscoveryRestTemplateConfig();
     }
 
