@@ -127,7 +127,7 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     @ExceptionHandler(DomainAllowListMetadataException.class)
     public Mono<Void> handleDomainAllowListMetadataException(ServerWebExchange exchange, DomainAllowListMetadataException ex) {
         log.debug("Domain Allow List Metadata Exception: {}", ex.getMessage());
-        return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.common.metadataNotAllowedInRegistration");
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.common.metadataNotAllowedInRegistration");
     }
 
 }

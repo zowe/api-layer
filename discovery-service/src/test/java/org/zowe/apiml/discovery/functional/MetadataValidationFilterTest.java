@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ActiveProfiles({"test", "https"})
@@ -85,7 +85,7 @@ class MetadataValidationFilterTest extends DiscoveryFunctionalTest {
                 .post(getDiscoveryUriWithPath("/eureka/apps/" + serviceId))
             .then()
                 .log().all()
-                .statusCode(SC_INTERNAL_SERVER_ERROR).and().extract().body().asString();
+                .statusCode(SC_BAD_REQUEST).and().extract().body().asString();
 
             assertEquals("""
                 {"messages":[{"messageType":"WARNING","messageNumber":"ZWEAM604W","messageContent":"Invalid metadata found in registration","messageAction":"Validate URL / IP Address against the allowed domains configuration.","messageReason":"The URL / IP Address is not allowed","messageKey":"org.zowe.apiml.common.metadataNotAllowedInRegistration"}]}

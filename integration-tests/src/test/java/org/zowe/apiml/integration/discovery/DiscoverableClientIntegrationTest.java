@@ -35,7 +35,7 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.is;
@@ -119,7 +119,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                     .when()
                         .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.externalUrl=https://baddomain.net", instanceId))
                     .then()
-                        .statusCode(is(SC_INTERNAL_SERVER_ERROR));
+                        .statusCode(is(SC_BAD_REQUEST));
 
                     unregister(MEDIATION_CLIENT_URI);
                     isRegistered(false, MEDIATION_CLIENT_URI);

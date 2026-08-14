@@ -36,7 +36,7 @@ public class DomainAllowListExceptionMapper implements ExceptionMapper<DomainAll
         var messageView = messageService.createMessage("org.zowe.apiml.common.metadataNotAllowedInRegistration").mapToView();
         try {
             return Response
-                .status(Response.Status.INTERNAL_SERVER_ERROR)
+                .status(Response.Status.BAD_REQUEST)
                 .type(MediaType.APPLICATION_JSON)
                 .entity(objectMapper.writeValueAsString(messageView))
                 .build();
