@@ -221,6 +221,13 @@ messages:
       reason: "Using HTTP scheme in the URL is not allowed without AT-TLS."
       action: "Use HTTPS protocol or enable AT-TLS."
 
+    - key: org.zowe.apiml.common.metadataNotAllowedInRegistration
+      number: ZWEAM604
+      type: WARNING
+      text: "Invalid metadata found in registration"
+      reason: "The URL / IP Address is not allowed"
+      action: "Validate URL / IP Address against the allowed domains configuration."
+
     # Service specific messages
     # 700-999
 
