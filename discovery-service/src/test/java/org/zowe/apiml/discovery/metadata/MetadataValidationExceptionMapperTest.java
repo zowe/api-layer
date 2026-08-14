@@ -23,7 +23,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 
-import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -52,7 +52,7 @@ class MetadataValidationExceptionMapperTest {
 
             var response = exceptionMapper.toResponse(new DomainAllowListMetadataException("URLs not allowed found for instance"));
 
-            assertEquals(SC_INTERNAL_SERVER_ERROR, response.getStatus());
+            assertEquals(SC_BAD_REQUEST, response.getStatus());
             assertEquals(MediaType.APPLICATION_JSON_TYPE, response.getMediaType());
             assertEquals("""
                     {"messages":[{"messageType":"WARNING","messageNumber":"ZWEAM604W","messageContent":"Invalid metadata found in registration","messageKey":"org.zowe.apiml.common.metadataNotAllowedInRegistration"}]}
