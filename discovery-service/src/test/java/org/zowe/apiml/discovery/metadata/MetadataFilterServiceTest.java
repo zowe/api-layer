@@ -76,6 +76,7 @@ class MetadataFilterServiceTest {
             "apiml.documentationUrl, invalid-url, false, org.zowe.apiml.common.urlNotAllowed",
             "apiml.externalUrl, HTTPS://LOCALHOST:8080, true, ''",
             "apiml.externalUrl, HTTPS://INVALID.ORG:8080, false, org.zowe.apiml.common.urlNotAllowed",
+            "apiml.externalUrl, httpsBlah://localhost:8080, false, org.zowe.apiml.common.urlNotAllowed",
             "apiml.externalUrl, http://localhost:8080, false, org.zowe.apiml.common.schemeNotAllowed",
             "apiml.externalUrl, https://invalid.org:8080null, false, org.zowe.apiml.common.urlNotAllowed",
             "apiml.externalUrl, https://localhost:8080null, true, ''"
