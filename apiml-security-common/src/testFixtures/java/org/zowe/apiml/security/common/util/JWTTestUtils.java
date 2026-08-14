@@ -103,7 +103,7 @@ public class JWTTestUtils {
     @SneakyThrows
     public static String createTokenWithUserFields() {
         var now = Instant.now();
-        var jwkAndSet = loadPrivateKey("../keystore/localhost/localhost.keystore.p12", "localhost", "password");
+        var jwkAndSet = loadPrivateKey("../keystore/service/service.keystore.p12", "localhost", "password");
         return Jwts.builder()
             .header().keyId("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4").and()
             .subject("oidc.username")
