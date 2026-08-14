@@ -41,7 +41,7 @@ class MetadataValidationFilterTest extends DiscoveryFunctionalTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        String clientKeystore = "../keystore/client_cert/client-certs.p12";
+        String clientKeystore = "../keystore/client/client-certs.p12";
         SslContextConfigurer configurer = new SslContextConfigurer(
             keystorePassword,
             clientKeystore,
