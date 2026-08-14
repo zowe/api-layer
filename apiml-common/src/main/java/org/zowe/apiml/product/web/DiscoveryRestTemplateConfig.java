@@ -59,9 +59,10 @@ public class DiscoveryRestTemplateConfig {
     @Bean
     RestClientDiscoveryClientOptionalArgs defaultArgs(@Value("${eureka.client.serviceUrl.defaultZone}") String eurekaServerUrl,
                                                       @Qualifier("secureSslContext") SSLContext secureSslContext,
-                                                      HostnameVerifier secureHostnameVerifier
+                                                      HostnameVerifier secureHostnameVerifier,
+                                                      @Qualifier("discoveryRestTemplatePooledConnectionManager") HttpClientConnectionManager httpClientConnectionManager
     ) {
-        RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier(), RestClient::builder);
+        var clientArgs = new RestClientDiscoveryClientOptionalArgs(getDefaultEurekaClientHttpRequestFactorySupplier(httpClientConnectionManager), RestClient::builder);
 
         if (eurekaServerUrl.startsWith("http://")) {
             if (!isClientAttlsEnabled) {
@@ -75,31 +76,12 @@ public class DiscoveryRestTemplateConfig {
         return clientArgs;
     }
 
-    public static EurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier() {
-        return (sslContext, hostnameVerifier) -> {
-            var requestFactory = new HttpComponentsClientHttpRequestFactory();
-            var httpClientBuilder = HttpClients
-                .custom()
-                .evictExpiredConnections()
-                .evictIdleConnections(TimeValue.ofSeconds(IDLE_TIMEOUT))
-                .setConnectionManager(buildConnectionManager(sslContext, hostnameVerifier));
-            RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+    @Bean("discoveryRestTemplatePooledConnectionManager")
+    HttpClientConnectionManager httpClientConnectionManager(@Qualifier("secureSslContext") SSLContext sslContext,
+                                                            HostnameVerifier hostnameVerifier) {
+        var connectionManagerBuilder = PoolingHttpClientConnectionManagerBuilder.
+        create();
 
-            requestConfigBuilder.setConnectionRequestTimeout(
-                Timeout.of(REQUEST_TIMEOUT, TimeUnit.MILLISECONDS));
-
-            httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
-
-            CloseableHttpClient httpClient = httpClientBuilder.build();
-
-            requestFactory.setHttpClient(httpClient);
-            return requestFactory;
-        };
-    }
-
-    private static HttpClientConnectionManager buildConnectionManager(SSLContext sslContext, HostnameVerifier hostnameVerifier) {
-        PoolingHttpClientConnectionManagerBuilder connectionManagerBuilder = PoolingHttpClientConnectionManagerBuilder
-            .create();
         DefaultClientTlsStrategy tlsStrategy;
         if (sslContext != null) {
             if (hostnameVerifier != null) {
@@ -121,5 +103,28 @@ public class DiscoveryRestTemplateConfig {
         return connectionManagerBuilder.build();
     }
 
+    public static EurekaClientHttpRequestFactorySupplier getDefaultEurekaClientHttpRequestFactorySupplier(HttpClientConnectionManager httpClientConnectionManager) {
+        return (sslContext, hostnameVerifier) -> {
+            // what happens here is called many times over long runtimes everytime the discovery service re-creates clients
+            var requestFactory = new HttpComponentsClientHttpRequestFactory();
+            var httpClientBuilder = HttpClients
+                .custom()
+                .evictExpiredConnections()
+                .evictIdleConnections(TimeValue.ofSeconds(IDLE_TIMEOUT))
+                .setConnectionManager(httpClientConnectionManager)
+                .setConnectionManagerShared(true);
+            RequestConfig.Builder requestConfigBuilder = RequestConfig.custom();
+
+            requestConfigBuilder.setConnectionRequestTimeout(
+                Timeout.of(REQUEST_TIMEOUT, TimeUnit.MILLISECONDS));
+
+            httpClientBuilder.setDefaultRequestConfig(requestConfigBuilder.build());
+
+            CloseableHttpClient httpClient = httpClientBuilder.build();
+
+            requestFactory.setHttpClient(httpClient);
+            return requestFactory;
+        };
+    }
 
 }
