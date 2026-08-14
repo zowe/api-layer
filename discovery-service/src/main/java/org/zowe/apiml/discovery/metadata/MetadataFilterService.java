@@ -320,7 +320,7 @@ public class MetadataFilterService implements InitializingBean {
         });
 
         if (!result.get() && !onlyWarn) {
-            throw new MetadataValidationException("URLs not allowed found for instance " + info.getInstanceId());
+            throw new DomainAllowListMetadataException("URLs not allowed found for instance " + info.getInstanceId());
         }
 
         return info;
