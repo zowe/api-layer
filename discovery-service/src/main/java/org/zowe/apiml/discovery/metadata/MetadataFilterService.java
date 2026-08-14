@@ -15,6 +15,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.net.InetAddresses;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -122,6 +123,32 @@ public class MetadataFilterService implements InitializingBean {
         return Arrays.stream(allowedAddresses).anyMatch(address::equals);
     }
 
+    String getIpAddress(String domain) {
+        if (StringUtils.isBlank(domain)) {
+            return null;
+        }
+        var allowedAddresses = domainToIpAddresses.get(domain, this::getInetAddresses);
+        if (ArrayUtils.isEmpty(allowedAddresses)) {
+            return null;
+        }
+        return Arrays.stream(allowedAddresses)
+            .filter(Inet4Address.class::isInstance)
+            .findFirst()
+            .orElse(allowedAddresses[0])
+            .getHostAddress();
+    }
+
+    boolean isLocalIpAddress(InetAddress ipAddress) {
+        try {
+            return NetworkInterface.networkInterfaces()
+                .flatMap(NetworkInterface::inetAddresses)
+                .anyMatch(ipAddress::equals);
+        } catch (SocketException e) {
+            log.debug("Cannot list local IP address: {}", e.getMessage());
+            return false;
+        }
+    }
+
     boolean isAllowedIpAddress(String label, String ipAddress, InstanceInfo info) {
         if (StringUtils.isBlank(ipAddress)) {
             return true;
@@ -133,7 +160,7 @@ public class MetadataFilterService implements InitializingBean {
         }
 
         var address = InetAddresses.forString(ipAddress);
-        if (address.isAnyLocalAddress() || address.isLoopbackAddress()) {
+        if (address.isAnyLocalAddress() || address.isLoopbackAddress() || isLocalIpAddress(address)) {
             // local address (ie. loopback 127.0.0.1) is allowed as default
             return true;
         }
@@ -262,10 +289,12 @@ public class MetadataFilterService implements InitializingBean {
         return result.get();
     }
 
-    public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
+    public InstanceInfo verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
         if (!isAllowedIpAddress("IP Address", info.getIPAddr(), info)) {
-            result.set(false);
+            log.debug("IP address {} is not allowed. It is removed from the registration data.", info.getIPAddr());
+            // this is updating the same instance even it looks like creating a new instance of InstanceInfo
+            info = new InstanceInfo.Builder(info).setIPAddr(getIpAddress(info.getHostName())).build();
         }
         if (!validateUrl("Instance Hostname", info.getHostName(), info)) {
             result.set(false);
@@ -290,8 +319,9 @@ public class MetadataFilterService implements InitializingBean {
             }
         }
 
+        var finalInstanceInfo = info;
         info.getMetadata().forEach((key, value) -> {
-            var metadataVerificationResult = verifyMetadataEntry(key, value, info);
+            var metadataVerificationResult = verifyMetadataEntry(key, value, finalInstanceInfo);
             if (!metadataVerificationResult) {
                 result.set(false);
             }
@@ -301,6 +331,7 @@ public class MetadataFilterService implements InitializingBean {
             throw new DomainAllowListMetadataException("URLs not allowed found for instance " + info.getInstanceId());
         }
 
+        return info;
     }
 
 }

@@ -207,7 +207,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * @param info the instance info
      */
     private void validateInstanceInfo(InstanceInfo info) {
-        metadataFilterService.verifyAllowedDomains(info);
+        info = metadataFilterService.verifyAllowedDomains(info);
 
         String instanceId = info.getInstanceId();
         String appName = StringUtils.lowerCase(info.getAppName());
