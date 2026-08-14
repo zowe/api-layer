@@ -263,11 +263,11 @@ class MetadataFilterServiceTest {
                 "127.0.0.1",
                 "0.0.0.0"
             })
-            void givenLocalAddress_whenCheckIpAddress_thenReturnTrue(String address) {
+            void givenLocalAddress_whenCheckIpAddress_thenReturnFalse(String address) {
                 var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", "localhost");
+                ReflectionTestUtils.setField(service,"allowedDomains", "non-localhost");
                 service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, address, INSTANCE_INFO));
+                assertFalse(service.isAllowedIpAddress(IP_LABEL, address, INSTANCE_INFO));
             }
 
             @Test
@@ -330,15 +330,20 @@ class MetadataFilterServiceTest {
                 assertTrue(service.isAllowedIpAddress(IP_LABEL, InetAddress.getLocalHost().getHostAddress(), info));
             }
 
-            @ParameterizedTest(name = "Given local address {0} when validate then pass")
+            @ParameterizedTest(name = "Given local address {0} when validate then fail")
             @MethodSource("localIpAddresses")
             void givenLocalIpAddress_whenValidate_itIsAccepted(String ipAddress) {
-                when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
-                when(instanceInfo.getIPAddr()).thenReturn(ipAddress);
-                lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+                ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "non-local");
+                metadataFilterService.afterPropertiesSet();
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
-                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
+                InstanceInfo ii = InstanceInfo.Builder.newBuilder()
+                    .setIPAddr(ipAddress)
+                    .setAppName("service")
+                    .setInstanceId("test-instance")
+                    .build();
+
+                metadataFilterService.verifyAllowedDomains(ii);
+                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
             }
 
             static Stream<Arguments> localIpAddresses() throws SocketException {
