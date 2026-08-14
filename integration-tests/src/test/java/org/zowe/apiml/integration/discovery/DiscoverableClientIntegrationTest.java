@@ -35,7 +35,6 @@ import java.util.Map;
 import static io.restassured.RestAssured.given;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
