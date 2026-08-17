@@ -51,6 +51,7 @@ group 'org.zowe.apiml'
 
 apply plugin: 'java-library'
 
+apply from: 'gradle/certificates.gradle'
 apply from: 'gradle/license.gradle'
 apply from: 'gradle/publish.gradle'
 apply from: 'gradle/sonar.gradle'
@@ -185,10 +186,22 @@ subprojects {
     license {
         header = rootProject.file('.licence/EPL-2.0-license-header.txt')
         exclude '**/*.yml', '**/*.yaml', '**/*.json', '**/static', '**/*.sh', '**/*.txt', '**/*.p12', '**/*.xml', '**/*.jsp', '**/*.html', '**/*.jks', '**/*.properties'
+        exclude '**/*.pub', '**/*.cer', '**/*.crt', '**/*.pem', '**/*.key', '**/*.csr', '**/*.der'
     }
 
     tasks.withType(Test) {
         maxParallelForks = 1
+        // Certificates are not committed - generate them before anything reads them.
+        dependsOn rootProject.tasks.named('generateCertificates')
+    }
+
+    // These two modules resolve certificate material by relative path rather than
+    // from the classpath, so the generator writes copies into their test resources.
+    // Their resource processing therefore consumes generateCertificates' output.
+    if (project.name in ['zaas-client', 'common-service-core']) {
+        tasks.matching { it.name == 'processTestResources' }.configureEach {
+            dependsOn rootProject.tasks.named('generateCertificates')
+        }
     }
 }
 
@@ -312,8 +325,11 @@ task publishAllSDKVersions {
 task nodejsClean(type: Delete) {
     group = 'npm'
     if (cleanNode == 'true') {
-        delete 'api-catalog-ui/tools/nodejs', 'api-catalog-ui/tools/npm', 'api-catalog-ui/tools/yarn'
-        delete 'onboarding-enabler-nodejs-sample-app/tools/nodejs', 'onboarding-enabler-nodejs-sample-app/tools/npm', 'onboarding-enabler-nodejs-sample-app/tools/yarn'
+        // Every project that applies the Node plugin keeps its toolchain in <project>/tools
+        ['api-catalog-ui', 'zowe-cli-id-federation-plugin',
+         'onboarding-enabler-nodejs', 'onboarding-enabler-nodejs-sample-app'].each { name ->
+            delete "$name/tools/nodejs", "$name/tools/npm", "$name/tools/yarn"
+        }
     }
 }
 

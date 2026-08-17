@@ -88,23 +88,23 @@ public class WebClientConfig {
         }
     }
 
-    @Bean
-    @Primary
-    WebClient webClient(HttpClient httpClient) {
-        HttpClient base = getHttpClient(httpClient, false)
-            .followRedirect(true);
+    WebClient createWebClient(HttpClient httpClient) {
         return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(base))
+            .clientConnector(new ReactorClientHttpConnector(httpClient.followRedirect(true)))
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
             .build();
     }
 
     @Bean
+    @Primary
+    WebClient webClient(HttpClient httpClient) {
+        return createWebClient(getHttpClient(httpClient, false));
+    }
+
+    @Bean
     WebClient webClientClientCert(HttpClient httpClient) {
         boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isClientAttlsEnabled;
-        return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, !isKeyLoadPrevented)))
-            .build();
+        return createWebClient(getHttpClient(httpClient, !isKeyLoadPrevented));
     }
 
 }

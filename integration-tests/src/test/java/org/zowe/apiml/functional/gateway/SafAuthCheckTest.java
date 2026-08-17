@@ -50,25 +50,43 @@ class SafAuthCheckTest {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
-    private final SafCheckRequest request = new SafCheckRequest(
+    private final SafCheckRequest requestRead = new SafCheckRequest(
         "ZOWE",
         "APIML.SERVICES",
         "READ"
+    );
+
+    private final SafCheckRequest requestControl = new SafCheckRequest(
+        "ZOWE",
+        "APIML.SERVICES",
+        "CONTROL"
     );
 
     @Nested
     class GivenClientCertAuthentication {
 
         @Test
-        void returnReturn204() {
+        void return204() {
             given()
                 .config(SslContext.clientCertUser)
                 .contentType(ContentType.JSON)
-                .body(request)
+                .body(requestRead)
             .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
             .then()
                 .statusCode(SC_NO_CONTENT);
+        }
+
+        @Test
+        void return401WhenDontHaveAccess() {
+            given()
+                .config(SslContext.clientCertUser)
+                .contentType(ContentType.JSON)
+                .body(requestControl)
+            .when()
+                .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
+            .then()
+                .statusCode(is(SC_UNAUTHORIZED));
         }
     }
 
@@ -80,12 +98,25 @@ class SafAuthCheckTest {
             String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
             given()
                 .contentType(ContentType.JSON)
-                .body(request)
+                .body(requestRead)
                 .header("Authorization", "Bearer " + token)
             .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
             .then()
                 .statusCode(is(SC_NO_CONTENT));
+        }
+
+        @Test
+        void return401WhenDontHaveAccess() {
+            String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
+            given()
+                .contentType(ContentType.JSON)
+                .body(requestControl)
+                .header("Authorization", "Bearer " + token)
+            .when()
+                .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
+            .then()
+                .statusCode(is(SC_UNAUTHORIZED));
         }
     }
 
@@ -96,7 +127,7 @@ class SafAuthCheckTest {
         void return401() {
             given()
                 .contentType(ContentType.JSON)
-                .body(request)
+                .body(requestRead)
                 .header("Authorization", "Bearer invalidToken")
             .when()
                 .post(HttpRequestUtils.getUriFromGateway(SAF_AUTH_CHECK))
