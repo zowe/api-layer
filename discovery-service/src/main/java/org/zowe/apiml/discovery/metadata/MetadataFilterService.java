@@ -12,6 +12,7 @@ package org.zowe.apiml.discovery.metadata;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.base.Objects;
 import com.google.common.net.InetAddresses;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +26,18 @@ import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
-import java.net.*;
-import java.util.*;
+import java.net.IDN;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -73,15 +84,14 @@ public class MetadataFilterService implements InitializingBean {
         if (onlyWarn) {
             log.info("Only warning on URL not allowed is enabled");
         }
-
     }
 
-    boolean isAllowedDomain(String domain) {
-        if (StringUtils.isBlank(domain)) {
+    boolean isAllowedDomain(String input) {
+        if (StringUtils.isBlank(input)) {
             return true;
         }
-        var domainToCheck = domain.endsWith("null") ? domain.substring(0, domain.lastIndexOf("null")) : domain;
-        return allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, domainToCheck));
+        var inputToCheck = input.endsWith("null") ? input.substring(0, input.lastIndexOf("null")) : input;
+        return allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, inputToCheck));
     }
 
     private InetAddress[] getInetAddresses(String domain) {
@@ -169,18 +179,31 @@ public class MetadataFilterService implements InitializingBean {
         return allowed;
     }
 
-    private String extractDomain(String url) {
+    private String extractDomain(String input) {
         try {
-            return new URL(url).getHost().toLowerCase();
+            return new URL(input).getHost().toLowerCase();
         } catch (MalformedURLException e) {
-            log.debug("'{}' is not a valid URL", url);
+            // continue
         }
         try {
-            return IDN.toASCII(url, IDN.ALLOW_UNASSIGNED);
+            return IDN.toASCII(input, IDN.ALLOW_UNASSIGNED);
         } catch (IllegalArgumentException e) {
-            log.debug("'{}' is not a valid hostname", url);
+            // continue
         }
+        if (isIpAddress(input)) {
+            return input;
+        }
+        log.debug("{} is not a URL / hostname / IP Address", input);
         return null;
+    }
+
+    private boolean isIpAddress(String input) {
+        try {
+            new IpAddressMatcher(input);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     private String getScheme(String url) {
@@ -216,60 +239,61 @@ public class MetadataFilterService implements InitializingBean {
     /**
      *
      * @param allowedDomain
-     * @param domain
+     * @param input
      * @return
      */
-    private boolean isAllowed(String allowedDomain, String domain) {
-        log.debug("checking domain {} against allowed domain {}", domain, allowedDomain);
+    private boolean isAllowed(String allowedDomain, String input) {
+        log.debug("checking domain {} against allowed domain {}", input, allowedDomain);
         allowedDomain = allowedDomain.toLowerCase();
-        domain = domain.toLowerCase();
-        domain = extractDomain(domain);
-        if (domain == null) {
+        input = input.toLowerCase();
+        input = extractDomain(input);
+        if (input == null) {
             return false;
         }
-        if (domain.equals(allowedDomain)) {
+        if (input.equals(allowedDomain)) {
             return true;
         }
         if (isWildCard(allowedDomain)) {
-            return isMatchingWildCard(domain, allowedDomain);
+            return isMatchingWildCard(input, allowedDomain);
         }
-        // if (isAllowedIpAddress(allowedDomain, domain, null)) {
-
-        // }
-
-
-        IpAddressMatcher matcher = new IpAddressMatcher(domain);
-
+        if (isAllowedIpAddress(input, allowedDomain)) {
+            return true;
+        }
         return false;
     }
 
-    // private boolean isIpAddress(String domain) {
-    //     try {
+    private boolean isAllowedIpAddress(String input, String allowedDomain) {
+        if (Objects.equal(input, allowedDomain)) {
+            return true;
+        }
+        try {
+            var ipOrRange = new IpAddressMatcher(allowedDomain);
+            return ipOrRange.matches(input);
+        } catch(IllegalArgumentException e) {
+            log.debug("{} is not a valid IP Address or IP address range", allowedDomain);
+            return false;
+        }
+    }
 
-    //     } catch (IllegalArgumentException e) {
-
-    //     }
-    // }
-
-    private boolean validateEntry(String label, String url, String instanceId) {
-        if (StringUtils.isBlank(url)) {
+    private boolean validateEntry(String label, String input, String instanceId) {
+        if (StringUtils.isBlank(input)) {
             return true;
         }
 
         boolean isValid = true;
 
-        if (!isAllowedDomain(url)) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, url, instanceId);
+        if (!isAllowedDomain(input)) {
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, input, instanceId);
             isValid = false;
         }
 
-        if (!isAllowedScheme(url)) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED, label, url, instanceId);
+        if (!isAllowedScheme(input)) {
+            apimlLogger.log(ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED, label, input, instanceId);
             isValid = false;
         }
 
         if (isValid && log.isTraceEnabled()) {
-            log.trace("URL {} is allowed for {}", url, label);
+            log.trace("URL {} is allowed for {}", input, label);
         }
 
         return isValid;
@@ -308,44 +332,45 @@ public class MetadataFilterService implements InitializingBean {
 
     public InstanceInfo verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
-        if (!isAllowedIpAddress("IP Address", info.getIPAddr(), info.getHostName(), info.getInstanceId())) {
+        var instanceId = info.getInstanceId();
+
+        if (!validateEntry("IP Address", info.getIPAddr(), instanceId)) {
             log.debug("IP address {} is not allowed. It is removed from the registration data.", info.getIPAddr());
             // this is updating the same instance even it looks like creating a new instance of InstanceInfo
             info = new InstanceInfo.Builder(info).setIPAddr(getIpAddress(info.getHostName())).build();
         }
-        var infoFinalRef = info;
-        if (!validateEntry("Instance Hostname", info.getHostName(), info.getInstanceId())) {
+        if (!validateEntry("Instance Hostname", info.getHostName(), instanceId)) {
             result.set(false);
         }
-        if (!validateEntry("Home Page URL", info.getHomePageUrl(), info.getInstanceId())) {
+        if (!validateEntry("Home Page URL", info.getHomePageUrl(), instanceId)) {
             result.set(false);
         }
-        if (!validateEntry("HealthCheck URL", info.getHealthCheckUrl(), info.getInstanceId())) {
+        if (!validateEntry("HealthCheck URL", info.getHealthCheckUrl(), instanceId)) {
             result.set(false);
         }
-        if (!validateEntry("Status Page URL", info.getStatusPageUrl(), info.getInstanceId())) {
+        if (!validateEntry("Status Page URL", info.getStatusPageUrl(), instanceId)) {
             result.set(false);
         }
-        if (!validateEntry("Secure Health Check URL", info.getSecureHealthCheckUrl(), info.getInstanceId())) {
+        if (!validateEntry("Secure Health Check URL", info.getSecureHealthCheckUrl(), instanceId)) {
             result.set(false);
         }
 
         if (info.getMetadata().containsKey("apiml.corsAllowedOrigins")) {
-            var corsVerificationResult = verifyCorsAllowedOrigins(info.getMetadata().get("apiml.corsAllowedOrigins"), info.getInstanceId());
+            var corsVerificationResult = verifyCorsAllowedOrigins(info.getMetadata().get("apiml.corsAllowedOrigins"), instanceId);
             if (!corsVerificationResult) {
                 result.set(false);
             }
         }
 
         info.getMetadata().forEach((key, value) -> {
-            var metadataVerificationResult = verifyMetadataEntry(key, value, infoFinalRef.getInstanceId());
+            var metadataVerificationResult = verifyMetadataEntry(key, value, instanceId);
             if (!metadataVerificationResult) {
                 result.set(false);
             }
         });
 
         if (!result.get() && !onlyWarn) {
-            throw new DomainAllowListMetadataException("URLs not allowed found for instance " + info.getInstanceId());
+            throw new DomainAllowListMetadataException("URLs not allowed found for instance " + instanceId);
         }
 
         return info;
