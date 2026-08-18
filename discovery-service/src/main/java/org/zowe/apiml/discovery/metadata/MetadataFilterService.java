@@ -138,17 +138,6 @@ public class MetadataFilterService implements InitializingBean {
             .getHostAddress();
     }
 
-    boolean isLocalIpAddress(InetAddress ipAddress) {
-        try {
-            return NetworkInterface.networkInterfaces()
-                .flatMap(NetworkInterface::inetAddresses)
-                .anyMatch(ipAddress::equals);
-        } catch (SocketException e) {
-            log.debug("Cannot list local IP address: {}", e.getMessage());
-            return false;
-        }
-    }
-
     boolean isAllowedIpAddress(String label, String ipAddress, InstanceInfo info) {
         if (StringUtils.isBlank(ipAddress)) {
             return true;
@@ -159,13 +148,8 @@ public class MetadataFilterService implements InitializingBean {
             return true;
         }
 
-        var address = InetAddresses.forString(ipAddress);
-        if (address.isAnyLocalAddress() || address.isLoopbackAddress() || isLocalIpAddress(address)) {
-            // local address (ie. loopback 127.0.0.1) is allowed as default
-            return true;
-        }
-
         // check cache and if entry misses verify ip against all allowed domains
+        var address = InetAddresses.forString(ipAddress);
         var hostname = info.getHostName();
         var allowed = ipAllowed.get(address, ip ->
             allowedDomainsSet.stream().anyMatch(allowedDomain ->
@@ -185,8 +169,13 @@ public class MetadataFilterService implements InitializingBean {
             return new URL(url).getHost().toLowerCase();
         } catch (MalformedURLException e) {
             log.debug("'{}' is not a valid URL", url);
-            return url;
         }
+        try {
+            return IDN.toASCII(url, IDN.ALLOW_UNASSIGNED);
+        } catch (IllegalArgumentException e) {
+            log.debug("'{}' is not a valid hostname", url);
+        }
+        return null;
     }
 
     private String getScheme(String url) {
@@ -224,6 +213,9 @@ public class MetadataFilterService implements InitializingBean {
         allowedDomain = allowedDomain.toLowerCase();
         domain = domain.toLowerCase();
         domain = extractDomain(domain);
+        if (domain == null) {
+            return false;
+        }
         if (domain.equals(allowedDomain)) {
             return true;
         }
