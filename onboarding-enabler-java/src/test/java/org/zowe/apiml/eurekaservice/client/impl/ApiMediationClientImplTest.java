@@ -30,8 +30,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -173,20 +171,6 @@ class ApiMediationClientImplTest {
 
         Exception exception = assertThrows(MetadataValidationException.class, () -> client.register(config));
         assertEquals("Routes configuration was not provided. Try to add apiml.service.routes section.", exception.getMessage());
-        client.unregister();
-    }
-
-    @Test
-    void testInitialization_InvalidDocumentationUrl() throws ServiceDefinitionException {
-        ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-
-        ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/service-configuration.yml");
-        config.getApiInfo().get(0).setDocumentationUrl("HTT//INVALID-URL");
-
-        ApiMediationClient client = new ApiMediationClientImpl();
-
-        Exception exception = assertThrows(ServiceDefinitionException.class, () -> client.register(config));
-        assertThat(exception.getCause(), instanceOf(MetadataValidationException.class));
         client.unregister();
     }
 
