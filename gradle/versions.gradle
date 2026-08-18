@@ -41,7 +41,7 @@ dependencyResolutionManagement {
             version('commonsFileUpload', '1.6.0')
             version('ehCache', '3.10.9')
             version('eureka', '1.10.18')
-            version('githubClassgraph', '4.8.186')
+            version('githubClassgraph', '4.8.192')
             version('gradleGitProperties', '2.3.1') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('gson', '2.14.0')
@@ -129,15 +129,15 @@ dependencyResolutionManagement {
                 strictly '[1.6.15, 1.7.0['
                 prefer '1.6.15'
             }
-            version('swagger3Core', '2.2.52')
-            version('swagger3Parser', '2.1.45')
+            version('swagger3Core', '2.2.53')
+            version('swagger3Parser', '2.1.46')
             version('swaggerCore', '1.6.16')
             version('swaggerInflector', '2.0.17')
-            version('swaggerJaxrs2', '2.2.52')
+            version('swaggerJaxrs2', '2.2.53')
             version('thymeleaf', '3.1.5.RELEASE')
             version('tomcat', '9.0.120')
             version('velocity', '2.4.1')
-            version('woodstoxCore', '7.2.1')
+            version('woodstoxCore', '7.2.2')
             version('woodstoxStax2', '4.3.0')
             version('xstream') {
                 // older versions are vulnerable to CVE-2022-40151, CVE-2022-40152, and CVE-2022-41966
