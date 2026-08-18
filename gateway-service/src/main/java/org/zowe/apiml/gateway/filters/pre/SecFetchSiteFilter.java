@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import static org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.PRE_DECORATION_FILTER_ORDER;
 import static org.zowe.apiml.gateway.filters.pre.SecFetchSitePolicy.REJECTION_MESSAGE;
+import static org.zowe.apiml.gateway.filters.pre.SecFetchSitePolicy.SEC_FETCH_SITE_HEADER;
 
 /**
  * Applies {@link SecFetchSitePolicy} to proxied HTTP requests going through the Zuul pipeline.
@@ -43,14 +44,14 @@ public class SecFetchSiteFilter extends PreZuulFilter {
         RequestContext context = RequestContext.getCurrentContext();
         HttpServletRequest request = context.getRequest();
 
-        if (!secFetchSitePolicy.isAllowed(request::getHeader)) {
+        if (!secFetchSitePolicy.isAllowed(request::getHeader, request)) {
             context.setSendZuulResponse(false);
             context.setResponseBody(REJECTION_MESSAGE);
             context.addZuulResponseHeader("Content-Type", MediaType.TEXT_PLAIN_VALUE);
             context.setResponseStatusCode(HttpStatus.FORBIDDEN.value());
 
             log.debug("Blocked cross-site {} {} - Sec-Fetch-Site={}",
-                request.getMethod(), request.getRequestURI(), request.getHeader(SecFetchSitePolicy.SEC_FETCH_SITE_HEADER));
+                request.getMethod(), request.getRequestURI(), request.getHeader(SEC_FETCH_SITE_HEADER));
 
             return null;
         }

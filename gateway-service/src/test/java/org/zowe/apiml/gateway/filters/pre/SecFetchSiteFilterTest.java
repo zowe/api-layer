@@ -59,7 +59,7 @@ class SecFetchSiteFilterTest {
 
         @BeforeEach
         void setup() {
-            when(secFetchSitePolicy.isAllowed(any())).thenReturn(true);
+            when(secFetchSitePolicy.isAllowed(any(), any())).thenReturn(true);
         }
 
         @Test
@@ -136,7 +136,7 @@ class SecFetchSiteFilterTest {
 
         @BeforeEach
         void setup() {
-            when(secFetchSitePolicy.isAllowed(any())).thenReturn(false);
+            when(secFetchSitePolicy.isAllowed(any(), any())).thenReturn(false);
         }
 
         @Test
