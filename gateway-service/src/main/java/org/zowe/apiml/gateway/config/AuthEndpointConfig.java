@@ -15,8 +15,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerRetryPolicy;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
-import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
+import org.springframework.cloud.client.loadbalancer.reactive.RetryableLoadBalancerExchangeFilterFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -65,15 +66,24 @@ public class AuthEndpointConfig {
     public AuthEndpointConfig(
         WebClient webClient,
         @Qualifier("webClientClientCert") WebClient webClientClientCert,
-        ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory
+        ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory,
+        LoadBalancerRetryPolicy.Factory retryPolicyFactory
     ) {
-        this.webClient = createLoadBalanced(webClient, serviceInstanceFactory);
-        this.webClientClientCert = createLoadBalanced(webClientClientCert, serviceInstanceFactory);
+        this.webClient = createLoadBalanced(webClient, serviceInstanceFactory, retryPolicyFactory);
+        this.webClientClientCert = createLoadBalanced(webClientClientCert, serviceInstanceFactory, retryPolicyFactory);
     }
 
-    private WebClient createLoadBalanced(WebClient webClient, ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory) {
+    private WebClient createLoadBalanced(
+        WebClient webClient,
+        ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory,
+        LoadBalancerRetryPolicy.Factory retryPolicyFactory
+    ) {
         return webClient.mutate()
-            .filter(new ReactorLoadBalancerExchangeFilterFunction(serviceInstanceFactory, Collections.emptyList()))
+            .filter(new RetryableLoadBalancerExchangeFilterFunction(
+                retryPolicyFactory,
+                serviceInstanceFactory,
+                Collections.emptyList()
+            ))
             .build();
     }
 

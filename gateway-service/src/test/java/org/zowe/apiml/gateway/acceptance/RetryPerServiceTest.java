@@ -10,111 +10,244 @@
 
 package org.zowe.apiml.gateway.acceptance;
 
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.InstanceInfo.InstanceStatus;
+import com.sun.net.httpserver.HttpExchange;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
+import org.zowe.apiml.product.constants.CoreService;
+import reactor.core.publisher.Flux;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.stream.IntStream;
 
 import static io.restassured.RestAssured.given;
+import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-@MicroservicesAcceptanceTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@TestPropertySource(properties = {
-    "apiml.gateway.servicesToDisableRetry=no-retry-service,no-RETRY-Service-2"
-})
-class RetryPerServiceTest extends AcceptanceTestWithMockServices {
+class RetryPerServiceTest {
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
 
-    private MockService mockService;
-    private MockService mockNoRetryService;
-    private MockService mockNoRetryService2;
-
-    @BeforeAll
-    void startMockService() {
-        mockService = mockService("serviceid1").scope(MockService.Scope.CLASS)
-                .addEndpoint("/503").responseCode(503)
-            .and()
-                .addEndpoint("/401").responseCode(401)
-            .and().start();
-
-        mockNoRetryService = mockService("no-retry-service").scope(MockService.Scope.CLASS)
-            .addEndpoint("/503").responseCode(503)
-            .and().start();
-
-        mockNoRetryService2 = mockService("No-Retry-Service-2").scope(MockService.Scope.CLASS)
-            .addEndpoint("/503").responseCode(503)
-            .and().start();
-    }
-
     @Nested
-    class GivenRetryOnAllOperationsIsDisabled {
-        //Only default GET method remains active
+    @MicroservicesAcceptanceTest
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @TestPropertySource(properties = {
+        "apiml.gateway.servicesToDisableRetry=no-retry-service,no-RETRY-Service-2"
+    })
+    class GivenNormalService extends AcceptanceTestWithMockServices {
 
-        @Test
-        void whenGetReturnsUnavailable_thenRetry() {
-            given()
-                .header(HEADER_X_FORWARD_TO, "serviceid1")
-            .when()
-                .get(basePath + "/503")
-            .then()
-                .statusCode(is(SC_SERVICE_UNAVAILABLE));
-            assertEquals(6, mockService.getCounter());
+        private MockService mockService;
+        private MockService mockNoRetryService;
+        private MockService mockNoRetryService2;
+
+        @BeforeAll
+        void startMockService() {
+            mockService = mockService("serviceid1").scope(MockService.Scope.CLASS)
+                    .addEndpoint("/503").responseCode(503)
+                .and()
+                    .addEndpoint("/401").responseCode(401)
+                .and().start();
+
+            mockNoRetryService = mockService("no-retry-service").scope(MockService.Scope.CLASS)
+                .addEndpoint("/503").responseCode(503)
+                .and().start();
+
+            mockNoRetryService2 = mockService("No-Retry-Service-2").scope(MockService.Scope.CLASS)
+                .addEndpoint("/503").responseCode(503)
+                .and().start();
         }
 
-        @Test
-        void whenRequestReturnsUnauthorized_thenDontRetry() {
-            for (int i = 1; i < 6; i++) {
+        @Nested
+        class GivenRetryOnAllOperationsIsDisabled {
+            //Only default GET method remains active
+
+            @Test
+            void whenGetReturnsUnavailable_thenRetry() {
                 given()
                     .header(HEADER_X_FORWARD_TO, "serviceid1")
                 .when()
-                    .get(basePath + "/401")
+                    .get(basePath + "/503")
                 .then()
-                    .statusCode(is(SC_UNAUTHORIZED));
-                assertEquals(i, mockService.getCounter());
+                    .statusCode(is(SC_SERVICE_UNAVAILABLE));
+                assertEquals(6, mockService.getCounter());
+            }
+
+            @Test
+            void whenRequestReturnsUnauthorized_thenDontRetry() {
+                for (int i = 1; i < 6; i++) {
+                    given()
+                        .header(HEADER_X_FORWARD_TO, "serviceid1")
+                    .when()
+                        .get(basePath + "/401")
+                    .then()
+                        .statusCode(is(SC_UNAUTHORIZED));
+                    assertEquals(i, mockService.getCounter());
+                }
+            }
+
+            @Test
+            void whenPostReturnsUnavailable_thenDontRetry() {
+                given()
+                    .header(HEADER_X_FORWARD_TO, "serviceid1")
+                .when()
+                    .post(basePath + "/503")
+                .then()
+                    .statusCode(is(SC_SERVICE_UNAVAILABLE));
+                assertEquals(1, mockService.getCounter());
+            }
+
+            @Test
+            void whenRetryForServiceIsDisabled_andGetReturnsUnavailable_thenDontRetry() {
+                given()
+                    .header(HEADER_X_FORWARD_TO, "no-retry-service")
+                    .when()
+                    .get(basePath + "/503")
+                    .then()
+                    .statusCode(is(SC_SERVICE_UNAVAILABLE));
+                assertEquals(1, mockNoRetryService.getCounter());
+            }
+
+            @Test
+            void whenRetryForServiceIsDisabled_andGetReturnsUnavailable_onMixedCaseServiceId_thenDontRetry() {
+                given()
+                    .header(HEADER_X_FORWARD_TO, "no-retry-service-2")
+                    .when()
+                    .get(basePath + "/503")
+                    .then()
+                    .statusCode(is(SC_SERVICE_UNAVAILABLE));
+
+                assertEquals(1, mockNoRetryService2.getCounter());
+            }
+
+        }
+
+    }
+
+    @Nested
+    @MicroservicesAcceptanceTest
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    class GivenZaas extends AcceptanceTestWithMockServices {
+
+        private static final String AUTH_COOKIE = "apimlAuthenticationToken";
+
+        private MockService zaasService;
+
+        @MockitoSpyBean
+        private DiscoveryClient discoveryClient;
+
+        @MockitoSpyBean
+        private ReactiveDiscoveryClient reactiveDiscoveryClient;
+
+        @BeforeAll
+        void setup() throws IOException {
+            zaasService = mockService("zaas").scope(MockService.Scope.CLASS)
+                .addEndpoint("/zaas/api/v1/auth/login")
+                    .responseCode(204)
+                    .assertion(he -> assertEquals("Basic dXNlcjpwYXNz", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
+                    .assertion(he -> assertEquals("POST", he.getRequestMethod()))
+                    .and()
+                .addEndpoint("/zaas/api/v1/auth/query")
+                    .responseCode(200)
+                    .assertion(he -> {
+                        assertNotNull(he);
+                    })
+                    .contentType(APPLICATION_JSON)
+                    .body("{\"status\":\"valid\"}")
+                    .and()
+                .addEndpoint("/zaas/api/v1/auth/access-token/revoke")
+                    .responseCode(405)
+                    .assertion(he -> assertEquals("GET", he.getRequestMethod()))
+                .and().start();
+        }
+
+        private String getBody(HttpExchange he) {
+            try {
+                return IOUtils.toString(he.getRequestBody(), StandardCharsets.UTF_8);
+            } catch (IOException ioe) {
+                fail(ioe);
+                return null;
             }
         }
 
-        @Test
-        void whenPostReturnsUnavailable_thenDontRetry() {
-            given()
-                .header(HEADER_X_FORWARD_TO, "serviceid1")
+        String login() {
+            return given()
+                .auth().preemptive().basic("user", "pass")
             .when()
-                .post(basePath + "/503")
+                .post(String.format("%s/gateway/api/v1/auth/login", basePath))
             .then()
-                .statusCode(is(SC_SERVICE_UNAVAILABLE));
-            assertEquals(1, mockService.getCounter());
+                .statusCode(SC_NO_CONTENT)
+                .extract().cookie(AUTH_COOKIE);
         }
 
         @Test
-        void whenRetryForServiceIsDisabled_andGetReturnsUnavailable_thenDontRetry() {
-            given()
-                .header(HEADER_X_FORWARD_TO, "no-retry-service")
+        void whenOneZaasUnresponsive_thenQueryDoesNotFail() {
+            var token = login();
+
+            // 3 out of 4 instances will fail
+            Mockito.when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
+                .thenReturn(List.of(
+                    buildZaasInfo(randomPort()), // TODO add other response codes?
+                    buildZaasInfo(randomPort()),
+                    buildZaasInfo(zaasService.getPort()),
+                    buildZaasInfo(randomPort())
+                ));
+
+            Mockito.when(reactiveDiscoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
+                .thenReturn(Flux.just(
+                    buildZaasInfo(randomPort()), // TODO add other response codes?
+                    buildZaasInfo(randomPort()),
+                    buildZaasInfo(zaasService.getPort()),
+                    buildZaasInfo(randomPort())
+                ));
+
+            for (int i = 0; i < 50; i ++) {
+                given()
+                    .cookie(AUTH_COOKIE, token)
                 .when()
-                .get(basePath + "/503")
+                    .get(String.format("%s/gateway/api/v1/auth/query", basePath))
                 .then()
-                .statusCode(is(SC_SERVICE_UNAVAILABLE));
-            assertEquals(1, mockNoRetryService.getCounter());
+                    .statusCode(SC_OK);
+            }
+
         }
 
-        @Test
-        void whenRetryForServiceIsDisabled_andGetReturnsUnavailable_onMixedCaseServiceId_thenDontRetry() {
-            given()
-                .header(HEADER_X_FORWARD_TO, "no-retry-service-2")
-                .when()
-                .get(basePath + "/503")
-                .then()
-                .statusCode(is(SC_SERVICE_UNAVAILABLE));
+        private int randomPort() {
+            return IntStream.range(32000, 65536).findAny().getAsInt();
+        }
 
-            assertEquals(1, mockNoRetryService2.getCounter());
+        private ServiceInstance buildZaasInfo(int port) {
+            var info = InstanceInfo.Builder.newBuilder();
+            info.setAppName("ZAAS");
+            info.setPort(port);
+            info.setHostName(zaasService.getHostname());
+            info.setStatus(InstanceStatus.UP);
+            info.setInstanceId("localhost:zaas:" + port);
+            return new EurekaServiceInstance(info.build());
         }
 
     }
