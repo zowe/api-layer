@@ -78,7 +78,7 @@ class SecFetchSitePolicyTest {
     }
 
     private boolean isAllowedWithoutRequest() {
-        return policy.isAllowed(headers::get);
+        return policy.isAllowed(headers::get, null);
     }
 
     private boolean isCrossSite() {
@@ -298,10 +298,10 @@ class SecFetchSitePolicyTest {
                 }
 
                 @Test
-                void givenNoRequest_thenTheMethodIsAssumedSafeAndThePathMatchersDoNotApply() {
-                    configureCrossSiteNavigationAntMatchers("/anotherservice/**");
+                void givenNoRequest_thenTheMethodCannotBeVerifiedAndTheNavigationIsBlocked() {
+                    configureCrossSiteNavigationAntMatchers("/serviceid/api/v1/**");
 
-                    assertTrue(isAllowedWithoutRequest());
+                    assertFalse(isAllowedWithoutRequest());
                 }
             }
         }
@@ -348,8 +348,9 @@ class SecFetchSitePolicyTest {
             configureSafeNavigationModes("navigate", "websocket");
             headers.put("Sec-Fetch-Mode", "websocket");
             headers.put("Sec-Fetch-Dest", "websocket");
+            request.setMethod("GET");
 
-            assertTrue(isAllowedWithoutRequest());
+            assertTrue(isAllowed());
         }
 
         @Test
@@ -396,6 +397,15 @@ class SecFetchSitePolicyTest {
             headers.put("Sec-Fetch-Site", "cross-site");
             headers.put("Sec-Fetch-Mode", "websocket");
             headers.put("Sec-Fetch-Dest", "websocket");
+
+            assertFalse(isAllowedWithoutRequest());
+        }
+
+        @Test
+        void givenWebSocketIsConfiguredAsSafe_thenTheHandshakeIsStillRejectedAsTheMethodIsUnknown() {
+            configureSafeNavigationModes("navigate", "websocket");
+            headers.put("Sec-Fetch-Site", "cross-site");
+            headers.put("Sec-Fetch-Mode", "websocket");
 
             assertFalse(isAllowedWithoutRequest());
         }

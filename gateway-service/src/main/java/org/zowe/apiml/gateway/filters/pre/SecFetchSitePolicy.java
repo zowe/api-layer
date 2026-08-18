@@ -61,19 +61,13 @@ public class SecFetchSitePolicy {
     public static final String SEC_FETCH_DEST_HEADER = "Sec-Fetch-Dest";
     public static final String REJECTION_MESSAGE = "Access denied.";
 
-    private static final Set<String> SAFE_SEC_FETCH_SITE_VALUES = new HashSet<>(Arrays.asList(
-        "same-origin",
-        "none"
-    ));
+    private static final Set<String> SAFE_SEC_FETCH_SITE_VALUES = new HashSet<>(Arrays.asList("same-origin","none"));
 
     /**
      * Methods that cannot change state on their own, hence are safe to allow for a cross-site
      * top-level navigation (a user following a link to the gateway).
      */
-    private static final Set<String> SAFE_METHODS = new HashSet<>(Arrays.asList(
-        "GET",
-        "HEAD"
-    ));
+    private static final Set<String> SAFE_METHODS = new HashSet<>(Arrays.asList("GET", "HEAD"));
 
     private static final RequestMatcher MATCHES_NOTHING = request -> false;
 
@@ -88,10 +82,10 @@ public class SecFetchSitePolicy {
 
     /**
      * The {@code Sec-Fetch-Mode} values that count as a top-level navigation. Configurable so that a
-     * deployment can narrow it, or widen it to for example {@code websocket} - which is the only way to
-     * accept a cross-site WebSocket handshake, as the handshake has no path to match against
-     * {@code crossSiteNavigationAntMatchers}. An empty list rejects every cross-site request that CORS
-     * has not already validated. Values are compared case-insensitively.
+     * deployment can narrow it, or widen it to accept cross-site WebSocket handshakes by adding
+     * {@code websocket} - a handshake is a GET, so the mode is what decides it. An empty list rejects
+     * every cross-site request that CORS has not already validated. Values are compared
+     * case-insensitively.
      */
     @Value("${security.secFetch.safeNavigationModes:navigate,same-origin}")
     private Set<String> safeNavigationModes;
@@ -142,14 +136,10 @@ public class SecFetchSitePolicy {
     }
 
     /**
-     * For callers that have no {@link HttpServletRequest} available, such as the WebSocket handshake.
-     * The path based rules cannot be evaluated then, so {@code crossSiteNavigationAntMatchers} never
-     * matches such a request.
+     * @param headerLookup resolves a request header by name
+     * @param request      the request being judged, {@code null} only for a caller that has none - the
+     *                     path, method and CORS rules cannot be applied then, and all three deny
      */
-    public boolean isAllowed(UnaryOperator<String> headerLookup) {
-        return isAllowed(headerLookup, null);
-    }
-
     public boolean isAllowed(UnaryOperator<String> headerLookup, @Nullable HttpServletRequest request) {
         if (!secFetchEnabled) {
             return true;
@@ -210,13 +200,8 @@ public class SecFetchSitePolicy {
      * listed in {@code security.secFetch.crossSiteNavigationAntMatchers}.
      */
     private boolean isSafeMethod(@Nullable HttpServletRequest request) {
-        // No request available: the only such caller is the WebSocket handshake, which RFC 6455 requires
-        // to be a GET. Whether it is accepted at all is decided by 'websocket' being a safe mode or not.
-        if (request == null) {
-            return true;
-        }
-        return request.getMethod() != null
-            && SAFE_METHODS.contains(request.getMethod().toUpperCase(Locale.ROOT));
+        // No request: the method cannot be established, so it is not treated as one of the safe ones.
+        return request != null && request.getMethod() != null && SAFE_METHODS.contains(request.getMethod().toUpperCase(Locale.ROOT));
     }
 
     private boolean crossSiteNavigationAllowed(@Nullable HttpServletRequest request) {

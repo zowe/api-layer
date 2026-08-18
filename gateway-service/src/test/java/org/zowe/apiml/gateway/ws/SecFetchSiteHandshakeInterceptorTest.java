@@ -20,6 +20,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
+import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.socket.WebSocketHandler;
 import org.zowe.apiml.gateway.filters.pre.SecFetchSitePolicy;
 
@@ -28,6 +30,8 @@ import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -49,7 +53,7 @@ class SecFetchSiteHandshakeInterceptorTest {
     @BeforeEach
     void setup() {
         underTest = new SecFetchSiteHandshakeInterceptor(secFetchSitePolicy);
-        when(request.getHeaders()).thenReturn(new HttpHeaders());
+        lenient().when(request.getHeaders()).thenReturn(new HttpHeaders());
     }
 
     @Nested
@@ -57,7 +61,7 @@ class SecFetchSiteHandshakeInterceptorTest {
 
         @BeforeEach
         void setup() {
-            when(secFetchSitePolicy.isAllowed(any())).thenReturn(true);
+            when(secFetchSitePolicy.isAllowed(any(), any())).thenReturn(true);
         }
 
         @Test
@@ -70,11 +74,27 @@ class SecFetchSiteHandshakeInterceptorTest {
     }
 
     @Nested
+    class GivenServletBasedHandshake {
+
+        @Test
+        void thenTheUnderlyingServletRequestIsHandedToThePolicy() {
+            MockHttpServletRequest servletRequest = new MockHttpServletRequest("GET", "/ws/v1/serviceid/path");
+            when(secFetchSitePolicy.isAllowed(any(), eq(servletRequest))).thenReturn(true);
+
+            boolean result = underTest.beforeHandshake(new ServletServerHttpRequest(servletRequest), response,
+                webSocketHandler, new HashMap<>());
+
+            assertTrue(result);
+            verifyNoInteractions(response);
+        }
+    }
+
+    @Nested
     class GivenPolicyBlocksRequest {
 
         @BeforeEach
         void setup() {
-            when(secFetchSitePolicy.isAllowed(any())).thenReturn(false);
+            when(secFetchSitePolicy.isAllowed(any(), any())).thenReturn(false);
         }
 
         @Test
