@@ -52,7 +52,7 @@ dependencyResolutionManagement {
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
             version('openTelemetry-starter', '2.30.0')
-            version('openTelemetry-core', '1.65.0')
+            version('openTelemetry-core', '1.64.0')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
