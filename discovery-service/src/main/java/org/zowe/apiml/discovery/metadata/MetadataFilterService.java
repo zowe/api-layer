@@ -19,6 +19,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -219,19 +220,44 @@ public class MetadataFilterService implements InitializingBean {
         return true;
     }
 
+    /**
+     *
+     * @param allowedDomain
+     * @param domain
+     * @return
+     */
     private boolean isAllowed(String allowedDomain, String domain) {
-        log.debug("checking URL {} against domain {}", domain, allowedDomain);
+        log.debug("checking domain {} against allowed domain {}", domain, allowedDomain);
         allowedDomain = allowedDomain.toLowerCase();
         domain = domain.toLowerCase();
         domain = extractDomain(domain);
+
+        // TODO if domain is an IP address, support IP masks
+
+
+
         if (domain.equals(allowedDomain)) {
             return true;
         }
         if (isWildCard(allowedDomain)) {
             return isMatchingWildCard(domain, allowedDomain);
         }
+        if (isAllowedIpAddress(allowedDomain, domain, null)) {
+
+        }
+
+
+        IpAddressMatcher matcher = new IpAddressMatcher(domain);
 
         return false;
+    }
+
+    private boolean isIpAddress(String domain) {
+        try {
+
+        } catch (IllegalArgumentException e) {
+
+        }
     }
 
     private boolean validateUrl(String label, String url, InstanceInfo info) {
