@@ -147,7 +147,6 @@ public class SecFetchSitePolicy {
 
         String secFetchSite = headerLookup.apply(SEC_FETCH_SITE_HEADER);
 
-        // Absent header (non-browser/legacy client) or same-origin/none: continue.
         if (secFetchSite == null || SAFE_SEC_FETCH_SITE_VALUES.contains(secFetchSite.toLowerCase(Locale.ROOT))) {
             return true;
         }
@@ -200,7 +199,6 @@ public class SecFetchSitePolicy {
      * listed in {@code security.secFetch.crossSiteNavigationAntMatchers}.
      */
     private boolean isSafeMethod(@Nullable HttpServletRequest request) {
-        // No request: the method cannot be established, so it is not treated as one of the safe ones.
         return request != null && request.getMethod() != null && SAFE_METHODS.contains(request.getMethod().toUpperCase(Locale.ROOT));
     }
 
@@ -209,7 +207,6 @@ public class SecFetchSitePolicy {
     }
 
     private boolean isSafeDest(String dest) {
-        // No destinations configured: nothing to restrict against, allow.
         return dest == null
             || safeNavigationDestinations == null
             || safeNavigationDestinations.isEmpty()
