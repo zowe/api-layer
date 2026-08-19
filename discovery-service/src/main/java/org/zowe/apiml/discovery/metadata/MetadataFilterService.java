@@ -131,20 +131,8 @@ public class MetadataFilterService implements InitializingBean {
         } catch (IllegalArgumentException e) {
             // continue
         }
-        if (isIpAddress(input)) {
-            return input;
-        }
         log.debug("{} is not a URL / hostname / IP Address", input);
         return null;
-    }
-
-    private boolean isIpAddress(String input) {
-        try {
-            new IpAddressMatcher(input);
-            return true;
-        } catch (IllegalArgumentException e) {
-            return false;
-        }
     }
 
     private String getScheme(String url) {
