@@ -136,7 +136,32 @@ class MetadataFilterServiceTest {
             "localhost,192.168.0.2,example.com|192.168.0.2|true",
             "localhost,192.168.0.2,example.com|192.168.0.1|false",
             "localhost|127.0.0.1|true",
-            "localhost|invalid#1|false"
+            "localhost|invalid#1|false",
+            "::1|::1|true",
+            "::1|::2|false",
+            "2001:db8::1|2001:db8::1|true",
+            "2001:db8::1|2001:db8::2|false",
+            "2001:db8::/32|2001:db8:abcd:1234::1|true",
+            "2001:db8::/32|2001:db9::1|false",
+            "fe80::/10|fe80::1234:5678:9abc|true",
+            "fe80::/10|fc00::1|false",
+            "2001:db8::/64|2001:db8:0:0:ffff:ffff:ffff:ffff|true",
+            "2001:db8::/64|2001:db8:0:1::1|false",
+            "localhost,192.168.0.0/24,2001:db8::/32|192.168.0.10|true",
+            "localhost,192.168.0.0/24,2001:db8::/32|2001:db8::abcd|true",
+            "localhost,192.168.0.0/24,2001:db8::/32|127.0.0.1|true",
+            "localhost,192.168.0.0/24,2001:db8::/32|10.0.0.1|false",
+            "localhost,192.168.0.0/24,2001:db8::/32|fe80::1|false",
+            "192.168.0.2|192.168.0.2|true",
+            "192.168.0.2|192.168.0.3|false",
+            "192.168.0.0/24|192.168.0.55|true",
+            "192.168.0.0/24|192.168.1.1|false",
+            "10.0.0.0/8|10.255.255.255|true",
+            "10.0.0.0/8|11.0.0.1|false",
+            "172.16.0.0/12|172.31.255.254|true",
+            "172.16.0.0/12|172.32.0.1|false",
+            "192.168.0.0/32|192.168.0.0|true",
+            "192.168.0.0/32|192.168.0.1|false"
         })
         void givenIpAddressInAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed) {
             var service = new MetadataFilterService();
