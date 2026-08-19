@@ -177,12 +177,6 @@ public class MetadataFilterService implements InitializingBean {
         return true;
     }
 
-    /**
-     *
-     * @param allowedDomain
-     * @param input
-     * @return
-     */
     private boolean isAllowed(String allowedDomain, String input) {
         log.debug("checking domain {} against allowed domain {}", input, allowedDomain);
         allowedDomain = allowedDomain.toLowerCase();
@@ -204,7 +198,8 @@ public class MetadataFilterService implements InitializingBean {
     }
 
     /**
-     * Input is assumed to not be a hostname?
+     * Validate an input assumed to be an IP address (the method checks it as well)
+     * against an entry in the allow list
      *
      * @param input IP address, yet to be validated input
      * @param allowedDomain An entry in the allowed domains list
