@@ -161,7 +161,8 @@ class MetadataFilterServiceTest {
             "172.16.0.0/12|172.31.255.254|true",
             "172.16.0.0/12|172.32.0.1|false",
             "192.168.0.0/32|192.168.0.0|true",
-            "192.168.0.0/32|192.168.0.1|false"
+            "192.168.0.0/32|192.168.0.1|false",
+            "192.168.0.0/abc|192.168.0.0|false"
         })
         void givenIpAddressInAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed) {
             var service = new MetadataFilterService();
