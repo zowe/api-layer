@@ -19,6 +19,7 @@ import org.slf4j.Marker;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class ApimlDependencyLogHider extends TurboFilter {
 
@@ -33,7 +34,6 @@ public class ApimlDependencyLogHider extends TurboFilter {
         "DS: Registry: expired lease for",
         "The replication of task {} failed with response code {}",
         "Peer wants us to take the instance information from it, since the timestamp differs",
-
         "No routes found from RouteLocator",
         "Exception Processing ErrorPage",
         "Error while sending response to client",
@@ -42,8 +42,16 @@ public class ApimlDependencyLogHider extends TurboFilter {
         ".*Error during filtering.*Token is not valid.*",
         ".*Endpoint ID .* contains invalid characters.*",
         "org.zowe.apiml.gateway.error.NotFound",
-        "HV000001: Hibernate Validator",
-        "You already have RibbonLoadBalancerClient on your classpath.*"); // Known fact, fix in Zowe V2
+        "HV000001: Hibernate Validator");
+
+    private static final List<String> IGNORED_SUBSTRINGS = IGNORED_MESSAGE_KEYWORDS.stream()
+        .filter(keyword -> !keyword.contains(".*"))
+        .toList();
+
+    private static final List<Pattern> IGNORED_PATTERNS = IGNORED_MESSAGE_KEYWORDS.stream()
+        .filter(keyword -> keyword.contains(".*"))
+        .map(Pattern::compile)
+        .toList();
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
@@ -63,14 +71,20 @@ public class ApimlDependencyLogHider extends TurboFilter {
     }
 
     private FilterReply getFilterReply(String format) {
-        boolean ignored = IGNORED_MESSAGE_KEYWORDS.stream()
-            .anyMatch(keyword -> {
-                if (keyword.contains(".*")) {
-                    return format.matches(keyword);
-                } else {
-                    return format.contains(keyword);
-                }
-            });
-        return ignored ? FilterReply.DENY : FilterReply.NEUTRAL;
+        return isIgnored(format) ? FilterReply.DENY : FilterReply.NEUTRAL;
+    }
+
+    private boolean isIgnored(String format) {
+        for (String keyword : IGNORED_SUBSTRINGS) {
+            if (format.contains(keyword)) {
+                return true;
+            }
+        }
+        for (Pattern pattern : IGNORED_PATTERNS) {
+            if (pattern.matcher(format).matches()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
