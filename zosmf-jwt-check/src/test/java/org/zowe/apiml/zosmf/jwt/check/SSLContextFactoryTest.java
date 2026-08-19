@@ -29,8 +29,8 @@ import static org.mockito.Mockito.when;
 
 class SSLContextFactoryTest {
 
-    private static final String TRUSTSTORE_PATH = "../keystore/localhost/localhost.truststore.p12";
-    private static final String KEYSTORE_PATH = "../keystore/localhost/localhost.keystore.p12";
+    private static final String TRUSTSTORE_PATH = "../keystore/service/service.truststore.p12";
+    private static final String KEYSTORE_PATH = "../keystore/service/service.keystore.p12";
     private static final String PASSWORD = "password";
 
     @Nested
@@ -108,7 +108,7 @@ class SSLContextFactoryTest {
         void trustAllContextAcceptsSelfSignedCert() throws Exception {
             // Start a local HTTPS server with a self-signed cert
             KeyStore ks = KeyStore.getInstance("PKCS12");
-            try (InputStream is = new java.io.FileInputStream("../keystore/localhost/localhost.keystore.p12")) {
+            try (InputStream is = new java.io.FileInputStream("../keystore/service/service.keystore.p12")) {
                 ks.load(is, "password".toCharArray());
             }
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());

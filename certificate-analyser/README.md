@@ -74,7 +74,7 @@ truststoretype - if this parameter is omitted completely, value from keystoretyp
 
 ### Do local handshake
 
-java -jar -Djavax.net.debug=ssl:handshake:verbose certificate-analyser-<version>.jar --keystore ../../../keystore/localhost/localhost.keystore.p12 --truststore ../../../keystore/localhost/localhost.truststore.p12 --keypasswd password --keyalias localhost --local
+java -jar -Djavax.net.debug=ssl:handshake:verbose certificate-analyser-<version>.jar --keystore ../../../keystore/service/service.keystore.p12 --truststore ../../../keystore/service/service.truststore.p12 --keypasswd password --keyalias localhost --local
 
 ### SAF Keyrings
 

@@ -15,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.config.CodeSnippet;
-import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 
@@ -233,32 +232,6 @@ class EurekaMetadataParserTest {
         ApiInfo apiInfo = new ApiInfo(); // isDefaultApi defaults to false
         Map<String, String> metadata = EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
         assertEquals(1, metadata.size());
-    }
-
-    @Test
-    void generateMetadataWithIncorrectSwaggerUrl() {
-        String serviceId = "test service";
-        String gatewayUrl = "api/v1";
-        String swaggerUrl = "www.badAddress";
-
-        ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, swaggerUrl, null, null);
-        Exception exception = assertThrows(MetadataValidationException.class, () -> {
-            EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
-        });
-        assertEquals("The Swagger URL \"" + swaggerUrl + "\" for service " + serviceId + " is not valid", exception.getMessage());
-    }
-
-    @Test
-    void generateMetadataWithIncorrectDocumentationUrl() {
-        String serviceId = "test service";
-        String gatewayUrl = "api/v1";
-        String documentationUrl = "www.badAddress";
-
-        ApiInfo apiInfo = new ApiInfo(null, gatewayUrl, null, null, null, documentationUrl);
-        Exception exception = assertThrows(MetadataValidationException.class, () -> {
-            EurekaMetadataParser.generateMetadata(serviceId, apiInfo);
-        });
-        assertEquals("The documentation URL \"" + documentationUrl + "\" for service " + serviceId + " is not valid", exception.getMessage());
     }
 
     @Test

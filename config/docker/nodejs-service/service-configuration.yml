@@ -41,5 +41,5 @@ instance:
     apiml.service.description: 'The Proxy Server is an HTTP HTTPS, and Websocket server built upon NodeJS and ExpressJS.'
 
 ssl:
-  p12File: ../keystore/docker/all-services.keystore.p12
+  p12File: ../keystore/service/service.keystore.p12
   keyPassword: password

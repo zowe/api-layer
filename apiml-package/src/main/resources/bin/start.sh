@@ -241,6 +241,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
+    ${EUREKA_IP_ADDRESS} \
     ${OTEL_ATTRIBUTES} \
     ${CUSTOM_JVM_OPTS} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \

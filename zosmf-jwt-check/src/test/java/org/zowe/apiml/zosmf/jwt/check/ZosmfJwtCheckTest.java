@@ -122,7 +122,7 @@ class ZosmfJwtCheckTest {
         @Test
         void httpsStrictWithValidTruststoreAttemptsConnection() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "https",
-                "--truststore-file", "../keystore/localhost/localhost.truststore.p12",
+                "--truststore-file", "../keystore/service/service.truststore.p12",
                 "--truststore-password", "password",
                 "--verify-certificates", "STRICT"};
             int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
@@ -133,7 +133,7 @@ class ZosmfJwtCheckTest {
         @Test
         void httpsNonstrictWithValidTruststoreAttemptsConnection() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "https",
-                "--truststore-file", "../keystore/localhost/localhost.truststore.p12",
+                "--truststore-file", "../keystore/service/service.truststore.p12",
                 "--truststore-password", "password",
                 "--verify-certificates", "NONSTRICT"};
             int exitCode = ZosmfJwtCheck.mainWithExitCode(args);
@@ -144,10 +144,10 @@ class ZosmfJwtCheckTest {
         @Test
         void httpsStrictWithKeystoreAndTruststoreAttemptsConnection() {
             String[] args = {"--zosmf-host", "localhost", "--zosmf-port", "19999", "--scheme", "https",
-                "--keystore-file", "../keystore/localhost/localhost.keystore.p12",
+                "--keystore-file", "../keystore/service/service.keystore.p12",
                 "--keystore-password", "password",
                 "--keystore-type", "PKCS12",
-                "--truststore-file", "../keystore/localhost/localhost.truststore.p12",
+                "--truststore-file", "../keystore/service/service.truststore.p12",
                 "--truststore-password", "password",
                 "--truststore-type", "PKCS12",
                 "--verify-certificates", "STRICT"};

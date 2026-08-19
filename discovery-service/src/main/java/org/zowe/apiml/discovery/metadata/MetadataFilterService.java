@@ -15,6 +15,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.net.InetAddresses;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,7 +85,14 @@ public class MetadataFilterService implements InitializingBean {
 
     private InetAddress[] getInetAddresses(String domain) {
         try {
-            return InetAddress.getAllByName(domain);
+            var addresses = InetAddress.getAllByName(domain);
+            if (log.isDebugEnabled()) {
+                log.debug("Addresses resolved for domain {}: {}", domain,
+                    Arrays.stream(addresses)
+                        .map(InetAddress::getHostAddress)
+                        .collect(Collectors.joining(", ")));
+            }
+            return addresses;
         } catch (UnknownHostException | SecurityException e) {
             log.debug("Cannot list IP address of domain {}", domain, e);
             return new InetAddress[0];
@@ -115,6 +123,21 @@ public class MetadataFilterService implements InitializingBean {
         return Arrays.stream(allowedAddresses).anyMatch(address::equals);
     }
 
+    String getIpAddress(String domain) {
+        if (StringUtils.isBlank(domain)) {
+            return null;
+        }
+        var allowedAddresses = domainToIpAddresses.get(domain, this::getInetAddresses);
+        if (ArrayUtils.isEmpty(allowedAddresses)) {
+            return null;
+        }
+        return Arrays.stream(allowedAddresses)
+            .filter(Inet4Address.class::isInstance)
+            .findFirst()
+            .orElse(allowedAddresses[0])
+            .getHostAddress();
+    }
+
     boolean isAllowedIpAddress(String label, String ipAddress, InstanceInfo info) {
         if (StringUtils.isBlank(ipAddress)) {
             return true;
@@ -125,13 +148,8 @@ public class MetadataFilterService implements InitializingBean {
             return true;
         }
 
-        var address = InetAddresses.forString(ipAddress);
-        if (address.isAnyLocalAddress() || address.isLoopbackAddress()) {
-            // local address (ie. loopback 127.0.0.1) is allowed as default
-            return true;
-        }
-
         // check cache and if entry misses verify ip against all allowed domains
+        var address = InetAddresses.forString(ipAddress);
         var hostname = info.getHostName();
         var allowed = ipAllowed.get(address, ip ->
             allowedDomainsSet.stream().anyMatch(allowedDomain ->
@@ -151,8 +169,13 @@ public class MetadataFilterService implements InitializingBean {
             return new URL(url).getHost().toLowerCase();
         } catch (MalformedURLException e) {
             log.debug("'{}' is not a valid URL", url);
-            return url;
         }
+        try {
+            return IDN.toASCII(url, IDN.ALLOW_UNASSIGNED);
+        } catch (IllegalArgumentException e) {
+            log.debug("'{}' is not a valid hostname", url);
+        }
+        return null;
     }
 
     private String getScheme(String url) {
@@ -190,6 +213,9 @@ public class MetadataFilterService implements InitializingBean {
         allowedDomain = allowedDomain.toLowerCase();
         domain = domain.toLowerCase();
         domain = extractDomain(domain);
+        if (domain == null) {
+            return false;
+        }
         if (domain.equals(allowedDomain)) {
             return true;
         }
@@ -255,10 +281,12 @@ public class MetadataFilterService implements InitializingBean {
         return result.get();
     }
 
-    public void verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
+    public InstanceInfo verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
         if (!isAllowedIpAddress("IP Address", info.getIPAddr(), info)) {
-            result.set(false);
+            log.debug("IP address {} is not allowed. It is removed from the registration data.", info.getIPAddr());
+            // this is updating the same instance even it looks like creating a new instance of InstanceInfo
+            info = new InstanceInfo.Builder(info).setIPAddr(getIpAddress(info.getHostName())).build();
         }
         if (!validateUrl("Instance Hostname", info.getHostName(), info)) {
             result.set(false);
@@ -283,17 +311,19 @@ public class MetadataFilterService implements InitializingBean {
             }
         }
 
+        var finalInstanceInfo = info;
         info.getMetadata().forEach((key, value) -> {
-            var metadataVerificationResult = verifyMetadataEntry(key, value, info);
+            var metadataVerificationResult = verifyMetadataEntry(key, value, finalInstanceInfo);
             if (!metadataVerificationResult) {
                 result.set(false);
             }
         });
 
         if (!result.get() && !onlyWarn) {
-            throw new MetadataValidationException("URLs not allowed found for instance " + info.getInstanceId());
+            throw new DomainAllowListMetadataException("URLs not allowed found for instance " + info.getInstanceId());
         }
 
+        return info;
     }
 
 }

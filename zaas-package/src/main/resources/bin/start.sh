@@ -148,6 +148,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
+    ${EUREKA_IP_ADDRESS} \
     ${CUSTOM_JVM_OPTS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \

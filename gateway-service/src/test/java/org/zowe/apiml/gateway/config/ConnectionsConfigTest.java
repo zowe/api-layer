@@ -16,6 +16,7 @@ import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
 import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -109,8 +111,12 @@ class ConnectionsConfigTest {
         @Autowired
         private ConnectionsConfig connectionsConfig;
 
+        @Autowired
+        @Qualifier("discoveryRestTemplatePooledConnectionManager")
+        private HttpClientConnectionManager httpClientConnectionManager;
+
         @Mock
-        private ApplicationInfoManager manager;
+        private ApplicationInfoManager applicationInfoManager;
 
         @Mock
         private EurekaClientConfig config;
@@ -120,7 +126,7 @@ class ConnectionsConfigTest {
 
         @Test
         void thenCreateIt() {
-            assertThat(connectionsConfig.primaryEurekaClient(manager, config, healthCheckHandler)).isNotNull();
+            assertThat(connectionsConfig.primaryEurekaClient(applicationInfoManager, config, healthCheckHandler, httpClientConnectionManager)).isNotNull();
         }
 
     }

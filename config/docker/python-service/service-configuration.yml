@@ -38,8 +38,8 @@ instance:
         apiml.service.description: 'Sample API services to demonstrate Python Onboarding Enabler'
 
 ssl:
-    certificate: ../keystore/docker/all-services.cer
-    keystore: ../keystore/docker/all-services.keystore.key
-    caFile: ../keystore/docker/all-services.pem
+    certificate: ../keystore/service/service.cer
+    keystore: ../keystore/service/service.key
+    caFile: ../keystore/service/service.pem
     keyPassword: password
 

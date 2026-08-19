@@ -105,7 +105,7 @@ public class AcceptanceTestWithMockServices extends AcceptanceTestWithBasePath {
             .loadTrustMaterial(null, trustStrategy).build();
 
         apimlNonStrictSSLContext = SSLContextBuilder.create()
-            .loadKeyMaterial(ResourceUtils.getFile("../keystore/localhost/nonlocalhost.keystore.p12"), apimlKeyStorePassword, apimlKeyPassword)
+            .loadKeyMaterial(ResourceUtils.getFile("../keystore/negative/hostname-mismatch.keystore.p12"), apimlKeyStorePassword, apimlKeyPassword)
             .loadTrustMaterial(null, trustStrategy).build();
 
         apimlCert = RestAssuredConfig.newConfig()

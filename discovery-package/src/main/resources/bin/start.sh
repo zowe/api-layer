@@ -105,6 +105,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     ${ADD_OPENS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
+    ${EUREKA_IP_ADDRESS} \
     ${CUSTOM_JVM_OPTS} \
     -Dapiml.discovery.allPeersUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dapiml.discovery.password=${discoveryPassword} \

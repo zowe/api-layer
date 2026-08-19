@@ -182,3 +182,62 @@ project(":integration-tests") {
         }
     }
 }
+
+// Gradle 9.7 introduced stricter task dependency validation
+// (validation_problems#implicit_dependency) that fails the build when a task
+// consumes the output of another task without declaring a dependency. The Sonar
+// Gradle plugin's SonarResolverTask reads class outputs of every project whose
+// compiled classes are reachable on this project's classpath (directly or
+// transitively via api, implementation, testImplementation, testFixtures
+// configurations), but it does not declare dependsOn on those compileJava
+// tasks. Walk the project dependency graph for this project and wire
+// dependsOn explicitly for every reachable project's compileJava and
+// compileTestFixturesJava tasks.
+allprojects { root ->
+    afterEvaluate {
+        def sonarResolver = tasks.findByName('sonarResolver')
+        if (sonarResolver == null) {
+            return
+        }
+        def visited = new LinkedHashSet<String>()
+        def queue = new ArrayDeque<String>()
+        def startConfigs = ['api', 'implementation', 'testImplementation', 'testFixturesImplementation']
+        startConfigs.each { configName ->
+            def config = configurations.findByName(configName)
+            if (config != null) {
+                config.dependencies.withType(ProjectDependency).each { dep ->
+                    if (dep.path != project.path && visited.add(dep.path)) {
+                        queue << dep.path
+                    }
+                }
+            }
+        }
+        while (!queue.isEmpty()) {
+            def currentPath = queue.poll()
+            def current = root.findProject(currentPath)
+            if (current == null) {
+                continue
+            }
+            startConfigs.each { configName ->
+                def config = current.configurations.findByName(configName)
+                if (config != null) {
+                    config.dependencies.withType(ProjectDependency).each { dep ->
+                        if (dep.path != project.path && visited.add(dep.path)) {
+                            queue << dep.path
+                        }
+                    }
+                }
+            }
+        }
+        def depsToWire = visited.collect { projectPath ->
+            def other = root.findProject(projectPath)
+            if (other == null) {
+                return []
+            }
+            def compileJava = other.tasks.findByName('compileJava')
+            def compileTestFixtures = other.tasks.findByName('compileTestFixturesJava')
+            return [compileJava, compileTestFixtures].findAll { it != null }
+        }.flatten()
+        sonarResolver.dependsOn depsToWire
+    }
+}

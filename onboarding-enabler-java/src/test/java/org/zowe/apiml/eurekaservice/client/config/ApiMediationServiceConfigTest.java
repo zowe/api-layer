@@ -60,7 +60,7 @@ class ApiMediationServiceConfigTest {
     @Test
     void givenKeyStoreDoesNotContainSafkeyring_whenFormatKeyringPasswordIfNotPresent_thenUrlAndSetPasswordIsUnchanged() {
         Ssl ssl = new Ssl();
-        ssl.setKeyStore("keystore/localhost/localhost.keystore.p12");
+        ssl.setKeyStore("keystore/service/service.keystore.p12");
         ApiMediationServiceConfig config = new ApiMediationServiceConfig();
         config.setSsl(ssl);
 
@@ -117,7 +117,7 @@ class ApiMediationServiceConfigTest {
     @Test
     void givenTrustStoreDoesNotContainSafkeyring_whenFormatKeyringPasswordIfNotPresent_thenUrlAndSetPasswordIsUnchangedAndNotLogged() {
         Ssl ssl = new Ssl();
-        ssl.setTrustStore("truststore/localhost/localhost.truststore.p12");
+        ssl.setTrustStore("truststore/service/service.truststore.p12");
         ApiMediationServiceConfig config = new ApiMediationServiceConfig();
         config.setSsl(ssl);
 

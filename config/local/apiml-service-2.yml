@@ -15,6 +15,9 @@ server:
 eureka:
     server:
         myUrl: https://localhost:10021/eureka/
+    instance:
+        ipAddress: 127.0.0.1
+
 apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
@@ -30,7 +33,6 @@ apiml:
         cookieNameForRateLimiter: apimlAuthenticationToken
     service:
         apimlId: apiml2
-
         discoveryServiceUrls: https://localhost:10021/eureka/
         forwardClientCertEnabled: false
         hostname: localhost

@@ -234,6 +234,25 @@ class StaticServicesRegistrationServiceTest {
     }
 
     @Nested
+    class Messages {
+
+        @Test
+        void givenException_whenGetAllMessages_thenGenerateFullMessage() {
+            var service = new StaticServicesRegistrationService(new ServiceDefinitionProcessor(), new MetadataDefaultsService());
+            var root = new Exception("root") {
+                @Override
+                public Throwable getCause() {
+                    return this;
+                }
+            };
+            var middle = new Exception("middle", root);
+            var leaf = new Exception("leaf", middle);
+            assertEquals("leaf: middle: root", service.getAllMessages(leaf));
+        }
+
+    }
+
+    @Nested
     class UnexpectedErrors {
 
         @Mock

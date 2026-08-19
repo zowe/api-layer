@@ -10,6 +10,26 @@ inputs:
 runs:
     using: "composite"
     steps:
+        # Certificates are generated at build time by keystore/generate-certificates.sh
+        # rather than committed, and it needs openssl. The hosted runner image ships
+        # it, but jobs that run in a bare container (container: ubuntu:latest) do not -
+        # those fail with "openssl: not found". Guarded, so the hosted runners skip the
+        # apt-get entirely and only the containers install it.
+        -   name: Ensure openssl is available
+            run: |
+                if command -v openssl > /dev/null 2>&1; then
+                    echo "openssl already present: $(openssl version)"
+                    exit 0
+                fi
+                echo "openssl not found - installing"
+                if [ "$(id -u)" = "0" ]; then
+                    apt-get update && apt-get install -y --no-install-recommends openssl
+                else
+                    sudo apt-get update && sudo apt-get install -y --no-install-recommends openssl
+                fi
+                openssl version
+            shell: bash
+
         -   name: Set up JDK ${{ inputs.jdkVersion }}
             uses: actions/setup-java@v4
             with:

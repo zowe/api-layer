@@ -1,5 +1,5 @@
-TRUSTSTOREPATH: ../keystore/localhost/localhost.truststore.p12
-KEYSTOREPATH: ../keystore/localhost/localhost.keystore.p12
+TRUSTSTOREPATH: ../keystore/service/service.truststore.p12
+KEYSTOREPATH: ../keystore/service/service.keystore.p12
 TRUSTSTOREPASSWORD: password
 KEYSTOREPASSWORD: password
 KEYSTORETYPE: PKCS12

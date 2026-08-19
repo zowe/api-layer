@@ -113,6 +113,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
+    ${EUREKA_IP_ADDRESS} \
     ${CUSTOM_JVM_OPTS} \
     -Dibm.serversocket.recover=true \
     -Dfile.encoding=UTF-8 \
