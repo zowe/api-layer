@@ -20,8 +20,6 @@ import org.slf4j.Marker;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ApimlDependencyLogHider extends TurboFilter {
 
@@ -62,7 +60,7 @@ public class ApimlDependencyLogHider extends TurboFilter {
         }
 
         if (t != null) {
-            format += Stream.of(ExceptionUtils.getStackFrames(t)).collect(Collectors.joining());
+            format += String.join("", ExceptionUtils.getStackFrames(t));
         }
 
         return getFilterReply(format);
