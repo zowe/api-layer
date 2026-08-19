@@ -13,7 +13,6 @@ package org.zowe.apiml.discovery.metadata;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Objects;
-import com.google.common.net.InetAddresses;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
@@ -53,10 +52,6 @@ public class MetadataFilterService implements InitializingBean {
     private static final String ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED = "org.zowe.apiml.common.schemeNotAllowed";
 
     private final Cache<String, InetAddress[]> domainToIpAddresses = Caffeine.newBuilder()
-        .maximumSize(100)
-        .expireAfterWrite(5, TimeUnit.MINUTES)
-        .build();
-    private final Cache<InetAddress, Boolean> ipAllowed = Caffeine.newBuilder()
         .maximumSize(100)
         .expireAfterWrite(5, TimeUnit.MINUTES)
         .build();
@@ -110,30 +105,6 @@ public class MetadataFilterService implements InitializingBean {
         }
     }
 
-    private boolean isAllowedIpAddress(String allowed, InetAddress address, String hostname) {
-        try {
-            // check if the allowed domain is not written in IP format
-            if (InetAddresses.forString(allowed).equals(address)) {
-                return true;
-            }
-        } catch (IllegalArgumentException e) {
-            log.trace("Domain {} is not a IP address", allowed);
-        }
-
-        // if allowed domain is wildcard replace with hostname if matching, otherwise it cannot be evaluated
-        if (isWildCard(allowed)) {
-            if (!StringUtils.isBlank(hostname) && isMatchingWildCard(hostname, allowed)) {
-                allowed = hostname;
-            } else {
-                return false;
-            }
-        }
-
-        // obtain list of domain's IP address and check if any is matching
-        var allowedAddresses = domainToIpAddresses.get(allowed, this::getInetAddresses);
-        return Arrays.stream(allowedAddresses).anyMatch(address::equals);
-    }
-
     String getIpAddress(String domain) {
         if (StringUtils.isBlank(domain)) {
             return null;
@@ -147,36 +118,6 @@ public class MetadataFilterService implements InitializingBean {
             .findFirst()
             .orElse(allowedAddresses[0])
             .getHostAddress();
-    }
-
-    boolean isAllowedIpAddress(
-        String label,
-        String ipAddress,
-        String hostname,
-        String instanceId
-    ) {
-        if (StringUtils.isBlank(ipAddress)) {
-            return true;
-        }
-
-        // check if the domain list contains the same literal directly
-        if (isAllowedDomain(ipAddress)) {
-            return true;
-        }
-
-        // check cache and if entry misses verify ip against all allowed domains
-        var address = InetAddresses.forString(ipAddress);
-        var allowed = ipAllowed.get(address, ip ->
-            allowedDomainsSet.stream().anyMatch(allowedDomain ->
-                isAllowedIpAddress(allowedDomain, ip, hostname)
-            )
-        );
-
-        if (!allowed) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, ipAddress, instanceId);
-        }
-
-        return allowed;
     }
 
     private String extractDomain(String input) {
@@ -262,14 +203,40 @@ public class MetadataFilterService implements InitializingBean {
         return false;
     }
 
+    /**
+     * Input is assumed to not be a hostname?
+     *
+     * @param input IP address, yet to be validated input
+     * @param allowedDomain An entry in the allowed domains list
+     * @return whether the IP address is allowed against the allowed domain entry
+     */
     private boolean isAllowedIpAddress(String input, String allowedDomain) {
         if (Objects.equal(input, allowedDomain)) {
             return true;
         }
+        // first check for allowedDomain as a hostname
+        InetAddress[] allowedDomainIps = null;
+        String[] allowedDomainIpsString = null;
+        if (isWildCard(allowedDomain)) {
+            log.debug("{} is a wildcard match, can't evaluate against it against an IP address");
+            return false;
+        }
+        allowedDomainIps = domainToIpAddresses.get(allowedDomain, this::getInetAddresses);
+        if (allowedDomainIps != null && allowedDomainIps.length > 0) {
+            allowedDomainIpsString = Arrays.stream(allowedDomainIps).map(InetAddress::getHostAddress).toList().toArray(new String[0]);
+        } else {
+            allowedDomainIpsString = new String[]{ allowedDomain };
+        }
+
         try {
-            var ipOrRange = new IpAddressMatcher(allowedDomain);
-            return ipOrRange.matches(input);
-        } catch(IllegalArgumentException e) {
+            for (String allowedIpAddress : allowedDomainIpsString) {
+                var ipOrRange = new IpAddressMatcher(allowedIpAddress);
+                if (ipOrRange.matches(input)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IllegalArgumentException e) {
             log.debug("{} is not a valid IP Address or IP address range", allowedDomain);
             return false;
         }
@@ -299,7 +266,7 @@ public class MetadataFilterService implements InitializingBean {
         return isValid;
     }
 
-    private boolean verifyMetadataEntry(String key, String value, String instanceId) {
+    private boolean validateMetadataEntry(String key, String value, String instanceId) {
         var metadataKeysToVerify = List.of(
             "swaggerUrl",
             "graphqlUrl",
@@ -363,7 +330,7 @@ public class MetadataFilterService implements InitializingBean {
         }
 
         info.getMetadata().forEach((key, value) -> {
-            var metadataVerificationResult = verifyMetadataEntry(key, value, instanceId);
+            var metadataVerificationResult = validateMetadataEntry(key, value, instanceId);
             if (!metadataVerificationResult) {
                 result.set(false);
             }

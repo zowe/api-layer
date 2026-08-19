@@ -14,11 +14,13 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.*;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -28,14 +30,21 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataFilterServiceTest {
@@ -126,7 +135,7 @@ class MetadataFilterServiceTest {
         @CsvSource(delimiterString = "|", value = {
             "localhost,192.168.0.2,example.com|192.168.0.2|true",
             "localhost,192.168.0.2,example.com|192.168.0.1|false",
-            "localhost|127.0.0.1|false",
+            "localhost|127.0.0.1|true",
             "localhost|invalid#1|false"
         })
         void givenIpAddressInAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed) {
@@ -229,65 +238,6 @@ class MetadataFilterServiceTest {
         @Nested
         class IpAddress {
 
-            private static final String IP_LABEL = "IP Address";
-            private static final String LOCALHOST = "localhost";
-
-            @ParameterizedTest
-            @EmptySource
-            @NullSource
-            void givenNoAddress_whenCheckIpAddress_thenReturnTrue(String emptyAddress) {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", LOCALHOST);
-                service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, emptyAddress, LOCALHOST, LOCALHOST));
-            }
-
-            @ParameterizedTest
-            @CsvSource(delimiterString = "|", value = {
-                "domain1,192.168.0.1",
-                "192.168.000.001"
-            })
-            void givenIpAddressAllowedDomains_whenCheckIpAddress_thenReturnTrue(String allowedDomain) {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", allowedDomain);
-                service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, "192.168.0.1", LOCALHOST, LOCALHOST));
-            }
-
-            @ParameterizedTest
-            @CsvSource({
-                "127.0.0.1",
-                "0.0.0.0"
-            })
-            void givenLocalAddress_whenCheckIpAddress_thenReturnFalse(String address) {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", "non-localhost");
-                service.afterPropertiesSet();
-                assertFalse(service.isAllowedIpAddress(IP_LABEL, address, LOCALHOST, LOCALHOST));
-            }
-
-            @Test
-            @DisabledOnOs(OS.MAC)
-            void givenMatchingNonLocalAddress_whenCheckIpAddress_thenReturnTrue() throws UnknownHostException {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", InetAddress.getLocalHost().getHostName());
-                service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, InetAddress.getLocalHost().getHostAddress(), LOCALHOST, LOCALHOST));
-            }
-
-            @ParameterizedTest
-            @CsvSource({
-                "192.168.0.2",
-                "10.0.1.100",
-                "1.0.1.0"
-            })
-            void givenNotMatchingAddress_whenCheckIpAddress_thenReturnFalse(String address) {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", "https://google.com,192.168.0.1,example.com,localhost");
-                service.afterPropertiesSet();
-                assertFalse(service.isAllowedIpAddress(IP_LABEL, address, LOCALHOST, LOCALHOST));
-            }
-
             @ParameterizedTest(name = "Value: {0} -> Allowed: {1}")
             @CsvSource({
                 "127.0.0.1,true",
@@ -308,21 +258,6 @@ class MetadataFilterServiceTest {
                     verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 }
                 assertEquals("127.0.0.1", ii.getIPAddr());
-            }
-
-            @Test
-            void givenMatchingWildcardWithHostName_whenCheckIpAddress_thenCheckAgainstHostName() throws UnknownHostException {
-                var hostname = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT);
-                var mockWildcard = "*." + hostname;
-                var service = new MetadataFilterService() {
-                    @Override
-                    boolean isMatchingWildCard(String hostname, String wildCard) {
-                        // wildcard assume `*.` and then verify without first character, so the dot is problem for the test
-                        return mockWildcard.equals(wildCard);
-                    }
-                };
-                ReflectionTestUtils.setField(service,"allowedDomainsSet", Collections.singleton(mockWildcard));
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, InetAddress.getLocalHost().getHostAddress(), LOCALHOST, LOCALHOST));
             }
 
             @ParameterizedTest(name = "Given local address {0} when validate then fail")
