@@ -179,10 +179,7 @@ public class MetadataFilterService implements InitializingBean {
         if (isWildCard(allowedDomain)) {
             return isMatchingWildCard(input, allowedDomain);
         }
-        if (isAllowedIpAddress(input, allowedDomain)) {
-            return true;
-        }
-        return false;
+        return isAllowedIpAddress(input, allowedDomain);
     }
 
     /**
