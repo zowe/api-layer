@@ -16,16 +16,25 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         javax.net.ssl: ERROR # For running with java 17
 
+
 eureka:
     client:
-        initialInstanceInfoReplicationIntervalSeconds: 1
-        registryFetchIntervalSeconds: 1
+        initialInstanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
         healthcheck:
             enabled: true
         serviceUrl:
             defaultZone: ${apiml.service.discoveryServiceUrls}
         region: default
+    instance:
+        hostname: ${apiml.service.hostname}
 
+        #ports are computed in code
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
+        statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
 apiml:
     enabled: true
     service:
@@ -134,6 +143,7 @@ turbine:
     aggregator:
         clusterConfig: APICATALOG,CACHINGSERVICE,GATEWAY,DISCOVERY # uppercase serviceId
     appConfig: apicatalog,cachingservice,gateway,discovery # lowercase serviceId
+
 
 ---
 spring:

@@ -420,6 +420,7 @@ public class SecurityUtils {
 
         try {
             return given().config(sslConfig)
+                .contentType(JSON)
                 .body(accessTokenRequest)
                 .when()
                 .post(gatewayGenerateAccessTokenEndpoint)

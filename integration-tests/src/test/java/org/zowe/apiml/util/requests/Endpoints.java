@@ -76,6 +76,8 @@ public class Endpoints {
     public static final String DISCOVERABLE_CLIENT_CONTAINER_ENDPOINT = "/apicatalog/api/v1/containers/cademoapps";
     public static final String DISCOVERABLE_CLIENT_API_DOC_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0";
     public static final String DISCOVERABLE_CLIENT_API_DOC_ENDPOINT_V2 = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v2.0.0";
+    public static final String STATIC_CLIENT_1_STATUS_CODE = "/staticclient/api/v1/status-code";
+    public static final String STATIC_CLIENT_2_STATUS_CODE = "/staticclient2/api/v1/status-code";
 
     public static final String API_SERVICE_VERSION_DIFF_ENDPOINT = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0/zowe.apiml.discoverableclient.rest v2.0.0";
     public static final String API_SERVICE_VERSION_DIFF_ENDPOINT_WRONG_VERSION = "/apicatalog/api/v1/apidoc/discoverableclient/zowe.apiml.discoverableclient.rest v1.0.0/zowe.apiml.discoverableclient.rest v3.0.0";

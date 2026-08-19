@@ -2,6 +2,13 @@ apiml:
     service:
         discoveryServiceUrls: https://discovery-service:10011/eureka/
         hostname: metrics-service
+        customMetadata:
+            apiml:
+                enableUrlEncodedCharacters: true
+                corsAllowedOrigins: https://metrics-service:10019
+                corsAllowedMethods: GET,POST,OPTIONS,HEAD
+                corsAllowedHeaders: Content-Type,Authorization
+                corsAllowCredentials: true
 
 server:
     ssl:

@@ -67,6 +67,7 @@ import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
+import org.zowe.apiml.security.common.filter.ContentTypeFilter;
 import org.zowe.apiml.security.common.filter.StoreAccessTokenInfoFilter;
 import org.zowe.apiml.security.common.handler.FailedAuthenticationHandler;
 import org.zowe.apiml.security.common.login.*;
@@ -174,7 +175,8 @@ public class NewSecurityConfiguration {
             public void configure(HttpSecurity http) throws Exception {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                 //drive filter order this way
-                http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                http.addFilterBefore(new ContentTypeFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterBefore(loginFilter("/**", authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
                     .addFilterAfter(new ShouldBeAlreadyAuthenticatedFilter("/**", handlerInitializer.getAuthenticationFailureHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class); // this filter stops processing of filter chaing because there is nothing on /auth/login endpoint
@@ -234,7 +236,8 @@ public class NewSecurityConfiguration {
             public void configure(HttpSecurity http) throws Exception {
                 AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
                 //drive filter order this way
-                http.addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                http.addFilterBefore(new ContentTypeFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
+                    .addFilterBefore(new CategorizeCertsFilter(publicKeyCertificatesBase64, certificateValidator), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterBefore(new StoreAccessTokenInfoFilter(handlerInitializer.getUnAuthorizedHandler().getHandler()), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterBefore(accessTokenFilter("/**", authenticationManager), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class)
                     .addFilterAfter(x509AuthenticationFilter("/**"), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class) // this filter consumes certificates from custom attribute and maps them to credentials and authenticates them
