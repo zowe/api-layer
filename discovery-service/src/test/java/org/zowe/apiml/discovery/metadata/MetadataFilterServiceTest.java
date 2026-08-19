@@ -14,11 +14,13 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnOs;
-import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.*;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.EmptySource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -28,14 +30,21 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class MetadataFilterServiceTest {
@@ -76,6 +85,7 @@ class MetadataFilterServiceTest {
             "apiml.documentationUrl, invalid-url, false, org.zowe.apiml.common.urlNotAllowed",
             "apiml.externalUrl, HTTPS://LOCALHOST:8080, true, ''",
             "apiml.externalUrl, HTTPS://INVALID.ORG:8080, false, org.zowe.apiml.common.urlNotAllowed",
+            "apiml.externalUrl, httpsBlah://localhost:8080, false, org.zowe.apiml.common.urlNotAllowed",
             "apiml.externalUrl, http://localhost:8080, false, org.zowe.apiml.common.schemeNotAllowed",
             "apiml.externalUrl, https://invalid.org:8080null, false, org.zowe.apiml.common.urlNotAllowed",
             "apiml.externalUrl, https://localhost:8080null, true, ''"
@@ -125,8 +135,34 @@ class MetadataFilterServiceTest {
         @CsvSource(delimiterString = "|", value = {
             "localhost,192.168.0.2,example.com|192.168.0.2|true",
             "localhost,192.168.0.2,example.com|192.168.0.1|false",
-            "localhost|127.0.0.1|false",
-            "localhost|invalid#1|false"
+            "localhost|127.0.0.1|true",
+            "localhost|invalid#1|false",
+            "::1|::1|true",
+            "::1|::2|false",
+            "2001:db8::1|2001:db8::1|true",
+            "2001:db8::1|2001:db8::2|false",
+            "2001:db8::/32|2001:db8:abcd:1234::1|true",
+            "2001:db8::/32|2001:db9::1|false",
+            "fe80::/10|fe80::1234:5678:9abc|true",
+            "fe80::/10|fc00::1|false",
+            "2001:db8::/64|2001:db8:0:0:ffff:ffff:ffff:ffff|true",
+            "2001:db8::/64|2001:db8:0:1::1|false",
+            "localhost,192.168.0.0/24,2001:db8::/32|192.168.0.10|true",
+            "localhost,192.168.0.0/24,2001:db8::/32|2001:db8::abcd|true",
+            "localhost,192.168.0.0/24,2001:db8::/32|127.0.0.1|true",
+            "localhost,192.168.0.0/24,2001:db8::/32|10.0.0.1|false",
+            "localhost,192.168.0.0/24,2001:db8::/32|fe80::1|false",
+            "192.168.0.2|192.168.0.2|true",
+            "192.168.0.2|192.168.0.3|false",
+            "192.168.0.0/24|192.168.0.55|true",
+            "192.168.0.0/24|192.168.1.1|false",
+            "10.0.0.0/8|10.255.255.255|true",
+            "10.0.0.0/8|11.0.0.1|false",
+            "172.16.0.0/12|172.31.255.254|true",
+            "172.16.0.0/12|172.32.0.1|false",
+            "192.168.0.0/32|192.168.0.0|true",
+            "192.168.0.0/32|192.168.0.1|false",
+            "192.168.0.0/abc|192.168.0.0|false"
         })
         void givenIpAddressInAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed) {
             var service = new MetadataFilterService();
@@ -228,70 +264,6 @@ class MetadataFilterServiceTest {
         @Nested
         class IpAddress {
 
-            private static final String IP_LABEL = "IP Address";
-            private static final String LOCALHOST = "localhost";
-
-            private static final InstanceInfo INSTANCE_INFO = InstanceInfo.Builder.newBuilder()
-                .setAppName("test")
-                .setHostName(LOCALHOST)
-                .build();
-
-            @ParameterizedTest
-            @EmptySource
-            @NullSource
-            void givenNoAddress_whenCheckIpAddress_thenReturnTrue(String emptyAddress) {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", LOCALHOST);
-                service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, emptyAddress, INSTANCE_INFO));
-            }
-
-            @ParameterizedTest
-            @CsvSource(delimiterString = "|", value = {
-                "domain1,192.168.0.1",
-                "192.168.000.001"
-            })
-            void givenIpAddressAllowedDomains_whenCheckIpAddress_thenReturnTrue(String allowedDomain) {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", allowedDomain);
-                service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, "192.168.0.1", INSTANCE_INFO));
-            }
-
-            @ParameterizedTest
-            @CsvSource({
-                "127.0.0.1",
-                "0.0.0.0"
-            })
-            void givenLocalAddress_whenCheckIpAddress_thenReturnTrue(String address) {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", "localhost");
-                service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, address, INSTANCE_INFO));
-            }
-
-            @Test
-            @DisabledOnOs(OS.MAC)
-            void givenMatchingNonLocalAddress_whenCheckIpAddress_thenReturnTrue() throws UnknownHostException {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", InetAddress.getLocalHost().getHostName());
-                service.afterPropertiesSet();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, InetAddress.getLocalHost().getHostAddress(), INSTANCE_INFO));
-            }
-
-            @ParameterizedTest
-            @CsvSource({
-                "192.168.0.2",
-                "10.0.1.100",
-                "1.0.1.0"
-            })
-            void givenNotMatchingAddress_whenCheckIpAddress_thenReturnFalse(String address) {
-                var service = new MetadataFilterService();
-                ReflectionTestUtils.setField(service,"allowedDomains", "https://google.com,192.168.0.1,example.com,localhost");
-                service.afterPropertiesSet();
-                assertFalse(service.isAllowedIpAddress(IP_LABEL, address, INSTANCE_INFO));
-            }
-
             @ParameterizedTest(name = "Value: {0} -> Allowed: {1}")
             @CsvSource({
                 "127.0.0.1,true",
@@ -314,31 +286,20 @@ class MetadataFilterServiceTest {
                 assertEquals("127.0.0.1", ii.getIPAddr());
             }
 
-            @Test
-            void givenMatchingWildcardWithHostName_whenCheckIpAddress_thenCheckAgainstHostName() throws UnknownHostException {
-                var hostname = InetAddress.getLocalHost().getHostName().toLowerCase(Locale.ROOT);
-                var mockWildcard = "*." + hostname;
-                var service = new MetadataFilterService() {
-                    @Override
-                    boolean isMatchingWildCard(String hostname, String wildCard) {
-                        // wildcard assume `*.` and then verify without first character, so the dot is problem for the test
-                        return mockWildcard.equals(wildCard);
-                    }
-                };
-                ReflectionTestUtils.setField(service,"allowedDomainsSet", Collections.singleton(mockWildcard));
-                InstanceInfo info = InstanceInfo.Builder.newBuilder().setAppName("test").setHostName(hostname).build();
-                assertTrue(service.isAllowedIpAddress(IP_LABEL, InetAddress.getLocalHost().getHostAddress(), info));
-            }
-
-            @ParameterizedTest(name = "Given local address {0} when validate then pass")
+            @ParameterizedTest(name = "Given local address {0} when validate then fail")
             @MethodSource("localIpAddresses")
             void givenLocalIpAddress_whenValidate_itIsAccepted(String ipAddress) {
-                when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
-                when(instanceInfo.getIPAddr()).thenReturn(ipAddress);
-                lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
+                ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "non-local");
+                metadataFilterService.afterPropertiesSet();
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
-                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
+                InstanceInfo ii = InstanceInfo.Builder.newBuilder()
+                    .setIPAddr(ipAddress)
+                    .setAppName("service")
+                    .setInstanceId("test-instance")
+                    .build();
+
+                metadataFilterService.verifyAllowedDomains(ii);
+                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
             }
 
             static Stream<Arguments> localIpAddresses() throws SocketException {
