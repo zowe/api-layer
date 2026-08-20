@@ -88,8 +88,8 @@ public class RoutingConfig {
             public LoadBalancerRetryPolicy apply(String serviceId) {
                 var properties = serviceInstanceFactory.getProperties(serviceId);
                 var retryPolicy = properties.getRetry();
+                retryPolicy.setEnabled(true);
 
-                // TODO Set retry values
 
                 return new RetryableExchangeFilterFunctionLoadBalancerRetryPolicy(properties);
             }
