@@ -20,9 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -31,7 +34,10 @@ import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -45,6 +51,14 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
 
+    /**
+     * Used only for the revocation lookup. With no local caching of the answer, that lookup is on every
+     * personal access token request and is this service's sole synchronous dependency in a split deployment,
+     * so it gets its own short timeouts rather than the shared client's - a caching service that is merely
+     * slow would otherwise tie up a request thread per personal access token user at the same time.
+     */
+    private final RestTemplate lookupRestTemplate;
+
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
@@ -53,6 +67,40 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     @Value("${apiml.cachingServiceClient.list.apiPath:/cachingservice/api/v1/cache-list/}")
     private String CACHING_LIST_API_PATH;
+
+    @Value("${apiml.cachingServiceClient.legacyList.apiPath:/cachingservice/api/v1/cache-list-legacy}")
+    private String CACHING_LEGACY_LIST_API_PATH;
+
+    @Value("${apiml.cachingServiceClient.query.apiPath:/cachingservice/api/v1/cache-query}")
+    private String CACHING_QUERY_API_PATH;
+
+    /**
+     * Minimum caching service version that serves {@code /cache-query}. Named in the operator-facing message
+     * so a version-skewed deployment is diagnosable without reading a stack trace.
+     */
+    static final String MIN_CACHING_SERVICE_VERSION = "3.6.0";
+
+    /**
+     * How long a "this caching service is too old" answer is trusted before probing again. Bounded so that
+     * upgrading the caching service heals the deployment on its own, and so the catalogued error keeps being
+     * emitted rather than scrolling away once.
+     */
+    private static final long QUERY_SUPPORT_RECHECK_MILLIS = 5L * 60 * 1000;
+
+    private volatile boolean mapItemQuerySupported = true;
+    private final AtomicLong querySupportCheckedAt = new AtomicLong();
+
+    /**
+     * A deliberately small circuit breaker over the revocation lookup. Once the caching service has failed
+     * this many times in a row, further lookups fail immediately instead of each waiting out a timeout. The
+     * answer is still "not valid" either way - {@code PATAuthSourceService.isValid} fails closed - but the
+     * request threads come back rather than piling up behind a store that is not answering.
+     */
+    private static final int LOOKUP_FAILURE_THRESHOLD = 5;
+    private static final long LOOKUP_CIRCUIT_OPEN_MILLIS = 10_000;
+
+    private final AtomicInteger consecutiveLookupFailures = new AtomicInteger();
+    private final AtomicLong lookupCircuitOpenedAt = new AtomicLong();
 
     @Value("${apiml.service.http.userId:#{null}}")
     private String cachingServiceUserId;
@@ -71,11 +119,16 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     }
 
     public CachingServiceClient(RestTemplate restTemplate, GatewayClient gatewayClient) {
+        this(restTemplate, restTemplate, gatewayClient);
+    }
+
+    public CachingServiceClient(RestTemplate restTemplate, RestTemplate lookupRestTemplate, GatewayClient gatewayClient) {
         this.gatewayClient = gatewayClient;
         if (restTemplate == null) {
             throw new IllegalStateException("RestTemplate instance cannot be null");
         }
         this.restTemplate = restTemplate;
+        this.lookupRestTemplate = lookupRestTemplate == null ? restTemplate : lookupRestTemplate;
     }
 
     @Override
@@ -88,6 +141,17 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
                 defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
             }
         }
+    }
+
+    /**
+     * Finds out once, at startup, whether the caching service on the other end serves point lookups, so that
+     * a version-skewed deployment shows up in the log rather than as a stack trace on the first token. A
+     * failure here is inconclusive - the caching service may simply not be registered yet - so it leaves the
+     * optimistic answer in place and the first real lookup settles it.
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    public void probeOnStartup() {
+        probeMapItemQuery();
     }
 
     private String getGatewayAddress() {
@@ -122,11 +186,23 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         }
     }
 
+    @Override
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     public Map<String, Map<String, String>> readAllMaps() throws CachingServiceClientException {
+        return readAllMaps(CACHING_LIST_API_PATH, "cache list");
+    }
+
+    @Override
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    public Map<String, Map<String, String>> readAllLegacyMaps() throws CachingServiceClientException {
+        return readAllMaps(CACHING_LEGACY_LIST_API_PATH, "legacy cache list");
+    }
+
+    private Map<String, Map<String, String>> readAllMaps(String path, String description) throws CachingServiceClientException {
         try {
             var responseType = new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
             };
-            var url = getGatewayAddress() + CACHING_LIST_API_PATH;
+            var url = getGatewayAddress() + path;
             log.debug("readAllMaps url: {}", url);
             var response = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
             if (response.getStatusCode().is2xxSuccessful()) {
@@ -135,11 +211,131 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
                 }
                 return Map.of();
             } else {
-                throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by response from caching service is null or has no body");
+                throw new CachingServiceClientException("Unable to read all key-value maps from " + description + ", caused by response from caching service is null or has no body");
             }
         } catch (Exception e) {
-            throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by: " + e.getMessage(), e);
+            throw new CachingServiceClientException("Unable to read all key-value maps from " + description + ", caused by: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getMapItems(Map<String, Collection<String>> keysByMapKey) throws CachingServiceClientException {
+        if (isLookupCircuitOpen()) {
+            throw new CachingServiceClientException(
+                "Unable to look up cache items: the caching service has failed " + LOOKUP_FAILURE_THRESHOLD +
+                    " lookups in a row, so this one was not attempted");
+        }
+        try {
+            Map<String, Map<String, String>> found = lookupMapItems(keysByMapKey);
+            consecutiveLookupFailures.set(0);
+            return found;
+        } catch (HttpStatusCodeException e) {
+            if (isEndpointMissing(e.getStatusCode())) {
+                markMapItemQueryUnsupported();
+            } else {
+                recordLookupFailure();
+            }
+            throw new CachingServiceClientException("Unable to look up cache items, caused by: " + e.getMessage(), e);
+        } catch (Exception e) {
+            recordLookupFailure();
+            throw new CachingServiceClientException("Unable to look up cache items, caused by: " + e.getMessage(), e);
+        }
+    }
+
+    private Map<String, Map<String, String>> lookupMapItems(Map<String, Collection<String>> keysByMapKey) {
+        var responseType = new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
+        };
+        var url = getGatewayAddress() + CACHING_QUERY_API_PATH;
+        log.debug("getMapItems url: {}", url);
+        ResponseEntity<Map<String, Map<String, String>>> response;
+        try {
+            response = lookupRestTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(keysByMapKey, defaultHeaders), responseType);
+        } catch (ResourceAccessException e) {
+            // a read is idempotent, so one retry is safe, and a single dropped connection is the most common
+            // reason for this to fail at all. The short timeout is what keeps the retry affordable.
+            log.debug("Retrying the revocation lookup once after a transport failure", e);
+            response = lookupRestTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(keysByMapKey, defaultHeaders), responseType);
+        }
+        return response.getBody() == null ? Map.of() : response.getBody();   //NOSONAR tests return null
+    }
+
+    private boolean isLookupCircuitOpen() {
+        long openedAt = lookupCircuitOpenedAt.get();
+        if (openedAt == 0) {
+            return false;
+        }
+        if (System.currentTimeMillis() - openedAt < LOOKUP_CIRCUIT_OPEN_MILLIS) {
+            return true;
+        }
+        // half open: let one request through to find out whether the store is back
+        if (lookupCircuitOpenedAt.compareAndSet(openedAt, 0)) {
+            consecutiveLookupFailures.set(0);
+        }
+        return false;
+    }
+
+    private void recordLookupFailure() {
+        if (consecutiveLookupFailures.incrementAndGet() >= LOOKUP_FAILURE_THRESHOLD) {
+            lookupCircuitOpenedAt.compareAndSet(0, System.currentTimeMillis());
+        }
+    }
+
+    @Override
+    public boolean supportsMapItemQuery() {
+        if (mapItemQuerySupported) {
+            return true;
+        }
+        long checkedAt = querySupportCheckedAt.get();
+        long now = System.currentTimeMillis();
+        if (now - checkedAt < QUERY_SUPPORT_RECHECK_MILLIS || !querySupportCheckedAt.compareAndSet(checkedAt, now)) {
+            return false;
+        }
+        return probeMapItemQuery();
+    }
+
+    /**
+     * Asks the caching service for nothing at all. A 2xx, or any error other than "no such endpoint", means
+     * the endpoint is there; a 404 or 405 means the caching service predates it.
+     */
+    boolean probeMapItemQuery() {
+        querySupportCheckedAt.set(System.currentTimeMillis());
+        try {
+            lookupRestTemplate.exchange(getGatewayAddress() + CACHING_QUERY_API_PATH, HttpMethod.POST,
+                new HttpEntity<>(Map.of(), defaultHeaders), String.class);
+            markMapItemQuerySupported();
+            return true;
+        } catch (HttpStatusCodeException e) {
+            if (isEndpointMissing(e.getStatusCode())) {
+                markMapItemQueryUnsupported();
+                return false;
+            }
+            // any other status still proves the endpoint exists
+            markMapItemQuerySupported();
+            return true;
+        } catch (RuntimeException e) {
+            // the caching service may simply not be registered yet; assume it is current and find out on use
+            log.debug("Could not probe the caching service for point lookup support", e);
+            return mapItemQuerySupported;
+        }
+    }
+
+    private boolean isEndpointMissing(HttpStatusCode status) {
+        return HttpStatus.NOT_FOUND.equals(status) || HttpStatus.METHOD_NOT_ALLOWED.equals(status);
+    }
+
+    private void markMapItemQuerySupported() {
+        if (!mapItemQuerySupported) {
+            log.info("The caching service now serves point lookups; personal access token validation is back on the fast path");
+        }
+        mapItemQuerySupported = true;
+    }
+
+    private void markMapItemQueryUnsupported() {
+        mapItemQuerySupported = false;
+        // remember when this was learned, so the answer is trusted for the recheck interval rather than
+        // re-probed on the very next request
+        querySupportCheckedAt.set(System.currentTimeMillis());
+        apimlLog.log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", MIN_CACHING_SERVICE_VERSION);
     }
 
     /**
@@ -233,10 +429,24 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         private final String key;
         private final String value;
 
+        /**
+         * Requested lifespan of the entry, in seconds. Computed here rather than in the caching service
+         * because this side holds the authoritative expiration of the token, on the clock that issued it -
+         * comparing a zone-less timestamp against the caching service's own clock is wrong the moment the two
+         * run in different time zones. Left null when there is nothing to derive it from.
+         */
+        private Long ttlSeconds;
+
         @JsonCreator
         public KeyValue() {
             key = "";
             value = "";
+        }
+
+        public KeyValue(String key, String value, Long ttlSeconds) {
+            this.key = key;
+            this.value = value;
+            this.ttlSeconds = ttlSeconds;
         }
     }
 

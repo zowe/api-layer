@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -19,24 +21,17 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
-import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
-import org.infinispan.lock.api.ClusteredLock;
-import org.infinispan.lock.api.ClusteredLockManager;
-import org.infinispan.lock.exception.ClusteredLockException;
-import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.partitionhandling.AvailabilityException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
+import org.zowe.apiml.cache.PatRevocationStore;
 import org.zowe.apiml.cache.Storage;
-import org.zowe.apiml.cache.StorageException;
-import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
@@ -49,7 +44,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -65,11 +59,36 @@ public class InfinispanConfig implements InitializingBean {
     private static final String KEYRING_PASSWORD = "password";
 
     private static final String ZWE_HAINSTANCE_ID = "ZWE_haInstance_id";
-    private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
     public static final String CACHE_ZOWE = "zoweCache";
+
+    /**
+     * The pre-cutover revocation store: one cache entry per <em>map</em>, holding the whole map as its value.
+     * Frozen and read-only from this release on - it is only consulted for personal access tokens issued
+     * before the cutover, and it is removed together with the legacy read path.
+     *
+     * @deprecated superseded by {@link #CACHE_ZOWE_INVALIDATED_TOKEN_ITEM}.
+     */
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     public static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
+
+    /**
+     * The revocation store: one cache entry per item, with native per-entry expiration.
+     * <p>
+     * Deliberately a new cache name rather than a reuse of {@link #CACHE_ZOWE_INVALIDATED_TOKEN}: the two
+     * hold different value types, and a previous-release node scanning a cache that mixed them would fail
+     * deserialization and reject every personal access token. An older node is simply unaware of this name.
+     */
+    public static final String CACHE_ZOWE_INVALIDATED_TOKEN_ITEM = "zoweInvalidatedTokenItemCache";
+
     private static final long SMALL_CACHE_SIZE = 10;
     private static final long BIG_CACHE_SIZE = 1000;
+
+    /**
+     * Ceiling for any entry of the revocation store. A personal access token lives at most 90 days and a
+     * revocation rule stops being relevant after the same period, so nothing in that cache can legitimately
+     * need longer.
+     */
+    private static final Duration REVOCATION_MAX_TTL = Duration.ofDays(PatRevocationStore.RULE_RETENTION_DAYS);
 
     @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;
@@ -122,7 +141,11 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
-    private final AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
+    @Value("${caching.storage.infinispan.revocationStore.maxCount:100000}")
+    private long revocationStoreMaxCount;
+
+    @Value("${caching.storage.infinispan.revocationStore.sizeWarningThreshold:50000}")
+    private long revocationStoreSizeWarningThreshold;
 
     @Override
     public void afterPropertiesSet() {
@@ -217,6 +240,26 @@ public class InfinispanConfig implements InitializingBean {
         return builder;
     }
 
+    /**
+     * Same replicated, persisted shape as {@link #getDistributedCacheConfig()}, plus an entry-count bound.
+     * Bounding is only safe - and only meaningful - with the per-item layout: the soft-index file store is
+     * write-through (passivation is off by default), so evicting an entry drops only the in-memory copy and a
+     * later read falls back to disk. Expiration itself is per entry, set on the write.
+     */
+    private ConfigurationBuilder getRevocationCacheConfig() {
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder
+            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
+            .memory()
+            .maxCount(revocationStoreMaxCount)
+            .persistence()
+            .addSoftIndexFileStore()
+            .clustering()
+            .cacheMode(CacheMode.REPL_SYNC)
+            .hash().numSegments(numSegments);
+        return builder;
+    }
+
     private ConfigurationBuilder getSimpleCacheConfig(long maxCount, Duration lifeSpan) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
@@ -250,6 +293,9 @@ public class InfinispanConfig implements InitializingBean {
 
         var caches = new HashMap<String, ConfigurationBuilder>();
         caches.put(CACHE_ZOWE, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN_ITEM, getRevocationCacheConfig());
+        // kept defined, and only ever read: an undefined name would be silently recreated by
+        // DefaultCacheManager.getCache from the default configuration, which is replicated and persisted
         caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
 
         if (applicationInfo.isModulith()) {
@@ -272,30 +318,25 @@ public class InfinispanConfig implements InitializingBean {
         return new LazyCacheManager(getCacheManagerConfig(resourceLoader), caches);
     }
 
-    private ClusteredLock lock(CacheContainer cacheManager) {
-        return zoweInvalidatedTokenLock.updateAndGet(prev -> {
-            if (prev != null) {
-                return prev;
-            }
-
-            EmbeddedCacheManager cm = (cacheManager instanceof LazyCacheManager lazyCacheManager) ? lazyCacheManager.getOriginal() : (EmbeddedCacheManager) cacheManager;
-            try {
-                ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cm);
-                clm.defineLock(LOCK_ZOWE_INVALIDATED); // it can throw AvailabilityException
-                return clm.get(LOCK_ZOWE_INVALIDATED);
-            } catch (AvailabilityException | ClusteredLockException e) {
-                log.debug("Cannot obtain lock", e);
-                throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), e.getMessage());
-            }
-        });
-    }
-
+    /**
+     * No {@code ClusteredLock} is created any more. It existed solely to serialise the whole-map
+     * read-modify-write of the previous layout; with one entry per item every write is a single atomic
+     * {@code put} and every removal a compare-and-remove, so nothing needs cluster-wide mutual exclusion.
+     * The {@code infinispan-clustered-lock} dependency stays for one more release, because the internal
+     * replicated {@code org.infinispan.LOCKS} cache it defined is still used by previous-release nodes.
+     */
     @Bean
-    public Storage storage(DefaultCacheManager cacheManager) {
-        return new InfinispanStorage(
+    public Storage storage(DefaultCacheManager cacheManager, ObjectProvider<MeterRegistry> meterRegistry) {
+        var storage = new InfinispanStorage(
             cacheManager,
-            () -> lock(cacheManager)
+            REVOCATION_MAX_TTL.toSeconds(),
+            revocationStoreSizeWarningThreshold
         );
+        meterRegistry.ifAvailable(registry -> Gauge
+            .builder("apiml.caching.revocationStore.size", storage, InfinispanStorage::getLastObservedRevocationStoreSize)
+            .description("Entries in the personal access token revocation store, as of the last sample taken on write")
+            .register(registry));
+        return storage;
     }
 
 }

@@ -15,6 +15,7 @@ import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.security.HttpsConfig;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
@@ -38,8 +39,26 @@ public class LocalCachingClient implements CachingClient {
     }
 
     @Override
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     public Map<String, Map<String, String>> readAllMaps() {
         return storage.getAllMaps(getServiceId());
+    }
+
+    @Override
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    public Map<String, Map<String, String>> readAllLegacyMaps() {
+        return storage.getAllLegacyMaps(getServiceId());
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getMapItems(Map<String, Collection<String>> keysByMapKey) {
+        return storage.getMapItems(getServiceId(), keysByMapKey);
+    }
+
+    @Override
+    public boolean supportsMapItemQuery() {
+        // in the modulith the storage is called in process, so it is always the matching version
+        return true;
     }
 
     @Override
@@ -68,7 +87,7 @@ public class LocalCachingClient implements CachingClient {
     }
 
     KeyValue convert(CachingServiceClient.KeyValue kv) {
-        return new KeyValue(kv.getKey(), kv.getValue());
+        return new KeyValue(kv.getKey(), kv.getValue(), kv.getTtlSeconds());
     }
 
     CachingServiceClient.KeyValue convert(KeyValue kv) {

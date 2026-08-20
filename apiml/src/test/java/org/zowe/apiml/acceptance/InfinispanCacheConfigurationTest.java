@@ -14,6 +14,7 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
@@ -23,6 +24,7 @@ import java.time.Duration;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -41,11 +43,29 @@ class InfinispanCacheConfigurationTest {
     private LazyCacheManager cacheManager;
 
     @ParameterizedTest
-    @ValueSource(strings = {"zoweCache", "zoweInvalidatedTokenCache", "invalidatedJwtTokens"})
+    @ValueSource(strings = {"zoweCache", "zoweInvalidatedTokenCache", "zoweInvalidatedTokenItemCache", "invalidatedJwtTokens"})
     void testDistributedCacheConfiguration(String cacheName) {
         var config = cacheManager.getCacheConfiguration(cacheName);
 
         assertEquals(CacheMode.REPL_SYNC, config.clustering().cacheMode());
+    }
+
+    /**
+     * A cache that is not registered here is not an error at runtime: DefaultCacheManager.getCache would
+     * silently create it from the default configuration, which is replicated and persisted to disk. The
+     * revocation store has to be the bounded definition, so assert it rather than assume it.
+     */
+    @Test
+    void testRevocationCacheIsRegisteredAndBounded() {
+        assertTrue(cacheManager.getCacheNames().contains("zoweInvalidatedTokenItemCache"));
+
+        var config = cacheManager.getCacheConfiguration("zoweInvalidatedTokenItemCache");
+
+        assertEquals(CacheMode.REPL_SYNC, config.clustering().cacheMode());
+        assertEquals(100000L, config.memory().maxCount());
+        assertFalse(config.persistence().stores().isEmpty(), "eviction must fall back to the store, not lose entries");
+        // expiration is set per entry on the write, not cache-wide
+        assertEquals(-1, config.expiration().lifespan());
     }
 
     @ParameterizedTest
@@ -60,7 +80,7 @@ class InfinispanCacheConfigurationTest {
         assertEquals(expiration.toMillis(), config.expiration().lifespan());
 
         //When a new cache is defined, the test fails as reminder to cover the new configuration with a test
-        assertEquals(11, cacheManager.getCacheNames().size());
+        assertEquals(12, cacheManager.getCacheNames().size());
     }
 
     private static Stream<Arguments> cacheConfigurationsForValidation() {

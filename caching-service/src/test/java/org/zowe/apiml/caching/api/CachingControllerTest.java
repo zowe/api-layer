@@ -35,10 +35,13 @@ import javax.security.auth.x500.X500Principal;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -83,6 +86,7 @@ class CachingControllerTest {
         when(mockRequest.getURI()).thenReturn(URI.create("http://localhost"));
         mockStorage = mock(Storage.class);
         underTest = new CachingController(mockStorage, messageService);
+        underTest.maxQueryKeys = org.zowe.apiml.cache.PatRevocationStore.DEFAULT_MAX_QUERY_KEYS;
     }
 
     @Nested
@@ -658,5 +662,123 @@ class CachingControllerTest {
         }
 
     }
+
+
+    @Nested
+    class WhenQueryingSpecificItems {
+
+        @Test
+        void givenCorrectRequest_thenOnlyTheFoundEntriesAreReturned() {
+            Map<String, Map<String, String>> found = Map.of("invalidTokens", Map.of("hash", "record"));
+            when(mockStorage.getMapItems(anyString(), any())).thenReturn(found);
+
+            StepVerifier.create(underTest.getMapItems(Map.of("invalidTokens", List.of("hash")), mockExchange))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+                    assertThat(response.getBody(), is(found));
+                })
+                .verifyComplete();
+        }
+
+        /**
+         * The limit protects this service from an unbounded scan. It has to be a 400 with the limit named,
+         * because the caller cannot otherwise tell this apart from the store being broken - and it fails
+         * closed on the difference.
+         */
+        @Test
+        void givenMoreKeysThanTheLimit_thenReturnBadRequestNamingTheLimit() {
+            List<String> tooMany = IntStream.rangeClosed(0, org.zowe.apiml.cache.PatRevocationStore.DEFAULT_MAX_QUERY_KEYS)
+                .mapToObj(i -> "hash" + i).toList();
+
+            StepVerifier.create(underTest.getMapItems(Map.of("invalidTokens", tooMany), mockExchange))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+                    var body = (ApiMessageView) response.getBody();
+                    assertThat(body.getMessages().get(0).getMessageContent(), containsString(String.valueOf(underTest.maxQueryKeys)));
+                })
+                .verifyComplete();
+            verify(mockStorage, never()).getMapItems(anyString(), any());
+        }
+
+        @Test
+        void givenNoPayload_thenReturnBadRequest() {
+            StepVerifier.create(underTest.getMapItems(null, mockExchange))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
+                .verifyComplete();
+        }
+
+        @Test
+        void givenIncompatibleStorage_thenReturnBadRequest() {
+            when(mockStorage.getMapItems(anyString(), any()))
+                .thenThrow(new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus()));
+
+            StepVerifier.create(underTest.getMapItems(Map.of(), mockExchange))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
+                .verifyComplete();
+        }
+
+        /**
+         * A lost write on a revocation is a dropped revocation, so it has to reach the caller as a 503 rather
+         * than as a success or an opaque 500.
+         */
+        @Test
+        void givenTheCacheIsNotAvailable_thenReturnServiceUnavailable() {
+            when(mockStorage.getMapItems(anyString(), any()))
+                .thenThrow(new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), "not ready"));
+
+            StepVerifier.create(underTest.getMapItems(Map.of(), mockExchange))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.SERVICE_UNAVAILABLE)))
+                .verifyComplete();
+        }
+
+        @Test
+        void givenNoCertificateInformation_thenReturnUnauthorized() {
+            when(mockRequest.getSslInfo()).thenReturn(null);
+            when(mockExchange.getAttributes()).thenReturn(new HashMap<>());
+
+            StepVerifier.create(underTest.getMapItems(Map.of(), mockExchange))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED)))
+                .verifyComplete();
+        }
+    }
+
+    @Nested
+    class WhenReadingTheLegacyLayout {
+
+        @Test
+        void thenTheDedicatedStorageMethodIsUsedRatherThanTheCurrentOne() {
+            Map<String, Map<String, String>> legacy = Map.of("invalidTokens", Map.of("hash", "record"));
+            when(mockStorage.getAllLegacyMaps(anyString())).thenReturn(legacy);
+
+            StepVerifier.create(underTest.getAllLegacyMaps(mockExchange))
+                .assertNext(response -> {
+                    assertThat(response.getStatusCode(), is(HttpStatus.OK));
+                    assertThat(response.getBody(), is(legacy));
+                })
+                .verifyComplete();
+            verify(mockStorage, never()).getAllMaps(anyString());
+        }
+
+        @Test
+        void givenIncompatibleStorage_thenReturnBadRequest() {
+            when(mockStorage.getAllLegacyMaps(anyString()))
+                .thenThrow(new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus()));
+
+            StepVerifier.create(underTest.getAllLegacyMaps(mockExchange))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST)))
+                .verifyComplete();
+        }
+
+        @Test
+        void givenNoCertificateInformation_thenReturnUnauthorized() {
+            when(mockRequest.getSslInfo()).thenReturn(null);
+            when(mockExchange.getAttributes()).thenReturn(new HashMap<>());
+
+            StepVerifier.create(underTest.getAllLegacyMaps(mockExchange))
+                .assertNext(response -> assertThat(response.getStatusCode(), is(HttpStatus.UNAUTHORIZED)))
+                .verifyComplete();
+        }
+    }
+
 
 }

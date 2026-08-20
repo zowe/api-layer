@@ -28,11 +28,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
 @InfinispanStorageTest
 public class AccessTokenServiceTest {
@@ -44,6 +47,7 @@ public class AccessTokenServiceTest {
     public static final URI VALIDATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.VALIDATE_ACCESS_TOKEN);
     public static final URI EVICT_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.EVICT_ACCESS_TOKEN);
     public static final URI CACHE_LIST_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.CACHING_CACHE_LIST);
+    public static final URI GENERATE_ENDPOINT = HttpRequestUtils.getUriFromGateway(Endpoints.GENERATE_ACCESS_TOKEN);
 
     ValidateRequestModel bodyContent;
 
@@ -273,17 +277,19 @@ public class AccessTokenServiceTest {
                 .delete(EVICT_ENDPOINT)
             .then()
                 .statusCode(204);
-//            return all the items from the cache
-            given()
+//            return all the items from the cache. Asserted against the raw body on purpose: 'content' is
+//            not a key of the /cache-list response, so matching on it passes whatever the response says.
+            String cacheList = given()
                 .contentType(ContentType.JSON)
                 .config(SslContext.clientCertUser)
             .when()
                 .get(CACHE_LIST_ENDPOINT)
             .then()
                 .statusCode(200)
-                .body("content", not(containsString("1582239600000")))
                 .extract()
                 .asString();
+
+            assertThat(cacheList, not(containsString("1582239600000")));
         }
 
         @Test
@@ -323,4 +329,38 @@ public class AccessTokenServiceTest {
 
     }
 
+
+    /**
+     * Validating a personal access token looks up one revocation entry per scope plus two, and that lookup is
+     * bounded. A token issued above the bound could never be validated - the lookup would be rejected and the
+     * fail-closed path would turn that into "not valid" on every future request - so it is refused at issuance
+     * instead, which is the one place the caller can still do something about it.
+     */
+    @Nested
+    class GivenTooManyScopes {
+
+        @BeforeEach
+        void setUp() {
+            RestAssured.useRelaxedHTTPSValidation();
+        }
+
+        @Test
+        void thenRejectTheTokenRequest() {
+            Set<String> scopes = IntStream.rangeClosed(0, 200).mapToObj(i -> "service" + i).collect(Collectors.toSet());
+            Map<String, Object> body = new HashMap<>();
+            body.put("validity", 60);
+            body.put("scopes", scopes);
+
+            given()
+                .contentType(ContentType.JSON)
+                .header("Authorization", "Basic " + java.util.Base64.getEncoder()
+                    .encodeToString((SecurityUtils.USERNAME + ":" + SecurityUtils.PASSWORD).getBytes()))
+                .body(body)
+            .when()
+                .post(GENERATE_ENDPOINT)
+            .then()
+                .statusCode(400)
+                .body("messages[0].messageNumber", is("ZWEAT612E"));
+        }
+    }
 }

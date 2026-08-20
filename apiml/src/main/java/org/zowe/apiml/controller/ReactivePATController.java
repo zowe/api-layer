@@ -284,6 +284,9 @@ public class ReactivePATController {
                 if (rulesRequestModel != null) {
                     timeStamp = rulesRequestModel.getTimestamp();
                 }
+                if (isFutureRuleTimestamp(timeStamp)) {
+                    return Mono.just(ResponseEntity.badRequest().build());
+                }
 
                 tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
                 return Mono.just(ResponseEntity.noContent().build());
@@ -414,7 +417,7 @@ public class ReactivePATController {
     public Mono<ResponseEntity<String>> revokeAccessTokensForUser(@RequestBody RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
-        if (userId == null) {
+        if (userId == null || isFutureRuleTimestamp(timeStamp)) {
             return badRequestForPATInvalidation();
         }
         log.debug("revokeAccessTokensForUser: userId={}", userId);
@@ -481,7 +484,7 @@ public class ReactivePATController {
     public Mono<ResponseEntity<String>> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
-        if (serviceId == null) {
+        if (serviceId == null || isFutureRuleTimestamp(timeStamp)) {
             return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);

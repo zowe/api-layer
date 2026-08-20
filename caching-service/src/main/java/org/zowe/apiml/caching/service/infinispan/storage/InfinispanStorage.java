@@ -13,47 +13,99 @@ package org.zowe.apiml.caching.service.infinispan.storage;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.infinispan.lock.api.ClusteredLock;
+import org.infinispan.Cache;
 import org.infinispan.manager.DefaultCacheManager;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.caching.service.Messages;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
+import static org.zowe.apiml.cache.PatRevocationStore.INVALID_SCOPES_KEY;
+import static org.zowe.apiml.cache.PatRevocationStore.INVALID_TOKENS_KEY;
+import static org.zowe.apiml.cache.PatRevocationStore.INVALID_USERS_KEY;
+import static org.zowe.apiml.cache.PatRevocationStore.RULE_RETENTION_DAYS;
 import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE;
 import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE_INVALIDATED_TOKEN;
+import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE_INVALIDATED_TOKEN_ITEM;
 
+/**
+ * Infinispan-backed storage.
+ * <p>
+ * Map items (the personal access token revocation store) are held one cache entry per item, keyed by
+ * {@code len(serviceId)|serviceId + len(mapKey)|mapKey + itemKey}, with the entry value being exactly the
+ * inner-map value the previous layout used. That makes a write a single atomic {@code put} - no cluster-wide
+ * lock, no read-modify-write, and only that one entry replicated - and makes "is this token revoked?" a
+ * handful of {@code get}s instead of a download of the whole dataset. Expiration is Infinispan's, per entry,
+ * so nothing needs a maintenance job.
+ * <p>
+ * {@link #getAllLegacyMaps(String)} is the one remaining reader of the previous whole-map layout. That cache
+ * is never written to any more; it only shrinks, and it is read only for tokens issued before the cutover.
+ */
 @Slf4j
-@RequiredArgsConstructor
 public class InfinispanStorage implements Storage {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * How often the size of the revocation store is sampled, in writes. Sampling keeps the (potentially
+     * store-touching) {@code size()} call off every single revocation.
+     */
+    public static final int DEFAULT_SIZE_CHECK_INTERVAL = 1000;
+
     private final DefaultCacheManager defaultCacheManager;
-    private final Supplier<ClusteredLock> lockSupplier;
+    private final long maxTtlSeconds;
+    private final long sizeWarningThreshold;
+    private final int sizeCheckInterval;
+
+    private final AtomicLong writeCounter = new AtomicLong();
+    private final AtomicLong lastWarnedSize = new AtomicLong();
+    private final AtomicLong lastObservedSize = new AtomicLong(-1);
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     static {
         objectMapper.registerModule(new JavaTimeModule());
+    }
+
+    public InfinispanStorage(DefaultCacheManager defaultCacheManager, long maxTtlSeconds, long sizeWarningThreshold) {
+        this(defaultCacheManager, maxTtlSeconds, sizeWarningThreshold, DEFAULT_SIZE_CHECK_INTERVAL);
+    }
+
+    public InfinispanStorage(DefaultCacheManager defaultCacheManager, long maxTtlSeconds, long sizeWarningThreshold, int sizeCheckInterval) {
+        this.defaultCacheManager = defaultCacheManager;
+        this.maxTtlSeconds = maxTtlSeconds;
+        this.sizeWarningThreshold = sizeWarningThreshold;
+        this.sizeCheckInterval = Math.max(1, sizeCheckInterval);
     }
 
     private ConcurrentMap<String, KeyValue> getCache() {
         return defaultCacheManager.getCache(CACHE_ZOWE);
     }
 
-    private ConcurrentMap<String, Map<String, String>> getTokenCache() {
+    private Cache<String, String> getTokenItemCache() {
+        return defaultCacheManager.getCache(CACHE_ZOWE_INVALIDATED_TOKEN_ITEM);
+    }
+
+    /**
+     * @deprecated read-only access to the pre-cutover layout; removed together with the legacy read path.
+     */
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    private ConcurrentMap<String, Map<String, String>> getLegacyTokenCache() {
         return defaultCacheManager.getCache(CACHE_ZOWE_INVALIDATED_TOKEN);
     }
 
@@ -72,50 +124,107 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public KeyValue storeMapItem(String serviceId, String mapKey, KeyValue toCreate) {
-        ClusteredLock lock = lockSupplier.get();
-        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
-            if (Boolean.TRUE.equals(r)) {
-                try {
-                    String cacheKey = serviceId + mapKey;
-                    log.info("Storing the item into token cache: {} -> {}|{}", cacheKey, toCreate.getKey(), toCreate.getValue());
-                    Map<String, String> tokenCacheItem = getTokenCache().get(cacheKey);
-                    if (tokenCacheItem == null) {
-                        tokenCacheItem = new HashMap<>();
-                    }
-                    tokenCacheItem.put(toCreate.getKey(), toCreate.getValue());
-                    getTokenCache().put(cacheKey, tokenCacheItem);
-                } finally {
-                    lock.unlock();
-                }
-            }
-        });
-        completeJoin(complete);
+        String cacheKey = encodeItemKey(serviceId, mapKey, toCreate.getKey());
+        Cache<String, String> cache = getTokenItemCache();
+        long ttlSeconds = resolveTtlSeconds(mapKey, toCreate);
+
+        // Infinispan reads a non-positive lifespan as "never expire" (-1) or "already gone" (0); an entry
+        // whose retention has already run out must not become the one entry that lives forever.
+        if (ttlSeconds <= 0) {
+            log.debug("Item {} of map {} is already past its retention, removing instead of storing", toCreate.getKey(), mapKey);
+            cache.remove(cacheKey);
+            return null;
+        }
+
+        log.debug("Storing item into the token cache: {}|{}, expiring in {}s", mapKey, toCreate.getKey(), ttlSeconds);
+        cache.put(cacheKey, toCreate.getValue(), ttlSeconds, TimeUnit.SECONDS);
+        warnIfStoreTooLarge(cache);
         return null;
     }
 
     @Override
     public Map<String, String> getAllMapItems(String serviceId, String mapKey) {
-        log.info("Reading all records from token cache for service {} under the {} key.", serviceId, mapKey);
-        return getTokenCache().get(serviceId + mapKey);
+        log.debug("Reading all records from token cache for service {} under the {} key.", serviceId, mapKey);
+        String prefix = encodeMapPrefix(serviceId, mapKey);
+        Cache<String, String> cache = getTokenItemCache();
+
+        Map<String, String> result = new HashMap<>();
+        for (String key : keysOf(cache)) {
+            if (!key.startsWith(prefix)) continue;
+            String value = cache.get(key);
+            // null means the entry expired between the scan and the read
+            if (value != null) {
+                result.put(key.substring(prefix.length()), value);
+            }
+        }
+        return result;
     }
 
     @Override
     public Map<String, Map<String, String>> getAllMaps(String serviceId) {
-        log.info("Reading all records from token cache for service {} ", serviceId);
+        log.debug("Reading all records from token cache for service {} ", serviceId);
+        String prefix = encodeServicePrefix(serviceId);
+        Cache<String, String> cache = getTokenItemCache();
 
-        /**
-         * Original implementation with stream, collect and lambdas to read keys leads to serializing of lambdas,
-         * see org.infinispan.marshall.core.LambdaMarshaller#write(java.io.ObjectOutput, java.lang.Object).
-         * It is difficult to support and also slower (see exchanging lambdas between nodes).
-         */
         Map<String, Map<String, String>> result = new HashMap<>();
-        for (String key : getTokenCache().keySet()) {
-            if (!key.startsWith(serviceId)) continue;
+        for (String key : keysOf(cache)) {
+            if (!key.startsWith(prefix)) continue;
+            String[] mapAndItem = decodeAfterService(key, prefix.length());
+            if (mapAndItem == null) {
+                log.debug("Skipping undecodable key in the token cache");
+                continue;
+            }
+            String value = cache.get(key);
+            if (value != null) {
+                result.computeIfAbsent(mapAndItem[0], k -> new HashMap<>()).put(mapAndItem[1], value);
+            }
+        }
+        return result;
+    }
 
-            String newKey = key.substring(serviceId.length());
-            result.put(newKey, getTokenCache().get(key));
+    @Override
+    public Map<String, Map<String, String>> getMapItems(String serviceId, Map<String, Collection<String>> keysByMapKey) {
+        Map<String, Map<String, String>> result = new HashMap<>();
+        if (keysByMapKey == null || keysByMapKey.isEmpty()) {
+            return result;
         }
 
+        Cache<String, String> cache = getTokenItemCache();
+        for (Map.Entry<String, Collection<String>> requested : keysByMapKey.entrySet()) {
+            String mapKey = requested.getKey();
+            if (mapKey == null || requested.getValue() == null) continue;
+
+            Map<String, String> found = new HashMap<>();
+            for (String itemKey : requested.getValue()) {
+                if (itemKey == null) continue;
+                String value = cache.get(encodeItemKey(serviceId, mapKey, itemKey));
+                if (value != null) {
+                    found.put(itemKey, value);
+                }
+            }
+            if (!found.isEmpty()) {
+                result.put(mapKey, found);
+            }
+        }
+        return result;
+    }
+
+    @Override
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    @SuppressWarnings("java:S1133") // the deprecation is the point: this method exists in order to be deleted
+    public Map<String, Map<String, String>> getAllLegacyMaps(String serviceId) {
+        log.debug("Reading all records from the legacy token cache for service {}", serviceId);
+        ConcurrentMap<String, Map<String, String>> legacy = getLegacyTokenCache();
+
+        // bare concatenation, because that is how the pre-cutover data was actually keyed
+        Map<String, Map<String, String>> result = new HashMap<>();
+        for (String key : legacy.keySet()) {
+            if (!key.startsWith(serviceId)) continue;
+            Map<String, String> value = legacy.get(key);
+            if (value != null) {
+                result.put(key.substring(serviceId.length()), value);
+            }
+        }
         return result;
     }
 
@@ -133,7 +242,7 @@ public class InfinispanStorage implements Storage {
     @Override
     public KeyValue update(String serviceId, KeyValue toUpdate) {
         toUpdate.setServiceId(serviceId);
-        log.info("Updating record for service {} under key {}", serviceId, toUpdate);
+        log.info("Updating record for service {} under key {}", serviceId, toUpdate.getKey());
         KeyValue serviceCache = getCache().put(serviceId + toUpdate.getKey(), toUpdate);
         if (serviceCache == null) {
             throw new StorageException(Messages.KEY_NOT_IN_CACHE.getKey(), Messages.KEY_NOT_IN_CACHE.getStatus(), toUpdate.getKey(), serviceId);
@@ -177,70 +286,215 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public void removeNonRelevantTokens(String serviceId, String mapKey) {
-        ClusteredLock lock = lockSupplier.get();
-        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
-            if (Boolean.TRUE.equals(r)) {
-                try {
-                    removeToken(serviceId, mapKey);
-                } finally {
-                    lock.unlock();
-                }
-            }
-        });
-        completeJoin(complete);
-    }
-
-    private void removeToken(String serviceId, String mapKey) {
-        Map<String, String> map = getTokenCache().get(serviceId + mapKey);
-        if (map != null && !map.isEmpty()) {
-            Map<String,String> result = map.entrySet().stream().filter(entry -> {
-                try {
-                    AccessTokenContainer c = objectMapper.readValue(entry.getValue(), AccessTokenContainer.class);
-                    return !c.getExpiresAt().isBefore(LocalDateTime.now());
-                } catch (JsonProcessingException e) {
-                    log.error("Not able to parse invalidToken json value.", e);
-                    return true;
-                }
-            }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-            getTokenCache().put(serviceId + mapKey, result);
-        }
+        removeNonRelevant(serviceId, mapKey, this::isExpiredToken);
     }
 
     @Override
     public void removeNonRelevantRules(String serviceId, String mapKey) {
-        ClusteredLock lock = lockSupplier.get();
-        CompletableFuture<Boolean> complete = lock.tryLock(4, TimeUnit.SECONDS).whenComplete((r, ex) -> {
-            if (Boolean.TRUE.equals(r)) {
-                try {
-                    long timestamp = System.currentTimeMillis();
-                    Map<String, String> map = getTokenCache().get(serviceId + mapKey);
-                    if (map != null && !map.isEmpty()) {
-                        Map<String,String> result = map.entrySet().stream().filter(entry -> {
-                            long delta = timestamp - Long.parseLong(entry.getValue());
-                            long deltaToDays = TimeUnit.MILLISECONDS.toDays(delta);
-                            return deltaToDays <= 90;
-                        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-                        getTokenCache().put(serviceId + mapKey, result);
-                    }
-                } finally {
-                    lock.unlock();
-                }
-            }
-        });
-        completeJoin(complete);
+        long now = System.currentTimeMillis();
+        removeNonRelevant(serviceId, mapKey, value -> isExpiredRule(value, now));
     }
 
-    private void completeJoin(CompletableFuture<Boolean> complete) {
-        try {
-            complete.join();
-        } catch (CompletionException e) {
-            if (e.getCause() instanceof StorageException) {
-                throw (StorageException) e.getCause();
-            } else {
-                log.error("Unexpected error while acquiring the lock ", e);
-                throw e;
+    /**
+     * Per-item, best-effort cleanup. With native expiration this is a safety net rather than the primary
+     * mechanism, so it takes no lock: each removal is a compare-and-remove against the value that was read,
+     * and two operators (or two nodes) running it at once simply race harmlessly.
+     * <p>
+     * An entry whose value cannot be interpreted is deliberately kept rather than thrown on. Aborting the
+     * batch would let one poison record block cleanup of the whole map, every cycle - which is how this
+     * silently failed before - and dropping it would un-revoke a token on the strength of a parse error.
+     */
+    private void removeNonRelevant(String serviceId, String mapKey, Predicate<String> nonRelevant) {
+        String prefix = encodeMapPrefix(serviceId, mapKey);
+        Cache<String, String> cache = getTokenItemCache();
+
+        int inspected = 0;
+        int removed = 0;
+        for (String key : keysOf(cache)) {
+            if (!key.startsWith(prefix)) continue;
+            String value = cache.get(key);
+            if (value == null) continue;
+            inspected++;
+            if (nonRelevant.test(value) && cache.remove(key, value)) {
+                removed++;
             }
         }
+        log.debug("Evicted {} of {} items of map {} for service {}", removed, inspected, mapKey, serviceId);
+    }
+
+    private boolean isExpiredToken(String value) {
+        try {
+            AccessTokenContainer container = objectMapper.readValue(value, AccessTokenContainer.class);
+            if (container == null || container.getExpiresAt() == null) {
+                return false;
+            }
+            return container.getExpiresAt().isBefore(LocalDateTime.now());
+        } catch (JsonProcessingException e) {
+            log.debug("Cannot parse an invalidated token record, keeping it", e);
+            return false;
+        }
+    }
+
+    private boolean isExpiredRule(String value, long now) {
+        try {
+            long delta = now - Long.parseLong(value.trim());
+            return TimeUnit.MILLISECONDS.toDays(delta) > RULE_RETENTION_DAYS;
+        } catch (NumberFormatException e) {
+            log.debug("Cannot parse a revocation rule timestamp, keeping the rule", e);
+            return false;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------------
+    // expiration
+    // ---------------------------------------------------------------------------------------------------
+
+    /**
+     * @return the lifespan to store the entry with, in seconds; zero or less means the entry is already past
+     *         its retention and must be removed rather than stored.
+     */
+    private long resolveTtlSeconds(String mapKey, KeyValue toCreate) {
+        Long requested = toCreate.getTtlSeconds();
+        if (requested != null) {
+            // the client computed it against its own clock, which is the authoritative one for token expiry
+            return Math.min(requested, maxTtlSeconds);
+        }
+
+        Long derived = deriveTtlSeconds(mapKey, toCreate.getValue());
+        if (derived == null) {
+            // Unknown map key, or a value this service cannot interpret - the generic cache-list API accepts
+            // both. Falling back to the ceiling rather than to "never expire" keeps the promise that nothing
+            // in this cache is unbounded, and the ceiling is longer than the longest possible PAT lifetime.
+            return maxTtlSeconds;
+        }
+        return Math.min(derived, maxTtlSeconds);
+    }
+
+    private Long deriveTtlSeconds(String mapKey, String value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            if (INVALID_TOKENS_KEY.equals(mapKey)) {
+                AccessTokenContainer container = objectMapper.readValue(value, AccessTokenContainer.class);
+                if (container == null || container.getExpiresAt() == null) {
+                    return null;
+                }
+                return Duration.between(LocalDateTime.now(), container.getExpiresAt()).getSeconds();
+            }
+            if (INVALID_USERS_KEY.equals(mapKey) || INVALID_SCOPES_KEY.equals(mapKey)) {
+                long relevantUntil = Long.parseLong(value.trim()) + Duration.ofDays(RULE_RETENTION_DAYS).toMillis();
+                return Duration.ofMillis(relevantUntil - System.currentTimeMillis()).getSeconds();
+            }
+        } catch (JsonProcessingException | NumberFormatException | ArithmeticException e) {
+            log.debug("Cannot derive the expiration of an item of map {}, falling back to the maximum retention", mapKey, e);
+        }
+        return null;
+    }
+
+    // ---------------------------------------------------------------------------------------------------
+    // key encoding
+    // ---------------------------------------------------------------------------------------------------
+
+    /**
+     * {@code len(serviceId)|serviceId + len(mapKey)|mapKey + itemKey}.
+     * <p>
+     * Length prefixes rather than a separator character: {@code serviceId} is a certificate subject DN,
+     * {@code mapKey} is a URL path variable and {@code itemKey} is a hash, so no character is guaranteed to
+     * be absent from all three. Prefixing also removes the ambiguity the previous bare concatenation had,
+     * where one service id being a prefix of another leaked entries across services.
+     */
+    static String encodeItemKey(String serviceId, String mapKey, String itemKey) {
+        return encodeMapPrefix(serviceId, mapKey) + itemKey;
+    }
+
+    static String encodeMapPrefix(String serviceId, String mapKey) {
+        return encodeServicePrefix(serviceId) + mapKey.length() + "|" + mapKey;
+    }
+
+    static String encodeServicePrefix(String serviceId) {
+        return serviceId.length() + "|" + serviceId;
+    }
+
+    /**
+     * @param offset index just past the service prefix
+     * @return {@code [mapKey, itemKey]}, or null when the remainder is not a valid length-prefixed string
+     */
+    static String[] decodeAfterService(String key, int offset) {
+        int separator = key.indexOf('|', offset);
+        if (separator < 0) {
+            return null;
+        }
+        int length;
+        try {
+            length = Integer.parseInt(key.substring(offset, separator));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        int start = separator + 1;
+        int end = start + length;
+        if (length < 0 || end > key.length()) {
+            return null;
+        }
+        return new String[]{key.substring(start, end), key.substring(end)};
+    }
+
+    /**
+     * Reading the key set and then fetching each value keeps lambdas out of the cache API. Doing this with
+     * {@code stream()} makes Infinispan marshal the lambda, which is both slower and harder to support - see
+     * {@code org.infinispan.marshall.core.LambdaMarshaller}.
+     */
+    private Iterable<String> keysOf(Cache<String, String> cache) {
+        return cache.keySet();
+    }
+
+    // ---------------------------------------------------------------------------------------------------
+    // observability
+    // ---------------------------------------------------------------------------------------------------
+
+    /**
+     * Operators need to see the revocation store growing before it becomes an incident. The size is sampled
+     * every {@code sizeCheckInterval} writes rather than read on each one, because {@code size()} can walk the
+     * persistent store; the warning then fires at most once per doubling, so a revocation burst cannot flood
+     * the log with the very message saying the store is busy.
+     */
+    private void warnIfStoreTooLarge(Cache<String, String> cache) {
+        if (writeCounter.incrementAndGet() % sizeCheckInterval != 0) {
+            return;
+        }
+
+        long size;
+        try {
+            size = cache.size();
+        } catch (RuntimeException e) {
+            log.debug("Cannot determine the size of the revocation store", e);
+            return;
+        }
+        lastObservedSize.set(size);
+
+        if (sizeWarningThreshold <= 0 || size < sizeWarningThreshold) {
+            return;
+        }
+        long previous = lastWarnedSize.get();
+        if (previous != 0 && size < previous * 2) {
+            return;
+        }
+        if (lastWarnedSize.compareAndSet(previous, size)) {
+            apimlLog.log("org.zowe.apiml.cache.revocationStoreTooLarge", size, sizeWarningThreshold);
+        }
+    }
+
+    /**
+     * Size of the revocation store as of the last sample, or -1 before the first one.
+     * <p>
+     * Sampled on write rather than read on demand, so a metrics scrape costs nothing and cannot walk the
+     * persistent store. The consequence is that the value goes stale while no revocations are being made -
+     * during which the store can only shrink, as entries expire. This is a secondary channel: ZAAS and the
+     * caching service expose only health and info on actuator by default, so the catalogued warning is what
+     * most sites will actually see.
+     */
+    public long getLastObservedRevocationStoreSize() {
+        return lastObservedSize.get();
     }
 
 }

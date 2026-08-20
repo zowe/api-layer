@@ -30,14 +30,17 @@ import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
 import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
+import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
+import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
 @Slf4j
@@ -64,6 +67,23 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     public Mono<Void> handleAccessTokenMissingBodyException(ServerWebExchange exchange, AccessTokenMissingBodyException ex) {
         log.debug("Missing AccessToken body, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.token.accessTokenBodyMissingScopes");
+    }
+
+    @ExceptionHandler(AccessTokenTooManyScopesException.class)
+    public Mono<Void> handleAccessTokenTooManyScopesException(ServerWebExchange exchange, AccessTokenTooManyScopesException ex) {
+        log.debug("Too many scopes requested for an AccessToken, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.token.accessTokenTooManyScopes", ex.getLimit());
+    }
+
+    /**
+     * Without this the personal access token endpoints answer 500 with a stack trace for something that is
+     * simply the revocation store being unreachable - which is also how a caching service too old to serve
+     * point lookups surfaces.
+     */
+    @ExceptionHandler(CachingServiceClientException.class)
+    public Mono<Void> handleCachingServiceClientException(ServerWebExchange exchange, CachingServiceClientException ex) {
+        log.debug("The caching service could not be reached: {}", ex.getMessage());
+        return setBodyResponse(exchange, SC_SERVICE_UNAVAILABLE, "org.zowe.apiml.zaas.pat.cachingServiceUnavailable", ex.getMessage());
     }
 
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)

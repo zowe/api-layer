@@ -20,6 +20,7 @@ import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.service.vsam.config.VsamConfig;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -216,6 +217,16 @@ public class VsamStorage implements Storage {
 
     @Override
     public void removeNonRelevantRules(String serviceId, String mapKey) {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getMapItems(String serviceId, Map<String, Collection<String>> keysByMapKey) throws StorageException {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getAllLegacyMaps(String serviceId) throws StorageException {
         throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
     }
 }

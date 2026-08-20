@@ -564,6 +564,42 @@ form is a one-time startup read of the two (bounded) rule maps to take
 `threshold = max(threshold, highestFutureRuleTimestamp)` — a read to pick a safe threshold, not a data
 move.
 
+**The resulting `timestamp` contract.** Only the upper end is bounded; there is deliberately no lower
+bound, because a rule dated in the past is exactly how an operator revokes retrospectively. What makes
+the far past harmless is 2.2's TTL derivation rather than a check in the controller.
+
+| `timestamp` | response | effect |
+|---|---|---|
+| `0`, or body omitted | 204 | replaced with `System.currentTimeMillis()` — the "revoke everything now" case |
+| within 90 days past, up to `now + skewAllowance` | 204 | stored, expires at `timestamp + 90d` |
+| further than 90 days in the past | 204 | accepted, then **discarded on write** |
+| beyond `now + skewAllowance` | 400 | rejected |
+
+The third row is the non-obvious one. A rule's lifespan is `timestamp + 90d - now`, and `storeMapItem`
+removes rather than stores when that is non-positive — otherwise Infinispan would read the negative value
+as *never expire* and the oldest rules would be the only permanent ones (the trap in 2.2). Nothing is lost
+by it: a PAT lives at most 90 days, so every token a rule that old could govern has already expired and
+`parseJwtWithSignature` rejects it before any store is consulted. Only the timing of the cleanup changes —
+previously such an entry was written and swept later by `removeNonRelevantRules`. `AccessTokenServiceTest`'s
+old-timestamp case (`1582239600000`) exercises this and keeps passing unchanged.
+
+What that row costs is honesty in the response: a 204 for a write that had no effect. Making the guard
+symmetric — rejecting an already-elapsed retention with a 400, so that "accepted" always means "stored" —
+would change the status code that integration test asserts, so it is a deliberate call rather than a
+tidy-up, and it is not taken here.
+
+**The skew allowance is a client-clock tolerance, not the cutover one.** It absorbs the difference between
+the caller's clock and the node's, for a client that computes "now" itself and sends it; without it an
+entirely ordinary revocation from a slightly fast client answers 400. It is unrelated to
+`cutoverSkewAllowanceSeconds`, which covers skew *between ZAAS nodes* placing a token either side of the
+epoch, and where being too small silently drops pre-cutover revocations — hence the guidance there to err
+generous. Here erring generous buys nothing, so the value only has to stay negligible against the 90-day
+retention: a rule accepted 60 seconds early expires 60 seconds before its nominal authority ends, about
+10^-5 of the retention, against the year-long gap that an unbounded future timestamp would open. A minute
+also matches the leeway conventionally allowed for JWT `nbf`/`exp`. Unlike the cutover allowance this is a
+constant rather than a knob, which is the one place a site with unsynchronised clocks has no remedy other
+than fixing its time source.
+
 **Kill switch, now real.** Setting `cutoverEpoch` to the present instant invalidates nothing by itself
 under routing — it sends every outstanding PAT to the legacy path. If an actual "invalidate every PAT
 now" control is wanted (key compromise, say), it needs to be its own explicit switch rather than a side
