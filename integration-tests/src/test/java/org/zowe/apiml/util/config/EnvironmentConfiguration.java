@@ -36,4 +36,5 @@ public class EnvironmentConfiguration {
     private Map<String, String> instanceEnv;
     private OidcConfiguration oidcConfiguration;
     private SafIdtConfiguration safIdtConfiguration;
+    private String testRunnerHostname;
 }

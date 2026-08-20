@@ -16,6 +16,7 @@ import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
 import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -32,6 +34,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -68,6 +71,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
@@ -85,6 +89,7 @@ class ConnectionsConfigTest {
     @Nested
     @SpringBootTest
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class WhenCreateEurekaJerseyClientBuilder {
 
         @Autowired
@@ -100,13 +105,18 @@ class ConnectionsConfigTest {
     @Nested
     @SpringBootTest
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class WhenInitializeEurekaClient {
 
         @Autowired
         private ConnectionsConfig connectionsConfig;
 
+        @Autowired
+        @Qualifier("discoveryRestTemplatePooledConnectionManager")
+        private HttpClientConnectionManager httpClientConnectionManager;
+
         @Mock
-        private ApplicationInfoManager manager;
+        private ApplicationInfoManager applicationInfoManager;
 
         @Mock
         private EurekaClientConfig config;
@@ -116,7 +126,7 @@ class ConnectionsConfigTest {
 
         @Test
         void thenCreateIt() {
-            assertThat(connectionsConfig.primaryEurekaClient(manager, config, healthCheckHandler)).isNotNull();
+            assertThat(connectionsConfig.primaryEurekaClient(applicationInfoManager, config, healthCheckHandler, httpClientConnectionManager)).isNotNull();
         }
 
     }
@@ -127,6 +137,7 @@ class ConnectionsConfigTest {
         properties = {"management.port=-1"},
         classes = {GatewayServiceApplication.class, ConnectionsConfigTest.SslDetectorConfig.class}
     )
+    @ActiveProfiles("test")
     class ChooseAlias {
 
         @LocalServerPort
@@ -424,6 +435,7 @@ class ConnectionsConfigTest {
         properties = {"apiml.service.corsEnabled=true"}
     )
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class GivenCorsEnabled {
 
         @Nested
@@ -433,12 +445,15 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateDefaultCorsAllowedMethods() {
+            void validateDefaultCors() {
                 var corsUtils = connectionsConfig.corsUtils();
 
                 @SuppressWarnings("unchecked")
                 var corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
                 assertEquals(7, corsAllowedMethods.size());
+                var allowedCredentials = (boolean) ReflectionTestUtils.getField(corsUtils, "defaultAllowCredentials");
+                assertTrue(allowedCredentials);
+
             }
         }
 

@@ -38,19 +38,19 @@ messages:
       reason: "The request that was issued to the Gateway contains an encoded character in the URL path. The service that the request was addressing does not allow this pattern."
       action: "Contact the system administrator and request enablement of encoded characters in the service."
 
-    - key: org.zowe.apiml.gateway.requestContainEncodedSlash
-      number: ZWEAG702
-      type: ERROR
-      text: "Gateway does not allow encoded slashes in request: '%s'."
-      reason: "The request that was issued to the Gateway contains an encoded slash in the URL path. Gateway configuration does not allow this encoding in the URL."
-      action: "Contact the system administrator and request enablement of encoded slashes in the Gateway."
-
     - key: org.zowe.apiml.gateway.verifier.nonConformant
       number: ZWEAG719
       type: INFO
       text: "The service is not conformant: %s"
       reason: "The provided service does not satisfy the conformance criteria and is therefore not valid."
       action: "Verify the conformance criteria."
+
+    - key: org.zowe.apiml.gateway.invalidOidcReturnUrl
+      number: ZWEAG703
+      type: ERROR
+      text: "The OIDC return URL is invalid, malformed, or untrusted."
+      reason: "The requested return URL is absolute but its domain is not present in the allowed domains allowedlist, or the URL is relative but malformed."
+      action: "Add the domain to 'apiml.security.allowedDomains' or use a valid relative path."
 
     # Legacy messages
 

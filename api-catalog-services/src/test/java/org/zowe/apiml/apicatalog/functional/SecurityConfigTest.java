@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.apicatalog.ApiCatalogApplication;
@@ -37,13 +38,14 @@ import static org.mockito.Mockito.when;
     classes = ApiCatalogApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
+@ActiveProfiles("test")
 public class SecurityConfigTest {
 
 
     @BeforeAll
     static void init() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
+        SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client/client-certs.p12", "../keystore/service/service.keystore.p12");
         SslContext.prepareSslAuthentication(configurer);
 
     }

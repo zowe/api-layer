@@ -37,6 +37,7 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
+import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.WebFilter;
@@ -48,6 +49,7 @@ import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.service.GatewaySecurity;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.config.CustomHstsServerHttpHeadersWriter;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.login.LoginFilter;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -248,8 +250,8 @@ public class SecurityConfiguration {
 
             .headers(httpSecurityHeadersConfigurer ->
                 httpSecurityHeadersConfigurer.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
-                    .frameOptions(ServerHttpSecurity.HeaderSpec.FrameOptionsSpec::disable))
-
+                    .writer(new CustomHstsServerHttpHeadersWriter())
+                    .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)))
             .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
                 .authenticationEntryPoint((exchange, exception) -> {
                     String requestedPath = exchange.getRequest().getPath().toString();

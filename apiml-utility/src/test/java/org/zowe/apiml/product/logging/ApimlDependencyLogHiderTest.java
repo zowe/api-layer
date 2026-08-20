@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class ApimlDependencyLogHiderTest {
 
     private final Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.zowe.apiml.logger");
-    private ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
+    private final ApimlDependencyLogHider apimlDependencyLogHider = new ApimlDependencyLogHider();
 
     @Test
     void testDecide_whenLoggerLevelIsLowThanInfo() {

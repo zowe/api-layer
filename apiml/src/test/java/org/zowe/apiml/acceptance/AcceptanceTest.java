@@ -61,7 +61,7 @@ import java.lang.annotation.Target;
     }
 )
 @Execution(ExecutionMode.SAME_THREAD)
-@ActiveProfiles("ApimlModulithAcceptanceTest")
+@ActiveProfiles({"ApimlModulithAcceptanceTest", "test" })
 @AutoConfigureWebTestClient
 @DirtiesContext
 public @interface AcceptanceTest {

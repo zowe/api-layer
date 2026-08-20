@@ -1,8 +1,8 @@
 const express = require('express')
 var fs = require('fs');
 var https = require('https');
-var privateKey  = fs.readFileSync('../keystore/localhost/localhost.keystore.key', 'utf8');
-var certificate = fs.readFileSync('../keystore/localhost/localhost.keystore.cer', 'utf8');
+var privateKey  = fs.readFileSync('../keystore/service/service.key', 'utf8');
+var certificate = fs.readFileSync('../keystore/service/service.cer', 'utf8');
 
 
 var credentials = {key: privateKey, cert: certificate};
