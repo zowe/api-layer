@@ -155,7 +155,7 @@ public class ApiMediationClientImpl implements ApiMediationClient {
         }
         HttpsConfig httpsConfig = builder.build();
 
-        HttpsFactory factory = new HttpsFactory(httpsConfig);
+        HttpsFactory factory = new HttpsFactory(httpsConfig, "0.0.0.0");
 
         AbstractDiscoveryClientOptionalArgs<?> args = new Jersey3DiscoveryClientOptionalArgs();
         args.setSSLContext(factory.getSslContext());

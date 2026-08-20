@@ -16,6 +16,7 @@ import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
 import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,6 +25,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -32,6 +34,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -39,17 +42,20 @@ import org.springframework.web.server.WebFilter;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
-import org.zowe.apiml.util.CorsUtils;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.tcp.SslProvider;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
+
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.Socket;
-import java.security.*;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Collections;
@@ -59,14 +65,31 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class ConnectionsConfigTest {
 
     @Nested
     @SpringBootTest
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class WhenCreateEurekaJerseyClientBuilder {
 
         @Autowired
@@ -82,13 +105,18 @@ class ConnectionsConfigTest {
     @Nested
     @SpringBootTest
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class WhenInitializeEurekaClient {
 
         @Autowired
         private ConnectionsConfig connectionsConfig;
 
+        @Autowired
+        @Qualifier("discoveryRestTemplatePooledConnectionManager")
+        private HttpClientConnectionManager httpClientConnectionManager;
+
         @Mock
-        private ApplicationInfoManager manager;
+        private ApplicationInfoManager applicationInfoManager;
 
         @Mock
         private EurekaClientConfig config;
@@ -98,7 +126,7 @@ class ConnectionsConfigTest {
 
         @Test
         void thenCreateIt() {
-            assertThat(connectionsConfig.primaryEurekaClient(manager, config, healthCheckHandler)).isNotNull();
+            assertThat(connectionsConfig.primaryEurekaClient(applicationInfoManager, config, healthCheckHandler, httpClientConnectionManager)).isNotNull();
         }
 
     }
@@ -109,6 +137,7 @@ class ConnectionsConfigTest {
         properties = {"management.port=-1"},
         classes = {GatewayServiceApplication.class, ConnectionsConfigTest.SslDetectorConfig.class}
     )
+    @ActiveProfiles("test")
     class ChooseAlias {
 
         @LocalServerPort
@@ -406,6 +435,7 @@ class ConnectionsConfigTest {
         properties = {"apiml.service.corsEnabled=true"}
     )
     @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @ActiveProfiles("test")
     class GivenCorsEnabled {
 
         @Nested
@@ -415,13 +445,15 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateDefaultCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
-                CorsUtils corsUtils = connectionsConfig.corsUtils();
+            void validateDefaultCors() {
+                var corsUtils = connectionsConfig.corsUtils();
 
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                @SuppressWarnings("unchecked")
+                var corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
                 assertEquals(7, corsAllowedMethods.size());
+                var allowedCredentials = (boolean) ReflectionTestUtils.getField(corsUtils, "defaultAllowCredentials");
+                assertTrue(allowedCredentials);
+
             }
         }
 
@@ -436,18 +468,20 @@ class ConnectionsConfigTest {
             private ConnectionsConfig connectionsConfig;
 
             @Test
-            void validateCorsAllowedMethods() throws NoSuchFieldException, IllegalAccessException {
-                CorsUtils corsUtils = connectionsConfig.corsUtils();
+            void validateCorsAllowedMethods() {
+                var corsUtils = connectionsConfig.corsUtils();
 
-                Field field = corsUtils.getClass().getDeclaredField("allowedCorsHttpMethods");
-                field.setAccessible(true);
-                List<String> corsAllowedMethods = (List<String>) field.get(corsUtils);
+                @SuppressWarnings("unchecked")
+                var corsAllowedMethods = (List<String>) ReflectionTestUtils.getField(corsUtils, "defaultAllowedCorsHttpMethods");
+
                 assertEquals(3, corsAllowedMethods.size());
                 assertEquals("GET", corsAllowedMethods.get(0));
                 assertEquals("POST", corsAllowedMethods.get(1));
                 assertEquals("PATCH", corsAllowedMethods.get(2));
             }
+
         }
+
     }
 
     @Nested

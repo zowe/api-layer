@@ -15,6 +15,7 @@ import com.netflix.appinfo.EurekaInstanceConfig;
 import com.netflix.appinfo.HealthCheckHandler;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClientConfig;
+import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,6 +74,7 @@ public class AdditionalRegistrationTest {
     @ExtendWith(MockitoExtension.class)
     @Nested
     class WhenInitializingAdditionalRegistrations {
+
         private ConnectionsConfig configSpy;
         @Mock
         private ApplicationInfoManager manager;
@@ -82,6 +84,8 @@ public class AdditionalRegistrationTest {
         private HealthCheckHandler healthCheckHandler;
         @Mock
         private HttpsFactory httpsFactory;
+        @Mock
+        private HttpClientConnectionManager httpClientConnectionManager;
 
         private InstanceInfo instanceInfo;
 
@@ -109,8 +113,7 @@ public class AdditionalRegistrationTest {
 
         @Test
         void shouldCreateEurekaClientForAdditionalDiscoveryUrl() {
-
-            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, singletonList(registration), eurekaFactory, healthCheckHandler, null, Optional.empty());
+            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, singletonList(registration), eurekaFactory, healthCheckHandler, null, Optional.empty(), httpClientConnectionManager);
 
             assertThat(holder.getDiscoveryClients()).hasSize(1);
             EurekaClientConfigBean eurekaClientConfigBean = clientConfigCaptor.getValue();
@@ -120,7 +123,7 @@ public class AdditionalRegistrationTest {
         @Test
         void shouldCreateTwoAdditionalRegistrations() {
             AdditionalRegistration secondRegistration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-2").build();
-            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, asList(registration, secondRegistration), eurekaFactory, healthCheckHandler, null, Optional.empty());
+            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, asList(registration, secondRegistration), eurekaFactory, healthCheckHandler, null, Optional.empty(), httpClientConnectionManager);
 
             assertThat(holder.getDiscoveryClients()).hasSize(2);
             verify(additionalClientOne).registerHealthCheck(healthCheckHandler);

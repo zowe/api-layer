@@ -11,6 +11,10 @@
 package org.zowe.apiml.gateway.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerRetryPolicy;
+import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
+import org.springframework.cloud.client.loadbalancer.reactive.RetryableExchangeFilterFunctionLoadBalancerRetryPolicy;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,8 +32,6 @@ public class RoutingConfig {
 
     @Value("${apiml.security.x509.acceptForwardedCert:false}")
     private boolean acceptForwardedCert;
-    @Value("${apiml.service.allowEncodedSlashes:true}")
-    private boolean allowEncodedSlashes;
 
     @Bean
     public List<FilterDefinition> commonNoRetryFilters() {
@@ -39,12 +41,6 @@ public class RoutingConfig {
             FilterDefinition acceptForwardedClientCertFilter = new FilterDefinition();
             acceptForwardedClientCertFilter.setName("AcceptForwardedClientCertFilterFactory");
             filters.add(acceptForwardedClientCertFilter);
-        }
-
-        if (!allowEncodedSlashes) {
-            var encodedSlashesFilter = new FilterDefinition();
-            encodedSlashesFilter.setName("ForbidEncodedSlashesFilterFactory");
-            filters.add(encodedSlashesFilter);
         }
 
         var secureHeaders = new FilterDefinition();
@@ -57,7 +53,10 @@ public class RoutingConfig {
 
         for (String headerName : ignoredHeadersWhenCorsEnabled.split(",")) {
             FilterDefinition removeHeaders = new FilterDefinition();
-            removeHeaders.setName("RemoveRequestHeader");
+            // When preserving Origin for cross-site requests, use the conditional filter that keeps the
+            // header for Sec-Fetch-Site: cross-site so the southbound service can make its own CSRF
+            // decision; otherwise fall back to the unconditional built-in removal.
+            removeHeaders.setName("RemoveRequestHeaderIfNotCrossSite");
             Map<String, String> args = new HashMap<>();
             args.put("name", headerName);
             removeHeaders.setArgs(args);
@@ -79,4 +78,17 @@ public class RoutingConfig {
 
         return filters;
     }
+
+    @Bean
+    LoadBalancerRetryPolicy.Factory retryPolicyFactory(ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory) {
+        return serviceId -> {
+            var properties = serviceInstanceFactory.getProperties(serviceId);
+            var retryPolicy = properties.getRetry();
+            retryPolicy.setEnabled(true);
+            retryPolicy.setMaxRetriesOnNextServiceInstance(2);
+
+            return new RetryableExchangeFilterFunctionLoadBalancerRetryPolicy(properties);
+        };
+    }
+
 }

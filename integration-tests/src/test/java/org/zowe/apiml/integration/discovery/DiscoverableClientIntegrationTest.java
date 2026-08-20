@@ -113,6 +113,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
 
                     var instanceId = discoverableClientConfig.getHost() + ":registrationtest:10013";
 
+                    // Not public API, 500 is fine
                     given()
                         .config(SslContext.clientCertValid)
                         .contentType(ContentType.JSON)

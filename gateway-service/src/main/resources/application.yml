@@ -100,12 +100,13 @@ apiml:
         apimlId: apiml1
         corsEnabled: true
         corsAllowedEndpoints: /gateway/**
-        allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: true
         hostname: localhost
+        # The apiml.service.ipAddress was replaced by eureka.instance.ipAddress. Because the value must remain unset (null) to allow eureka fallback
+        # its native ip address discovery the field cannot just reference a value from another due to spring limitation in processing properties from yml file.
         id: ${spring.application.name}
-        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Origin
         port: 10010
         scheme: https  # "https" or "http"
         preferIpAddress: false
@@ -114,11 +115,14 @@ apiml:
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
+        csrf:
+            preserveOriginForCrossSite: true
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
         rauditx:
             onOidcUserIsMapped: false
-
+        secFetch:
+            enabled: true
     health:
         protected: true
     webClientConfig.enabled: true
@@ -130,10 +134,10 @@ server:
         clientAuth: want
         keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
     max-http-request-header-size: 48000
@@ -144,6 +148,7 @@ logbackServiceName: ZWEAGW1
 # Use a dedicated profile below or create a new one to configure logging levels.
 logging:
     level:
+        ROOT: INFO
         com.netflix.discovery.DiscoveryClient: OFF
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         reactor.netty.http.client.HttpClientConnect: OFF
@@ -222,14 +227,28 @@ logging:
 management:
     endpoint:
         gateway:
-            access: unrestricted
+            access: read-only
+        loggers:
+            access: read-only
     endpoints:
         web:
             exposure:
                 include: health,info,gateway,loggers
 
 ---
+spring.config.activate.on-profile: debug-control
+spring.profiles.active: debug
+
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+        loggers:
+            access: unrestricted
+
+---
 spring.config.activate.on-profile: wiretap
+
 spring:
     cloud:
         gateway:

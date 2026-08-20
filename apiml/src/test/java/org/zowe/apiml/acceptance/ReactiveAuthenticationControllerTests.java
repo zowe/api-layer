@@ -24,7 +24,10 @@ import org.zowe.apiml.util.config.SslContextConfigurer;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
@@ -33,6 +36,7 @@ import static org.mockito.Mockito.mock;
 @Import(ReactiveAuthenticationControllerTests.MockRegisterToApiLayerConfig.class)
 class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServices {
 
+    private static final String BEARER = "Bearer ";
     private static final String REFRESH_ENDPOINT = "/gateway/api/v1/auth/refresh";
     private static final String LOGIN_ENDPOINT = "/gateway/api/v1/auth/login";
     private static final String AUTH_COOKIE = "apimlAuthenticationToken";
@@ -150,11 +154,12 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
 
     @Test
     void whenInvalidate_wrongMethod_thenFail() {
-        var token = login();
 
+        var token = login();
         given()
+            .header(AUTHORIZATION, BEARER + token)
         .when()
-            .get(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+            .get(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
         .then()
             .statusCode(SC_METHOD_NOT_ALLOWED);
     }
@@ -166,10 +171,57 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
         given()
             .config(SslContext.clientCertApiml)
         .when()
-            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT + "/" + token))
+            .header(AUTHORIZATION, BEARER + token)
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
         .then()
-            .statusCode(200);
+            .statusCode(SC_OK);
+        given()
+            .config(SslContext.clientCertApiml)
+            .when()
+            .header(AUTHORIZATION, "Bearer  " + token) //this will work as the token has its extra space trimmed
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .then()
+            .statusCode(SC_OK);
     }
+
+    @Test
+    void whenNoHeader_withCert_then400() {
+
+        given()
+            .config(SslContext.clientCertApiml)
+            .when()
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .then()
+            .statusCode(SC_BAD_REQUEST);
+
+    }
+
+    @Test
+    void whenInvalidHeader_withCert_then400() {
+
+        given()
+            .config(SslContext.clientCertApiml)
+            .when()
+            .header(AUTHORIZATION, "wibble")
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .then()
+            .statusCode(SC_BAD_REQUEST);
+
+    }
+
+    @Test
+    void whenEmptyToken_withCert_then400() {
+
+        given()
+            .config(SslContext.clientCertApiml)
+            .when()
+            .header(AUTHORIZATION, BEARER)
+            .delete(URI.create(basePath + INVALIDATE_JWT_ENDPOINT))
+            .then()
+            .statusCode(SC_BAD_REQUEST);
+
+    }
+
     @TestConfiguration
     public static class MockRegisterToApiLayerConfig {
         @Bean

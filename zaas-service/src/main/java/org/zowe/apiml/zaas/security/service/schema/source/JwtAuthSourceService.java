@@ -94,20 +94,6 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
         return null;
     }
 
-    /**
-     * Generates LTPA token from current source of authentication (JWT token) using method of {@link AuthenticationService}
-     *
-     * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token)
-     * @return LTPA token
-     */
-    public String getLtpaToken(AuthSource authSource) {
-        if (authSource instanceof JwtAuthSource) {
-            String jwtToken = ((JwtAuthSource) authSource).getRawSource();
-            return jwtToken == null ? null : authenticationService.getLtpaTokenWithValidation(jwtToken);
-        }
-        return null;
-    }
-
     @Override
     public String getJWT(AuthSource authSource) {
         return ((JwtAuthSource) authSource).getRawSource();

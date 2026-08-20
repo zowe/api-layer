@@ -1,0 +1,51 @@
+logging:
+    level:
+        ROOT: DEBUG
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.http.server.reactive: DEBUG
+        org.springframework.web.reactive: DEBUG
+        org.zowe.apiml: DEBUG
+        redisratelimiter: DEBUG
+
+eureka:
+    server:
+        max-threads-for-peer-replication: 2
+    instance:
+        ipaddress: 127.0.0.1
+
+apiml:
+    discovery:
+        allPeersUrls: https://${apiml.service.hostname}:${apiml.service.port}/eureka/
+    service:
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        port: 40985
+    security:
+        allowedDomains: ${apiml.service.hostname},zowe.github.io,www.zowe.org,zowe.github.io,www.ibm.com
+        allowTokenRefresh: true
+        auth:
+            zosmf:
+                jwtAutoconfiguration: ltpa
+                serviceId: zosmf
+        saf:
+            urls:
+                authenticate: https://mock-services:10013/zss/saf/authenticate
+                verify: https://localhost:10013/zss/saf/verify
+caching:
+    storage:
+        mode: inMemory
+
+infinispan:
+    embedded:
+        enabled: false
+
+server:
+    ssl:
+        keyStore: ../keystore/service/service.keystore.p12
+        trustStore: ../keystore/service/service.truststore.p12
+
+spring:
+    main:
+        allow-circular-references: true
+        banner-mode: ${apiml.banner:"console"}
+        web-application-type: reactive
+        allow-bean-definition-overriding: true

@@ -15,8 +15,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerClientRequestTransformer;
+import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerRetryPolicy;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
-import org.springframework.cloud.client.loadbalancer.reactive.ReactorLoadBalancerExchangeFilterFunction;
+import org.springframework.cloud.client.loadbalancer.reactive.RetryableLoadBalancerExchangeFilterFunction;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -31,6 +33,7 @@ import reactor.core.publisher.Mono;
 import java.security.cert.CertificateEncodingException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.apache.hc.core5.http.HttpHeaders.CONTENT_TYPE;
 import static org.apache.hc.core5.http.HttpHeaders.SET_COOKIE;
@@ -65,15 +68,26 @@ public class AuthEndpointConfig {
     public AuthEndpointConfig(
         WebClient webClient,
         @Qualifier("webClientClientCert") WebClient webClientClientCert,
-        ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory
+        ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory,
+        LoadBalancerRetryPolicy.Factory retryPolicyFactory,
+        List<LoadBalancerClientRequestTransformer> loadBalancerTransformers
     ) {
-        this.webClient = createLoadBalanced(webClient, serviceInstanceFactory);
-        this.webClientClientCert = createLoadBalanced(webClientClientCert, serviceInstanceFactory);
+        this.webClient = createLoadBalanced(webClient, serviceInstanceFactory, retryPolicyFactory, loadBalancerTransformers);
+        this.webClientClientCert = createLoadBalanced(webClientClientCert, serviceInstanceFactory, retryPolicyFactory, loadBalancerTransformers);
     }
 
-    private WebClient createLoadBalanced(WebClient webClient, ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory) {
+    private WebClient createLoadBalanced(
+        WebClient webClient,
+        ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory,
+        LoadBalancerRetryPolicy.Factory retryPolicyFactory,
+        List<LoadBalancerClientRequestTransformer> loadBalancerTransformers
+    ) {
         return webClient.mutate()
-            .filter(new ReactorLoadBalancerExchangeFilterFunction(serviceInstanceFactory, Collections.emptyList()))
+            .filter(new RetryableLoadBalancerExchangeFilterFunction(
+                retryPolicyFactory,
+                serviceInstanceFactory,
+                loadBalancerTransformers == null ? Collections.emptyList() : loadBalancerTransformers
+            ))
             .build();
     }
 
