@@ -13,7 +13,6 @@ package org.zowe.apiml.gateway.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerRetryPolicy;
-import org.springframework.cloud.client.loadbalancer.reactive.LoadBalancerRetryPolicy.Factory;
 import org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancer;
 import org.springframework.cloud.client.loadbalancer.reactive.RetryableExchangeFilterFunctionLoadBalancerRetryPolicy;
 import org.springframework.cloud.gateway.filter.FilterDefinition;
@@ -82,18 +81,13 @@ public class RoutingConfig {
 
     @Bean
     LoadBalancerRetryPolicy.Factory retryPolicyFactory(ReactiveLoadBalancer.Factory<ServiceInstance> serviceInstanceFactory) {
-        return new Factory() {
+        return serviceId -> {
+            var properties = serviceInstanceFactory.getProperties(serviceId);
+            var retryPolicy = properties.getRetry();
+            retryPolicy.setEnabled(true);
+            retryPolicy.setMaxRetriesOnNextServiceInstance(2);
 
-            @Override
-            public LoadBalancerRetryPolicy apply(String serviceId) {
-                var properties = serviceInstanceFactory.getProperties(serviceId);
-                var retryPolicy = properties.getRetry();
-                retryPolicy.setEnabled(true);
-                retryPolicy.setMaxRetriesOnNextServiceInstance(2);
-
-                return new RetryableExchangeFilterFunctionLoadBalancerRetryPolicy(properties);
-            }
-
+            return new RetryableExchangeFilterFunctionLoadBalancerRetryPolicy(properties);
         };
     }
 

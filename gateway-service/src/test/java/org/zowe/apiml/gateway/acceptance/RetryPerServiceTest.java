@@ -12,13 +12,10 @@ package org.zowe.apiml.gateway.acceptance;
 
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.InstanceInfo.InstanceStatus;
-import com.sun.net.httpserver.HttpExchange;
-import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.Mockito;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
@@ -32,10 +29,9 @@ import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.product.constants.CoreService;
 import reactor.core.publisher.Flux;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -46,7 +42,7 @@ import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.when;
 
 class RetryPerServiceTest {
 
@@ -162,8 +158,10 @@ class RetryPerServiceTest {
         @MockitoSpyBean
         private ReactiveDiscoveryClient reactiveDiscoveryClient;
 
+        private AtomicInteger counter = new AtomicInteger(0);
+
         @BeforeAll
-        void setup() throws IOException {
+        void setup() {
             zaasService = mockService("zaas").scope(MockService.Scope.CLASS)
                 .addEndpoint("/zaas/api/v1/auth/login")
                     .responseCode(204)
@@ -174,6 +172,7 @@ class RetryPerServiceTest {
                     .responseCode(200)
                     .assertion(he -> {
                         assertNotNull(he);
+                        counter.incrementAndGet();
                     })
                     .contentType(APPLICATION_JSON)
                     .body("{\"status\":\"valid\"}")
@@ -182,15 +181,6 @@ class RetryPerServiceTest {
                     .responseCode(405)
                     .assertion(he -> assertEquals("GET", he.getRequestMethod()))
                 .and().start();
-        }
-
-        private String getBody(HttpExchange he) {
-            try {
-                return IOUtils.toString(he.getRequestBody(), StandardCharsets.UTF_8);
-            } catch (IOException ioe) {
-                fail(ioe);
-                return null;
-            }
         }
 
         String login() {
@@ -207,15 +197,15 @@ class RetryPerServiceTest {
         void whenOneZaasUnresponsive_thenQueryDoesNotFail() {
             var token = login();
 
-            // 3 out of 4 instances will fail
-            Mockito.when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
+            // 2 out of 3 instances will fail
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
                 .thenReturn(List.of(
                     buildZaasInfo(randomPort()),
                     buildZaasInfo(zaasService.getPort()),
                     buildZaasInfo(randomPort())
                 ));
 
-            Mockito.when(reactiveDiscoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
+            when(reactiveDiscoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
                 .thenReturn(Flux.just(
                     buildZaasInfo(randomPort()),
                     buildZaasInfo(zaasService.getPort()),
@@ -230,6 +220,8 @@ class RetryPerServiceTest {
                 .then()
                     .statusCode(SC_OK);
             }
+
+            assertEquals(50, counter.get());
 
         }
 
