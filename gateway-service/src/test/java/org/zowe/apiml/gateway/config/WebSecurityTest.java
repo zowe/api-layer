@@ -15,7 +15,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,8 +64,10 @@ import reactor.test.StepVerifier;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -88,6 +92,7 @@ class WebSecurityTest {
         void setUp() {
             webSecurity = new WebSecurity(new ClientConfiguration(), tokenProvider, basicAuthProvider, applicationContext);
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "registryUser,registryAdmin");
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains", "");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
         }
@@ -111,7 +116,7 @@ class WebSecurityTest {
         @Test
         void whenAccessTokenIsAvailable_thenAddItAsCookie() {
             var token = "thisIsToken";
-            var location = "localhost:10010";
+            var location = "/gateway/some/path";
             var webFilterExchange = mock(WebFilterExchange.class);
             var exchange = mock(ServerWebExchange.class);
             when(webFilterExchange.getExchange()).thenReturn(exchange);
@@ -130,9 +135,9 @@ class WebSecurityTest {
             when(accessToken.getTokenValue()).thenReturn(token);
 
             webSecurity.updateCookies(webFilterExchange, oAuth2AuthorizedClient);
-            assertEquals(token, serverHttpResponse.getCookies().getFirst("apimlAuthenticationToken").getValue());
-            assertEquals("", serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_NONCE).getValue());
-            assertEquals("", serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_STATE).getValue());
+            assertEquals(token, Objects.requireNonNull(serverHttpResponse.getCookies().getFirst("apimlAuthenticationToken")).getValue());
+            assertEquals("", Objects.requireNonNull(serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_NONCE)).getValue());
+            assertEquals("", Objects.requireNonNull(serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_STATE)).getValue());
             assertEquals(location, serverHttpResponse.getHeaders().getFirst(HttpHeaders.LOCATION));
         }
 
@@ -171,6 +176,7 @@ class WebSecurityTest {
         void setUp() {
             var webSecurity = new WebSecurity(new ClientConfiguration(), tokenProvider, basicAuthProvider, applicationContext);
             ReflectionTestUtils.setField(webSecurity, "allowedUsers", "*");
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains", "");
             webSecurity.initScopes();
             reactiveUserDetailsService = webSecurity.userDetailsService();
         }
@@ -243,8 +249,6 @@ class WebSecurityTest {
 
         ServerHttpSecurity.AuthorizeExchangeSpec authorizeExchangeSpec = mock(ServerHttpSecurity.AuthorizeExchangeSpec.class);
         ServerHttpSecurity.AuthorizeExchangeSpec.Access access = mock(ServerHttpSecurity.AuthorizeExchangeSpec.Access.class);
-        ServerHttpSecurity.OAuth2LoginSpec oauth2LoginSpec = mock(ServerHttpSecurity.OAuth2LoginSpec.class);
-        ServerHttpSecurity.HeaderSpec headerSpec = mock(ServerHttpSecurity.HeaderSpec.class);
 
         when(http.headers(any())).thenReturn(http);
         when(http.securityContextRepository(any())).thenReturn(http);
@@ -463,7 +467,9 @@ class WebSecurityTest {
         var request = mock(ServerHttpRequest.class);
         var headers = new HttpHeaders();
         when(request.getHeaders()).thenReturn(headers);
-        when(request.getQueryParams()).thenReturn(new LinkedMultiValueMap<>());
+        var queryParams = new LinkedMultiValueMap<String, String>();
+        queryParams.add("returnUrl", "/gateway/foo");
+        when(request.getQueryParams()).thenReturn(queryParams);
 
         var exchange = mock(ServerWebExchange.class);
         when(exchange.getRequest()).thenReturn(request);
@@ -486,8 +492,141 @@ class WebSecurityTest {
 
         requestRepository.saveAuthorizationRequest(oauth2AuthReq, exchange).block();
 
-        assertThat(cookies.getFirst(WebSecurity.COOKIE_NONCE).getValue()).isEqualTo("test-nonce");
-        assertThat(cookies.getFirst(WebSecurity.COOKIE_STATE).getValue()).isEqualTo("test-state");
+        assertThat(Objects.requireNonNull(cookies.getFirst(WebSecurity.COOKIE_NONCE)).getValue()).isEqualTo("test-nonce");
+        assertThat(Objects.requireNonNull(cookies.getFirst(WebSecurity.COOKIE_STATE)).getValue()).isEqualTo("test-state");
+
+    }
+
+    @Nested
+    class SanitizeReturnUrl {
+
+        private static final String ALLOWED_HOST = "gateway.zowe.example";
+        private static final String EXTERNAL_URL = "https://" + ALLOWED_HOST + ":10010";
+
+        WebSecurity.ApimlServerAuthorizationRequestRepository requestRepository;
+
+        @BeforeEach
+        void setUp() {
+            var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains", ALLOWED_HOST);
+            webSecurity.initScopes();
+            var resolver = mock(ServerOAuth2AuthorizationRequestResolver.class);
+            requestRepository = webSecurity.new ApimlServerAuthorizationRequestRepository(resolver);
+        }
+
+        private Mono<Void> save(String returnUrlQueryParam, String originHeader, LinkedMultiValueMap<String, ResponseCookie> cookies) {
+            var request = mock(ServerHttpRequest.class);
+            var headers = new HttpHeaders();
+            if (originHeader != null) {
+                headers.set(HttpHeaders.ORIGIN, originHeader);
+            }
+            when(request.getHeaders()).thenReturn(headers);
+
+            var queryParams = new LinkedMultiValueMap<String, String>();
+            if (returnUrlQueryParam != null) {
+                queryParams.add("returnUrl", returnUrlQueryParam);
+            }
+            when(request.getQueryParams()).thenReturn(queryParams);
+
+            var exchange = mock(ServerWebExchange.class);
+            when(exchange.getRequest()).thenReturn(request);
+            var response = mock(ServerHttpResponse.class);
+            when(exchange.getResponse()).thenReturn(response);
+
+            doAnswer(invocation -> {
+                var cookie = invocation.getArgument(0, ResponseCookie.class);
+                cookies.add(cookie.getName(), cookie);
+                return null;
+            }).when(response).addCookie(any(ResponseCookie.class));
+
+            var oauth2AuthReq = OAuth2AuthorizationRequest.authorizationCode()
+                .clientId("test-client")
+                .state("test-state")
+                .authorizationUri("https://test.auth.server/oauth/authorize")
+                .attributes(attrs -> attrs.put(OidcParameterNames.NONCE, "test-nonce"))
+                .build();
+
+            return requestRepository.saveAuthorizationRequest(oauth2AuthReq, exchange);
+        }
+
+        private String sanitize(String returnUrlQueryParam, String originHeader) {
+            var cookies = new LinkedMultiValueMap<String, ResponseCookie>();
+            save(returnUrlQueryParam, originHeader, cookies).block();
+            return Objects.requireNonNull(cookies.getFirst(WebSecurity.COOKIE_RETURN_URL)).getValue();
+        }
+
+        private void assertRejected(String returnUrlQueryParam, String originHeader) {
+            var cookies = new LinkedMultiValueMap<String, ResponseCookie>();
+            StepVerifier.create(save(returnUrlQueryParam, originHeader, cookies))
+                .verifyErrorSatisfies(e -> assertThat(e).isInstanceOf(InvalidForwardException.class));
+            assertThat(cookies.getFirst(WebSecurity.COOKIE_RETURN_URL)).isNull();
+        }
+
+        static Stream<Arguments> safeReturnUrls() {
+            return Stream.of(
+                // plain relative paths are passed through untouched
+                Arguments.of("/gateway/foo", "/gateway/foo"),
+                Arguments.of("/gateway/foo?bar=1#frag", "/gateway/foo?bar=1#frag"),
+                Arguments.of("https://user@gateway.zowe.example:10010/x", "https://user@gateway.zowe.example:10010/x"),
+                // absolute URLs whose host is allow-listed are accepted unchanged
+                Arguments.of(EXTERNAL_URL + "/gateway/foo?x=1#frag", EXTERNAL_URL + "/gateway/foo?x=1#frag"),
+                Arguments.of(EXTERNAL_URL, EXTERNAL_URL),
+                Arguments.of("//gateway.zowe.example", "//gateway.zowe.example"),
+                Arguments.of("HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo", "https://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo"),
+                Arguments.of("http://gateway.zowe.example:10010/x", "http://gateway.zowe.example:10010/x"),
+                Arguments.of("https://www.ibm.com/docs", "https://www.ibm.com/docs"),
+                Arguments.of("/gateway/foo%2Bmore?bar=%2f1#frag", "/gateway/foo+more?bar=/1#frag"),
+                Arguments.of("https://user:password@gateway.zowe.example:10010/x", "https://user:password@gateway.zowe.example:10010/x"),
+                Arguments.of("https://www.ibm.com/docs", "https://www.ibm.com/docs")
+            );
+        }
+
+        static Stream<String> unsafeReturnUrls() {
+            return Stream.of(
+                "",
+                "//attacker.example/x",
+                "/\\attacker.example",
+                "/foo%5Cattacker.example",
+                "/foo%0D%0ASet-Cookie:evil=1",
+                "https://attacker.example/x",
+                "https://user@attacker.example:10010/x",
+                "mailto:foo@bar.com",
+                "http://exa mple.com",
+                "%2f%2fatacker/unknow",
+                "https://user:password@attacker.example:10010/x",
+                "//user:password@attacker.example:10010/x",
+                "https://",
+                "//:80/",
+                "relative//invalid"
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("safeReturnUrls")
+        void sanitizesReturnUrlQueryParam(String returnUrl, String expected) {
+            assertThat(sanitize(returnUrl, null)).isEqualTo(expected);
+        }
+
+        @ParameterizedTest
+        @MethodSource("unsafeReturnUrls")
+        void rejectsUnsafeReturnUrlQueryParam(String returnUrl) {
+            assertRejected(returnUrl, null);
+        }
+
+        @Test
+        void whenNoReturnUrlParamAndNoOriginHeader_thenRejected() {
+            assertRejected(null, null);
+        }
+
+        @Test
+        void whenNoReturnUrlParam_thenFallsBackToOriginHeader_sameOrigin() {
+            assertThat(sanitize(null, EXTERNAL_URL)).isEqualTo(EXTERNAL_URL);
+        }
+
+        @Test
+        void whenNoReturnUrlParam_thenFallsBackToOriginHeader_crossOrigin() {
+            assertRejected(null, "https://attacker.example");
+        }
 
     }
 
@@ -500,7 +639,7 @@ class WebSecurityTest {
         @Mock
         private StrictServerWebExchangeFirewall nonRoutingFirewall;
         private WebSecurity.ApimlStrictServerWebExchangeFirewall apimlStrictServerWebExchangeFirewall;
-        private ApplicationInfo applicationInfo = ApplicationInfo.builder().build();
+        private final ApplicationInfo applicationInfo = ApplicationInfo.builder().build();
 
         @BeforeEach
         void setUp() {

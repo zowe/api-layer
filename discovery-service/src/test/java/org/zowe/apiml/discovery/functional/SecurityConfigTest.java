@@ -33,13 +33,13 @@ import static io.restassured.RestAssured.given;
     classes = DiscoveryServiceApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@ActiveProfiles({"https"})
+@ActiveProfiles({"test", "https"})
 public class SecurityConfigTest {
 
     @BeforeAll
     static void init() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
-        SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
+        SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client/client-certs.p12", "../keystore/service/service.keystore.p12");
         SslContext.prepareSslAuthentication(configurer);
     }
 

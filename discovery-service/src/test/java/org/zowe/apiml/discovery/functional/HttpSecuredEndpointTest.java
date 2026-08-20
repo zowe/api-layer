@@ -34,7 +34,7 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.hamcrest.core.Is.is;
 
-@ActiveProfiles("http")
+@ActiveProfiles({"test", "http"})
 @TestPropertySource(
     properties = {
         "apiml.health.protected=false",

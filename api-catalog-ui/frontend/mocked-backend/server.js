@@ -15,7 +15,7 @@ const routes = require('./routes/routes').router;
 const app = express();
 
 const corsOptions = {
-    origin: process.env.VITE_DEV_ORIGIN || 'http://localhost:5173',
+    origin: process.env.VITE_DEV_ORIGIN || 'https://localhost:3000',
     credentials: true,
 };
 

@@ -21,7 +21,6 @@ import org.zowe.apiml.gateway.MockService.Scope;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -64,14 +63,14 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
     }
 
     @Test
-    void routeToServiceWithCorsEnabled() throws IOException {
+    void routeToServiceWithCorsEnabled() {
         mockService("serviceid1")
             .addEndpoint("/test")
             .assertion(he -> assertNull(he.getRequestHeaders().getFirst(HttpHeaders.ORIGIN)))
         .and().start();
 
         given()
-            .header(HttpHeaders.ORIGIN, "https://localhost:3000")
+            .header(HttpHeaders.ORIGIN, "https://localhost:" + port)
             .header(HEADER_X_FORWARD_TO, "serviceid1")
         .when()
             .get(basePath + "/test")
@@ -198,7 +197,7 @@ class CorsPerServiceTest extends AcceptanceTestWithMockServices {
 
         // Preflight request
         given()
-            .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org")) // This can't work anymore with the defaults (cors enabled on gateway + service with cors enabled + default list of origins)
+            .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
         .when()
             .get(basePath + "/servicecors4/api/v1/fullheaders")
         .then()

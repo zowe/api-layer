@@ -32,9 +32,9 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-error-boundary": "5.0.0",
-        "react-hook-form": "7.81.0",
+        "react-hook-form": "7.85.0",
         "react-redux": "9.3.0",
-        "react-router": "7.18.1",
+        "react-router": "7.18.2",
         "react-toastify": "10.0.6",
         "redux": "5.0.1",
         "redux-catch": "1.3.1",
@@ -44,9 +44,9 @@
         "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "3.1.0",
         "rxjs": "7.8.2",
-        "sass": "1.101.0",
+        "sass": "1.102.0",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.32.8",
+        "swagger-ui-react": "5.32.14",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -82,25 +82,26 @@
         "@babel/preset-react": "7.29.7",
         "@cfaester/enzyme-adapter-react-18": "0.8.0",
         "@eslint/compat": "1.4.1",
-        "@eslint/js": "9.39.4",
+        "@eslint/js": "9.39.5",
         "@reduxjs/toolkit": "2.12.0",
         "@testing-library/dom": "10.4.1",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "16.3.2",
-        "@testing-library/user-event": "14.6.1",
+        "@testing-library/user-event": "14.6.5",
+        "@vitejs/plugin-basic-ssl": "2.3.0",
         "@vitejs/plugin-react": "4.7.0",
         "ajv": "8.20.0",
-        "ansi-regex": "6.2.2",
+        "ansi-regex": "6.3.0",
         "babel-plugin-transform-vite-meta-env": "1.0.3",
         "body-parser": "2.3.0",
-        "caniuse-lite": "1.0.30001803",
-        "concurrently": "9.2.3",
+        "caniuse-lite": "1.0.30001809",
+        "concurrently": "9.2.4",
         "cors": "2.8.6",
-        "cypress": "15.18.1",
+        "cypress": "15.21.0",
         "cypress-file-upload": "5.0.8",
         "dotenv": "17.4.2",
         "enzyme": "3.11.0",
-        "eslint": "9.39.4",
+        "eslint": "9.39.5",
         "eslint-config-airbnb": "19.0.4",
         "eslint-config-prettier": "9.1.2",
         "eslint-plugin-cypress": "4.3.0",
@@ -124,7 +125,7 @@
         "json-schema": "0.4.0",
         "nodemon": "3.1.14",
         "nth-check": "2.1.1",
-        "prettier": "3.9.4",
+        "prettier": "3.9.6",
         "prop-types": "15.8.1",
         "querystring-es3": "0.2.1",
         "redux-mock-store": "1.5.5",
@@ -132,14 +133,14 @@
         "start-server-and-test": "2.1.5",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "vite": "8.1.3",
+        "vite": "8.2.1",
         "vite-plugin-node-polyfills": "0.28.0",
         "yaml": "2.9.0"
     },
     "overrides": {
         "openapi-snippet": {
             "openapi-sampler": {
-                "fast-xml-parser": "5.9.3"
+                "fast-xml-parser": "5.11.0"
             }
         },
         "cosmiconfig": {
@@ -153,8 +154,8 @@
         "resolve-url-loader": "5.0.0",
         "lodash": "4.18.1",
         "semver": "7.8.5",
-        "@babel/traverse": "7.29.7",
-        "axios": "1.18.1",
+        "@babel/traverse": "7.29.8",
+        "axios": "1.19.0",
         "form-data": "3.0.5",
         "sha.js": "2.4.12",
         "swagger-ui-react": {
@@ -163,15 +164,15 @@
             },
             "prismjs": "1.30.0"
         },
-        "js-yaml": "4.3.0",
+        "js-yaml": "4.3.1",
         "qs": "6.15.3",
         "path-to-regexp": "8.4.2",
         "minimatch": "3.1.5",
-        "brace-expansion": "1.1.16"
+        "brace-expansion": "1.1.18"
     },
     "engines": {
-        "npm": "=10.9.8",
-        "node": "=24.18.0"
+        "npm": "=10.9.9",
+        "node": "=24.19.0"
     },
     "notes": {
         "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"

@@ -88,7 +88,7 @@ public class AuthController {
     private static final ObjectWriter writer = new ObjectMapper().writer();
 
     public static final String CONTROLLER_PATH = "/zaas/api/v1/auth";  // NOSONAR: URL is always using / to separate path segments
-    public static final String INVALIDATE_PATH = "/invalidate/**";  // NOSONAR
+    public static final String INVALIDATE_PATH = "/invalidate";  // NOSONAR
     public static final String DISTRIBUTE_PATH = "/distribute/**";  // NOSONAR
     public static final String PUBLIC_KEYS_PATH = "/keys/public";  // NOSONAR
     public static final String ACCESS_TOKEN_REVOKE = "/access-token/revoke"; // NOSONAR
@@ -114,12 +114,17 @@ public class AuthController {
         @ApiResponse(responseCode = "400", description = "Invalid token"),
         @ApiResponse(responseCode = "503", description = "Authentication service is not available")
     })
-    public void invalidateJwtToken(HttpServletRequest request, HttpServletResponse response) {
-        final String endpoint = "/auth/invalidate/";
-        final String uri = request.getRequestURI();
-        final int index = uri.indexOf(endpoint);
+    public void invalidateJwtToken(@RequestHeader("Authorization") String authHeader, HttpServletResponse response) {
+        if (!authHeader.startsWith("Bearer ")) {
+            response.setStatus(SC_BAD_REQUEST);
+            return;
+        }
+        final var jwtToken = authHeader.substring(7).trim();
+        if (jwtToken.isEmpty()) { //it cannot be null, as "Bearer".substring(7) is empty, not null
+            response.setStatus(SC_BAD_REQUEST);
+            return;
+        }
 
-        final String jwtToken = uri.substring(index + endpoint.length());
         try {
             final boolean invalidated = authenticationService.invalidateJwtToken(jwtToken, false);
             response.setStatus(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE);

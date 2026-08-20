@@ -35,9 +35,9 @@ ssl:
     protocol: TLSv1.2
     keyAlias: localhost
     keyPassword: password
-    keyStore: keystore/localhost/localhost.keystore.p12
+    keyStore: keystore/service/service.keystore.p12
     keyStoreType: JCERACFKS
-    trustStore: keystore/localhost/localhost.truststore.p12
+    trustStore: keystore/service/service.truststore.p12
     trustStoreType: JCERACFKS
 
 customMetadata:

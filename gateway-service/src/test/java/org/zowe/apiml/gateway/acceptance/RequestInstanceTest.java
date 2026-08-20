@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static org.apache.http.HttpStatus.*;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 @MicroservicesAcceptanceTest
@@ -48,18 +49,19 @@ class RequestInstanceTest extends AcceptanceTestWithMockServices {
         .when()
             .get(basePath + "/test")
         .then()
-            .statusCode(Matchers.is(SC_OK));
+            .statusCode(Matchers.is(SC_OK))
+            .header("Strict-Transport-Security", notNullValue());
     }
 
     @Test
     void routeToServiceWithCorsDisabled() {
         given()
-            .header("Origin", "https://localhost:3000")
+            .header("Origin", "https://localhost:" + port)
             .header(HEADER_X_FORWARD_TO, "serviceid1")
         .when()
             .get(basePath + "/test")
         .then()
-            .statusCode(Matchers.is(SC_FORBIDDEN));
+            .statusCode(Matchers.is(SC_OK));
     }
 
     @Test
