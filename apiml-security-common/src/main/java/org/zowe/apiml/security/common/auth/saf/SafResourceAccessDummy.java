@@ -12,6 +12,7 @@ package org.zowe.apiml.security.common.auth.saf;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -30,6 +31,7 @@ import java.util.Map;
  * the file from applications classpath. It is highly recommended to locate empty file `mock-saf` in each application
  * using this feature to allow start application without any other action.
  */
+@Slf4j
 public class SafResourceAccessDummy implements SafResourceAccessVerifying {
 
     private static final String SAF_ACCESS = "safAccess";
@@ -50,6 +52,7 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
     public SafResourceAccessDummy() throws IOException {
         File file = getFile();
         if (file != null) {
+            log.info("Load Dummy SAF definition from file: {}", file.getAbsolutePath());
             try (
                 FileInputStream fis = new FileInputStream(file);
                 BufferedInputStream bis = new BufferedInputStream(fis)
@@ -57,6 +60,8 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
                 loadDefinition(bis);
             }
         } else {
+            var resource = this.getClass().getClassLoader().getResource(DEFAULT_RESOURCE_LOCATION);
+            log.info("Attempt to load Dummy SAF definition from resource {}" + resource);
             try (InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(DEFAULT_RESOURCE_LOCATION)) {
                 loadDefinition(inputStream);
             }
@@ -78,14 +83,18 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
 
     @Override
     public boolean hasSafResourceAccess(Authentication authentication, String resourceClass, String resourceName, String accessLevel) {
-        ResourceUser resourceUser = ResourceUser.builder()
+        log.info("Verify access of : {} to SAF class: {}, resource: {}, access level: {}", authentication, resourceClass, resourceName, accessLevel);
+        var resourceUser = ResourceUser.builder()
             .resourceClass(resourceClass)
             .resourceName(resourceName)
             .userId(authentication.getName())
             .build();
-        AccessLevel currentLevel = resourceUserToAccessLevel.get(resourceUser);
-        if (currentLevel == null) return false;
-        return currentLevel.compareTo(AccessLevel.valueOf(accessLevel)) >= 0;
+        var currentLevel = resourceUserToAccessLevel.get(resourceUser);
+        var hasAccess = currentLevel != null && currentLevel.compareTo(AccessLevel.valueOf(accessLevel)) >= 0;
+
+        log.info("Has access: {}, current level: {}", hasAccess, currentLevel);
+
+        return hasAccess;
     }
 
     /**
@@ -142,6 +151,7 @@ public class SafResourceAccessDummy implements SafResourceAccessVerifying {
     }
 
     private void loadDefinition(Map<String, Object> data) {
+        log.info("load definitions: {}", data);
         Map<String, Map<String, Map<String, List<String>>>> classes = getSafAccess(data);
         if (classes == null) return;
 

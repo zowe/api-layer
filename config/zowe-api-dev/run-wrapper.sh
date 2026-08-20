@@ -5,7 +5,6 @@ export PATH=$PATH:$JAVA_HOME/bin
 # Variables required on shell:
 # This list should be exhaustive, with variables that are not needed commented
 # sorted alphabetically for easier maintenance where possible
-export APIML_ALLOW_ENCODED_SLASHES=true
 export APIML_CORS_ENABLED=true
 export APIML_DEBUG_MODE_ENABLED=true
 export APIML_DIAG_MODE_ENABLED=false
@@ -13,8 +12,8 @@ export APIML_GATEWAY_CATALOG_ID=apicatalog
 #export APIML_GATEWAY_EXTERNAL_MAPPER
 #export APIML_GATEWAY_INTERNAL_ENABLED:-false
 #export APIML_GATEWAY_INTERNAL_PORT:-10017
-#export APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS:-localhost-multi
-#export APIML_GATEWAY_INTERNAL_SSL_KEYSTORE:-keystore/localhost/localhost-multi.keystore.p12
+#export APIML_GATEWAY_INTERNAL_SSL_KEY_ALIAS:-localhost
+#export APIML_GATEWAY_INTERNAL_SSL_KEYSTORE:-keystore/service/service.keystore.p12
 #export APIML_GATEWAY_MAPPER_USER:-ZWESVUSR
 export APIML_GATEWAY_TIMEOUT_MILLIS=30000
 #export APIML_MAX_CONNECTIONS_PER_ROUTE:-10

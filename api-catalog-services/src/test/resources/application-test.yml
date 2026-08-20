@@ -1,0 +1,30 @@
+
+spring:
+    config:
+        useLegacyProcessing: true
+
+logging:
+    level:
+        org.springframework: WARN
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.ehcache: WARN
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+
+apiml:
+    service:
+        discoveryServiceUrls: https://localhost2:10021/eureka/,https://localhost:10011/eureka/
+
+    security:
+        ssl:
+            protocol: TLSv1.2
+
+    catalog:
+        version:  1.0.0
+
+server:
+    ssl:
+        enabled-protocols: TLSv1.2
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
+        trustStore: ../keystore/service/service.truststore.p12
+        keyStore: ../keystore/service/service.keystore.p12

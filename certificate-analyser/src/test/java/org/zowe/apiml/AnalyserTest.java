@@ -42,8 +42,8 @@ class AnalyserTest {
 
     @Test
     void providedCorrectInputs_certificateIsVerified() {
-        String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+        String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
+            "--truststore", "../keystore/service/service.truststore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-l"};
@@ -91,8 +91,8 @@ class AnalyserTest {
         String[] args = {
             "-r", "https://localhost:12345",
             "-c",
-            "--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+            "--keystore", "../keystore/service/service.keystore.p12",
+            "--truststore", "../keystore/service/service.truststore.p12",
             "--keypasswd", "password"
         };
         assertEquals(4, Analyser.mainWithExitCode(args));

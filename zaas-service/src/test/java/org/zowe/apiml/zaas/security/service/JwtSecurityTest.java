@@ -67,7 +67,7 @@ class JwtSecurityTest {
     class WhenInitializedWithValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, KEY_ALIAS, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
+            underTest = new JwtSecurity(providers, KEY_ALIAS, "../keystore/service/service.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
         }
 
         @Test
@@ -99,7 +99,7 @@ class JwtSecurityTest {
     class WhenInitializedWithoutValidJWT {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, null, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
+            underTest = new JwtSecurity(providers, null, "../keystore/service/service.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
         }
 
         @Test
@@ -137,7 +137,7 @@ class JwtSecurityTest {
 
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, KEY_ALIAS, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
+            underTest = new JwtSecurity(providers, KEY_ALIAS, "../keystore/service/service.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
         }
 
         @Test
@@ -256,7 +256,7 @@ class JwtSecurityTest {
     class GetJwkPublicKey {
         @BeforeEach
         void setUp() {
-            underTest = new JwtSecurity(providers, KEY_ALIAS, "../keystore/localhost/localhost.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
+            underTest = new JwtSecurity(providers, KEY_ALIAS, "../keystore/service/service.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
 
             when(providers.isZosfmUsed()).thenReturn(false);
         }

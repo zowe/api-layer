@@ -1,3 +1,29 @@
+pluginManagement {
+    repositories {
+        maven {
+            url artifactoryMavenSnapshotRepo
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+        maven {
+            url artifactoryMavenRepo
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+        maven {
+            url artifactoryPlugins
+            credentials {
+                username mavenUser
+                password mavenPassword
+            }
+        }
+    }
+}
+
 rootProject.name = 'api-layer'
 
 ext.isPush = getProperty('gradle.cache.push')

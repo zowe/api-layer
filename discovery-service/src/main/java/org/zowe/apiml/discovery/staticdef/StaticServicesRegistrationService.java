@@ -81,6 +81,23 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
         }
     }
 
+    String getAllMessages(Throwable throwable) {
+        Throwable lastThrowable = null;
+        var messages = new StringBuilder();
+        while ((throwable != null) && (lastThrowable != throwable)) {
+            if (!messages.isEmpty()) {
+                messages.append(": ");
+            }
+
+            messages.append(throwable.getMessage());
+
+            lastThrowable = throwable;
+            throwable = throwable.getCause();
+        }
+
+        return messages.toString();
+    }
+
     /**
      * Reloads all statically defined APIs in locations specified by configuration
      * by reading the definitions again.
@@ -98,7 +115,7 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
                 try {
                     registry.cancel(info.getAppName(), info.getId(), false);
                 } catch (Exception e) {
-                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, e.getMessage());
+                    final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, getAllMessages(e));
                     result.getErrors().add(msg);
                 }
             }
@@ -112,7 +129,7 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
             var registry = getRegistry();
             registry.registerStatically(instanceInfo, false, false);
         } catch (Exception e) {
-            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, e.getMessage());
+            final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, getAllMessages(e));
             result.getErrors().add(msg);
         }
     }

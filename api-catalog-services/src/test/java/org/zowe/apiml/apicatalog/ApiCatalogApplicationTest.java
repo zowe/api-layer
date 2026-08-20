@@ -18,6 +18,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.util.Recorder;
 import org.zowe.apiml.util.TestLogger;
 
@@ -47,6 +48,7 @@ class ApiCatalogApplicationTest {
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @ActiveProfiles("test")
     class TomcatInitialization {
 
         @ParameterizedTest(name = "Check if {0} is initialized on startup")

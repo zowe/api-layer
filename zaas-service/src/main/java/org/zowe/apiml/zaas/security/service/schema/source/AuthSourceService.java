@@ -38,12 +38,5 @@ public interface AuthSourceService {
      */
     AuthSource.Parsed parse(AuthSource authSource);
 
-    /**
-     * Generates LTPA token from current source of authentication.
-     * @param authSource AuthSource object which hold original source of authentication (JWT token, client certificate etc.)
-     * @return LTPA token
-     */
-    String getLtpaToken(AuthSource authSource);
-
     String getJWT(AuthSource authSource);
 }

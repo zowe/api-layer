@@ -24,13 +24,14 @@ import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * This test requires port 10011 available for DS port test
  */
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles({ "ApimlModulithAcceptanceTest", "AvailabilityTest" })
+@ActiveProfiles({ "test", "ApimlModulithAcceptanceTest", "AvailabilityTest" })
 class AvailabilityTest extends AcceptanceTestWithBasePath {
 
     @ParameterizedTest(name = "{0} is available at port {1} with status {2}")
@@ -49,6 +50,7 @@ class AvailabilityTest extends AcceptanceTestWithBasePath {
                     .get("https://localhost:" + actualPort)
                 .then()
                     .statusCode(expectedStatus)
+                    .header("Strict-Transport-Security", notNullValue())
             );
     }
 

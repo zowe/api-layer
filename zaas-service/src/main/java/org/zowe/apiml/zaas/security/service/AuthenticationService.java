@@ -35,7 +35,9 @@ import org.springframework.cache.CacheManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -54,6 +56,7 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
@@ -275,11 +278,10 @@ public class AuthenticationService {
      * Obtain URL to use to invalidate a JWT
      *
      * @param instanceInfo Registration data for the authentication service used
-     * @param jwtToken     JWT token to invalidate
-     * @return
+     * @return the URL
      */
-    protected String getInvalidateUrl(InstanceInfo instanceInfo, String jwtToken) {
-        return EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/" + jwtToken;
+    protected String getInvalidateUrl(InstanceInfo instanceInfo) {
+        return EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
     }
 
     private boolean invalidateTokenOnAnotherInstance(String jwtToken, Application application) {
@@ -295,9 +297,17 @@ public class AuthenticationService {
                 continue;
             }
 
-            final String url = getInvalidateUrl(instanceInfo, jwtToken);
+            final String url = getInvalidateUrl(instanceInfo);
             try {
-                restTemplate.delete(url);
+                HttpHeaders headers = new HttpHeaders();
+                headers.set(AUTHORIZATION, "Bearer " + jwtToken);
+                HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+                restTemplate.exchange(
+                    url,
+                    HttpMethod.DELETE,
+                    requestEntity,
+                    Void.class
+                );
             } catch (HttpClientErrorException e) {
                 log.debug("Problem invalidating token on another instance url {}", url, e);
                 returnValue = Boolean.FALSE;
@@ -430,11 +440,19 @@ public class AuthenticationService {
         final InstanceInfo instanceInfo = zaas.getByInstanceId(toInstanceId);
         if (instanceInfo == null) return false;
 
-        var url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate/{}";
+        var url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
 
         final Collection<String> invalidated = cacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {
-            restTemplate.delete(url, invalidatedToken);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(AUTHORIZATION, "Bearer " + invalidatedToken);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            restTemplate.exchange(
+                url,
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class
+            );
         }
 
         return true;
@@ -482,33 +500,15 @@ public class AuthenticationService {
 
     /**
      * This method validates if JWT token is valid and if yes, then get claim from LTPA token.
-     * For purpose, when is not needed validation, you can use method {@link #getLtpaToken(String)}
      *
      * @param jwtToken the JWT token
      * @return LTPA token extracted from JWT
      */
-    public String getLtpaTokenWithValidation(String jwtToken) {
+    public String getLtpaToken(String jwtToken) {
         try {
             var tokenAuthentication = new TokenAuthentication(jwtToken);
             validateLocalJwtToken(tokenAuthentication);
             return tokenAuthentication.getClaimAsString(LTPA_CLAIM_NAME);
-        } catch (ParseException e) {
-            throw new TokenNotValidException(e.getMessage(), e);
-        }
-    }
-
-    /**
-     * Get the LTPA token from the JWT token
-     *
-     * @param jwtToken the JWT token
-     * @return the LTPA token
-     * @throws TokenNotValidException if the JWT token is not valid
-     */
-    public String getLtpaToken(String jwtToken) {
-        var claims = getJwtClaims(jwtToken);
-
-        try {
-            return claims.getClaimAsString(LTPA_CLAIM_NAME);
         } catch (ParseException e) {
             throw new TokenNotValidException(e.getMessage(), e);
         }

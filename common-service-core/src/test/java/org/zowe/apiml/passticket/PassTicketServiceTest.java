@@ -57,18 +57,18 @@ class PassTicketServiceTest {
 
             @Override
             public String generate(String userId, String applId) {
-                return userId + "-" + applId;
+                return userId + "-" + applId + "-" + "passticket";
             }
         });
 
         evaluated = null;
         passTicketService.evaluate("userId", "applId", "passTicket");
         assertEquals("USERID-APPLID-PASSTICKET", evaluated);
-        passTicketService.evaluate("1", "2", "3");
-        assertEquals("1-2-3", evaluated);
+        passTicketService.evaluate("1", "2", "12345678");
+        assertEquals("1-2-12345678", evaluated);
 
-        assertEquals("USERID-APPLID", passTicketService.generate("userId", "applId"));
-        assertEquals("1-2", passTicketService.generate("1", "2"));
+        assertEquals("USERID-APPLID-passticket", passTicketService.generate("userId", "applId"));
+        assertEquals("1-2-passticket", passTicketService.generate("1", "2"));
     }
 
     @Test

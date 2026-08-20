@@ -142,7 +142,7 @@ public final class ApimlLogger {
     }
 
     private void logInvalidArguments(IllegalArgumentException e, Object... arguments) {
-        if (logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled(marker)) {
             logger.debug(marker, "Invalid log message cannot be logged: {}", arguments, e);
         } else {
             logger.warn(marker, "Invalid log message cannot be logged: {}, enable debug for stack trace: {}", arguments, e.getMessage());

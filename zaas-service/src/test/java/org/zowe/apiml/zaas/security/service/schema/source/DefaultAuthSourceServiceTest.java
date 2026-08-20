@@ -93,16 +93,6 @@ public class DefaultAuthSourceServiceTest {
             assertEquals(expectedParsedSource, parsedAuthSource);
         }
 
-        @Test
-        void thenLtpaTokenGenerated() {
-            when(jwtAuthSourceService.getLtpaToken(any())).thenReturn("ltpa");
-
-            Assertions.assertNotNull(serviceUnderTest.getLtpaToken(jwtAuthSource));
-            verify(jwtAuthSourceService, times(1)).getLtpaToken(jwtAuthSource);
-            verifyNoInteractions(x509MFAuthSourceService);
-            verifyNoInteractions(patAuthSourceService);
-            verifyNoInteractions(oidcAuthSourceService);
-        }
     }
 
     @Nested
@@ -237,18 +227,6 @@ public class DefaultAuthSourceServiceTest {
             assertEquals(expectedParsedSource, parsedAuthSource);
         }
 
-        @Test
-        void thenLtpaTokenGenerated() {
-            when(patAuthSourceService.getLtpaToken(any())).thenReturn("ltpa");
-
-            assertNotNull(serviceUnderTest.getLtpaToken(patAuthSource));
-
-            verify(patAuthSourceService, times(1)).getLtpaToken(patAuthSource);
-            verifyNoInteractions(jwtAuthSourceService);
-            verifyNoInteractions(oidcAuthSourceService);
-            verifyNoInteractions(x509MFAuthSourceService);
-        }
-
         @Nested
         class WhenPATIsDisabled {
 
@@ -309,18 +287,6 @@ public class DefaultAuthSourceServiceTest {
             verifyNoInteractions(patAuthSourceService);
             verifyNoInteractions(x509MFAuthSourceService);
             assertEquals(expectedParsedSource, parsedAuthSource);
-        }
-
-        @Test
-        void thenLtpaTokenGenerated() {
-            when(oidcAuthSourceService.getLtpaToken(any())).thenReturn("ltpa");
-
-            assertNotNull(serviceUnderTest.getLtpaToken(oidcAuthSource));
-
-            verify(oidcAuthSourceService, times(1)).getLtpaToken(oidcAuthSource);
-            verifyNoInteractions(jwtAuthSourceService);
-            verifyNoInteractions(patAuthSourceService);
-            verifyNoInteractions(x509MFAuthSourceService);
         }
 
         @Nested

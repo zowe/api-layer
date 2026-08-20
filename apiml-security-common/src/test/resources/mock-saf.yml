@@ -15,6 +15,9 @@ safAccess:
         APIML.RESOURCE:
             READ:
                 - user
+        APIML.DEBUG:
+            CONTROL:
+                - USER
     CLASS:
         RESOURCE:
             READ:

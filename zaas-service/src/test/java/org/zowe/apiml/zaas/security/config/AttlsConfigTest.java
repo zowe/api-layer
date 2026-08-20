@@ -41,7 +41,7 @@ class AttlsConfigTest {
      * Simple Spring Context test to verify AT-TLS filter chain setup is in place with the right properties being sent
      */
     @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-    @ActiveProfiles({ "attlsServer", "attlsClient" })
+    @ActiveProfiles({ "test", "attlsServer", "attlsClient" })
     @DirtiesContext
     @Nested
     class GivenAttlsModeEnabled {
@@ -99,7 +99,7 @@ class AttlsConfigTest {
             "apiml.security.auth.provider=zosmf"
         }
     )
-    @ActiveProfiles({ "attlsServer", "attlsClient" })
+    @ActiveProfiles({ "test", "attlsServer", "attlsClient" })
     @DirtiesContext
     @SpringBootTest(
         classes = ZaasApplication.class,

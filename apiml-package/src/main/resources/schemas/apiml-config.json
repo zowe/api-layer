@@ -220,6 +220,11 @@
                             "description": "Enables direct native calls to z/OS to query distributed identity mappings and client certificate mappings. Use only if APIML is running on z/OS.",
                             "default": true
                         },
+                        "enableStrictUrlValidation": {
+                            "type": "boolean",
+                            "description": "When enabled, the Gateway strictly validates request URLs and rejects encoded characters such as encoded slashes, backslashes, and semicolons. When disabled, validation is relaxed for routed traffic, while Gateway-internal endpoints remain strictly validated.",
+                            "default": true
+                        },
                         "auth": {
                             "type": "object",
                             "description": "Detail configuration of authentication schemes.",
@@ -543,6 +548,17 @@
                                     "default": "sub"
                                 }
                             }
+                        },
+                        "secFetch": {
+                            "type": "object",
+                            "description": "Configuration of the CSRF protection based on the browser supplied Fetch Metadata request headers.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "When enabled, the Gateway rejects cross-site requests that are neither validated by the CORS layer nor a safe top-level navigation, based on the Sec-Fetch-Site, Sec-Fetch-Mode and Sec-Fetch-Dest request headers.",
+                                    "default": true
+                                }
+                            }
                         }
                     }
                 },
@@ -550,11 +566,6 @@
                     "type": "object",
                     "description": "General configuration of the Gateway.",
                     "properties": {
-                        "allowEncodedSlashes": {
-                            "type": "boolean",
-                            "description": "When this parameter is set to true, the Gateway allows encoded characters to be part of URL requests redirected through the Gateway.",
-                            "default": true
-                        },
                         "corsEnabled": {
                             "type": "boolean",
                             "description": "Allow CORS on gateway.",

@@ -10,8 +10,10 @@
 
 package org.zowe.apiml.security.common.config;
 
-import java.util.List;
-
+import io.netty.handler.ssl.SslContext;
+import io.netty.resolver.DefaultAddressResolverGroup;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -30,12 +32,10 @@ import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
-
-import io.netty.handler.ssl.SslContext;
-import io.netty.resolver.DefaultAddressResolverGroup;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.netty.http.client.HttpClient;
+
+import java.net.InetSocketAddress;
+import java.util.List;
 
 @Slf4j
 @Configuration
@@ -49,6 +49,9 @@ public class WebClientConfig {
 
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
+
+    @Value("${server.address:0.0.0.0}")
+    private String listenAddress;
 
     @Bean
     HttpClientFactory gatewayHttpClientFactory(
@@ -68,6 +71,7 @@ public class WebClientConfig {
             @Override
             protected HttpClient createInstance() {
                 return super.createInstance()
+                    .bindAddress(() -> new InetSocketAddress(listenAddress, 0))
                     .secure(sslContextSpec -> sslContextSpec.sslContext(sslContext))
                     .resolver(DefaultAddressResolverGroup.INSTANCE);
             }
@@ -84,23 +88,23 @@ public class WebClientConfig {
         }
     }
 
-    @Bean
-    @Primary
-    WebClient webClient(HttpClient httpClient) {
-        HttpClient base = getHttpClient(httpClient, false)
-            .followRedirect(true);
+    WebClient createWebClient(HttpClient httpClient) {
         return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(base))
+            .clientConnector(new ReactorClientHttpConnector(httpClient.followRedirect(true)))
             .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(2 * 1024 * 1024))
             .build();
     }
 
     @Bean
+    @Primary
+    WebClient webClient(HttpClient httpClient) {
+        return createWebClient(getHttpClient(httpClient, false));
+    }
+
+    @Bean
     WebClient webClientClientCert(HttpClient httpClient) {
         boolean isKeyLoadPrevented = StringUtils.isBlank(config.getKeyStorePath()) && isClientAttlsEnabled;
-        return WebClient.builder()
-            .clientConnector(new ReactorClientHttpConnector(getHttpClient(httpClient, !isKeyLoadPrevented)))
-            .build();
+        return createWebClient(getHttpClient(httpClient, !isKeyLoadPrevented));
     }
 
 }

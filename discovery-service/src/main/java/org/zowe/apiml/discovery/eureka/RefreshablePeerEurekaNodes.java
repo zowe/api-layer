@@ -29,6 +29,7 @@ import com.netflix.eureka.transport.Jersey3ReplicationClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -66,6 +67,9 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
 
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
+
+    @Value("${server.address:0.0.0.0}")
+    private String address;
 
     private Collection<ClientRequestFilter> replicationClientAdditionalFilters;
     private SSLContext secureSslContext;
@@ -160,7 +164,6 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         } catch (UnknownHostException e) {
             log.warn("Cannot find localhost ip", e);
         }
-
         Client jerseyApacheClient = jerseyClient.getClient();
         jerseyApacheClient.register(new Jersey3DynamicGZIPContentEncodingFilter(config));
 
@@ -258,11 +261,22 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                 String fullUserAgentName = USER_AGENT + "/v" + buildVersion();
                 property(CoreProtocolPNames.USER_AGENT, fullUserAgentName);
 
+                try {
+                    property(ApacheClientProperties.REQUEST_CONFIG, RequestConfig.custom()
+                        .setLocalAddress(InetAddress.getByName(address))
+                        .build());
+                } catch (UnknownHostException e) {
+                    log.warn("Failed to resolve host {}. Using default 0.0.0.0", address, e);
+                }
+
                 // To pin a client to specific server in case redirect happens, we handle redirects directly
                 // (see DiscoveryClient.makeRemoteCall methods).
                 property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
                 property(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
             }
+
         }
+
     }
+
 }

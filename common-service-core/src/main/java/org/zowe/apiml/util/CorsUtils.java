@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.util;
 
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.TriConsumer;
 import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
@@ -22,70 +22,112 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 @Slf4j
+@Builder
 public class CorsUtils {
 
-    private final List<String> allowedCorsHttpMethods;
-    private final boolean corsEnabled;
     private static final Pattern gatewayRoutesPattern = Pattern.compile("apiml\\.routes\\.[^.]*\\.gateway\\S*");
-    private final List<String> corsAllowedEndpoints;
 
-    public CorsUtils(boolean corsEnabled, List<String> corsAllowedMethods, @NonNull List<String> allowedEndpoints) {
-        this.corsEnabled = corsEnabled;
-        this.allowedCorsHttpMethods = corsAllowedMethods;
+    private final List<String> defaultAllowedCorsHttpMethods;
+    private final boolean gatewayCorsEnabled;
+    private final List<String> corsAllowedEndpoints;
+    private final List<String> defaultAllowedCorsOrigins;
+    private final List<String> defaultAllowedCorsHeaders;
+    private final boolean defaultAllowCredentials;
+
+    public CorsUtils(
+            List<String> corsAllowedMethods,
+            boolean corsEnabled,
+            @NonNull List<String> allowedEndpoints,
+            @NonNull List<String> defaultAllowedCorsOrigins,
+            @NonNull List<String> defaultAllowedCorsHeaders,
+            boolean defaultAllowCredentials) {
+        this.defaultAllowedCorsHttpMethods = corsAllowedMethods;
+        this.gatewayCorsEnabled = corsEnabled;
         this.corsAllowedEndpoints = allowedEndpoints;
+        this.defaultAllowedCorsOrigins = defaultAllowedCorsOrigins;
+        this.defaultAllowedCorsHeaders = defaultAllowedCorsHeaders;
+        this.defaultAllowCredentials = defaultAllowCredentials;
     }
 
     public boolean isCorsEnabledForService(Map<String, String> metadata) {
-        String isCorsEnabledForService = metadata.get("apiml.corsEnabled");
+        var isCorsEnabledForService = metadata.get("apiml.corsEnabled");
         return Boolean.parseBoolean(isCorsEnabledForService);
     }
 
-    public void setCorsConfiguration(String serviceId, Map<String, String> metadata, TriConsumer<String, String, CorsConfiguration> entryMapper) {
-        if (corsEnabled) {
-            var corsConfiguration = setAllowedOriginsForService(serviceId, metadata);
+    public void setCorsConfiguration(String serviceId, Map<String, String> metadata, BiConsumer<String, CorsConfiguration> entryMapper) {
+        if (gatewayCorsEnabled) {
+            var corsConfiguration = createCorsConfigurationForService(serviceId, metadata);
             metadata.entrySet().stream()
                 .filter(entry -> gatewayRoutesPattern.matcher(entry.getKey()).find())
                 .forEach(entry ->
-                    entryMapper.accept(entry.getValue(), serviceId, corsConfiguration));
+                    entryMapper.accept(entry.getValue(), corsConfiguration));
+        } else {
+            log.debug("CORS is not enabled in Gateway");
         }
     }
 
-    private CorsConfiguration setAllowedOriginsForService(String serviceId, Map<String, String> metadata) {
+    private CorsConfiguration createCorsConfigurationForService(String serviceId, Map<String, String> metadata) {
         // Check if the configuration specifies allowed origins for this service
         var config = new CorsConfiguration();
         if (isCorsEnabledForService(metadata)) {
+
+            defaultAllowedCorsOrigins.forEach(config::addAllowedOrigin);
+
             var corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
-            if (corsAllowedOriginsForService == null || corsAllowedOriginsForService.isEmpty()) {
-                // Origins not specified: allow everything
-                log.debug("For service {}, set all as allowed origins", serviceId);
-                config.addAllowedOriginPattern(CorsConfiguration.ALL);
-            } else {
+            var allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
+            var allowedCredentialsForService = metadata.get("apiml.corsAllowCredentials");
+            var allowedMethodsForService = metadata.get("apiml.corsAllowedMethods");
+
+            if (isNotBlank(corsAllowedOriginsForService)) {
                 // Origins specified: split by comma, add to whitelist
                 log.debug("For service {}, set [{}] as allowed origins", serviceId, Arrays.toString(corsAllowedOriginsForService.split(",")));
                 Arrays.stream(corsAllowedOriginsForService.split(","))
                     .forEach(config::addAllowedOrigin);
             }
-            config.setAllowCredentials(true);
-            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-            config.setAllowedMethods(allowedCorsHttpMethods);
+
+            if (isNotBlank(allowedCredentialsForService)) {
+                config.setAllowCredentials(Boolean.parseBoolean(allowedCredentialsForService));
+            } else {
+                config.setAllowCredentials(defaultAllowCredentials);
+            }
+
+            if (isNotBlank(allowedMethodsForService)) {
+                config.setAllowedMethods(Arrays.asList(allowedMethodsForService.split(",")));
+            } else {
+                config.setAllowedMethods(defaultAllowedCorsHttpMethods);
+            }
+
+            if (isNotBlank(allowedHeadersForService)) {
+                config.setAllowedHeaders(Arrays.asList(allowedHeadersForService.split(",")));
+            } else {
+                config.setAllowedHeaders(defaultAllowedCorsHeaders);
+            }
         } else {
+            config.setAllowedOrigins(defaultAllowedCorsOrigins);
+            config.setAllowedHeaders(defaultAllowedCorsHeaders);
+            config.setAllowCredentials(defaultAllowCredentials);
+            config.setAllowedMethods(defaultAllowedCorsHttpMethods);
             log.debug("CORS is not enabled for service {}, using defaults", serviceId);
         }
         return config;
     }
 
     public void registerDefaultCorsConfiguration(BiConsumer<String, CorsConfiguration> pathMapper) {
-        final CorsConfiguration config = new CorsConfiguration();
+        var config = new CorsConfiguration();
         List<String> pathsToEnable;
 
-        if (corsEnabled) {
+        if (gatewayCorsEnabled) {
+            config.setAllowedOrigins(defaultAllowedCorsOrigins);
             config.setAllowCredentials(true);
-            config.addAllowedOriginPattern(CorsConfiguration.ALL); //NOSONAR this is a replication of existing code
-            config.setAllowedHeaders(Collections.singletonList(CorsConfiguration.ALL));
-            config.setAllowedMethods(allowedCorsHttpMethods);
+            config.setAllowedHeaders(defaultAllowedCorsHeaders);
+            config.setAllowedMethods(defaultAllowedCorsHttpMethods);
+            // When gateway has CORS handling enabled, defaults go to the /gateway/** endpoints plus any routes that southbound services register. If a service does not register its routes with apiml.corsEnabled metadata entry, the behaviour is really not recommended as there is no CORS configuration set for the service (if the service receives requests with Origin header)
             pathsToEnable = corsAllowedEndpoints;
         } else {
+            // When gateway has CORS handling disabled, all endpoints use Gateway defaults.
             pathsToEnable = Collections.singletonList("/**");
         }
         pathsToEnable.forEach(path -> pathMapper.accept(path, config));

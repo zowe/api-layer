@@ -12,7 +12,6 @@ package org.zowe.apiml.zaas.security.service.schema.source;
 
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaas.security.mapping.X509CommonNameUserMapper;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.message.core.MessageType;
 
@@ -30,8 +29,8 @@ import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_N
  */
 @Slf4j
 public class X509CNAuthSourceService extends X509AuthSourceService {
-    public X509CNAuthSourceService(X509CommonNameUserMapper mapper, TokenCreationService tokenService, AuthenticationService authenticationService) {
-        super(mapper, tokenService, authenticationService);
+    public X509CNAuthSourceService(X509CommonNameUserMapper mapper, TokenCreationService tokenService) {
+        super(mapper, tokenService);
     }
 
     /**

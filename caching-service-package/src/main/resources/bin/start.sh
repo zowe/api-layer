@@ -112,6 +112,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   ${VIRTUAL_THREADS_OPTS} \
   ${LOGBACK} \
   ${JVM_SECURITY_PROPERTIES} \
+  ${EUREKA_IP_ADDRESS} \
   ${CUSTOM_JVM_OPTS} \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \

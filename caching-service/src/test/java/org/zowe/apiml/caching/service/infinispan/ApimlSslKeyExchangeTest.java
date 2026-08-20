@@ -75,10 +75,10 @@ class ApimlSslKeyExchangeTest {
         };
 
         instance.setPortRange(0);
-        instance.setKeystoreName("../keystore/localhost/localhost.keystore.p12");
+        instance.setKeystoreName("../keystore/service/service.keystore.p12");
         instance.setKeystorePassword("password");
         instance.setKeystoreType("PKCS12");
-        instance.setTruststoreName("../keystore/localhost/localhost.truststore.p12");
+        instance.setTruststoreName("../keystore/service/service.truststore.p12");
         instance.setTruststorePassword("password");
         instance.setTruststoreType("PKCS12");
 

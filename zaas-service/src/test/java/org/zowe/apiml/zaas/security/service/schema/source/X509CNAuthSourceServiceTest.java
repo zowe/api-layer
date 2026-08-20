@@ -17,7 +17,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.zaas.security.mapping.X509CommonNameUserMapper;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 
 import java.security.cert.X509Certificate;
@@ -41,7 +40,7 @@ class X509CNAuthSourceServiceTest {
             request = mock(HttpServletRequest.class);
             x509Certificate = mock(X509Certificate.class);
             mapper = mock(X509CommonNameUserMapper.class);
-            serviceUnderTest = new X509CNAuthSourceService(mapper, mock(TokenCreationService.class), mock(AuthenticationService.class));
+            serviceUnderTest = new X509CNAuthSourceService(mapper, mock(TokenCreationService.class));
         }
 
         @Test

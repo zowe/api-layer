@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.discovery.metadata.DomainAllowListMetadataException;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -35,7 +36,9 @@ import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
 @Slf4j
 @RestControllerAdvice
@@ -119,6 +122,12 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     public Mono<Void> handleZosAuthenticationException(ServerWebExchange exchange, ZosAuthenticationException ex) {
         log.debug("Zos Authentication Exception: {}", ex.getMessage());
         return setBodyResponse(exchange, ex.getPlatformError().responseCode.value(), Optional.ofNullable(ex.getPlatformError()).map(e -> e.errorMessage).orElse(null), ex.getMessage());
+    }
+
+    @ExceptionHandler(DomainAllowListMetadataException.class)
+    public Mono<Void> handleDomainAllowListMetadataException(ServerWebExchange exchange, DomainAllowListMetadataException ex) {
+        log.debug("Domain Allow List Metadata Exception: {}", ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.common.metadataNotAllowedInRegistration");
     }
 
 }

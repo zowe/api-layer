@@ -170,19 +170,6 @@ class PATAuthSourceServiceTest {
         }
 
         @Test
-        void givenValidAuthSource_thenReturnLTPAToken() {
-            String ltpa = "ltpa";
-            PATAuthSource authSource = new PATAuthSource(TOKEN);
-            QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE);
-            when(authenticationService.parseJwtWithSignature(TOKEN)).thenReturn(response);
-            when(tokenCreationService.createJwtTokenWithoutCredentials(response.getUserId())).thenReturn(TOKEN);
-            when(authenticationService.getTokenOrigin(TOKEN)).thenReturn(AuthSource.Origin.ZOWE);
-            when(authenticationService.getLtpaToken(TOKEN)).thenReturn(ltpa);
-            String ltpaResult = patAuthSourceService.getLtpaToken(authSource);
-            assertEquals(ltpa, ltpaResult);
-        }
-
-        @Test
         void givenValidAuthSource_thenReturnJWT() {
             PATAuthSource authSource = new PATAuthSource(TOKEN);
             QueryResponse response = new QueryResponse(null, "user", new Date(), new Date(), "issuer", null, QueryResponse.Source.ZOWE_PAT);

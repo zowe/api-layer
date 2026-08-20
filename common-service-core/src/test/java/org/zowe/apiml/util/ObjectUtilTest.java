@@ -62,7 +62,7 @@ class ObjectUtilTest {
         Map<String, Object> map3 = ObjectUtil.mergeConfigurations(defaultConfigPropertiesMap, additionalConfigPropertiesMap);
 
         assertNotNull(map3);
-        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("../keystore/service/service.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
 
         map3 = ObjectUtil.mergeConfigurations(defaultConfigPropertiesMap, null);
@@ -72,7 +72,7 @@ class ObjectUtilTest {
         map3 = ObjectUtil.mergeConfigurations(null, additionalConfigPropertiesMap);
 
         assertNotNull(map3);
-        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("../keystore/service/service.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
     }
 
@@ -87,9 +87,9 @@ class ObjectUtilTest {
         assertNotNull(map3);
         assertEquals("hellozowe", (map3.get("serviceId")));
         assertEquals("hello-zowe", ((Map)((Map)map3.get("catalog")).get("tile")).get("id"));
-        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("keyStore"));
+        assertEquals("../keystore/service/service.keystore.p12", ((Map)map3.get("ssl")).get("keyStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("keyStorePassword"));
-        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("../keystore/service/service.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
     }
 
@@ -111,9 +111,9 @@ class ObjectUtilTest {
         ((Map<String, String>)((Map<String, Object>)map2.get("catalog")).get("tile")).put("description", "Proof of Concept application to demonstrate exposing a REST API with Plain Java Enabler");
         ((Map<String, String>)((Map<String, Object>)map2.get("catalog")).get("tile")).put("version", "1.0.1");
 
-        ((Map<String, String>)map2.get("ssl")).put("keyStore", "../keystore/localhost/localhost.keystore.p12");
+        ((Map<String, String>)map2.get("ssl")).put("keyStore", "../keystore/service/service.keystore.p12");
         ((Map<String, String>)map2.get("ssl")).put("keyStorePassword", "password2");
-        ((Map<String, String>)map2.get("ssl")).put("trustStore", "../keystore/localhost/localhost.keystore.p12");
+        ((Map<String, String>)map2.get("ssl")).put("trustStore", "../keystore/service/service.keystore.p12");
         ((Map<String, String>)map2.get("ssl")).put("trustStorePassword", "password2");
         ((Map<String, String>)map2.get("ssl")).put("ciphers", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384");
         return map2;
@@ -173,10 +173,10 @@ class ObjectUtilTest {
         sslMap.put("protocol", "TLSv1.2");
         sslMap.put("keyAlias", "localhost");
         sslMap.put("keyPassword", "password");
-        sslMap.put("keyStore", "keystore/localhost/localhost.keystore.p12");
+        sslMap.put("keyStore", "keystore/service/service.keystore.p12");
         sslMap.put("keyStorePassword", "password");
         sslMap.put("keyStoreType", "PKCS12");
-        sslMap.put("trustStore", "keystore/localhost/localhost.truststore.p12");
+        sslMap.put("trustStore", "keystore/service/service.truststore.p12");
         sslMap.put("trustStorePassword", "password");
         sslMap.put("trustStoreType", "PKCS12");
 
@@ -193,9 +193,9 @@ class ObjectUtilTest {
         assertNotNull(map3);
         assertEquals("hellozowe", (map3.get("serviceId")));
         assertEquals("TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", ((Map)map3.get("ssl")).get("ciphers"));
-        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("keyStore"));
+        assertEquals("../keystore/service/service.keystore.p12", ((Map)map3.get("ssl")).get("keyStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("keyStorePassword"));
-        assertEquals("../keystore/localhost/localhost.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
+        assertEquals("../keystore/service/service.keystore.p12", ((Map)map3.get("ssl")).get("trustStore"));
         assertEquals("password2", ((Map)map3.get("ssl")).get("trustStorePassword"));
     }
 

@@ -29,6 +29,8 @@ services:
       customMetadata:
             apiml:
                 okToRetryOnAllOperations: true
+                corsEnabled: true
+                corsAllowedOrigins: https://localhost2:10010
 
     - serviceId: staticclient2  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)

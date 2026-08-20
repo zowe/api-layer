@@ -25,6 +25,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -554,6 +555,7 @@ class ApiDocServiceTest {
 
     @Nested
     @SpringBootTest
+    @ActiveProfiles("test")
     class ViaApiCall {
 
         @MockitoSpyBean

@@ -27,6 +27,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -55,6 +57,11 @@ class CachedBodyFilterTest {
             StepVerifier.create(filter.filter(exchange, chain))
                 .verifyComplete();
 
+            // The downstream chain (and thus the controller) must run exactly once, even
+            // though chain.filter(...) returns Mono<Void>. Otherwise a request with a body
+            // is processed twice: once with the cached body and again with an empty body.
+            verify(chain, times(1)).filter(any());
+
             assertEquals("a readable body", exchange.getAttribute(CachedBodyFilter.CACHED_BODY_ATTR));
 
             StepVerifier.create(DataBufferUtils.join(exchange.getRequest().getBody()))
@@ -81,6 +88,8 @@ class CachedBodyFilterTest {
 
             StepVerifier.create(filter.filter(exchange, chain))
                 .verifyComplete();
+
+            verify(chain, times(1)).filter(any());
 
             assertNull(exchange.getAttribute(CachedBodyFilter.CACHED_BODY_ATTR));
         }

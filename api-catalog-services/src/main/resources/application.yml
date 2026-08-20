@@ -9,7 +9,6 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
         gateway:
             mvc.enabled: false
     output:
@@ -49,7 +48,8 @@ apiml:
     service:
         id: apicatalog
         hostname: localhost
-        ipAddress: 0.0.0.0
+        # The apiml.service.ipAddress was replaced by eureka.instance.ipAddress. Because the value must remain unset (null) to allow eureka fallback
+        # to its native ip address discovery the field cannot just reference a value from another due to spring limitation in processing properties from yml file.
         port: 10014
         scheme: https
 
@@ -95,21 +95,21 @@ apiml:
 ##############################################################################################
 
 server:
-    address: ${apiml.service.ipAddress}
+    address: 0.0.0.0
     port: ${apiml.service.port}
     ssl:
         enabled: ${apiml.security.ssl.sslEnabled}
         protocol: ${apiml.security.ssl.protocol}
         enabled-protocols: TLSv1.2+TLSv1.3
         ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStoreType: PKCS12
         trustStorePassword: password
         clientAuth: want
 
         keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStoreType: PKCS12
         keyStorePassword: password
 
@@ -204,7 +204,6 @@ logging:
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.apache.tomcat.util.net.jsse: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
         org.ehcache: WARN
         org.springdoc: WARN
         org.springframework: WARN
@@ -234,7 +233,6 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
         org.springdoc: WARN
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG

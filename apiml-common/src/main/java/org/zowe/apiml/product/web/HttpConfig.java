@@ -53,6 +53,9 @@ public class HttpConfig implements InitializingBean {
 
     private static final char[] KEYRING_PASSWORD = "password".toCharArray();
 
+    @Value("${server.address:0.0.0.0}")
+    private String address;
+
     @Value("${apiml.service.ssl.protocol:${server.ssl.protocol:TLSv1.2}}")
     private String protocol;
 
@@ -179,12 +182,12 @@ public class HttpConfig implements InitializingBean {
 
             log.debug("Using HTTPS configuration: {}", httpsConfig.toString());
 
-            httpsFactory = new HttpsFactory(httpsConfig);
+            httpsFactory = new HttpsFactory(httpsConfig, address);
             ApimlPoolingHttpClientConnectionManager secureConnectionManager = getConnectionManager(httpsFactory);
             secureHttpClient = httpsFactory.buildHttpClient(secureConnectionManager);
             secureSslContext = httpsFactory.getSslContext();
             secureHostnameVerifier = httpsFactory.getHostnameVerifier();
-            HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore);
+            HttpsFactory factoryWithoutKeystore = new HttpsFactory(httpsConfigWithoutKeystore, address);
             ApimlPoolingHttpClientConnectionManager connectionManagerWithoutKeystore = getConnectionManager(factoryWithoutKeystore);
             secureHttpClientWithoutKeystore = factoryWithoutKeystore.buildHttpClient(connectionManagerWithoutKeystore);
             secureSslContextWithoutKeystore = factoryWithoutKeystore.getSslContext();

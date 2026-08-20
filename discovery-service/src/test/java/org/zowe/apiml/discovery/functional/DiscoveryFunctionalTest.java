@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 import org.zowe.apiml.util.config.TestConfig;
 
@@ -26,6 +27,7 @@ import org.zowe.apiml.util.config.TestConfig;
 )
 @DirtiesContext
 @Import(TestConfig.class)
+@ActiveProfiles("test")
 public abstract class DiscoveryFunctionalTest {
 
     protected static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
