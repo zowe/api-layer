@@ -25,7 +25,6 @@ import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
@@ -36,7 +35,7 @@ import reactor.core.publisher.Flux;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.stream.IntStream;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -211,7 +210,6 @@ class RetryPerServiceTest {
             // 3 out of 4 instances will fail
             Mockito.when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
                 .thenReturn(List.of(
-                    buildZaasInfo(randomPort()), // TODO add other response codes?
                     buildZaasInfo(randomPort()),
                     buildZaasInfo(zaasService.getPort()),
                     buildZaasInfo(randomPort())
@@ -219,7 +217,6 @@ class RetryPerServiceTest {
 
             Mockito.when(reactiveDiscoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
                 .thenReturn(Flux.just(
-                    buildZaasInfo(randomPort()), // TODO add other response codes?
                     buildZaasInfo(randomPort()),
                     buildZaasInfo(zaasService.getPort()),
                     buildZaasInfo(randomPort())
@@ -237,7 +234,7 @@ class RetryPerServiceTest {
         }
 
         private int randomPort() {
-            return IntStream.range(32000, 65536).findAny().getAsInt();
+            return ThreadLocalRandom.current().nextInt(32000, 65536);
         }
 
         private ServiceInstance buildZaasInfo(int port) {
