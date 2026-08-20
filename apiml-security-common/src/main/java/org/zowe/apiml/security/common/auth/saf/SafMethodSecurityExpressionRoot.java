@@ -18,6 +18,7 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 @Component
 @RequiredArgsConstructor
 public class SafMethodSecurityExpressionRoot {
+
     private final SafSecurityConfigurationProperties safSecurityConfigurationProperties;
     private final SafResourceAccessVerifying safResourceAccessVerifying;
 

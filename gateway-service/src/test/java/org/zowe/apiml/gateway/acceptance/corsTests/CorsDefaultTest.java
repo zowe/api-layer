@@ -76,11 +76,34 @@ class CorsPerServiceWithDefaultsTest extends AcceptanceTestWithMockServices {
 
         given()
             .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
-            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
-            .header(new Header(HttpHeaders.ACCESS_CONTROL_REQUEST_HEADERS, "origin, x-requested-with"))
             .log().all()
         .when()
             .post(basePath + "/servicecors5/api/v1/fullheaders")
+        .then()
+        .log().all()
+            .statusCode(is(SC_FORBIDDEN))
+            .header(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, is(nullValue()));
+
+        assertFalse(called.get());
+    }
+
+    @Test
+    void givenCorsIsDelegatedToGatewayAndServiceAllowCors_whenSimpleCorsRequestArrives_thenReject() {
+        var headers = new Headers();
+        var called = new AtomicBoolean(false);
+        List<Consumer<HttpExchange>> assertions = List.of(
+                httpExchange -> {
+                    assertNull(httpExchange.getRequestHeaders().get(HttpHeaders.ORIGIN));
+                    called.set(true);
+                }
+            );
+        mockCorsService("servicecors8", headers, Map.of("apiml.corsEnabled", "true"), assertions).start();
+
+        given()
+            .header(new Header(HttpHeaders.ORIGIN, "https://foo.bar.org"))
+            .log().all()
+        .when()
+            .post(basePath + "/servicecors8/api/v1/fullheaders")
         .then()
         .log().all()
             .statusCode(is(SC_FORBIDDEN))

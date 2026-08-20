@@ -14,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.gateway.acceptance.config.DiscoveryClientTestConfig;
 
@@ -34,5 +35,6 @@ import java.lang.annotation.Target;
 )
 @Import(DiscoveryClientTestConfig.class)
 @DirtiesContext
+@ActiveProfiles("test")
 public @interface MicroservicesAcceptanceTest {
 }

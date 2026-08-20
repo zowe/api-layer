@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.caching.model.KeyValue;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
@@ -26,8 +27,11 @@ import org.zowe.apiml.util.config.SslContextConfigurer;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 @TestInstance(Lifecycle.PER_CLASS)
+@ActiveProfiles("test")
 public class InMemoryFunctionalTest {
 
     @Value("${server.ssl.keyPassword}")

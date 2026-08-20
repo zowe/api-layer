@@ -111,16 +111,6 @@ public class PATAuthSourceService extends TokenAuthSourceService {
     }
 
     @Override
-    public String getLtpaToken(AuthSource authSource) {
-        String zosmfToken = getJWT(authSource);
-        AuthSource.Origin origin = authenticationService.getTokenOrigin(zosmfToken);
-        if (AuthSource.Origin.ZOWE.equals(origin)) {
-            zosmfToken = authenticationService.getLtpaToken(zosmfToken);
-        }
-        return zosmfToken;
-    }
-
-    @Override
     public String getJWT(AuthSource authSource) {
         ParsedTokenAuthSource parsed = (ParsedTokenAuthSource) parse(authSource);
         return tokenService.createJwtTokenWithoutCredentials(parsed.getUserId());

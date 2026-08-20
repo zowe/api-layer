@@ -16,17 +16,13 @@ import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.config.CodeSnippet;
-import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.routing.RoutedService;
 import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.util.UrlUtils;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
@@ -181,6 +177,10 @@ public class EurekaMetadataParser {
     /**
      * Generate Eureka metadata for ApiInfo configuration
      *
+     * This code uses data from the Eureka registry. All values are validated or sanitized during onboarding
+     * (including the loading of static definitions). The main work is done by MetadataFilterService class.
+     * Since the data cannot be modified afterward, this method does not need to validate inputs again.
+     *
      * @param serviceId the identifier of a service which ApiInfo configuration belongs
      * @param apiInfo   ApiInfo config data
      * @return the generated Eureka metadata
@@ -202,26 +202,14 @@ public class EurekaMetadataParser {
         }
 
         if (apiInfo.getSwaggerUrl() != null) {
-            validateUrl(apiInfo.getSwaggerUrl(),
-                () -> String.format("The Swagger URL \"%s\" for service %s is not valid", apiInfo.getSwaggerUrl(), serviceId)
-            );
-
             metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_SWAGGER_URL), apiInfo.getSwaggerUrl());
         }
 
         if (apiInfo.getGraphqlUrl() != null) {
-            validateUrl(apiInfo.getGraphqlUrl(),
-                () -> String.format("The GraphQL URL \"%s\" for service %s is not valid", apiInfo.getGraphqlUrl(), serviceId)
-            );
-
             metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_GRAPHQL_URL), apiInfo.getGraphqlUrl());
         }
 
         if (apiInfo.getDocumentationUrl() != null) {
-            validateUrl(apiInfo.getDocumentationUrl(),
-                () -> String.format("The documentation URL \"%s\" for service %s is not valid", apiInfo.getDocumentationUrl(), serviceId)
-            );
-
             metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_DOCUMENTATION_URL), apiInfo.getDocumentationUrl());
         }
 
@@ -237,14 +225,6 @@ public class EurekaMetadataParser {
         metadata.put(String.format(THREE_STRING_MERGE_FORMAT, API_INFO, encodedGatewayUrl, API_INFO_IS_DEFAULT), String.valueOf(apiInfo.isDefaultApi()));
 
         return metadata;
-    }
-
-    private static void validateUrl(String url, Supplier<String> exceptionSupplier) {
-        try {
-            new URL(url);
-        } catch (MalformedURLException e) {
-            throw new MetadataValidationException(exceptionSupplier.get(), e);
-        }
     }
 
     public Authentication parseAuthentication(Map<String, String> eurekaMetadata) {

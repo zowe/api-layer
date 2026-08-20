@@ -37,7 +37,9 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
@@ -72,9 +74,11 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpMethod.DELETE;
 
 @ExtendWith(MockitoExtension.class)
 public class AuthenticationServiceTest { //NOSONAR, needs to be public
@@ -386,7 +390,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
-            assertEquals(LTPA, authService.getLtpaTokenWithValidation(jwtToken));
+            assertEquals(LTPA, authService.getLtpaToken(jwtToken));
         }
 
         @Test
@@ -396,7 +400,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             String brokenToken = jwtToken + "not";
             assertThrows(
                 TokenNotValidException.class,
-                () -> authService.getLtpaTokenWithValidation(brokenToken)
+                () -> authService.getLtpaToken(brokenToken)
             );
         }
 
@@ -406,7 +410,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             assertThrows(
                 TokenExpireException.class,
-                () -> authService.getLtpaTokenWithValidation(expiredJwtToken)
+                () -> authService.getLtpaToken(expiredJwtToken)
             );
         }
 
@@ -489,7 +493,14 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
             String token = authService.createJwtToken("user", DOMAIN, null);
-            doNothing().when(restTemplate).delete("http://localhost:0/zaas/api/v1/auth/invalidate/" + token);
+            HttpHeaders headers = new HttpHeaders();
+            headers.set(AUTHORIZATION, "Bearer " + token);
+            HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
+            ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
+            when(restTemplate.exchange("http://localhost:0/zaas/api/v1/auth/invalidate",
+                DELETE,
+                requestEntity,
+                Void.class)).thenReturn(responseEntity);
             doThrow(new BadCredentialsException("Invalid Credentials")).when(zosmfService).invalidate(ZosmfService.TokenType.JWT, token);
 
             assertTrue(authService.invalidateJwtToken(token, true));
@@ -509,8 +520,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void invalidateZosmfLtpaToken() {
-
             stubJWTSecurityForSign();
+            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String token = authService.createJwtToken("user", DOMAIN, LTPA_TOKEN);
 
             assertTrue(authService.invalidateJwtToken(token, false));
@@ -602,6 +613,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void whenTokenAlreadyInvalidated_thenUseCache() {
             stubJWTSecurityForSign();
+            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
 
             String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
             when(invalidatedJwtTokensCache.get(jwtToken01)).thenReturn(null);
@@ -674,9 +686,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             authService.invalidateJwtToken(jwtToken01, false);
             assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
-            verify(jwtSecurityInitializer, times(2)).getJwtVerifier();
+            verify(jwtSecurityInitializer, times(3)).getJwtVerifier();
             assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(jwtToken01));
-            verify(jwtSecurityInitializer, times(2)).getJwtVerifier();
+            verify(jwtSecurityInitializer, times(3)).getJwtVerifier();
         }
     }
 
@@ -731,8 +743,16 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             authService.distributeInvalidate(instanceInfo.getInstanceId());
 
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate/{}", "a");
-            verify(restTemplate, times(1)).delete(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate/{}", "b");
+            verify(restTemplate, times(1))
+                .exchange(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
+                    DELETE,
+                    getHeaders("a"),
+                    Void.class);
+            verify(restTemplate, times(1))
+                .exchange(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
+                    DELETE,
+                    getHeaders("b"),
+                    Void.class);
         }
 
         @Test
@@ -762,10 +782,17 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             doThrow(HttpClientErrorException.BadRequest.class)
                 .when(restTemplate)
-                .delete(anyString());
+                .exchange(anyString(),any(),any(),(Class<Object>)any());
 
             assertFalse(authService.invalidateJwtToken(token, true));
 
         }
+    }
+
+    private HttpEntity<Void> getHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(AUTHORIZATION, "Bearer " + token);
+        return new HttpEntity<>(headers);
+
     }
 }

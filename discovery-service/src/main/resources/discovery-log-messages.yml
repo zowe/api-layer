@@ -95,4 +95,11 @@ messages:
       reason: "Eureka is not initiated at the moment or static definition files contains an error."
       action: "Verify folder with static definition files or try it later."
 
+    - key: org.zowe.apiml.discovery.registration.missingApplid
+      number: ZWEAD707
+      type: WARNING
+      text: "Service '%s' registered with the httpBasicPassTicket authentication scheme but without a configured APPLID. The authentication scheme will be ignored"
+      reason: "The service is onboarded with the httpBasicPassTicket authentication scheme but does not provide an APPLID, which is required to generate PassTickets."
+      action: "Configure the 'authentication.applid' parameter of the httpBasicPassTicket authentication scheme in the service metadata."
+
     # Legacy messages
