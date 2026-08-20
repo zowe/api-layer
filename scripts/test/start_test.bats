@@ -487,6 +487,20 @@ teardown() {
     [[ "$LIBPATH" == *"${JAVA_HOME}/bin"* ]]
 }
 
+@test "ZAAS start script uses the z/OSMF application ID with lowercase fallback" {
+    run grep -F -- '-Dapiml.security.zosmf.applid=${ZWE_zOSMF_applId:-${ZWE_zosmf_applId:-IZUDFLT}}' \
+        "${PROJECT_ROOT}/zaas-package/src/main/resources/bin/start.sh"
+
+    [ "$status" -eq 0 ]
+}
+
+@test "API ML start script uses the z/OSMF application ID with lowercase fallback" {
+    run grep -F -- '-Dapiml.security.zosmf.applid=${ZWE_zOSMF_applId:-${ZWE_zosmf_applId:-IZUDFLT}}' \
+        "${PROJECT_ROOT}/apiml-package/src/main/resources/bin/start.sh"
+
+    [ "$status" -eq 0 ]
+}
+
 @test "apiml-common-scripts: sets default truststore_type to PKCS12" {
     unset ZWE_configs_certificate_truststore_type
     unset ZWE_zowe_certificate_truststore_type
