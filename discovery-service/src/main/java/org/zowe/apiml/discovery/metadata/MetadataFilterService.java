@@ -229,13 +229,17 @@ public class MetadataFilterService implements InitializingBean {
 
         boolean isValid = true;
 
-        if (!isAllowedDomain(input) && warn) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, input, instanceId);
+        if (!isAllowedDomain(input)) {
+            if (warn) {
+                apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, input, instanceId);
+            }
             isValid = false;
         }
 
-        if (!isAllowedScheme(input) && warn) {
-            apimlLogger.log(ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED, label, input, instanceId);
+        if (!isAllowedScheme(input)) {
+            if (warn) {
+                apimlLogger.log(ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED, label, input, instanceId);
+            }
             isValid = false;
         }
 
