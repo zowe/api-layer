@@ -222,19 +222,19 @@ public class MetadataFilterService implements InitializingBean {
         }
     }
 
-    private boolean validateEntry(String label, String input, String instanceId) {
+    private boolean validateEntry(String label, String input, String instanceId, boolean warn) {
         if (StringUtils.isBlank(input)) {
             return true;
         }
 
         boolean isValid = true;
 
-        if (!isAllowedDomain(input)) {
+        if (!isAllowedDomain(input) && warn) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, input, instanceId);
             isValid = false;
         }
 
-        if (!isAllowedScheme(input)) {
+        if (!isAllowedScheme(input) && warn) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED, label, input, instanceId);
             isValid = false;
         }
@@ -254,7 +254,7 @@ public class MetadataFilterService implements InitializingBean {
             "externalUrl");
 
         if (metadataKeysToVerify.stream().anyMatch(metadataKey -> key.startsWith("apiml.") && key.endsWith(metadataKey))) {
-            return validateEntry(key, value, instanceId);
+            return validateEntry(key, value, instanceId, true);
         }
         return true;
 
@@ -268,7 +268,7 @@ public class MetadataFilterService implements InitializingBean {
             apimlLogger.log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
         } else {
             urls.forEach(url -> {
-                if (!validateEntry("API ML CORS Allowed Origin", url, instanceId)) {
+                if (!validateEntry("API ML CORS Allowed Origin", url, instanceId, true)) {
                     result.set(false);
                 }
             });
@@ -281,24 +281,24 @@ public class MetadataFilterService implements InitializingBean {
         var result = new AtomicBoolean(true);
         var instanceId = info.getInstanceId();
 
-        if (!validateEntry("IP Address", info.getIPAddr(), instanceId)) {
+        if (!validateEntry("IP Address", info.getIPAddr(), instanceId, false)) {
             log.debug("IP address {} is not allowed. It is removed from the registration data.", info.getIPAddr());
             // this is updating the same instance even it looks like creating a new instance of InstanceInfo
             info = new InstanceInfo.Builder(info).setIPAddr(getIpAddress(info.getHostName())).build();
         }
-        if (!validateEntry("Instance Hostname", info.getHostName(), instanceId)) {
+        if (!validateEntry("Instance Hostname", info.getHostName(), instanceId, true)) {
             result.set(false);
         }
-        if (!validateEntry("Home Page URL", info.getHomePageUrl(), instanceId)) {
+        if (!validateEntry("Home Page URL", info.getHomePageUrl(), instanceId, true)) {
             result.set(false);
         }
-        if (!validateEntry("HealthCheck URL", info.getHealthCheckUrl(), instanceId)) {
+        if (!validateEntry("HealthCheck URL", info.getHealthCheckUrl(), instanceId, true)) {
             result.set(false);
         }
-        if (!validateEntry("Status Page URL", info.getStatusPageUrl(), instanceId)) {
+        if (!validateEntry("Status Page URL", info.getStatusPageUrl(), instanceId, true)) {
             result.set(false);
         }
-        if (!validateEntry("Secure Health Check URL", info.getSecureHealthCheckUrl(), instanceId)) {
+        if (!validateEntry("Secure Health Check URL", info.getSecureHealthCheckUrl(), instanceId, true)) {
             result.set(false);
         }
 
