@@ -45,7 +45,8 @@
 # - ZWE_configs_apiml_security_x509_externalMapperUser
 # - ZWE_configs_apiml_security_x509_acceptForwardedCert
 # - ZWE_configs_apiml_security_x509_certificatesUrl
-# - ZWE_zosmf_applId
+# - ZWE_zOSMF_applId - applId emitted by zwe from zOSMF.applId in zowe.yaml (primary)
+# - ZWE_zosmf_applId - legacy alias (still honored for backward compatibility)
 # - ZWE_configs_apiml_security_oidc_enabled
 # - ZWE_configs_apiml_security_oidc_clientId
 # - ZWE_configs_apiml_security_oidc_clientSecret
@@ -215,7 +216,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.saf.urls.verify=${ZWE_configs_apiml_security_saf_urls_verify:-${ZWE_components_gateway_apiml_security_saf_urls_verify:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/verify"}} \
     -Dapiml.security.authorization.resourceClass=${ZWE_configs_apiml_security_authorization_resourceClass:-${ZWE_components_gateway_apiml_security_authorization_resourceClass:-ZOWE}} \
     -Dapiml.security.authorization.resourceNamePrefix=${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-${ZWE_components_gateway_apiml_security_authorization_resourceNamePrefix:-APIML.}} \
-    -Dapiml.security.zosmf.applid=${ZWE_zosmf_applId:-IZUDFLT} \
+    -Dapiml.security.zosmf.applid=${ZWE_zOSMF_applId:-${ZWE_zosmf_applId:-IZUDFLT}} \
     -Dapiml.security.oidc.enabled=${ZWE_configs_apiml_security_oidc_enabled:-${ZWE_components_gateway_apiml_security_oidc_enabled:-false}} \
     -Dapiml.security.oidc.registry=${ZWE_configs_apiml_security_oidc_registry:-${ZWE_components_gateway_apiml_security_oidc_registry:-}} \
     -Dapiml.security.oidc.identityMapperUrl=${ZWE_configs_apiml_security_oidc_identityMapperUrl:-${ZWE_components_gateway_apiml_security_oidc_identityMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"}} \

@@ -71,6 +71,19 @@ packageApiml.doFirst {
 jar.dependsOn(packageApiml)
 build.dependsOn(packageApiml)
 
+// Regression test for #4894 — zwe emits ZWE_zOSMF_applId (camelCase) from
+// zOSMF.applId in zowe.yaml. The api-layer scripts must prefer that name
+// and fall back to ZWE_zosmf_applId (legacy) before defaulting to IZUDFLT.
+// See gradle/verify-zOSMF-applid-env.sh for the truth table assertions.
+task verifyApplidEnv(type: Exec) {
+    description = 'Verifies the ZWE_zOSMF_applId / ZWE_zosmf_applId lookup chain used by start.sh'
+    group = 'verification'
+    commandLine 'bash', file('../gradle/verify-zOSMF-applid-env.sh'),
+            file('src/main/resources/bin/start.sh')
+}
+test.dependsOn(verifyApplidEnv)
+check.dependsOn(verifyApplidEnv)
+
 artifacts {
     zip packageApiml
 }
