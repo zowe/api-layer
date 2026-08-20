@@ -335,15 +335,26 @@ public class ConnectionsConfig {
     }
 
     /**
-     * Token-free CSRF protection for state-changing requests based on the {@code Sec-Fetch-Site}
-     * request header. When CORS is enabled the Origin is validated by the CORS filter
-     * ({@link #corsWebFilter(ServiceCorsUpdater)}), so this filter defers to it; when CORS is disabled
-     * it rejects cross-site requests itself.
+     * Token-free CSRF protection for cross-site requests based on the {@code Sec-Fetch-Site} request
+     * header. A request the CORS filter ({@link #corsWebFilter(ServiceCorsUpdater)}) already validates
+     * the {@code Origin} of is deferred to it; anything else is allowed only as a safe top-level
+     * navigation and rejected otherwise. See {@link SecFetchSiteFilter} for the full policy.
      */
     @Bean
     @ConditionalOnProperty(name = "security.secFetch.enabled", havingValue = "true")
-    WebFilter secFetchSiteFilter(@Value("${security.secFetch.safeNavigationDestinations:#{null}}") Set<String> safeNav) {
-        return new SecFetchSiteFilter(gatewayCorsEnabled, safeNav);
+    WebFilter secFetchSiteFilter(
+        ServiceCorsUpdater serviceCorsUpdater,
+        @Value("${security.secFetch.safeNavigationModes:navigate,same-origin}") Set<String> safeNavigationModes,
+        @Value("${security.secFetch.safeNavigationDestinations:#{null}}") Set<String> safeNavigationDestinations,
+        @Value("${security.secFetch.crossSiteNavigationAntMatchers:#{null}}") Set<String> crossSiteNavigationAntMatchers
+    ) {
+        return new SecFetchSiteFilter(
+            gatewayCorsEnabled,
+            serviceCorsUpdater.getUrlBasedCorsConfigurationSource(),
+            safeNavigationModes,
+            safeNavigationDestinations,
+            crossSiteNavigationAntMatchers
+        );
     }
 
     public InstanceInfo create(EurekaInstanceConfig config) {
