@@ -145,7 +145,7 @@
         "micromatch": "4.0.8",
         "semver": "7.6.3",
         "@babel/traverse": "7.28.6",
-        "dompurify": "3.4.13",
+        "dompurify": "3.4.14",
         "serve-static": "1.16.3",
         "body-parser": "2.2.2",
         "axios": "1.16.1",
