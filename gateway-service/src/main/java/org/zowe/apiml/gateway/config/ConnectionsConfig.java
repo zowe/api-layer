@@ -341,11 +341,11 @@ public class ConnectionsConfig {
      * navigation and rejected otherwise. See {@link SecFetchSiteFilter} for the full policy.
      */
     @Bean
-    @ConditionalOnProperty(name = "security.secFetch.enabled", havingValue = "true")
+    @ConditionalOnProperty(name = "apiml.security.secFetch.enabled", havingValue = "true")
     WebFilter secFetchSiteFilter(
         ServiceCorsUpdater serviceCorsUpdater,
-        @Value("${security.secFetch.safeNavigationModes:navigate,same-origin}") Set<String> safeNavigationModes,
-        @Value("${security.secFetch.safeNavigationDestinations:#{null}}") Set<String> safeNavigationDestinations
+        @Value("${apiml.security.secFetch.safeNavigationModes:navigate,same-origin}") Set<String> safeNavigationModes,
+        @Value("${apiml.security.secFetch.safeNavigationDestinations:#{null}}") Set<String> safeNavigationDestinations
     ) {
         return new SecFetchSiteFilter(
             gatewayCorsEnabled,

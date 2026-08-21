@@ -121,7 +121,8 @@ apiml:
             nonStrictVerifySslCertificatesOfServices: false
         rauditx:
             onOidcUserIsMapped: false
-
+        secFetch:
+            enabled: true
     health:
         protected: true
     webClientConfig.enabled: true
