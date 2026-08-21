@@ -62,20 +62,20 @@ class ApimlLoggerTest {
 
     @Test
     void testLogLevel() {
-        apimlLogger.log(MessageType.TRACE, "traceLog", new Object[]{"param1"});
-        verify(logger, times(1)).trace(MARKER, "traceLog", new Object[]{"param1"});
+        apimlLogger.log(MessageType.TRACE, "traceLog {}", new Object[]{"param1"});
+        verify(logger, times(1)).trace(MARKER, "traceLog {}", new Object[]{"param1"});
 
-        apimlLogger.log(MessageType.DEBUG, "debugLog", new Object[]{"param2"});
-        verify(logger, times(1)).debug(MARKER, "debugLog", new Object[]{"param2"});
+        apimlLogger.log(MessageType.DEBUG, "debugLog {}", new Object[]{"param2"});
+        verify(logger, times(1)).debug(MARKER, "debugLog {}", new Object[]{"param2"});
 
-        apimlLogger.log(MessageType.INFO, "infoLog", new Object[]{"param3"});
-        verify(logger, times(1)).info(MARKER, "infoLog", new Object[]{"param3"});
+        apimlLogger.log(MessageType.INFO, "infoLog {}", new Object[]{"param3"});
+        verify(logger, times(1)).info(MARKER, "infoLog {}", new Object[]{"param3"});
 
-        apimlLogger.log(MessageType.WARNING, "warningLog", new Object[]{"param4"});
-        verify(logger, times(1)).warn(MARKER, "warningLog", new Object[]{"param4"});
+        apimlLogger.log(MessageType.WARNING, "warningLog {}", new Object[]{"param4"});
+        verify(logger, times(1)).warn(MARKER, "warningLog {}", new Object[]{"param4"});
 
-        apimlLogger.log(MessageType.ERROR, "errorLog", new Object[]{"param5"});
-        verify(logger, times(1)).error(MARKER, "errorLog", new Object[]{"param5"});
+        apimlLogger.log(MessageType.ERROR, "errorLog {}", new Object[]{"param5"});
+        verify(logger, times(1)).error(MARKER, "errorLog {}", new Object[]{"param5"});
 
         verify(logger, times(1)).trace((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).debug((Marker) any(), anyString(), (Object[]) any());
