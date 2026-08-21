@@ -81,8 +81,6 @@ class ApimlLoggerTest {
         ReflectionTestUtils.setField(apimlLogger, "logger", logger);
         Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
 
-        // the guarded call carries the APIML-LOGGER marker, so the check has to carry it too - log
-        // filters such as LogLevelInfoFilter decide by marker and would deny an unmarked check
         when(logger.isDebugEnabled(marker)).thenReturn(true);
 
         apimlLogger.log((MessageType) null, "text");

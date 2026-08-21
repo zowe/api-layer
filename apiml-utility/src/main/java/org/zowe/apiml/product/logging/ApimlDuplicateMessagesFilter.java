@@ -37,12 +37,9 @@ public class ApimlDuplicateMessagesFilter extends DuplicateMessageFilter {
             return FilterReply.NEUTRAL;
         }
         if (!level.isGreaterOrEqual(logger.getEffectiveLevel())) {
-            // logback drops the event on its own, so there is no need to format and hash a message
-            // nobody will read; abstaining rather than denying keeps the rest of the chain in play
             return FilterReply.NEUTRAL;
         }
         String formattedMessage = getLogMessage(format, params, t);
-        // Sent the entire formatted message to the parent to ensure exact duplicates are filtered out
         return super.decide(marker, logger, level, getMessageHash(formattedMessage), params, t);
     }
 
