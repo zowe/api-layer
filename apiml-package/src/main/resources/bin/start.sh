@@ -307,6 +307,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.saf.provider=${ZWE_components_gateway_apiml_security_saf_provider:-${ZWE_configs_apiml_security_saf_provider:-"rest"}} \
     -Dapiml.security.saf.urls.authenticate=${ZWE_components_gateway_apiml_security_saf_urls_authenticate:-${ZWE_configs_apiml_security_saf_urls_authenticate:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/authenticate"}} \
     -Dapiml.security.saf.urls.verify=${ZWE_components_gateway_apiml_security_saf_urls_verify:-${ZWE_configs_apiml_security_saf_urls_verify:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/verify"}} \
+    -Dapiml.security.secFetch.enabled=${ZWE_components_gateway_apiml_security_secFetch_enabled:-${ZWE_configs_apiml_security_secFetch_enabled:-true}} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices} \
     -Dapiml.security.useInternalMapper=${ZWE_components_gateway_apiml_security_useInternalMapper:-${ZWE_configs_apiml_security_useInternalMapper:-true}} \

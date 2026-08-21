@@ -548,6 +548,17 @@
                                     "default": "sub"
                                 }
                             }
+                        },
+                        "secFetch": {
+                            "type": "object",
+                            "description": "Configuration of the CSRF protection based on the browser supplied Fetch Metadata request headers.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "description": "When enabled, the Gateway rejects cross-site requests that are neither validated by the CORS layer nor a safe top-level navigation, based on the Sec-Fetch-Site, Sec-Fetch-Mode and Sec-Fetch-Dest request headers.",
+                                    "default": true
+                                }
+                            }
                         }
                     }
                 },
