@@ -142,7 +142,9 @@ public final class ApimlLogger {
     }
 
     private void logInvalidArguments(IllegalArgumentException e, Object... arguments) {
-        if (logger.isDebugEnabled()) {
+        // the marker has to be part of the check, the guarded call carries it and log filters such as
+        // LogLevelInfoFilter decide by marker - an unmarked check would answer for a different event
+        if (logger.isDebugEnabled(marker)) {
             logger.debug(marker, "Invalid log message cannot be logged: {}", arguments, e);
         } else {
             logger.warn(marker, "Invalid log message cannot be logged: {}, enable debug for stack trace: {}", arguments, e.getMessage());

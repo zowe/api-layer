@@ -23,7 +23,10 @@ import org.zowe.apiml.message.template.MessageTemplate;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -68,6 +71,39 @@ class ApimlLoggerTest {
         verify(logger, times(1)).info((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).warn((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).error((Marker) any(), anyString(), (Object[]) any());
+    }
+
+    @Test
+    void whenArgumentsAreInvalidAndDebugIsEnabledForTheMarker_thenStackTraceIsLogged() {
+        ApimlLogger apimlLogger = new ApimlLogger(ApimlLoggerTest.class, null);
+
+        Logger logger = mock(Logger.class);
+        ReflectionTestUtils.setField(apimlLogger, "logger", logger);
+        Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
+
+        // the guarded call carries the APIML-LOGGER marker, so the check has to carry it too - log
+        // filters such as LogLevelInfoFilter decide by marker and would deny an unmarked check
+        when(logger.isDebugEnabled(marker)).thenReturn(true);
+
+        apimlLogger.log((MessageType) null, "text");
+
+        verify(logger, times(1)).debug(eq(marker), anyString(), any(), any());
+        verify(logger, never()).warn(eq(marker), anyString(), any(), any());
+        verify(logger, never()).isDebugEnabled();
+    }
+
+    @Test
+    void whenArgumentsAreInvalidAndDebugIsDisabledForTheMarker_thenHintIsLogged() {
+        ApimlLogger apimlLogger = new ApimlLogger(ApimlLoggerTest.class, null);
+
+        Logger logger = mock(Logger.class);
+        ReflectionTestUtils.setField(apimlLogger, "logger", logger);
+        Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
+
+        apimlLogger.log((MessageType) null, "text");
+
+        verify(logger, times(1)).warn(eq(marker), anyString(), any(), any());
+        verify(logger, never()).debug(eq(marker), anyString(), any(), any());
     }
 
     @Nested
