@@ -126,9 +126,6 @@ apiml:
     health:
         protected: true
     webClientConfig.enabled: true
-security:
-    secFetch:
-        enabled: true
 server:
     http2:
         enabled: false
