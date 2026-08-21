@@ -345,15 +345,13 @@ public class ConnectionsConfig {
     WebFilter secFetchSiteFilter(
         ServiceCorsUpdater serviceCorsUpdater,
         @Value("${security.secFetch.safeNavigationModes:navigate,same-origin}") Set<String> safeNavigationModes,
-        @Value("${security.secFetch.safeNavigationDestinations:#{null}}") Set<String> safeNavigationDestinations,
-        @Value("${security.secFetch.crossSiteNavigationAntMatchers:#{null}}") Set<String> crossSiteNavigationAntMatchers
+        @Value("${security.secFetch.safeNavigationDestinations:#{null}}") Set<String> safeNavigationDestinations
     ) {
         return new SecFetchSiteFilter(
             gatewayCorsEnabled,
             serviceCorsUpdater.getUrlBasedCorsConfigurationSource(),
             safeNavigationModes,
-            safeNavigationDestinations,
-            crossSiteNavigationAntMatchers
+            safeNavigationDestinations
         );
     }
 

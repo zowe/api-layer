@@ -28,7 +28,6 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -54,7 +53,7 @@ class SecFetchSiteFilterTest {
     }
 
     private SecFetchSiteFilter filter(boolean corsEnabled) {
-        return new SecFetchSiteFilter(corsEnabled, corsConfiguredForServicePath(), Set.of("navigate", "same-origin"), null, null);
+        return new SecFetchSiteFilter(corsEnabled, corsConfiguredForServicePath(), Set.of("navigate", "same-origin"), null);
     }
 
     private MockServerWebExchange exchange(HttpMethod method, String site, String mode, String dest) {
@@ -143,7 +142,7 @@ class SecFetchSiteFilterTest {
 
         @Test
         void givenNoCorsConfigurationSource_thenRejected() {
-            var noSource = new SecFetchSiteFilter(true, null, Set.of("navigate"), null, null);
+            var noSource = new SecFetchSiteFilter(true, null, Set.of("navigate"), null);
             assertRejected(exchange(HttpMethod.POST, "cross-site", null, null), noSource);
         }
     }
@@ -183,30 +182,22 @@ class SecFetchSiteFilterTest {
                 }
 
                 @ParameterizedTest
-                @ValueSource(strings = {"POST", "PUT"})
-                void givenUnsafeMethodOnAllowListedPath_thenAllowed(String method) {
-                    var allowingPath = new SecFetchSiteFilter(false, null, Set.of("navigate"), null, List.of("/service/**"));
-                    assertAllowed(exchange(HttpMethod.valueOf(method), "cross-site", "navigate", "document"), allowingPath);
-                }
-
-                @ParameterizedTest
-                @ValueSource(strings = {"POST", "PUT"})
-                void givenUnsafeMethodOnOtherPath_thenRejected(String method) {
-                    var allowingPath = new SecFetchSiteFilter(false, null, Set.of("navigate"), null, List.of("/service/**"));
-                    assertRejected(exchange(HttpMethod.valueOf(method), UNPROTECTED_PATH, ORIGIN, "cross-site", "navigate", "document"), allowingPath);
+                @ValueSource(strings = {"POST", "PUT", "DELETE", "PATCH"})
+                void givenUnsafeMethodOnAnyPath_thenRejected(String method) {
+                    assertRejected(exchange(HttpMethod.valueOf(method), UNPROTECTED_PATH, ORIGIN, "cross-site", "navigate", "document"), filter);
                 }
 
                 @ParameterizedTest
                 @ValueSource(strings = {"object", "embed", "OBJECT", "EMBED"})
                 void givenUnsafeDestination_thenRejected(String destination) {
-                    var restrictedDest = new SecFetchSiteFilter(false, null, Set.of("navigate"), Set.of("iframe", "frame"), null);
+                    var restrictedDest = new SecFetchSiteFilter(false, null, Set.of("navigate"), Set.of("iframe", "frame"));
                     assertRejected(exchange(HttpMethod.GET, "cross-site", "navigate", destination), restrictedDest);
                 }
 
                 @ParameterizedTest
                 @ValueSource(strings = {"iframe", "FRAME"})
                 void givenAllowedDestination_thenAllowed(String destination) {
-                    var restrictedDest = new SecFetchSiteFilter(false, null, Set.of("navigate"), Set.of("iframe", "frame"), null);
+                    var restrictedDest = new SecFetchSiteFilter(false, null, Set.of("navigate"), Set.of("iframe", "frame"));
                     assertAllowed(exchange(HttpMethod.GET, "cross-site", "navigate", destination), restrictedDest);
                 }
 
@@ -228,14 +219,14 @@ class SecFetchSiteFilterTest {
 
                 @Test
                 void givenWebsocketModeConfiguredAsSafe_thenAllowed() {
-                    var allowingWebsocket = new SecFetchSiteFilter(false, null, Set.of("navigate", "websocket"), null, null);
+                    var allowingWebsocket = new SecFetchSiteFilter(false, null, Set.of("navigate", "websocket"), null);
                     assertAllowed(exchange(HttpMethod.GET, "cross-site", "websocket", "websocket"), allowingWebsocket);
                 }
             }
 
             @Test
             void givenNoSafeNavigationModes_thenRejected() {
-                var noSafeModes = new SecFetchSiteFilter(false, null, null, null, null);
+                var noSafeModes = new SecFetchSiteFilter(false, null, null, null);
                 assertRejected(exchange(HttpMethod.GET, "cross-site", "navigate", "document"), noSafeModes);
             }
         }

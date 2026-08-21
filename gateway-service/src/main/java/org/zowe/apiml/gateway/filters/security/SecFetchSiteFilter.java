@@ -25,13 +25,10 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
-import org.springframework.web.util.pattern.PathPattern;
-import org.springframework.web.util.pattern.PathPatternParser;
 import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -86,24 +83,16 @@ public class SecFetchSiteFilter implements WebFilter, Ordered {
 
     private final Set<String> safeNavigationDestinations;
 
-    /**
-     * The patterns are parsed once, on startup - {@link PathPattern} instances are stateless and
-     * reparsing them per request would put needless allocation on the proxying hot path.
-     */
-    private final List<PathPattern> crossSiteNavigationPaths;
-
     public SecFetchSiteFilter(
         boolean corsEnabled,
         @Nullable CorsConfigurationSource corsConfigurationSource,
         @Nullable Collection<String> safeNavigationModes,
-        @Nullable Collection<String> safeNavigationDestinations,
-        @Nullable Collection<String> crossSiteNavigationPathPatterns
+        @Nullable Collection<String> safeNavigationDestinations
     ) {
         this.corsEnabled = corsEnabled;
         this.corsConfigurationSource = corsConfigurationSource;
         this.safeNavigationModes = toLowerCase(safeNavigationModes);
         this.safeNavigationDestinations = toLowerCase(safeNavigationDestinations);
-        this.crossSiteNavigationPaths = parse(crossSiteNavigationPathPatterns);
     }
 
     private static Set<String> toLowerCase(@Nullable Collection<String> values) {
@@ -115,18 +104,6 @@ public class SecFetchSiteFilter implements WebFilter, Ordered {
             .collect(Collectors.toUnmodifiableSet());
     }
 
-    private static List<PathPattern> parse(@Nullable Collection<String> patterns) {
-        if (patterns == null || patterns.isEmpty()) {
-            return List.of();
-        }
-
-        PathPatternParser parser = new PathPatternParser();
-        log.info("Cross-site navigation with an unsafe HTTP method is allowed for: {}", patterns);
-        return patterns.stream()
-            .map(parser::parse)
-            .toList();
-    }
-
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         if (isAllowed(exchange)) {
@@ -135,7 +112,7 @@ public class SecFetchSiteFilter implements WebFilter, Ordered {
 
         ServerHttpRequest request = exchange.getRequest();
         HttpHeaders headers = request.getHeaders();
-        log.debug("Blocked cross-site {} {} - Sec-Fetch-Site={}, Sec-Fetch-Mode={}, Sec-Fetch-Dest={}",
+        log.debug("Blocked request {} {} - Sec-Fetch-Site={}, Sec-Fetch-Mode={}, Sec-Fetch-Dest={}",
             request.getMethod(), request.getPath(), headers.getFirst(SEC_FETCH_SITE_HEADER),
             headers.getFirst(SEC_FETCH_MODE_HEADER), headers.getFirst(SEC_FETCH_DEST_HEADER));
 
@@ -191,7 +168,7 @@ public class SecFetchSiteFilter implements WebFilter, Ordered {
         if (mode == null || !safeNavigationModes.contains(mode.toLowerCase(Locale.ROOT))) {
             return false;
         }
-        if (!isSafeMethod(request) && !crossSiteNavigationAllowed(request)) {
+        if (!isSafeMethod(request)) {
             return false;
         }
         return isSafeDest(request.getHeaders().getFirst(SEC_FETCH_DEST_HEADER));
@@ -199,20 +176,6 @@ public class SecFetchSiteFilter implements WebFilter, Ordered {
 
     private boolean isSafeMethod(ServerHttpRequest request) {
         return SAFE_METHODS.contains(request.getMethod());
-    }
-
-    /**
-     * A cross-site navigation performed with a state-changing method - a form auto-submitted by an
-     * attacker's page - is the classic CSRF vector, so it is only allowed for the paths explicitly
-     * listed in {@code security.secFetch.crossSiteNavigationAntMatchers}.
-     */
-    private boolean crossSiteNavigationAllowed(ServerHttpRequest request) {
-        if (crossSiteNavigationPaths.isEmpty()) {
-            return false;
-        }
-
-        var path = request.getPath().pathWithinApplication();
-        return crossSiteNavigationPaths.stream().anyMatch(pattern -> pattern.matches(path));
     }
 
     private boolean isSafeDest(String dest) {
