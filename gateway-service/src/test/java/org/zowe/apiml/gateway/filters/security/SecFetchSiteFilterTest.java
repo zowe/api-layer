@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +22,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsConfigurationSource;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
@@ -35,10 +39,32 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class SecFetchSiteFilterTest {
 
     private static final String ORIGIN = "https://evil.example.com";
+    private static final String PATH = "/service/api/v1/foo";
+    private static final String UNPROTECTED_PATH = "/other-service/api/v1/foo";
+
+    /**
+     * CORS is configured for {@link #PATH} only, mirroring the Gateway registering a configuration per
+     * service ({@code ServiceCorsUpdater}) rather than for every path.
+     */
+    private static CorsConfigurationSource corsConfiguredForServicePath() {
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/service/**", new CorsConfiguration());
+        return source;
+    }
+
+    private SecFetchSiteFilter filter(boolean corsEnabled) {
+        return new SecFetchSiteFilter(corsEnabled, corsConfiguredForServicePath(), Set.of("navigate", "same-origin"), null);
+    }
 
     private MockServerWebExchange exchange(HttpMethod method, String site, String mode, String dest) {
-        MockServerHttpRequest.BaseBuilder<?> builder = MockServerHttpRequest.method(method, "/service/api/v1/foo")
-            .header(HttpHeaders.ORIGIN, ORIGIN);
+        return exchange(method, PATH, ORIGIN, site, mode, dest);
+    }
+
+    private MockServerWebExchange exchange(HttpMethod method, String path, String origin, String site, String mode, String dest) {
+        MockServerHttpRequest.BaseBuilder<?> builder = MockServerHttpRequest.method(method, path);
+        if (origin != null) {
+            builder.header(HttpHeaders.ORIGIN, origin);
+        }
         if (site != null) {
             builder.header(SecFetchSiteFilter.SEC_FETCH_SITE_HEADER, site);
         }
@@ -75,20 +101,49 @@ class SecFetchSiteFilterTest {
     }
 
     @Nested
+    class GivenSafeSecFetchSiteHeader {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"same-origin", "none", "Same-Origin", "NONE"})
+        @NullSource
+        void thenAllowed(String site) {
+            assertAllowed(exchange(HttpMethod.POST, site, null, null), filter(false));
+        }
+    }
+
+    @Nested
     class WhenCorsEnabled {
 
         private SecFetchSiteFilter filter;
 
         @BeforeEach
         void setUp() {
-            filter = new SecFetchSiteFilter(true, Set.of());
+            filter = filter(true);
         }
 
         @ParameterizedTest
-        @ValueSource(strings = {"same-origin", "same-site", "none", "cross-site", "Same-Origin"})
-        @NullSource
-        void givenAnySecFetchSiteHeader_thenAllowedAndDeferredToCors(String site) {
+        @ValueSource(strings = {"cross-site", "same-site", "Cross-Site", "whatever"})
+        void givenOriginAndCorsConfiguredForPath_thenDeferredToCors(String site) {
             assertAllowed(exchange(HttpMethod.POST, site, null, null), filter);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"cross-site", "same-site"})
+        void givenNoCorsConfigurationForPath_thenRejected(String site) {
+            assertRejected(exchange(HttpMethod.POST, UNPROTECTED_PATH, ORIGIN, site, null, null), filter);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"cross-site", "same-site"})
+        void givenNoOrigin_thenRejected(String site) {
+            // Without an Origin the request is not a CORS request, so the CORS filter never judges it
+            assertRejected(exchange(HttpMethod.POST, PATH, null, site, null, null), filter);
+        }
+
+        @Test
+        void givenNoCorsConfigurationSource_thenRejected() {
+            var noSource = new SecFetchSiteFilter(true, null, Set.of("navigate"), null);
+            assertRejected(exchange(HttpMethod.POST, "cross-site", null, null), noSource);
         }
     }
 
@@ -99,18 +154,13 @@ class SecFetchSiteFilterTest {
 
         @BeforeEach
         void setUp() {
-            filter = new SecFetchSiteFilter(false, Set.of());
+            filter = filter(false);
         }
 
-        @Nested
-        class GivenSafeSecFetchSiteHeader {
-
-            @ParameterizedTest
-            @ValueSource(strings = {"same-origin", "same-site", "none", "Same-Origin", "SAME-SITE"})
-            @NullSource
-            void thenAllowed(String site) {
-                assertAllowed(exchange(HttpMethod.POST, site, null, null), filter);
-            }
+        @ParameterizedTest
+        @ValueSource(strings = {"cross-site", "same-site"})
+        void givenOriginAndCorsConfiguredForPath_thenNotDeferredToCors(String site) {
+            assertRejected(exchange(HttpMethod.POST, site, null, null), filter);
         }
 
         @Nested
@@ -120,15 +170,35 @@ class SecFetchSiteFilterTest {
             class WhenNavigateMode {
 
                 @ParameterizedTest
-                @ValueSource(strings = {"GET", "POST", "PUT", "DELETE"})
-                void givenAllowedDestination_thenAllowed(String method) {
-                    assertAllowed(exchange(HttpMethod.valueOf(method), "cross-site", "navigate", "document"), filter);
+                @CsvSource({"GET,navigate", "HEAD,navigate", "GET,same-origin", "GET,NAVIGATE"})
+                void givenSafeMethod_thenAllowed(String method, String mode) {
+                    assertAllowed(exchange(HttpMethod.valueOf(method), "cross-site", mode, "document"), filter);
+                }
+
+                @ParameterizedTest
+                @ValueSource(strings = {"POST", "PUT", "DELETE", "PATCH"})
+                void givenUnsafeMethod_thenRejected(String method) {
+                    assertRejected(exchange(HttpMethod.valueOf(method), "cross-site", "navigate", "document"), filter);
+                }
+
+                @ParameterizedTest
+                @ValueSource(strings = {"POST", "PUT", "DELETE", "PATCH"})
+                void givenUnsafeMethodOnAnyPath_thenRejected(String method) {
+                    assertRejected(exchange(HttpMethod.valueOf(method), UNPROTECTED_PATH, ORIGIN, "cross-site", "navigate", "document"), filter);
                 }
 
                 @ParameterizedTest
                 @ValueSource(strings = {"object", "embed", "OBJECT", "EMBED"})
                 void givenUnsafeDestination_thenRejected(String destination) {
-                    assertRejected(exchange(HttpMethod.GET, "cross-site", "navigate", destination), new SecFetchSiteFilter(false, Set.of("iframe","frame")));
+                    var restrictedDest = new SecFetchSiteFilter(false, null, Set.of("navigate"), Set.of("iframe", "frame"));
+                    assertRejected(exchange(HttpMethod.GET, "cross-site", "navigate", destination), restrictedDest);
+                }
+
+                @ParameterizedTest
+                @ValueSource(strings = {"iframe", "FRAME"})
+                void givenAllowedDestination_thenAllowed(String destination) {
+                    var restrictedDest = new SecFetchSiteFilter(false, null, Set.of("navigate"), Set.of("iframe", "frame"));
+                    assertAllowed(exchange(HttpMethod.GET, "cross-site", "navigate", destination), restrictedDest);
                 }
 
                 @Test
@@ -141,11 +211,25 @@ class SecFetchSiteFilterTest {
             class WhenNonNavigateMode {
 
                 @ParameterizedTest
-                @ValueSource(strings = {"cors", "no-cors"})
+                @ValueSource(strings = {"cors", "no-cors", "websocket"})
+                @NullSource
                 void thenRejected(String mode) {
-                    assertRejected(exchange(HttpMethod.POST, "cross-site", mode, null), filter);
+                    assertRejected(exchange(HttpMethod.GET, "cross-site", mode, null), filter);
                 }
+
+                @Test
+                void givenWebsocketModeConfiguredAsSafe_thenAllowed() {
+                    var allowingWebsocket = new SecFetchSiteFilter(false, null, Set.of("navigate", "websocket"), null);
+                    assertAllowed(exchange(HttpMethod.GET, "cross-site", "websocket", "websocket"), allowingWebsocket);
+                }
+            }
+
+            @Test
+            void givenNoSafeNavigationModes_thenRejected() {
+                var noSafeModes = new SecFetchSiteFilter(false, null, null, null);
+                assertRejected(exchange(HttpMethod.GET, "cross-site", "navigate", "document"), noSafeModes);
             }
         }
     }
+
 }

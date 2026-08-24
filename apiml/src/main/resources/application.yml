@@ -243,6 +243,8 @@ apiml:
             urls:
                 authenticate: https://${apiml.service.hostname}:10013/zss/saf/authenticate
                 verify: https://${apiml.service.hostname}:10013/zss/saf/verify
+        secFetch:
+            enabled: true
     health:
         protected: true
     webClientConfig.enabled: true
