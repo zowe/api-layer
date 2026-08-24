@@ -58,8 +58,9 @@ public class TomcatAcceptFixConfig {
     private static final Field ENDPOINT_FIELD;
     private static final Field NIO_SOCKET_FIELD;
 
-    private static final MethodHandle IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE; // NOSONAR
+    private static final MethodHandle IMPL_CLOSE_SELECTABLE_CHANNEL_HANDLE; // NOSONAR
     private static final MethodHandle IMPL_CONFIGURE_BLOCKING; // NOSONAR
+    private static final String NETWORK_RECYCLED_EXCEPTION_CLASS = "com.ibm.net.NetworkRecycledException";
 
     /**
      * To mitigate parallel treatment of socket rebinding
@@ -73,7 +74,7 @@ public class TomcatAcceptFixConfig {
 
             Method implCloseSelectableChannel = AbstractSelectableChannel.class.getDeclaredMethod("implCloseSelectableChannel");
             implCloseSelectableChannel.setAccessible(true); // NOSONAR
-            IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE = MethodHandles.lookup().unreflect(implCloseSelectableChannel);
+            IMPL_CLOSE_SELECTABLE_CHANNEL_HANDLE = MethodHandles.lookup().unreflect(implCloseSelectableChannel);
 
             Method implConfigureBlocking = AbstractSelectableChannel.class.getDeclaredMethod("implConfigureBlocking", boolean.class);
             implConfigureBlocking.setAccessible(true); // NOSONAR
@@ -148,7 +149,7 @@ public class TomcatAcceptFixConfig {
     }
 
     static boolean isRecycledClass(Throwable t) {
-        return "com.ibm.net.NetworkRecycledException".equals(t.getClass().getName());
+        return NETWORK_RECYCLED_EXCEPTION_CLASS.equals(t.getClass().getName());
     }
 
     static boolean isTcpStackRestarted(Throwable t) {
@@ -173,7 +174,6 @@ public class TomcatAcceptFixConfig {
      */
     class FixedServerSocketChannel extends ServerSocketChannel {
 
-        private static final String NETWORK_RECYCLED_EXCEPTION_CLASS = "com.ibm.net.NetworkRecycledException";
 
         /**
          * Wrapper server socket inside
@@ -206,7 +206,7 @@ public class TomcatAcceptFixConfig {
         @Override
         protected void implCloseSelectableChannel() throws IOException {
             try {
-                IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE.invoke(socket);
+                IMPL_CLOSE_SELECTABLE_CHANNEL_HANDLE.invoke(socket);
             } catch (IOException | RuntimeException e) {
                 throw e;
             } catch (Throwable t) {
@@ -327,7 +327,8 @@ public class TomcatAcceptFixConfig {
 
     /**
      * The list of methods excluded from Lombok @Delegate for TcpStackAwareSocketChannel.
-     * First 14 are final methods on SocketChannel; last 6 are manually overridden.
+     * It contains methods inherited from SocketChannel that must not be delegated and
+     * read/write/close-related methods that are wrapped explicitly in this class.
      */
     private interface ExcludedSocketOps {
 
@@ -423,13 +424,9 @@ public class TomcatAcceptFixConfig {
 
         @Override
         protected void implCloseSelectableChannel() throws IOException {
-            try {
-                IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE.invoke(delegate);
-            } catch (IOException | RuntimeException e) {
-                throw e;
-            } catch (Throwable t) {
-                throw new IllegalStateException(t);
-            }
+            // SocketChannel.close() is final; it reaches this override through
+            // AbstractInterruptibleChannel.close().
+            delegate.close();
         }
 
         @Override
@@ -446,8 +443,8 @@ public class TomcatAcceptFixConfig {
         private static void safeClose(SocketChannel ch) {
             try {
                 ch.close();
-            } catch (IOException ignored) {
-                // best-effort close
+            } catch (IOException e) {
+                log.trace("Best-effort close of client socket failed", e);
             }
         }
 
