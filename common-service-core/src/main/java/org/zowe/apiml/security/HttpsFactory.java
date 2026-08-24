@@ -51,7 +51,6 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Collection;
 
-
 @Slf4j
 @Data
 public class HttpsFactory {
@@ -62,6 +61,10 @@ public class HttpsFactory {
     private KeyStore usedKeyStore = null;
     private ApimlLogger apimlLog;
     private Collection<TrustManager> trustManagers;
+
+    public HttpsFactory(HttpsConfig httpsConfig) {
+        this(httpsConfig, "0.0.0.0");
+    }
 
     public HttpsFactory(HttpsConfig httpsConfig, String address) {
         this.config = httpsConfig;
