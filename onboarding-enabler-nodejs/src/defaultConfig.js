@@ -69,10 +69,10 @@ export default {
     useLocalMetadata: false,
     preferIpAddress: false,
     circuitBreaker: {
-      enabled: true,
-      maxFailures: 5,
-      cooldownTime: 60000,
-      backoffMax: 300000,
+      enabled: true, // Set false to retain legacy setInterval scheduling.
+      maxFailures: 5, // Consecutive failures before opening the circuit.
+      cooldownTime: 60000, // Base delay in ms; first OPEN cycle uses this value.
+      backoffMax: 300000, // OPEN cooldown doubles each cycle, capped here.
     },
   },
   instance: {},

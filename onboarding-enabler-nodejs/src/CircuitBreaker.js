@@ -54,6 +54,7 @@ export default class CircuitBreaker extends EventEmitter {
     this.failureCount = 0;
     this._openedAt = null;
     this._openCycleCount = 0;
+    this._halfOpenProbeInFlight = false;
   }
 
   /** @returns {string} Current state: CLOSED, OPEN, or HALF_OPEN */
@@ -76,15 +77,17 @@ export default class CircuitBreaker extends EventEmitter {
     if (this._state === STATES.CLOSED) {
       return true;
     }
-    if (this._state === STATES.OPEN) {
-      if (this._cooldownExpired()) {
-        this._transitionTo(STATES.HALF_OPEN);
-        return true;
-      }
-      return false;
+    if (this._state === STATES.OPEN && this._cooldownExpired()) {
+      this._transitionTo(STATES.HALF_OPEN);
     }
-    // HALF_OPEN: allow probe request
-    return true;
+    if (this._state === STATES.HALF_OPEN) {
+      if (this._halfOpenProbeInFlight) {
+        return false;
+      }
+      this._halfOpenProbeInFlight = true;
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -96,6 +99,7 @@ export default class CircuitBreaker extends EventEmitter {
   recordSuccess() {
     const prevState = this._state;
     this.failureCount = 0;
+    this._halfOpenProbeInFlight = false;
     if (prevState === STATES.HALF_OPEN) {
       this._openCycleCount = 0;
       this._transitionTo(STATES.CLOSED);
@@ -115,6 +119,7 @@ export default class CircuitBreaker extends EventEmitter {
   recordFailure() {
     this.failureCount += 1;
     const prevState = this._state;
+    this._halfOpenProbeInFlight = false;
 
     // HALF_OPEN probe failure → immediately re-open with exponential delay
     if (prevState === STATES.HALF_OPEN) {
@@ -135,7 +140,7 @@ export default class CircuitBreaker extends EventEmitter {
   /**
    * Compute the cooldown/delay for the next scheduling cycle.
    * OPEN state: exponential cooldown based on openCycleCount.
-   * CLOSED state: exponential backoff based on failureCount.
+   * CLOSED state: exponential backoff based on failureCount (a single failure uses cooldownTime).
    * Both use cooldownTime as base, capped at backoffMax.
    *
    * @returns {number} Delay in milliseconds
@@ -157,6 +162,7 @@ export default class CircuitBreaker extends EventEmitter {
     this.failureCount = 0;
     this._openedAt = null;
     this._openCycleCount = 0;
+    this._halfOpenProbeInFlight = false;
   }
 
   // ---- internal ----
@@ -177,7 +183,7 @@ export default class CircuitBreaker extends EventEmitter {
     this._state = newState;
 
     if (newState === STATES.OPEN) {
-      this._openedAt = Date.now();
+      this._openedAt = performance.now();
       this._openCycleCount += 1;
       this.emit('circuitOpen', { from: oldState, to: newState });
     } else if (newState === STATES.HALF_OPEN) {
@@ -192,6 +198,6 @@ export default class CircuitBreaker extends EventEmitter {
     if (this._openedAt === null) {
       return false;
     }
-    return (Date.now() - this._openedAt) >= this._computeOpenCooldown();
+    return (performance.now() - this._openedAt) >= this._computeOpenCooldown();
   }
 }

@@ -142,7 +142,7 @@ export default class Eureka extends EventEmitter {
       vip: {},
     };
 
-    // Initialize circuit breaker
+    // Constructed even when disabled so callers can inspect or subscribe to its state.
     const cbConfig = this.config.eureka.circuitBreaker || {};
     this.circuitBreaker = new CircuitBreaker({
       maxFailures: cbConfig.maxFailures,
@@ -361,6 +361,8 @@ export default class Eureka extends EventEmitter {
         return;
       }
 
+      // Schedule after renewal completes to avoid overlapping heartbeat requests.
+      // The effective interval is heartbeatInterval plus request duration.
       this.renew((err) => {
         if (err) {
           const result = this.circuitBreaker.recordFailure();
@@ -391,8 +393,8 @@ export default class Eureka extends EventEmitter {
         callback(null);
       } else if (!error && response.statusCode === 404) {
         this.logger.warn('eureka heartbeat FAILED, Re-registering app');
-        this.register();
-        callback(null);
+        this.register(); // Registration failure is handled by the subsequent heartbeat cycle.
+        callback(null); // A 404 requires re-registration, not circuit-breaker failure.
       } else {
         if (error) {
           this.logger.error('An error in the request occured.', error);
@@ -400,7 +402,7 @@ export default class Eureka extends EventEmitter {
         this.logger.warn(
           'eureka heartbeat FAILED, will retry.' +
           `statusCode: ${response ? response.statusCode : 'unknown'}` +
-          `body: ${body} ${error | ''} `
+          `body: ${body} ${error || ''} `
         );
         callback(error || new Error(
           `Heartbeat failed: status ${response ? response.statusCode : 'unknown'}`
@@ -434,6 +436,8 @@ export default class Eureka extends EventEmitter {
         return;
       }
 
+      // Schedule after fetch completion to avoid overlapping registry requests.
+      // The effective interval is registryFetchInterval plus request duration.
       this.fetchRegistry((err) => {
         if (err) {
           const result = this.circuitBreaker.recordFailure();

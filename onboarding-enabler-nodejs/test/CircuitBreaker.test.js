@@ -99,12 +99,21 @@ describe('CircuitBreaker', () => {
       expect(breaker.state).to.equal('HALF_OPEN');
     });
 
-    it('should return true while HALF_OPEN (probe allowed)', () => {
+    it('should allow only one probe while HALF_OPEN', () => {
       for (let i = 0; i < 3; i += 1) breaker.recordFailure();
       clock.tick(10001);
-      breaker.allowRequest(); // transitions to HALF_OPEN
       expect(breaker.allowRequest()).to.be.true;
+      expect(breaker.allowRequest()).to.be.false;
       expect(breaker.state).to.equal('HALF_OPEN');
+    });
+
+    it('should allow another request after a successful HALF_OPEN probe', () => {
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      clock.tick(10001);
+      expect(breaker.allowRequest()).to.be.true;
+      breaker.recordSuccess();
+
+      expect(breaker.allowRequest()).to.be.true;
     });
 
     it('should not transition OPEN → HALF_OPEN before cooldown expires', () => {
@@ -252,6 +261,16 @@ describe('CircuitBreaker', () => {
   });
 
   describe('OPEN cooldown — exponential backoff (AC5+AC6)', () => {
+    it('should use monotonic time rather than Date.now for cooldown expiration', () => {
+      const dateNow = sinon.stub(Date, 'now').returns(0);
+      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+
+      clock.tick(10001);
+
+      expect(breaker.allowRequest()).to.be.true;
+      dateNow.restore();
+    });
+
     it('should use cooldownTime for first OPEN cycle', () => {
       for (let i = 0; i < 3; i += 1) breaker.recordFailure();
       expect(breaker._openCycleCount).to.equal(1);

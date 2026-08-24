@@ -645,6 +645,20 @@ describe('Eureka client', () => {
       }).returns(req);
       callbacks.end.apply();
     });
+
+    it('should preserve the error message in heartbeat failure logging', () => {
+      const error = new Error('connection refused');
+      const warnSpy = sinon.spy(client.logger, 'warn');
+      const requestStub = sinon.stub(client, 'eurekaRequest').callsFake((opts, callback) => {
+        callback(error, null, 'response body');
+      });
+
+      client.renew();
+
+      expect(warnSpy).to.have.been.calledWithMatch(/connection refused/);
+      requestStub.restore();
+      warnSpy.restore();
+    });
   });
 
   describe('eureka-client.yml', () => {
@@ -1693,6 +1707,21 @@ describe('Eureka client', () => {
       // Circuit is OPEN, allowRequest returns false, fetchRegistry NOT called
       expect(fetchSpy).to.not.have.been.called;
 
+      fetchSpy.restore();
+    });
+
+    it('should skip registry fetch while a HALF_OPEN probe is in flight', () => {
+      const fetchSpy = sinon.stub(client, 'fetchRegistry').callsFake((cb) => { if (cb) cb(null); });
+
+      for (let i = 0; i < 3; i += 1) client.circuitBreaker.recordFailure();
+      clock.tick(client.config.eureka.circuitBreaker.cooldownTime + 1);
+      expect(client.circuitBreaker.allowRequest()).to.be.true;
+      expect(client.circuitBreaker.state).to.equal('HALF_OPEN');
+
+      client.startRegistryFetches();
+      clock.tick(client.config.eureka.registryFetchInterval);
+
+      expect(fetchSpy).to.not.have.been.called;
       fetchSpy.restore();
     });
   });
