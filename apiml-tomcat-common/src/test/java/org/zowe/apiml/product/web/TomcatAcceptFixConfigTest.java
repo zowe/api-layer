@@ -426,30 +426,21 @@ class TomcatAcceptFixConfigTest {
         }
 
         @Test
-        void implCloseSelectableChannel_shouldDelegateCorrectly() throws IOException {
-            // Verify that the MethodHandle is invoked on the delegate
-            // Pattern matches the FixedServerSocketChannel tests
-            SocketChannel delegate = mock(SocketChannel.class);
-            SelectorProvider provider = mock(SelectorProvider.class);
-            doReturn(provider).when(delegate).provider();
-            doThrow(new IOException("close failed")).when(delegate).close();
+        void close_shouldCloseDelegate() throws IOException {
+            try (SocketChannel delegate = SocketChannel.open()) {
+                TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
+                    new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(delegate);
 
-            TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
-                new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(delegate);
+                channel.close();
 
-            // implCloseSelectableChannel uses MethodHandle which we can't mock;
-            // test via safeClose on EDC5122I read: verifies delegate.close() is called
-            ByteBuffer buf = ByteBuffer.allocate(10);
-            doThrow(new IOException("EDC5122I")).when(delegate).read(buf);
-
-            assertThrows(IOException.class, () -> channel.read(buf));
-            verify(delegate).close();
+                assertFalse(channel.isOpen());
+                assertFalse(delegate.isOpen());
+            }
         }
 
         @Test
         void implConfigureBlocking_shouldDelegateCorrectly() throws IOException {
-            SocketChannel realChannel = SocketChannel.open();
-            try {
+            try (SocketChannel realChannel = SocketChannel.open()) {
                 TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
                     new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(realChannel);
 
@@ -457,15 +448,12 @@ class TomcatAcceptFixConfigTest {
                 // configureBlocking is final and calls implConfigureBlocking + updates wrapper state
                 channel.configureBlocking(false);
                 assertFalse(channel.isBlocking());
-            } finally {
-                realChannel.close();
             }
         }
 
         @Test
         void integrationTest_registerWithSelector() throws IOException {
-            SocketChannel realChannel = SocketChannel.open();
-            try {
+            try (SocketChannel realChannel = SocketChannel.open()) {
                 TomcatAcceptFixConfig.TcpStackAwareSocketChannel channel =
                     new TomcatAcceptFixConfig().new TcpStackAwareSocketChannel(realChannel);
                 channel.configureBlocking(false);
@@ -474,8 +462,6 @@ class TomcatAcceptFixConfigTest {
                 assertFalse(channel.isBlocking());
                 // Verify validOps delegates correctly
                 assertTrue(channel.validOps() > 0);
-            } finally {
-                realChannel.close();
             }
         }
 
@@ -521,6 +507,34 @@ class TomcatAcceptFixConfigTest {
             SocketChannel result = testEp.serverSocketAccept();
             // When config is disabled, the raw socket should be returned directly (not wrapped)
             assertSame(rawSocket, result);
+        }
+
+        @Test
+        void configEnabled_wrapsAcceptedSocketChannel() throws Exception {
+            TomcatAcceptFixConfig config = new TomcatAcceptFixConfig();
+            config.retryRebindTimeoutSecs = 0;
+            config.tcpStackAwareSocketChannelEnabled = true;
+
+            SelectorProvider provider = mock(SelectorProvider.class);
+            SocketChannel rawSocket = mock(SocketChannel.class);
+            doReturn(provider).when(rawSocket).provider();
+            TestServerSocketChannel testServerSocket = spy(new TestServerSocketChannel(provider));
+            TestEndpoint testEp = spy(new TestEndpoint(testServerSocket));
+            TestProtocol testProto = spy(new TestProtocol(testEp));
+            Connector conn = new Connector(testProto);
+
+            TomcatConnectorCustomizer customizer = config.tomcatAcceptorFix();
+            customizer.customize(conn);
+            Lifecycle lifecycle = mock(Lifecycle.class);
+            doReturn(LifecycleState.STARTED).when(lifecycle).getState();
+            LifecycleEvent event = new LifecycleEvent(lifecycle, "type", "data");
+            Stream.of(conn.findLifecycleListeners()).forEach(l -> l.lifecycleEvent(event));
+
+            doReturn(rawSocket).when(testServerSocket).accept();
+
+            SocketChannel result = testEp.serverSocketAccept();
+
+            assertInstanceOf(TomcatAcceptFixConfig.TcpStackAwareSocketChannel.class, result);
         }
 
     }
