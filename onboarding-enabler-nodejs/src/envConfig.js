@@ -24,24 +24,13 @@ const ENV_MAP = [
     key: 'heartbeatInterval',
     unit: 'seconds',
   },
-  { env: 'EUREKA_CLIENT_MAXFAILURES',   
-    key: 'circuitBreaker.maxFailures'
-  },
-  { env: 'EUREKA_CLIENT_COOLDOWNTIME',  
-    key: 'circuitBreaker.cooldownTime',  
-    unit: 'seconds' 
-  },
-  { env: 'EUREKA_CLIENT_BACKOFFMAX',    
-    key: 'bcircuitBreaker.ackoffMax',    
-    unit: 'seconds' 
-  },
 ];
 
 function parsePositiveInt(envName) {
   const raw = process.env[envName];
   if (raw === undefined || raw === '') return undefined;
-  const parsed = parseInt(raw, 10);
-  if (isNaN(parsed) || parsed <= 0) {
+  const parsed = Number(raw);
+  if (!/^\d+$/.test(raw) || !Number.isSafeInteger(parsed) || parsed <= 0) {
     const msg = `Invalid value for ${envName}: "${raw}". `
       + 'Expected a positive integer. Using default.';
     logger.warn(msg);
