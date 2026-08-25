@@ -14,7 +14,7 @@ validate_caching_storage_mode() {
   storage_mode="${ZWE_components_caching_service_storage_mode:-${ZWE_configs_storage_mode}}"
 
   case "${storage_mode}" in
-    ""|[Ii][Nn][Ff][Ii][Nn][Ii][Ss][Pp][Aa][Nn]) ;;
+    [Ii][Nn][Ff][Ii][Nn][Ii][Ss][Pp][Aa][Nn]) ;;
     *) echo "API ML single service requires caching storage mode set to infinispan"; return 1 ;;
   esac
 }
