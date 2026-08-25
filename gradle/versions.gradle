@@ -97,7 +97,7 @@ dependencyResolutionManagement {
             version('swagger2Parser', '1.0.76')
             version('swagger3Parser', '2.1.47')
             version('thymeleaf', '3.1.5.RELEASE')
-            version('tomcat', '10.1.57')
+            version('tomcat', '10.1.59')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.2')
             version('jgit', '7.7.1.202607240634-r')
