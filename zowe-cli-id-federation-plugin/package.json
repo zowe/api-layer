@@ -52,11 +52,11 @@
     "@eslint/js": "9.39.5",
     "@types/jest": "29.5.14",
     "@types/node": "24.13.3",
-    "@typescript-eslint/eslint-plugin": "8.67.0",
-    "@typescript-eslint/parser": "8.67.0",
-    "@zowe/cli": "8.35.2",
-    "@zowe/cli-test-utils": "8.35.3",
-    "@zowe/imperative": "8.35.3",
+    "@typescript-eslint/eslint-plugin": "8.68.0",
+    "@typescript-eslint/parser": "8.68.0",
+    "@zowe/cli": "8.36.0",
+    "@zowe/cli-test-utils": "8.36.0",
+    "@zowe/imperative": "8.36.0",
     "copyfiles": "2.4.1",
     "env-cmd": "10.1.0",
     "eslint": "9.39.5",
@@ -82,7 +82,7 @@
     "@babel/traverse": "7.29.8"
   },
   "peerDependencies": {
-    "@zowe/imperative": "8.35.3"
+    "@zowe/imperative": "8.36.0"
   },
     "engines": {
         "npm": ">=10.9.9",
