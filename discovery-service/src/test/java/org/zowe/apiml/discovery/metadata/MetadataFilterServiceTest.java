@@ -88,7 +88,11 @@ class MetadataFilterServiceTest {
             "apiml.externalUrl, httpsBlah://localhost:8080, false, org.zowe.apiml.common.urlNotAllowed",
             "apiml.externalUrl, http://localhost:8080, false, org.zowe.apiml.common.schemeNotAllowed",
             "apiml.externalUrl, https://invalid.org:8080null, false, org.zowe.apiml.common.urlNotAllowed",
-            "apiml.externalUrl, https://localhost:8080null, true, ''"
+            "apiml.externalUrl, https://localhost:8080null, true, ''",
+            "apiml.swaggerUrl.anothersegment, https://localhost:8080, true, ''",
+            "apiml.swaggerUrl.anothersegment, https://example.com:8080, false, org.zowe.apiml.common.urlNotAllowed",
+            "apiml.swaggerUrl.anothersegment.yetanother, https://localhost:8080, true, ''",
+            "apiml.swaggerUrl.anothersegment.yetanother, https://example.com:8080, false, org.zowe.apiml.common.urlNotAllowed",
         })
         void shouldVerifyMetadataKeysAndDomains(String metadataKey, String metadataValue, boolean isAllowed, String expectedLogKey) {
             Map<String, String> metadata = new HashMap<>();
