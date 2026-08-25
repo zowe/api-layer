@@ -123,13 +123,12 @@ public class WebSecurityConfig {
 
     private static final List<String> UNAUTHENTICATED_PATTERNS = List.of(
         "/application/",
-        "/application/version",
         "/eureka/css/**",
         "/eureka/js/**",
         "/eureka/fonts/**",
         "/eureka/images/**",
-        APPLICATION_INFO,
-        "/favicon.ico");
+        "/favicon.ico"
+    );
 
     private final ServerWebExchangeMatcher discoveryPortMatcher = exchange -> exchange.getRequest().getURI().getPort() == internalDiscoveryPort ? MatchResult.match() : MatchResult.notMatch();
     private final ServerWebExchangeMatcher isInUnauthenticatedPaths = pathMatchers(UNAUTHENTICATED_PATTERNS.toArray(new String[]{}));
@@ -332,7 +331,7 @@ public class WebSecurityConfig {
 
     /**
      * Security filter chain that protects all endpoints under the path "/application/**",
-     * except for "/application/health" - which is handled separately based on the configuration - and "/application/info".
+     * except for "/application/health" - which is handled separately based on the configuration.
      * <p>
      * This chain requires that all incoming requests to the matched paths are authenticated,
      * either via Basic Authentication or Bearer JWT token.

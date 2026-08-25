@@ -467,10 +467,6 @@ public class WebSecurity {
                         authorizeExchangeSpec
                             .pathMatchers("/application/info", "/application/version", "/application/health")
                             .permitAll();
-                    } else {
-                        authorizeExchangeSpec
-                            .pathMatchers("/application/info", "/application/version")
-                            .permitAll();
                     }
                 }
             )
