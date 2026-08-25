@@ -12,6 +12,7 @@ package org.zowe.apiml.product.logging;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.spi.FilterReply;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ApimlDuplicateMessageFilterTest {
 
@@ -42,12 +44,16 @@ class ApimlDuplicateMessageFilterTest {
         }
 
         @Test
-        void whenLevelIsLowerThanLoggerEffectiveLevel_thenDeny() {
+        void whenLevelIsLowerThanLoggerEffectiveLevel_thenNeutral() {
             apimlDuplicateMessagesFilter.setAllowedRepetitions(0);
             apimlDuplicateMessagesFilter.start();
 
-            // No args
-            assertEquals(FilterReply.DENY, apimlDuplicateMessagesFilter.decide(null, logger, Level.DEBUG,
+            assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.DEBUG,
+                "Message", null, null), "Expected FilterReply.NEUTRAL");
+
+            assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
+                "Message", null, null), "Expected FilterReply.NEUTRAL");
+            assertEquals(FilterReply.DENY, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
                 "Message", null, null), "Expected FilterReply.DENY");
         }
 
@@ -64,9 +70,10 @@ class ApimlDuplicateMessageFilterTest {
             assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.WARN,
                 null, null, exception), "Expected FilterReply.NEUTRAL");
 
-            // With args
+            assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
+                null, new Object[]{1}, null), "Expected FilterReply.NEUTRAL");
             assertEquals(FilterReply.DENY, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
-                null, new Object[]{1}, null), "Expected FilterReply.DENY");
+                null, new Object[]{2}, null), "Expected FilterReply.DENY");
             assertEquals(FilterReply.DENY, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
                 null, new Object[]{1, exception}, null), "Expected FilterReply.DENY");
             assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
@@ -80,13 +87,11 @@ class ApimlDuplicateMessageFilterTest {
 
             RuntimeException exception = new RuntimeException("my exception");
 
-            // No args
             assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.WARN,
                 "", null, null), "Expected FilterReply.NEUTRAL");
             assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.ERROR,
                 "", null, exception), "Expected FilterReply.NEUTRAL");
 
-            // With args
             assertEquals(FilterReply.DENY, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
                 "", new Object[]{1}, null), "Expected FilterReply.DENY");
             assertEquals(FilterReply.DENY, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
@@ -102,7 +107,6 @@ class ApimlDuplicateMessageFilterTest {
 
             RuntimeException exception = new RuntimeException("my exception");
 
-            // No exception
             assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
                 "First Message", null, null), "Expected FilterReply.NEUTRAL");
             assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
@@ -110,7 +114,6 @@ class ApimlDuplicateMessageFilterTest {
             assertEquals(FilterReply.DENY, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
                 "First Message", new Object[0], null), "Expected FilterReply.DENY");
 
-            // With Exception
             assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
                 "Second Message", new Object[]{}, exception), "Expected FilterReply.NEUTRAL");
         }
@@ -163,6 +166,39 @@ class ApimlDuplicateMessageFilterTest {
                 assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO, "Message " + i, null, null),
                     "Expected FilterReply.NEUTRAL");
             }
+        }
+
+        @Test
+        void whenLevelProbeIsRepeated_thenNeutralAndCacheUntouched() {
+            apimlDuplicateMessagesFilter.setAllowedRepetitions(0);
+            apimlDuplicateMessagesFilter.start();
+
+            for (int i = 0; i < 3; i++) {
+                assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
+                    null, null, null), "Expected FilterReply.NEUTRAL for a repeated level probe");
+            }
+
+            assertEquals(FilterReply.NEUTRAL, apimlDuplicateMessagesFilter.decide(null, logger, Level.INFO,
+                "Message", null, null), "Expected FilterReply.NEUTRAL");
+        }
+
+        @Test
+        void whenFilterIsRegisteredInContext_thenIsEnabledChecksKeepWorking() {
+            LoggerContext context = new LoggerContext();
+            context.start();
+            apimlDuplicateMessagesFilter.setAllowedRepetitions(0);
+            apimlDuplicateMessagesFilter.setContext(context);
+            apimlDuplicateMessagesFilter.start();
+            context.addTurboFilter(apimlDuplicateMessagesFilter);
+
+            Logger guardedLogger = context.getLogger("reactor.netty.http.client.HttpClientConnect");
+            guardedLogger.setLevel(Level.DEBUG);
+
+            for (int i = 0; i < 3; i++) {
+                assertTrue(guardedLogger.isDebugEnabled(), "isDebugEnabled() must keep reporting the configured level");
+            }
+            assertTrue(context.getLogger("org.zowe.apiml.other").isInfoEnabled(),
+                "a probe on one logger must not disable another one");
         }
 
         @Test
