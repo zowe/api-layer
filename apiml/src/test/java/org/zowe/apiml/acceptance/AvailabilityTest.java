@@ -17,6 +17,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.server.i18n.FixedLocaleContextResolver;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 
@@ -32,6 +33,11 @@ import static org.hamcrest.Matchers.notNullValue;
 @AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ActiveProfiles({ "test", "ApimlModulithAcceptanceTest", "AvailabilityTest" })
+@TestPropertySource(
+    properties = {
+        "apiml.health.protected=false",
+    }
+)
 class AvailabilityTest extends AcceptanceTestWithBasePath {
 
     @ParameterizedTest(name = "{0} is available at port {1} with status {2}")
@@ -47,7 +53,7 @@ class AvailabilityTest extends AcceptanceTestWithBasePath {
             .untilAsserted(() ->
                 given()
                 .when()
-                    .get("https://localhost:" + actualPort)
+                    .get("https://localhost:" + actualPort + "/application/info")
                 .then()
                     .statusCode(expectedStatus)
                     .header("Strict-Transport-Security", notNullValue())

@@ -15,9 +15,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.Credentials;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -49,15 +52,45 @@ class VersionTest {
             void returnValidVersion(String endpoint) {
                 // Gateway request to url
                 given()
-                    .when()
+                .when()
                     .get(HttpRequestUtils.getUriFromGateway(endpoint))
-                    .then()
+                .then()
+                    .statusCode(SC_UNAUTHORIZED)
+                    .body("apiml.version", is(not(nullValue())))
+                    .body("apiml.buildNumber", is(not(nullValue())))
+                    .body("apiml.commitHash", is(not(nullValue())));
+            }
+
+        }
+
+    }
+
+    @Nested
+    class GivenAuthentication {
+
+        // TODO login
+        private static final Credentials CREDENTIALS = ConfigReader.environmentConfiguration().getCredentials();
+
+        @Nested
+        class WhenRequestingVersion {
+
+            @ParameterizedTest(name = "ReturnValidVersion {index} {0} ")
+            @MethodSource("org.zowe.apiml.functional.gateway.VersionTest#versionUrls")
+            void returnValidVersion(String endpoint) {
+                // Gateway request to url
+                given()
+                    .auth().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
+                .when()
+                    .get(HttpRequestUtils.getUriFromGateway(endpoint))
+                .then()
                     .statusCode(SC_OK)
                     .body("apiml.version", is(not(nullValue())))
                     .body("apiml.buildNumber", is(not(nullValue())))
                     .body("apiml.commitHash", is(not(nullValue())));
             }
-        }
-    }
-}
 
+        }
+
+    }
+
+}

@@ -120,7 +120,9 @@ class ActuatorConfigTest {
             "/application/gateway",
             "/application/version",
             "/application/health",
-            "/application/info"
+            "/application/info",
+            "/gateway/version",
+            "/gateway/api/v1/version"
         })
         void whenAccessDangerousActuatorWithoutCredentials_thenBlock(String endpoint) {
             given()
