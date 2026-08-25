@@ -138,6 +138,7 @@
         "yaml": "2.9.0"
     },
     "overrides": {
+        "browserslist": "4.28.8",
         "openapi-snippet": {
             "openapi-sampler": {
                 "fast-xml-parser": "5.11.0"
