@@ -50,6 +50,12 @@ public class MetadataFilterService implements InitializingBean {
 
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
     private static final String ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED = "org.zowe.apiml.common.schemeNotAllowed";
+    private static final List<String> METADATA_KEYS_TO_VERIFY = List.of(
+        "swaggerUrl",
+        "graphqlUrl",
+        "documentationUrl",
+        "externalUrl"
+    );
 
     private final Cache<String, InetAddress[]> domainToIpAddresses = Caffeine.newBuilder()
         .maximumSize(100)
@@ -247,17 +253,10 @@ public class MetadataFilterService implements InitializingBean {
     }
 
     private boolean validateMetadataEntry(String key, String value, String instanceId) {
-        var metadataKeysToVerify = List.of(
-            "swaggerUrl",
-            "graphqlUrl",
-            "documentationUrl",
-            "externalUrl");
-
-        if (metadataKeysToVerify.stream().anyMatch(metadataKey -> key.startsWith("apiml.") && key.endsWith(metadataKey))) {
-            return validateEntry(key, value, instanceId);
-        }
-        return true;
-
+        if (!key.startsWith("apiml.")) return true;
+        var segments = key.split("\\.", -1);   // -1 keeps the empty trailing segment
+        boolean sensitive = Arrays.stream(segments).anyMatch(METADATA_KEYS_TO_VERIFY::contains);
+        return !sensitive || validateEntry(key, value, instanceId);
     }
 
     private boolean verifyCorsAllowedOrigins(String allowedOrigins, String instanceId) {
