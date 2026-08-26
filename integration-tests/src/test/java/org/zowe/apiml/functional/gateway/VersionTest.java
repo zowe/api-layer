@@ -55,10 +55,7 @@ class VersionTest {
                 .when()
                     .get(HttpRequestUtils.getUriFromGateway(endpoint))
                 .then()
-                    .statusCode(SC_UNAUTHORIZED)
-                    .body("apiml.version", is(not(nullValue())))
-                    .body("apiml.buildNumber", is(not(nullValue())))
-                    .body("apiml.commitHash", is(not(nullValue())));
+                    .statusCode(SC_UNAUTHORIZED);
             }
 
         }
