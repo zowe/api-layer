@@ -55,11 +55,22 @@ class GatewayProxyTest {
 
     @Test
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
-        given().header(HEADER_X_FORWARD_TO, "apiml1")
-            .get(new URI(scgUrl)).then().statusCode(200);
-        given().header(HEADER_X_FORWARD_TO, "apiml2")
-            .get(new URI(scgUrl)).then().statusCode(200);
+        var scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
+        given()
+            .auth().preemptive().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
+            .header(HEADER_X_FORWARD_TO, "apiml1")
+        .when()
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(200);
+
+        given()
+            .auth().preemptive().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
+            .header(HEADER_X_FORWARD_TO, "apiml2")
+        .when()
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(200);
     }
 
     @Test
