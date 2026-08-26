@@ -12,7 +12,8 @@ apiml:
             verifySslCertificatesOfServices: true
         allowedDomains: localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com
     banner: console
-
+    metrics:
+        enabled: true
 spring:
     config:
         useLegacyProcessing: true
