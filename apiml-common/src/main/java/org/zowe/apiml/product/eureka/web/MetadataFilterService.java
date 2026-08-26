@@ -8,8 +8,9 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.metadata;
+package org.zowe.apiml.product.eureka.web;
 
+import ch.qos.logback.core.util.IpAddressMatcher;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Objects;
@@ -19,10 +20,10 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.web.util.matcher.IpAddressMatcher;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.net.IDN;

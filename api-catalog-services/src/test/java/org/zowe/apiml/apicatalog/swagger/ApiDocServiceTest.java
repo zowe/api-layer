@@ -37,6 +37,7 @@ import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import reactor.core.publisher.Mono;
@@ -92,6 +93,9 @@ class ApiDocServiceTest {
         @Mock
         private ClientResponse clientResponse;
 
+        @Mock
+        private MetadataFilterService metadataFilterService;
+
         private WebClient webClient;
 
         private AtomicReference<ApiInfo> lastApiInfo = new AtomicReference<>();
@@ -115,7 +119,8 @@ class ApiDocServiceTest {
                     }
                 },
                 mock(ApiDocRetrievalServiceLocal.class),
-                apiDocRetrievalServiceRest
+                apiDocRetrievalServiceRest,
+                metadataFilterService
             ) {
                 @Override
                 Mono<String> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {

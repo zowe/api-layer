@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.metadata;
+package org.zowe.apiml.product.eureka.web;
 
 import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
