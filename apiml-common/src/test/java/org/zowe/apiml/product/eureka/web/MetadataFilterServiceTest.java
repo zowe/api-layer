@@ -26,7 +26,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
