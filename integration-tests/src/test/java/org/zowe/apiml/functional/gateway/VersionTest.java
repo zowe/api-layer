@@ -68,7 +68,6 @@ class VersionTest {
     @Nested
     class GivenAuthentication {
 
-        // TODO login
         private static final Credentials CREDENTIALS = ConfigReader.environmentConfiguration().getCredentials();
 
         @Nested
