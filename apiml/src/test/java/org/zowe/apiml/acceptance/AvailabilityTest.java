@@ -43,7 +43,7 @@ class AvailabilityTest extends AcceptanceTestWithBasePath {
     @ParameterizedTest(name = "{0} is available at port {1} with status {2}")
     @CsvSource({
         "Gateway, 0, 200",
-        "Discovery, 10011, 401"
+        "Discovery, 10011, 200"
     })
     void serviceIsAvailable(String serviceName, int servicePort, int expectedStatus) {
         int actualPort = servicePort == 0 ? port : servicePort;
