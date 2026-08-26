@@ -79,7 +79,8 @@
     "typescript": "5.9.3"
   },
   "overrides": {
-    "@babel/traverse": "7.29.8"
+    "@babel/traverse": "7.29.8",
+    "browserslist": "4.28.8"
   },
   "peerDependencies": {
     "@zowe/imperative": "8.36.0"
