@@ -471,7 +471,7 @@ public class WebSecurity {
             .authorizeExchange(authorizeExchangeSpec -> {
                     if (!isHealthEndpointProtected) {
                         authorizeExchangeSpec
-                            .pathMatchers("/application/info", "/application/version", "/application/health", "/gateway/version", "/gateway/api/v1/version")
+                            .pathMatchers("/application/info", "/application/version", "/application/health", APPLICATION_VERSION_GW, APPLICATION_VERSION_GW_ROUTE)
                             .permitAll();
                     }
                 }
