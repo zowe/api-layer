@@ -14,7 +14,7 @@ dependencyResolutionManagement {
             version('springFramework', '6.2.19')
             version('springRetry', '2.0.13')
 
-            version('modulith', '1.4.12')
+            version('modulith', '1.4.13')
             version('jmolecules', '2023.3.4')
 
             version('glassfishHk2', '3.1.1')
