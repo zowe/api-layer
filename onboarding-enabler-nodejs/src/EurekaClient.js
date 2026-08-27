@@ -65,6 +65,7 @@ import ConfigClusterResolver from './ConfigClusterResolver.js';
 import DnsClusterResolver from './DnsClusterResolver.js';
 import Logger from './Logger.js';
 import defaultConfig from './defaultConfig.js';
+import envConfig from './envConfig.js';
 import https from 'https';
 
 function noop() {}
@@ -116,7 +117,7 @@ export default class Eureka extends EventEmitter {
     const envYml = getYaml(path.join(cwd, `${filename}-${env}.yml`));
 
     // apply config overrides in appropriate order
-    this.config = merge({}, defaultConfig, defaultYml, envYml, config);
+    this.config = merge({}, defaultConfig, defaultYml, envYml, envConfig(), config);
 
     // Validate the provided the values we need:
     this.validateConfig(this.config);

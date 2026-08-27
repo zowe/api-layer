@@ -60,6 +60,7 @@ import https from 'https';
 
 import Eureka from '../src/EurekaClient.js';
 import DnsClusterResolver from '../src/DnsClusterResolver.js';
+import Logger from '../src/Logger.js';
 
 chai.use(sinonChai);
 
@@ -1773,6 +1774,71 @@ describe('Eureka client', () => {
 
       expect(fetchSpy).to.not.have.been.called;
       fetchSpy.restore();
+    });
+  });
+    
+  describe('env var configuration', () => {
+    const REGISTRY_ENV = 'EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS';
+    const HEARTBEAT_ENV = 'EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS';
+
+    afterEach(() => {
+      delete process.env[REGISTRY_ENV];
+      delete process.env[HEARTBEAT_ENV];
+      sinon.restore();
+    });
+
+    it('should override registryFetchInterval from env var', () => {
+      process.env[REGISTRY_ENV] = '60';
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.registryFetchInterval).to.equal(60000);
+    });
+
+    it('should override heartbeatInterval from env var', () => {
+      process.env[HEARTBEAT_ENV] = '45';
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.heartbeatInterval).to.equal(45000);
+    });
+
+    it('should let constructor config override env var', () => {
+      process.env[REGISTRY_ENV] = '60';
+      const client = new Eureka(makeConfig({
+        eureka: { registryFetchInterval: 9999 },
+      }));
+      expect(client.config.eureka.registryFetchInterval).to.equal(9999);
+    });
+
+    it('should use default values when env var is not set', () => {
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.registryFetchInterval).to.equal(30000);
+      expect(client.config.eureka.heartbeatInterval).to.equal(30000);
+    });
+
+    it('should fall back to default on non-numeric env var', () => {
+      process.env[REGISTRY_ENV] = 'sixty';
+      const warn = sinon.spy(Logger.prototype, 'warn');
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.registryFetchInterval).to.equal(30000);
+      expect(warn).to.have.been.calledWith(sinon.match('Invalid value for EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS'));
+    });
+
+    it('should fall back to default on zero env var', () => {
+      process.env[REGISTRY_ENV] = '0';
+      const warn = sinon.spy(Logger.prototype, 'warn');
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.registryFetchInterval).to.equal(30000);
+      expect(warn).to.have.been.calledWith(sinon.match('Invalid value for EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS'));
+    });
+
+    it('should fall back to default on a decimal env var', () => {
+      process.env[REGISTRY_ENV] = '60.5';
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.registryFetchInterval).to.equal(30000);
+    });
+
+    it('should fall back to default on a scientific-notation env var', () => {
+      process.env[REGISTRY_ENV] = '1e2';
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.registryFetchInterval).to.equal(30000);
     });
   });
 });

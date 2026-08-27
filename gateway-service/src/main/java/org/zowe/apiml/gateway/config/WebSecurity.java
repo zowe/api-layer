@@ -129,12 +129,16 @@ import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 @EnableConfigurationProperties(SafSecurityConfigurationProperties.class)
 public class WebSecurity {
 
-    private static final String APPLICATION = "/application/**";
     public static final String CONTEXT_PATH = "/" + CoreService.GATEWAY.getServiceId();
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
     public static final String COOKIE_RETURN_URL = "oidc_return_url";
+
+    private static final String APPLICATION = "/application/**";
+    private static final String APPLICATION_VERSION_GW = "/gateway/version";
+    private static final String APPLICATION_VERSION_GW_ROUTE = "/gateway/api/v1/version";
+
     private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + CONTEXT_PATH + "/login/oauth2/code/([^/]+)$");
     private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
     private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
@@ -460,16 +464,14 @@ public class WebSecurity {
                 SERVICES_SHORT_URL + "/**",
                 SERVICES_FULL_URL,
                 SERVICES_FULL_URL + "/**",
-                APPLICATION
+                APPLICATION,
+                APPLICATION_VERSION_GW,
+                APPLICATION_VERSION_GW_ROUTE
             ))
             .authorizeExchange(authorizeExchangeSpec -> {
                     if (!isHealthEndpointProtected) {
                         authorizeExchangeSpec
-                            .pathMatchers("/application/info", "/application/version", "/application/health")
-                            .permitAll();
-                    } else {
-                        authorizeExchangeSpec
-                            .pathMatchers("/application/info", "/application/version")
+                            .pathMatchers("/application/info", "/application/version", "/application/health", APPLICATION_VERSION_GW, APPLICATION_VERSION_GW_ROUTE)
                             .permitAll();
                     }
                 }
