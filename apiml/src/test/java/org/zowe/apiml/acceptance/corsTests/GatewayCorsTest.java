@@ -47,6 +47,7 @@ class GatewayCorsTest {
     @Nested
     @AcceptanceTest
     @TestPropertySource(properties = {
+        "apiml.health.protected=false",
         "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org",
         "apiml.service.corsEnabled=true"
     })
