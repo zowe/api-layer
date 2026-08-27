@@ -337,12 +337,7 @@ public class ApiDocService {
         try {
             serviceInstance = new EurekaServiceInstance(metadataFilterService.verifyAllowedDomains(serviceInstance.getInstanceInfo()));
         } catch (MetadataValidationException e) {
-            log.debug("try {\n" + //
-                                "            serviceInstance = new EurekaServiceInstance(metadataFilterService.verifyAllowedDomains(serviceInstance.getInstanceInfo()));\n" + //
-                                "        } catch (MetadataValidationException e) {\n" + //
-                                "            log.debug(\"\", e);\n" + //
-                                "            throw new ApiDocNotFoundException(e.getMessage());\n" + //
-                                "        }", e);
+            log.debug("Failure validating metadata against allowed domains", e);
             throw new ApiDocNotFoundException(e.getMessage());
         }
 
