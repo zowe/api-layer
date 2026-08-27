@@ -160,9 +160,11 @@ export default class Eureka extends EventEmitter {
       this.logger.info(`Circuit breaker transition: ${from} → ${to}. Eureka requests resumed.`);
     });
 
-    // Timeout tracking for setTimeout-based scheduling
+    // Timeout tracking for circuit-breaker-managed scheduling
+    this._registrationTimeout = null;
     this._heartbeatTimeout = null;
     this._registryFetchTimeout = null;
+    this._registrationActive = false;
   }
 
   /*
@@ -203,7 +205,7 @@ export default class Eureka extends EventEmitter {
       },
       done => {
         if (this.config.eureka.registerWithEureka) {
-          return this.register(done);
+          return this.startRegistration(done);
         }
         done();
       },
@@ -242,6 +244,9 @@ export default class Eureka extends EventEmitter {
     De-registers instance with Eureka, stops heartbeats / registry fetches.
   */
   stop(callback = noop) {
+    this._registrationActive = false;
+    clearTimeout(this._registrationTimeout);
+    this._registrationTimeout = null;
     clearTimeout(this._registryFetchTimeout);
     this._registryFetchTimeout = null;
     clearTimeout(this._heartbeatTimeout);
@@ -281,7 +286,7 @@ export default class Eureka extends EventEmitter {
   /*
     Registers with the Eureka server and initializes heartbeats on registration success.
   */
-  register(callback = noop) {
+  register(callback = noop, retryEnabled = true) {
     this.config.instance.status = 'UP';
     const connectionTimeout = setTimeout(() => {
       this.logger.warn('It looks like it\'s taking a while to register with ' +
@@ -309,7 +314,51 @@ export default class Eureka extends EventEmitter {
       return callback(
         new Error(`eureka registration FAILED: status: ${response.statusCode} body: ${body}`)
       );
-    });
+    }, 0, retryEnabled);
+  }
+
+  /*
+    Registers with Eureka through the circuit breaker. Initial registration must use the
+    breaker too; otherwise an unavailable Eureka server aborts start() before the
+    breaker-managed heartbeat and registry-fetch loops begin.
+  */
+  startRegistration(callback = noop) {
+    const cbEnabled = this.config.eureka.circuitBreaker &&
+      this.config.eureka.circuitBreaker.enabled !== false;
+
+    if (!cbEnabled) {
+      this.register(callback);
+      return;
+    }
+
+    this._registrationActive = true;
+    const schedule = () => {
+      if (!this._registrationActive) return;
+
+      if (!this.circuitBreaker.allowRequest()) {
+        this._registrationTimeout = setTimeout(schedule, this.circuitBreaker.getNextCooldown());
+        return;
+      }
+
+      // Let the breaker own the retry cadence. A single registration attempt must not
+      // also use eurekaRequest's legacy linear retry loop.
+      this.register((err) => {
+        if (!this._registrationActive) return;
+
+        if (err) {
+          const result = this.circuitBreaker.recordFailure();
+          this._registrationTimeout = setTimeout(schedule, result.delay);
+          return;
+        }
+
+        this._registrationActive = false;
+        this._registrationTimeout = null;
+        this.circuitBreaker.recordSuccess();
+        callback(null);
+      }, false);
+    };
+
+    schedule();
   }
 
   /*
@@ -715,7 +764,7 @@ export default class Eureka extends EventEmitter {
     Helper method for making a request to the Eureka server. Handles resolving
     the current cluster as well as some default options.
   */
-  eurekaRequest(opts, callback, retryAttempt = 0) {
+  eurekaRequest(opts, callback, retryAttempt = 0, retryEnabled = true) {
     waterfall([
       /*
       Resolve Eureka Clusters
@@ -804,12 +853,14 @@ export default class Eureka extends EventEmitter {
         && response.statusCode
         && String(response.statusCode)[0] === '5';
 
-      if ((error || responseInvalid) && retryAttempt < this.config.eureka.maxRetries) {
+      if (
+        retryEnabled && (error || responseInvalid) && retryAttempt < this.config.eureka.maxRetries
+      ) {
         const nextRetryDelay = this.config.eureka.requestRetryDelay * (retryAttempt + 1);
         this.logger.warn(`Eureka request failed to endpoint ${requestOpts.baseUrl}, ` +
           `next server retry in ${nextRetryDelay}ms`);
 
-        setTimeout(() => this.eurekaRequest(opts, callback, retryAttempt + 1),
+        setTimeout(() => this.eurekaRequest(opts, callback, retryAttempt + 1, retryEnabled),
           nextRetryDelay);
         return;
       }

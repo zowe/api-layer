@@ -320,7 +320,13 @@ describe('Eureka client', () => {
       });
     });
 
-    it('should return error on start failure', (done) => {
+    it('should return error on start failure when circuit breaker is disabled', (done) => {
+      config = makeConfig({
+        eureka: {
+          circuitBreaker: { enabled: false },
+        },
+      });
+      client = new Eureka(config);
       registerSpy = sinon.stub(client, 'register').yields(new Error('fail'));
       fetchRegistrySpy = sinon.stub(client, 'fetchRegistry').callsArg(0);
       heartbeatsSpy = sinon.stub(client, 'startHeartbeats');
@@ -333,6 +339,50 @@ describe('Eureka client', () => {
         expect(eventSpy).to.not.have.been.called;
         done();
       });
+    });
+
+    it('should retry initial registration through the circuit breaker', () => {
+      config = makeConfig({
+        eureka: {
+          fetchRegistry: false,
+          circuitBreaker: {
+            enabled: true,
+            maxFailures: 2,
+            cooldownTime: 100,
+            backoffMax: 1000,
+          },
+        },
+      });
+      client = new Eureka(config);
+      const clock = sinon.useFakeTimers();
+      registerSpy = sinon.stub(client, 'register');
+      registerSpy.onCall(0).callsArgWith(0, new Error('Eureka unavailable'));
+      registerSpy.onCall(1).callsArgWith(0, new Error('Eureka unavailable'));
+      registerSpy.onCall(2).callsArgWith(0, null);
+      fetchRegistrySpy = sinon.stub(client, 'fetchRegistry').callsArg(0);
+      heartbeatsSpy = sinon.stub(client, 'startHeartbeats');
+      registryFetchSpy = sinon.stub(client, 'startRegistryFetches');
+      const startedSpy = sinon.spy();
+      client.on('started', startedSpy);
+
+      client.start();
+      expect(registerSpy).to.have.been.calledOnce;
+      expect(registerSpy).to.have.been.calledWithMatch(sinon.match.func, false);
+
+      clock.tick(100); // Second failure opens the circuit.
+      expect(registerSpy).to.have.been.calledTwice;
+      expect(client.circuitBreaker.state).to.equal('OPEN');
+
+      clock.tick(99); // OPEN: no registration attempt before cooldown expiry.
+      expect(registerSpy).to.have.been.calledTwice;
+
+      clock.tick(1); // HALF_OPEN probe succeeds and startup continues.
+      expect(registerSpy).to.have.been.calledThrice;
+      expect(client.circuitBreaker.state).to.equal('CLOSED');
+      expect(heartbeatsSpy).to.have.been.calledOnce;
+      expect(startedSpy).to.have.been.calledOnce;
+      expect(client._registrationTimeout).to.be.null;
+      clock.restore();
     });
   });
 
