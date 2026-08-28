@@ -185,7 +185,7 @@ class ZosmfAuthenticationProviderTest {
         Exception exception = assertThrows(BadCredentialsException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
             "Expected exception is not BadCredentialsException");
-        assertEquals("Invalid Credentials", exception.getMessage());
+        assertEquals("JWT and LTPA tokens are missing", exception.getMessage());
     }
 
     @Test
@@ -294,7 +294,7 @@ class ZosmfAuthenticationProviderTest {
         Exception exception = assertThrows(BadCredentialsException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
             "Expected exception is not BadCredentialsException");
-        assertEquals("Invalid Credentials", exception.getMessage());
+        assertEquals("JWT and LTPA tokens are missing", exception.getMessage());
     }
 
     @Test

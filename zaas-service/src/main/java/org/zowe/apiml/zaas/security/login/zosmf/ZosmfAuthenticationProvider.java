@@ -59,7 +59,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         try {
             ar = zosmfService.authenticate(authentication);
         } catch (TokenNotValidException e) {
-            throw new BadCredentialsException("Invalid Credentials");
+            throw new BadCredentialsException("Token not valid", e);
         }
         if (( authConfigurationProperties.getZosmf().getJwtAutoconfiguration() != AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.LTPA )) {
             if (ar.getTokens().containsKey(JWT)) {
@@ -75,7 +75,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             }
         }
       //   JWT and LTPA tokens are missing, authentication was wrong
-        throw new BadCredentialsException("Invalid Credentials");
+        throw new BadCredentialsException("JWT and LTPA tokens are missing");
     }
 
     public TokenAuthentication getZosmfJwtToken(String user, ZosmfService.AuthenticationResponse ar) {
