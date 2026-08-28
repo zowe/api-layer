@@ -12,7 +12,7 @@ package org.zowe.apiml.gateway.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
@@ -27,9 +27,9 @@ import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
 import static org.springframework.boot.actuate.health.Status.UP;
@@ -42,7 +42,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
 @Component
 @ConditionalOnMissingBean(name = "modulithConfig")
 @Slf4j
-public class GatewayHealthIndicator extends AbstractHealthIndicator {
+public class GatewayHealthIndicator extends AbstractHealthIndicator implements InitializingBean {
 
     private static final String ZWE_DISCOVERY_SERVICES_LIST = "ZWE_DISCOVERY_SERVICES_LIST";
 
@@ -52,15 +52,27 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
+    private AtomicBoolean startedHaInformationPublished = new AtomicBoolean(false);
     private AtomicBoolean applicationReady = new AtomicBoolean(false);
 
-    private final int expectedInstanceCount;
+    private AtomicInteger gatewayCount = new AtomicInteger(0);
+    private AtomicInteger zaasCount = new AtomicInteger(0);
+    private AtomicInteger discoveryCount = new AtomicInteger(0);
+
+    private int expectedInstanceCount;
 
     public GatewayHealthIndicator(DiscoveryClient discoveryClient,
                                   @Value("${apiml.catalog.serviceId:}") String apiCatalogServiceId) {
         this.discoveryClient = discoveryClient;
         this.apiCatalogServiceId = apiCatalogServiceId;
-        this.expectedInstanceCount = Optional.ofNullable(System.getenv(ZWE_DISCOVERY_SERVICES_LIST)).map(list -> Arrays.stream(list.split(",")).count()).orElse(1L).intValue();
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        this.expectedInstanceCount = Optional.ofNullable(System.getenv(ZWE_DISCOVERY_SERVICES_LIST))
+            .map(discoveryServicesList -> discoveryServicesList.split(","))
+            .map(i -> i.length)
+            .orElse(1);
     }
 
     @Override
@@ -73,9 +85,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         var discoveryUp = !this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).isEmpty();
         var zaasUp = !this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).isEmpty();
 
-        var gatewayCount = this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
-        var discoveryCount = this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).size();
-        var zaasCount = this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size();
+        refreshInstanceCounts();
 
         builder.status(toStatus(discoveryUp))
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryUp).getCode())
@@ -89,14 +99,17 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
 
         // check number of instances (non-modulith)
         if (discoveryUp && apiCatalogUp && zaasUp && applicationReady.get()) {
-            var instancesCount = NumberUtils.max(gatewayCount, zaasCount, discoveryCount);
-            if (instancesCount > 1 && (gatewayCount != discoveryCount || gatewayCount != zaasCount)) {
-                log.debug("instancesCount: {}, gatewayCount: {}, zaasCount: {}, discoveryCount: {}", instancesCount, gatewayCount, zaasCount, discoveryCount);
-                return;
-            }
-
             onFullyUp();
         }
+        if (isFullyHaUp()) {
+            onFullyHaUp();
+        }
+    }
+
+    private void refreshInstanceCounts() {
+        gatewayCount.compareAndSet(expectedInstanceCount, this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size());
+        discoveryCount.compareAndSet(expectedInstanceCount, this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).size());
+        zaasCount.compareAndSet(expectedInstanceCount, this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size());
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -107,6 +120,22 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private void onFullyUp() {
         if (startedInformationPublished.compareAndSet(false, true)) {
             apimlLog.log("org.zowe.apiml.common.mediationLayerStarted");
+        }
+    }
+
+    private boolean isFullyHaUp() {
+        if (expectedInstanceCount > 1) {
+            refreshInstanceCounts();
+            return expectedInstanceCount == gatewayCount.get()
+                && expectedInstanceCount == zaasCount.get()
+                && expectedInstanceCount == discoveryCount.get();
+        }
+        return false;
+    }
+
+    private void onFullyHaUp() {
+        if (startedHaInformationPublished.compareAndSet(false, true)) {
+            apimlLog.log("null");
         }
     }
 
