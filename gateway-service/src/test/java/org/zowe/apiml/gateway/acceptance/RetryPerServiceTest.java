@@ -158,7 +158,8 @@ class RetryPerServiceTest {
         @MockitoSpyBean
         private ReactiveDiscoveryClient reactiveDiscoveryClient;
 
-        private AtomicInteger counter = new AtomicInteger(0);
+        private AtomicInteger queryCounter = new AtomicInteger(0);
+        private AtomicInteger loginCounter = new AtomicInteger(0);
 
         @BeforeAll
         void setup() {
@@ -167,12 +168,13 @@ class RetryPerServiceTest {
                     .responseCode(204)
                     .assertion(he -> assertEquals("Basic dXNlcjpwYXNz", he.getRequestHeaders().getFirst(HttpHeaders.AUTHORIZATION)))
                     .assertion(he -> assertEquals("POST", he.getRequestMethod()))
+                    .assertion(he -> loginCounter.incrementAndGet())
                     .and()
                 .addEndpoint("/zaas/api/v1/auth/query")
                     .responseCode(200)
                     .assertion(he -> {
                         assertNotNull(he);
-                        counter.incrementAndGet();
+                        queryCounter.incrementAndGet();
                     })
                     .contentType(APPLICATION_JSON)
                     .body("{\"status\":\"valid\"}")
@@ -194,7 +196,7 @@ class RetryPerServiceTest {
         }
 
         @Test
-        void whenOneZaasUnresponsive_thenQueryDoesNotFail() {
+        void whenTwoZaasUnresponsive_thenQueryDoesNotFail() {
             var token = login();
 
             // 2 out of 3 instances will fail
@@ -221,8 +223,32 @@ class RetryPerServiceTest {
                     .statusCode(SC_OK);
             }
 
-            assertEquals(50, counter.get());
+            assertEquals(50, queryCounter.get());
+        }
 
+        @Test
+        void whenTwoZaasUnresponsive_thenLoginDoesNotFail() {
+            // 2 out of 3 instances will fail
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
+                .thenReturn(List.of(
+                    buildZaasInfo(randomPort()),
+                    buildZaasInfo(zaasService.getPort()),
+                    buildZaasInfo(randomPort())
+                ));
+
+            when(reactiveDiscoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
+                .thenReturn(Flux.just(
+                    buildZaasInfo(randomPort()),
+                    buildZaasInfo(zaasService.getPort()),
+                    buildZaasInfo(randomPort())
+                ));
+
+            System.out.println("test");
+            for (int i = 0; i < 50; i ++) {
+                login();
+            }
+
+            assertEquals(50, loginCounter.get());
         }
 
         private int randomPort() {
