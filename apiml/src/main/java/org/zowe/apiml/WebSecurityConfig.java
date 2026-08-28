@@ -34,11 +34,13 @@ import org.springframework.security.web.server.ServerAuthenticationEntryPoint;
 import org.springframework.security.web.server.authentication.HttpStatusServerEntryPoint;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 import org.springframework.security.web.server.authorization.AuthorizationContext;
+import org.springframework.security.web.server.header.XFrameOptionsServerHttpHeadersWriter;
 import org.springframework.security.web.server.util.matcher.AndServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.OrServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.filter.*;
 import org.zowe.apiml.gateway.filters.security.AuthExceptionHandlerReactive;
@@ -723,4 +725,23 @@ public class WebSecurityConfig {
             .build();
     }
 
+    @Bean
+    @Order(0)
+    SecurityWebFilterChain apiCatalogUiSecurityFilterChain(ServerHttpSecurity http) {
+        return http
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
+                "/apicatalog/ui/v1/**",
+                "/apicatalog/ui/v1/index.html"
+            ))
+            .csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .headers(headers -> headers
+                .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
+                .writer(new CustomHstsServerHttpHeadersWriter())
+                .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN))
+                .contentSecurityPolicy(csp -> csp
+                    .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self';")                )
+            )
+            .authorizeExchange(exchanges -> exchanges.anyExchange().permitAll())
+            .build();
+    }
 }
