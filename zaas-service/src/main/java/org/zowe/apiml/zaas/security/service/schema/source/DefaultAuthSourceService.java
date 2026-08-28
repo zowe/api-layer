@@ -137,18 +137,6 @@ public class DefaultAuthSourceService implements AuthSourceService {
     }
 
     /**
-     * Delegates the generation of the LTPA token based on the authentication source to a corresponding service.
-     *
-     * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token, client certificate etc.)
-     * @return LPTA token
-     */
-    @Override
-    public String getLtpaToken(AuthSource authSource) {
-        AuthSourceService service = getService(authSource);
-        return service != null ? service.getLtpaToken(authSource) : null;
-    }
-
-    /**
      * Choose a service to process authentication source from the map of available services.
      *
      * @param authSource {@link AuthSource} object which hold original source of authentication (JWT token, client certificate etc.)

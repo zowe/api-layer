@@ -43,7 +43,7 @@ class CorsUtilsTest {
     class GivenCorsEnabled {
 
         @Nested
-        class givenDefaultCorsAllowedMethods {
+        class GivenDefaultCorsAllowedMethods {
 
             private CorsUtils corsUtils;
 
@@ -132,9 +132,9 @@ class CorsUtilsTest {
         @Test
         void registerEmptyDefaultConfig() {
             corsUtils.registerDefaultCorsConfiguration((path, configuration) -> {
-                    assertEquals(List.of("https://localhost3:10010"), configuration.getAllowedOrigins());
-                    assertEquals(List.of("*"), configuration.getAllowedHeaders());
-                    assertEquals(List.of("GET", "HEAD"), configuration.getAllowedMethods());
+                    assertNull(configuration.getAllowedOrigins());
+                    assertNull(configuration.getAllowedHeaders());
+                    assertNull(configuration.getAllowedMethods());
                 }
             );
         }

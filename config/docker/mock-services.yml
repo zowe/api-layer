@@ -1,8 +1,8 @@
 server:
     address: 0.0.0.0
     ssl:
-        keyStore: /docker/server-only.p12
-        trustStore: /docker/all-services.truststore.p12
+        keyStore: /service/server-only.p12
+        trustStore: /service/service.truststore.p12
 
 zosmf:
-    jwtKeyStorePath: /docker/all-services.keystore.p12
+    jwtKeyStorePath: /service/service.keystore.p12

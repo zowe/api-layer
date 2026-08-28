@@ -75,9 +75,9 @@ class CategorizeCertsWebFilterTest {
 
     @BeforeAll
     static void init() throws Exception {
-        gatewayCert = loadCertificateFromKeystore("localhost", "localhost/localhost.keystore.p12");
-        clientCert = loadCertificateFromKeystore("apimtst", "client_cert/client-certs.p12");
-        headerCert = loadCertificateFromKeystore("user", "client_cert/client-certs.p12");
+        gatewayCert = loadCertificateFromKeystore("localhost", "service/service.keystore.p12");
+        clientCert = loadCertificateFromKeystore("apimtst", "client/client-certs.p12");
+        headerCert = loadCertificateFromKeystore("user", "client/client-certs.p12");
 
     }
 

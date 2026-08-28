@@ -16,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.client.ResourceAccessException;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
-import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Parsed;
@@ -50,22 +49,13 @@ class X509AuthSourceServiceTest {
 
         TokenCreationService tokenCreationService;
         X509AuthSourceService service;
-        AuthenticationService authenticationService;
         AuthenticationMapper mapper;
 
         @BeforeEach
         void setup() {
-            authenticationService = mock(AuthenticationService.class);
             tokenCreationService = mock(TokenCreationService.class);
             mapper = mock(AuthenticationMapper.class);
-            service = new X509AuthSourceService(mapper, tokenCreationService, authenticationService);
-        }
-
-        @Test
-        void givenX509Source_returnNullLtpa() {
-
-            X509AuthSource source = new X509AuthSource(null);
-            assertThrows(AuthSchemeException.class, () -> service.getLtpaToken(source));
+            service = new X509AuthSourceService(mapper, tokenCreationService);
         }
 
         @Test
@@ -88,7 +78,7 @@ class X509AuthSourceServiceTest {
         @BeforeEach
         void init() {
             mapper = mock(AuthenticationMapper.class);
-            serviceUnderTest = spy(new X509AuthSourceService(mapper, null, null));
+            serviceUnderTest = spy(new X509AuthSourceService(mapper, null));
         }
 
         @Nested
@@ -113,11 +103,6 @@ class X509AuthSourceServiceTest {
             void whenParse_thenNull() {
                 assertNull(serviceUnderTest.parse(null));
                 verifyNoInteractions(mapper);
-            }
-
-            @Test
-            void whenGetLTPA_thenNull() {
-                assertNull(serviceUnderTest.getLtpaToken(null));
             }
 
         }

@@ -1,6 +1,4 @@
 # for back-compatibility
-spring.profiles.group.attls: attlsServer,attlsClient
-
 eureka:
     dashboard:
         path: /eureka
@@ -18,6 +16,10 @@ eureka:
         useReadOnlyResponseCache: false
         peer-node-read-timeout-ms: 15000
 spring:
+    profiles:
+        group:
+            attls: attlsServer,attlsClient
+            debug-control: debug
     cloud:
         gateway:
             server:
@@ -192,7 +194,6 @@ apiml:
         apimlId: apiml1
         corsEnabled: true
         corsAllowedEndpoints: /gateway/**,/apicatalog/**,/cachingservice/**,/v3/api-docs/**
-        allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
         hostname: localhost
@@ -205,6 +206,8 @@ apiml:
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
+        csrf:
+            preserveOriginForCrossSite: true
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
@@ -240,6 +243,8 @@ apiml:
             urls:
                 authenticate: https://${apiml.service.hostname}:10013/zss/saf/authenticate
                 verify: https://${apiml.service.hostname}:10013/zss/saf/verify
+        secFetch:
+            enabled: true
     health:
         protected: true
     webClientConfig.enabled: true
@@ -252,10 +257,10 @@ server:
         clientAuth: want
         keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
     max-http-request-header-size: 48000
@@ -317,7 +322,6 @@ logging:
         javax.net.ssl: ERROR
         org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
         org.ehcache: WARN
         org.springframework: WARN
         org.springframework.beans: WARN
@@ -356,7 +360,6 @@ logging:
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
         org.infinispan: DEBUG
         org.jgroups: TRACE
         org.jgroups.protocols: ERROR
@@ -380,11 +383,24 @@ logging:
 management:
     endpoint:
         gateway:
-            access: unrestricted
+            access: read-only
+        loggers:
+            access: read-only
     endpoints:
         web:
             exposure:
                 include: health,info,gateway,loggers
+
+---
+spring.config.activate.on-profile: debug-control
+
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+        loggers:
+            access: unrestricted
+
 ---
 spring.config.activate.on-profile: wiretap
 

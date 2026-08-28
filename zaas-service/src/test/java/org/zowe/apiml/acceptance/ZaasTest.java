@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.util.JWTTestUtils;
@@ -32,10 +33,16 @@ import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 
-@SpringBootTest(classes = ZaasApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@TestPropertySource(properties = {
-    "apiml.security.auth.provider=dummy" // To simulate SAF auth provider that does not run outside of mainframe
-})
+@SpringBootTest(
+    classes = ZaasApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
+@TestPropertySource(
+    properties = {
+        "apiml.security.auth.provider=dummy" // To simulate SAF auth provider that does not run outside of mainframe
+    }
+)
+@ActiveProfiles("test")
 class ZaasTest {
 
     private static final String COOKIE = "apimlAuthenticationToken";

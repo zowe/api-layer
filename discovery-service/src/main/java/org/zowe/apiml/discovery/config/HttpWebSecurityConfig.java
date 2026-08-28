@@ -12,9 +12,6 @@ package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -39,7 +36,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.zowe.apiml.security.common.config.HandlerInitializer;
 import org.zowe.apiml.security.common.content.BasicContentFilter;
 
-import java.util.Arrays;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collections;
 
 /**
@@ -116,44 +115,64 @@ public class HttpWebSecurityConfig extends AbstractWebSecurityConfigurer {
         }
     }
 
-    @RequiredArgsConstructor
     static class EurekaBasicAuthenticationProvider implements AuthenticationProvider {
 
-        private final String discoveryUserid;
-        private final char[] discoveryPassword;
+        private final boolean discoveryCredentialsProvider;
+        private final byte[] discoveryUserid;
+        private final byte[] discoveryPassword;
 
         private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
 
-        private boolean isCredentialsSet() {
-            if (!StringUtils.isEmpty(discoveryUserid) && !ArrayUtils.isEmpty(discoveryPassword)) {
-                return true;
-            }
+        EurekaBasicAuthenticationProvider(String discoveryUserid, char[] discoveryPassword) {
+            this.discoveryUserid = getBytes(discoveryUserid);
+            this.discoveryPassword = getBytes(discoveryPassword);
 
-            log.warn("Eureka credentials are not set. Please configure properties `apiml.discovery.userid` and `apiml.discovery.password` or change type of Eureka authentication.");
-            return false;
+            discoveryCredentialsProvider = (this.discoveryUserid.length > 0) && (this.discoveryPassword.length > 0);
+            if (!discoveryCredentialsProvider) {
+                log.warn("Eureka credentials are not set. Please configure properties `apiml.discovery.userid` and `apiml.discovery.password` or change type of Eureka authentication.");
+            }
         }
 
-        private char[] getPassword(Authentication authentication) {
-            if (authentication.getCredentials() instanceof char[]) {
-                return (char[]) authentication.getCredentials();
-            }
-            return String.valueOf(authentication.getCredentials()).toCharArray();
+        private boolean isValid(Authentication authentication) {
+            var userId = getUser(authentication);
+            var userMatching = MessageDigest.isEqual(userId, discoveryUserid);
+
+            var password = getPassword(authentication);
+            var passwordMatching = MessageDigest.isEqual(password, discoveryPassword);
+
+            return discoveryCredentialsProvider && userMatching && passwordMatching;
         }
 
-        private String getUser(Authentication authentication) {
-            if (authentication.getCredentials() == null) {
-                return null;
+        static byte[] getBytes(Object obj) {
+            if (obj == null) {
+                return new byte[0];
             }
-            return String.valueOf(authentication.getPrincipal());
+            if (obj instanceof byte[] bytes) {
+                return bytes;
+            }
+            if (obj instanceof char[] chars) {
+                var byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(chars));
+                var bytes = new byte[byteBuffer.limit()];
+                byteBuffer.get(bytes);
+                return bytes;
+            }
+            if (obj instanceof String string) {
+                return string.getBytes(StandardCharsets.UTF_8);
+            }
+            return String.valueOf(obj).getBytes(StandardCharsets.UTF_8);
+        }
+
+        private byte[] getPassword(Authentication authentication) {
+            return getBytes(authentication.getCredentials());
+        }
+
+        private byte[] getUser(Authentication authentication) {
+            return getBytes(authentication.getPrincipal());
         }
 
         @Override
         public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-            if (
-                isCredentialsSet() &&
-                    Strings.CS.equals(discoveryUserid, getUser(authentication)) &&
-                    Arrays.equals(discoveryPassword, getPassword(authentication))
-            ) {
+            if (isValid(authentication)) {
                 UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
                     authentication.getPrincipal(),
                     authentication.getCredentials(),

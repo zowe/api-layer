@@ -62,6 +62,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
@@ -79,13 +80,18 @@ class AttlsConfigTest {
     }
 
     @Nested
-    @ActiveProfiles({"attlsClient", "attlsServer"})
+    @ActiveProfiles({"test", "attlsClient", "attlsServer"})
     @DirtiesContext
     @SpringBootTest(
         classes = ApimlApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     @TestInstance(Lifecycle.PER_CLASS)
+    @TestPropertySource(
+        properties = {
+            "apiml.health.protected=false"
+        }
+    )
     class GivenAttlsProfile {
 
         @LocalServerPort
@@ -156,6 +162,7 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
+            "apiml.health.protected=false",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
@@ -163,7 +170,7 @@ class AttlsConfigTest {
             "server.ssl.keyStore="
         }
     )
-    @ActiveProfiles({"attlsServer", "attlsClient", "ApimlModulithAcceptanceTest"})
+    @ActiveProfiles({"test", "attlsServer", "attlsClient", "ApimlModulithAcceptanceTest"})
     @DirtiesContext
     @SpringBootTest(
         classes = {
@@ -204,7 +211,9 @@ class AttlsConfigTest {
             .when()
                 .get(getGatewayUrlWithPath(hostname, port, "http", "application/version"))
             .then()
-                .statusCode(SC_OK);
+                .log().all()
+                .statusCode(SC_OK)
+                .header("Strict-Transport-Security", notNullValue());
             //@formatter:on
             verify(apimlTomcatCustomizer, times(1)).customize(any());
             verify(attlsHttpHandler, times(1)).postProcessAfterInitialization(any(HttpHandler.class), any());
