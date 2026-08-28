@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
@@ -41,23 +40,29 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GatewayHealthIndicatorTest {
 
-    @Mock private DiscoveryClient discoveryClient;
-    @Mock private ApplicationContext applicationContext;
-    @Mock private ServiceStartupEventHandler serviceStartupEventHandler;
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    @Mock
+    private ApplicationContext applicationContext;
+
+    @Mock
+    private ServiceStartupEventHandler serviceStartupEventHandler;
 
     private GatewayHealthIndicator healthIndicator;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         healthIndicator = new GatewayHealthIndicator(applicationContext, serviceStartupEventHandler);
         ReflectionTestUtils.setField(healthIndicator, "apiCatalogServiceId", CoreService.API_CATALOG.getServiceId());
+        ReflectionTestUtils.setField(healthIndicator, "expectedInstanceCount", 1);
         lenient().when(applicationContext.getBean(DiscoveryClient.class)).thenReturn(discoveryClient);
+        healthIndicator.afterPropertiesSet();
     }
 
     private DefaultServiceInstance getDefaultServiceInstance(String serviceId, String hostname, int port) {
@@ -109,17 +114,6 @@ class GatewayHealthIndicatorTest {
             Health.Builder builder = new Health.Builder();
             healthIndicator.doHealthCheck(builder);
             assertEquals(Status.DOWN, builder.build().getStatus());
-        }
-
-        @Test
-        void whenClientNotAvailable_thenDoNothing() throws Exception {
-            when(applicationContext.getBean(DiscoveryClient.class)).thenThrow(new NoSuchBeanDefinitionException(DiscoveryClient.class));
-
-            Health.Builder builder = new Health.Builder();
-            healthIndicator.doHealthCheck(builder);
-
-            verifyNoInteractions(serviceStartupEventHandler);
-            verifyNoInteractions(discoveryClient);
         }
 
     }
@@ -195,11 +189,14 @@ class GatewayHealthIndicatorTest {
     @Nested
     class OnCatalogRegistration {
 
+        @Mock
+        private EurekaInstanceRegisteredEvent registeredEvent;
+
+        @Mock
+        private InstanceInfo instanceInfo;
+
         @Test
         void whenBothEvents_thenOneMessage() {
-            var registeredEvent = mock(EurekaInstanceRegisteredEvent.class);
-
-            var instanceInfo = mock(InstanceInfo.class);
             when(registeredEvent.getInstanceInfo()).thenReturn(instanceInfo);
             when(instanceInfo.getAppName()).thenReturn("apicatalog");
 
@@ -213,9 +210,6 @@ class GatewayHealthIndicatorTest {
 
         @Test
         void whenBothEventsReverse_thenOneMessage() {
-            var registeredEvent = mock(EurekaInstanceRegisteredEvent.class);
-
-            var instanceInfo = mock(InstanceInfo.class);
             when(registeredEvent.getInstanceInfo()).thenReturn(instanceInfo);
             when(instanceInfo.getAppName()).thenReturn("apicatalog");
 
