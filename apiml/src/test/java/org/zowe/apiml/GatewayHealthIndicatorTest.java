@@ -223,4 +223,19 @@ class GatewayHealthIndicatorTest {
 
     }
 
+    @Nested
+    class OnHAScenarios {
+
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(healthIndicator, "expectedInstanceCount", 2);
+        }
+
+        @Test
+        void given() {
+
+        }
+
+    }
+
 }
