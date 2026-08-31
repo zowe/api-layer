@@ -97,4 +97,5 @@ public class SpringSecurityConfig {
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("cachingUser", "", Collections.emptyList());
     }
+
 }

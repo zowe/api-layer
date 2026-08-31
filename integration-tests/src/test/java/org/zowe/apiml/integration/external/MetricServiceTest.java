@@ -46,4 +46,5 @@ class MetricServiceTest {
             .then()
             .body("name", hasItems("GATEWAY", "DISCOVERY","APICATALOG"));
     }
+
 }

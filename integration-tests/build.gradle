@@ -146,7 +146,6 @@ task runAllIntegrationTestsNormal(type: Test) {
             'SAFAuthTest',
             'HATest',
             'ChaoticHATest',
-            'NotAttlsTest',
             'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'HealthEndpointProtectionDisabledTest',

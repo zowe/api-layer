@@ -175,26 +175,26 @@ spring:
 logging:
     level:
         ROOT: INFO
-        org.jgroups: TRACE
-        org.zowe.apiml: DEBUG
-        org.zowe.apiml.enable: DEBUG
-        org.zowe.apiml.caching: DEBUG
-        org.springframework: DEBUG
-        org.springframework.context: DEBUG
-        org.springframework.beans: DEBUG
-        org.apache: INFO
-        org.apache.http: DEBUG
-        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
         com.netflix: INFO
-        org.hibernate: INFO
-        org.springframework.web.servlet.PageNotFound: WARN
-        org.ehcache: INFO
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         com.netflix.discovery.shared.transport.decorator: DEBUG
-        org.apache.tomcat: DEBUG
+        org.apache: INFO
         org.apache.catalina: DEBUG
         org.apache.coyote.http11.Http11InputBuffer: TRACE
+        org.apache.http: DEBUG
+        org.apache.tomcat: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
+        org.ehcache: INFO
+        org.hibernate: INFO
         org.infinispan: DEBUG
+        org.jgroups: TRACE
+        org.springframework: DEBUG
+        org.springframework.beans: DEBUG
+        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
+        org.springframework.context: DEBUG
+        org.springframework.web.servlet.PageNotFound: WARN
+        org.zowe.apiml: DEBUG
+        org.zowe.apiml.caching: DEBUG
+        org.zowe.apiml.enable: DEBUG
 
 ---
 spring:

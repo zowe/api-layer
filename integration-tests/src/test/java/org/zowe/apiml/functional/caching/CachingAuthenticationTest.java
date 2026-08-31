@@ -85,9 +85,9 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
         @MethodSource("org.zowe.apiml.functional.caching.CachingAuthenticationTest#publicUrls")
         void publicEndpointIsAccessible(String endpoint) {
             given()
-                .when()
+            .when()
                 .get(caching_url + endpoint)
-                .then()
+            .then()
                 .statusCode(HttpStatus.OK.value());
         }
 
@@ -96,9 +96,9 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
             given()
                 .config(SslContext.selfSignedUntrusted)
                 .header(CERT_HEADER_NAME, "value")
-                .when()
+            .when()
                 .get(caching_url + CACHING_PATH)
-                .then()
+            .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
         }
 
@@ -106,50 +106,53 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
         void givenNoCertificateAndHeader_cachingApiEndpointsAreInaccessible() {
             given()
                 .header(CERT_HEADER_NAME, "value")
-                .when()
+            .when()
                 .get(caching_url + CACHING_PATH)
-                .then()
+            .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
-        }
-
-        @Test
-        void givenCertificateButNoHeader_cachingApiEndpointsAreInaccessible() {
-
-            given()
-                .config(SslContext.clientCertApiml)
-                .when()
-                .get(caching_url + CACHING_PATH)
-                .then()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
 
         @Test
         void givenNoCertificateAndNoHeader_cachingApiEndpointsAreInaccessible() {
             given()
-                .when()
+            .when()
                 .get(caching_url + CACHING_PATH)
-                .then()
+            .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
         }
+
+        @Test
+        void givenCertificateButNoHeader_cachingApiEndpointsIsNotAccessible() {
+            given()
+                .config(SslContext.clientCertApiml)
+            .when()
+                .get(caching_url + CACHING_PATH)
+            .then()
+                .statusCode(HttpStatus.UNAUTHORIZED.value());
+        }
+
     }
 
     @Nested
     class WhenCalledWithValidAuthentication {
+
+
         @Test
         void cachingApiEndpointsAccessible() {
             given()
                 .config(SslContext.clientCertApiml)
                 .header(CLIENT_CERT_HEADER, clientCertValue)
-                .when()
+            .when()
                 .get(caching_url + CACHING_PATH)
-                .then()
+            .then()
                 .statusCode(HttpStatus.OK.value());
         }
-    }
 
+    }
 
     private void clearSsl() {
         RestAssured.config = RestAssured.config().sslConfig(SSLConfig.sslConfig());
         RestAssured.useRelaxedHTTPSValidation();
     }
+
 }
