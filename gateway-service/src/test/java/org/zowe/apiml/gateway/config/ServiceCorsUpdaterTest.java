@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway.config;
 
-import org.apache.logging.log4j.util.TriConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,14 +29,19 @@ import org.zowe.apiml.util.CorsUtils;
 import reactor.core.publisher.Flux;
 import reactor.test.StepVerifier;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class ServiceCorsUpdaterTest {
@@ -46,7 +50,13 @@ class ServiceCorsUpdaterTest {
     private static final String APIML_ID = "apimlid";
 
     List<String> allowedEndpoints = List.of("/gateway/**");
-    private CorsUtils corsUtils = spy(new CorsUtils(true, List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"), allowedEndpoints));
+    private CorsUtils corsUtils = spy(CorsUtils.builder()
+        .gatewayCorsEnabled(true)
+        .defaultAllowedCorsHttpMethods(List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS"))
+        .corsAllowedEndpoints(allowedEndpoints)
+        .defaultAllowedCorsHeaders(List.of("*"))
+        .defaultAllowedCorsOrigins(Collections.emptyList())
+        .build());
 
     @Mock
     private ReactiveDiscoveryClient discoveryClient;
@@ -79,7 +89,7 @@ class ServiceCorsUpdaterTest {
     }
 
     @SuppressWarnings("unchecked")
-    private TriConsumer<String, String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
+    private BiConsumer<String, CorsConfiguration> getCorsLambda(Consumer<Map<String, String>> metadataProcessor) {
         var serviceInstance = createServiceInstance(SERVICE_ID);
         metadataProcessor.accept(serviceInstance.getMetadata());
 
@@ -87,7 +97,7 @@ class ServiceCorsUpdaterTest {
 
         StepVerifier.create(serviceCorsUpdater.onRefreshRoutesEvent(new RefreshRoutesEvent(this)))
             .verifyComplete();
-        ArgumentCaptor<TriConsumer<String, String, CorsConfiguration>> lambdaCaptor = ArgumentCaptor.forClass(TriConsumer.class);
+        var lambdaCaptor = ArgumentCaptor.forClass(BiConsumer.class);
         verify(corsUtils).setCorsConfiguration(anyString(), any(), lambdaCaptor.capture());
 
         return lambdaCaptor.getValue();
@@ -95,19 +105,19 @@ class ServiceCorsUpdaterTest {
 
     @Test
     void givenApimlId_whenSetCors_thenServiceIdIsReplacedWithApimlId() {
-        TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> md.put(EurekaMetadataDefinition.APIML_ID, APIML_ID));
+        var corsLambda = getCorsLambda(md -> md.put(EurekaMetadataDefinition.APIML_ID, APIML_ID));
 
-        corsLambda.accept(null, SERVICE_ID, null);
+        corsLambda.accept(null, null);
 
         verify(serviceCorsUpdater.getUrlBasedCorsConfigurationSource()).registerCorsConfiguration("/" + APIML_ID + "/**", null);
     }
 
     @Test
     void givenNoApimlId_whenSetCors_thenServiceIdIsUsed() {
-        TriConsumer<String, String, CorsConfiguration> corsLambda = getCorsLambda(md -> {
+        var corsLambda = getCorsLambda(md -> {
         });
 
-        corsLambda.accept(null, SERVICE_ID, null);
+        corsLambda.accept(null, null);
 
         verify(serviceCorsUpdater.getUrlBasedCorsConfigurationSource()).registerCorsConfiguration("/" + SERVICE_ID + "/**", null);
     }

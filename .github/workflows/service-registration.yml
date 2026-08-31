@@ -57,7 +57,8 @@ jobs:
     Register:
         runs-on: ubuntu-latest
         timeout-minutes: 20
-
+        env:
+            EUREKA_INSTANCE_IPADDRESS: 127.0.0.1
         steps:
             -   uses: actions/checkout@v4
                 with:

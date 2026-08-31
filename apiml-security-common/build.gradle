@@ -28,6 +28,7 @@ dependencies {
     testCompileOnly libs.lombok
     testImplementation libs.netty.reactor.http
     testImplementation libs.reactor.test
+    testImplementation libs.spring.cloud.gateway.server
     testAnnotationProcessor libs.lombok
 
     testFixturesImplementation libs.nimbus.jose.jwt

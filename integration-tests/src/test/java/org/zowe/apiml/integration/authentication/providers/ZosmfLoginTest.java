@@ -17,6 +17,7 @@ import io.restassured.specification.RequestSpecification;
 import org.apache.http.message.BasicNameValuePair;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -80,6 +81,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
         }
 
         @Test
+        @Tag("zOSMFEncodingTest")
         void givenValidCertificate_whenPathContainsEncodedCharacters_thenReturnBadRequest() {
             URI uri = HttpRequestUtils.getRawUriFromGateway(ZOSMF_ENDPOINT + "fs%2Fc%2Fuser%2Ffile.txt");
             RequestSpecification mySpec = new RequestSpecBuilder().setUrlEncodingEnabled(false).build();
@@ -97,6 +99,7 @@ class ZosmfLoginTest implements TestWithStartedInstances {
         }
 
         @Test
+        @Tag("zOSMFEncodingTest")
         void givenValidCertificate_whenQueryParamsEncoded_thenReturnFile() {
             URI uri = HttpRequestUtils.getRawUriFromGateway(ZOSMF_ENDPOINT + "fs?path=c%2Fuser%2Ffile.txt");
             RequestSpecification mySpec = new RequestSpecBuilder().setUrlEncodingEnabled(false).build();

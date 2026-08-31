@@ -25,3 +25,7 @@ safAccess:
             UPDATE:
                 - user
                 - USER
+        APIML.DEBUG:
+            CONTROL:
+                - user
+                - USER

@@ -82,9 +82,9 @@ Install the package using pip:
        apiml.service.description: 'Sample API services to demonstrate Python Onboarding Enabler'
     
     ssl:
-       certificate: ../keystore/localhost/localhost.keystore.cer
-       keystore: ../keystore/localhost/localhost.keystore.key
-       caFile: ../keystore/localhost/localhost.pem
+       certificate: ../keystore/service/service.cer
+       keystore: ../keystore/service/service.key
+       caFile: ../keystore/service/service.pem
        keyPassword: password
 
     ```

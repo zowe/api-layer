@@ -1,0 +1,197 @@
+/*
+ * Generates the development certificates on demand.
+ *
+ * No private key material is committed to this repository, so the keystores and
+ * truststores under keystore/ do not exist in a fresh clone. This task creates
+ * them by running keystore/generate-certificates.sh, and every test task depends
+ * on it, so a clone-and-test works with no manual step.
+ *
+ * The task is up to date once the artifacts exist, so it runs once and then stays
+ * out of the way. Delete keystore/service/service.keystore.p12 (or run
+ * ./gradlew generateCertificates --rerun-tasks) to force a fresh set.
+ */
+
+def keystoreDir = rootProject.file('keystore')
+def certScript = new File(keystoreDir, 'generate-certificates.sh')
+
+def certPassword = project.findProperty('apiml.keystore.password') ?: 'password'
+def certCaPassword = project.findProperty('apiml.keystore.caPassword') ?: 'local_ca_password'
+
+/*
+ * Locates a POSIX shell able to run the generator.
+ *
+ * On Windows this cannot simply be 'bash'. A bare bash on the PATH is normally
+ * C:\Windows\System32\bash.exe, which is the WSL launcher rather than a shell, and
+ * running the generator through it fails with:
+ *
+ *     WSL ERROR: CreateProcessCommon:800: execvpe(/bin/bash) failed
+ *
+ * 'sh' is no better, because it is usually absent from the PATH outside Git Bash.
+ * So the shell that ships with Git for Windows is located explicitly, skipping
+ * anything under System32. Override with -Papiml.bash= or APIML_BASH if Git is
+ * installed somewhere unusual.
+ */
+def resolveShell = {
+    def override = project.findProperty('apiml.bash') ?: System.getenv('APIML_BASH')
+    if (override) {
+        return override.toString()
+    }
+
+    if (!System.getProperty('os.name').toLowerCase().contains('windows')) {
+        return 'sh'
+    }
+
+    def isWslLauncher = { File f ->
+        def p = f.absolutePath.toLowerCase().replace('\\', '/')
+        p.contains('/windows/system32/') || p.contains('/windows/sysnative/')
+    }
+
+    def candidates = []
+
+    (System.getenv('PATH') ?: '').split(java.io.File.pathSeparator).each { dir ->
+        if (dir) {
+            def candidate = new File(dir, 'bash.exe')
+            if (!isWslLauncher(candidate)) {
+                candidates << candidate
+            }
+        }
+    }
+
+    ['ProgramFiles', 'ProgramFiles(x86)', 'LOCALAPPDATA'].each { variable ->
+        def base = System.getenv(variable)
+        if (base) {
+            candidates << new File(base, 'Git/bin/bash.exe')
+            candidates << new File(base, 'Git/usr/bin/bash.exe')
+            candidates << new File(base, 'Programs/Git/bin/bash.exe')
+        }
+    }
+
+    def shell = candidates.find { it.isFile() }
+    if (shell == null) {
+        throw new GradleException(
+            'Cannot generate certificates: no usable shell was found.\n' +
+            'The generator is a POSIX shell script. On Windows it needs the bash that\n' +
+            'ships with Git for Windows - the bash.exe in System32 is the WSL launcher\n' +
+            'and cannot run it.\n' +
+            'Install Git for Windows, or point at its shell with\n' +
+            '  -Papiml.bash=C:/Program Files/Git/bin/bash.exe')
+    }
+    return shell.absolutePath
+}
+
+/*
+ * Certificates are valid for 90 days, so their existence is not enough to consider
+ * them usable: a working copy left alone for three months holds a complete set that
+ * no longer validates, and the failures that follow point at handshakes rather than
+ * at the expiry.
+ *
+ * The task therefore reports itself out of date once they are close to expiring, and
+ * Gradle regenerates them like any other stale output. Renewal starts shortly before
+ * expiry rather than after it, so that a certificate cannot lapse midway through a
+ * long test run or under an already running local instance. Set
+ * -Papiml.keystore.renewBeforeDays=0 to renew only once they have actually expired.
+ */
+def renewBeforeDays = ((project.findProperty('apiml.keystore.renewBeforeDays') ?: '7') as String) as int
+
+// Public certificates, so no password is needed to read them. Every certificate in
+// the set is minted in one run with one validity, so these stand for all of them.
+def certificatesToDate = [
+    'ca/service-ca.cer',
+    'ca/client-ca.cer',
+    'ca/untrusted-ca.cer',
+    'service/service.cer',
+    'negative/selfsigned.cer',
+].collect { new File(keystoreDir, it) }
+
+def renewalDue = {
+    def factory = java.security.cert.CertificateFactory.getInstance('X.509')
+    def cutoff = new Date(System.currentTimeMillis() + renewBeforeDays * 86_400_000L)
+
+    certificatesToDate.any { certificate ->
+        if (!certificate.isFile()) {
+            return true
+        }
+        try {
+            def notAfter = certificate.withInputStream { factory.generateCertificate(it).notAfter }
+            if (notAfter.before(cutoff)) {
+                logger.lifecycle("Certificates expire on ${notAfter} - regenerating")
+                return true
+            }
+            return false
+        } catch (Exception failure) {
+            logger.lifecycle("Could not read ${certificate.name} (${failure.message}) - regenerating")
+            return true
+        }
+    }
+}
+
+// A representative subset of the generated set. If any of these is missing the
+// certificates have not been generated, or were partially removed.
+def generatedCertificates = [
+    'ca/service-ca.keystore.p12',
+    'ca/client-ca.keystore.p12',
+    'ca/untrusted-ca.keystore.p12',
+    'service/service.keystore.p12',
+    'service/service.truststore.p12',
+    'service/server-only.p12',
+    'service/client-cert.p12',
+    'client/client-certs.p12',
+    'negative/hostname-mismatch.keystore.p12',
+    'negative/untrusted-ca.keystore.p12',
+    'negative/selfsigned.keystore.p12',
+].collect { new File(keystoreDir, it) }
+
+// Copies the generator maintains outside keystore/, for modules that resolve
+// their stores by relative path rather than from the classpath.
+def generatedCopies = [
+    rootProject.file('zaas-client/src/test/resources/localhost.keystore.p12'),
+    rootProject.file('zaas-client/src/test/resources/localhost.truststore.p12'),
+    rootProject.file('common-service-core/src/test/resources/jwt-public-key.pub'),
+]
+
+tasks.register('generateCertificates', Exec) {
+    group = 'verification'
+    description = 'Generates the development certificates, keystores and truststores under keystore/'
+
+    // Every run mints a fresh certificate authority, so everything taking part in a
+    // mutual TLS handshake has to come from one run. CI generates the set once per
+    // workflow and restores it into each job, which sets this variable. A fresh
+    // checkout carries no Gradle task history, so without it the task would run
+    // again and replace the certificates already baked into the container images.
+    onlyIf {
+        if (System.getenv('APIML_CERTIFICATES_PREGENERATED') == 'true') {
+            logger.lifecycle('Certificates were restored for this workflow run - skipping generation')
+            return false
+        }
+        return true
+    }
+
+    workingDir = keystoreDir
+    // The script is passed by name rather than by absolute path: the working
+    // directory is already keystore/, and an absolute Windows path would reach the
+    // shell with backslashes.
+    commandLine resolveShell(), certScript.name, certPassword, certCaPassword
+
+    // The .ext files are the sole source of every DN, key usage and SAN, so a
+    // change to any of them must produce a new certificate set.
+    inputs.file certScript
+    inputs.files fileTree(keystoreDir) { include '**/*.ext' }
+    outputs.files(generatedCertificates + generatedCopies)
+
+    // Existing output files are not sufficient - they also have to be valid for a
+    // while yet. See renewalDue above.
+    outputs.upToDateWhen { !renewalDue() }
+
+    // Only surface the generator's output when something goes wrong; it is
+    // noisy, and openssl writes its key-generation progress to stderr.
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = standardOutput
+    ignoreExitValue = true
+
+    doLast {
+        if (executionResult.get().exitValue != 0) {
+            logger.error(standardOutput.toString())
+            throw new GradleException('Certificate generation failed. See the output above.')
+        }
+    }
+}

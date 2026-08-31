@@ -33,8 +33,8 @@ import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import org.springframework.web.server.i18n.LocaleContextResolver;
 import org.springframework.web.server.session.DefaultWebSessionManager;
 import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.gateway.config.InvalidForwardException;
 import org.zowe.apiml.gateway.filters.ForbidCharacterException;
-import org.zowe.apiml.gateway.filters.ForbidSlashException;
 import org.zowe.apiml.gateway.filters.ZaasInternalErrorException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
@@ -108,12 +108,6 @@ public class GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.requestContainEncodedCharacter");
     }
 
-    @ExceptionHandler(ForbidSlashException.class)
-    public Mono<Void> handleForbidSlashException(ServerWebExchange exchange, ForbidSlashException ex) {
-        log.debug("Forbidden slash in the URI {}: {}", exchange.getRequest().getURI(), ex.getMessage());
-        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.requestContainEncodedSlash");
-    }
-
     @ExceptionHandler({AuthenticationException.class, WebClientResponseException.Unauthorized.class})
     public Mono<Void> handleAuthenticationException(ServerWebExchange exchange, Exception ex) {
         log.debug("Unauthorized access on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
@@ -179,6 +173,12 @@ public class GatewayExceptionHandler {
     public Mono<Void> handleZaasInternalErrorException(ServerWebExchange exchange, ZaasInternalErrorException ex) {
         log.debug("The ZAAS instance {} return internal server error for request {}: {}", ex.getInstanceId(), exchange.getRequest().getURI(), ex.getMessage());
         return setBodyResponse(exchange, SC_INTERNAL_SERVER_ERROR, "org.zowe.apiml.gateway.zaas.internalServerError", ex.getInstanceId());
+    }
+
+    @ExceptionHandler(InvalidForwardException.class)
+    public Mono<Void> handleInvalidForwardException(ServerWebExchange exchange, InvalidForwardException ex) {
+        log.debug("Invalid or not allowed return URL on {}: {}", exchange.getRequest().getURI(), ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.gateway.invalidOidcReturnUrl");
     }
 
     @ExceptionHandler(ServerWebInputException.class)

@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 @AcceptanceTest
-@ActiveProfiles({ "OpenTelemetryTest" })
+@ActiveProfiles({ "test", "OpenTelemetryTest" })
 @TestPropertySource(
     properties = {
         "otel.sdk.disabled=false",

@@ -14,9 +14,7 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 
 buildscript {
-    repositories {
-        mavenCentral()
-    }
+    repositories mavenRepositories
     dependencies {
         classpath libs.spring.boot.gradle.plugin
     }

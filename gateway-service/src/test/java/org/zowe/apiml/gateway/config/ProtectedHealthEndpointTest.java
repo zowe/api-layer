@@ -18,15 +18,22 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.gateway.GatewayServiceApplication;
 import org.zowe.apiml.gateway.acceptance.config.DiscoveryClientTestConfig;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@SpringBootTest(classes = GatewayServiceApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"apiml.health.protected=false"})
+@SpringBootTest(
+    classes = GatewayServiceApplication.class,
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+        "apiml.health.protected=false"
+    }
+)
 @Import(DiscoveryClientTestConfig.class)
+@ActiveProfiles("test")
 public class ProtectedHealthEndpointTest {
 
     @Value("${apiml.service.hostname:localhost}")
@@ -52,4 +59,5 @@ public class ProtectedHealthEndpointTest {
             .then()
             .statusCode(is(HttpStatus.SC_SERVICE_UNAVAILABLE));
     }
+
 }

@@ -1,6 +1,5 @@
 # for back-compatibility
 spring.profiles.group.attls: attlsServer,attlsClient
-spring.profiles.group.dev: debug,diag
 
 caching:
     storage:
@@ -22,29 +21,17 @@ caching:
                 trustStore: ${server.ssl.trustStore}
                 trustStorePassword: ${server.ssl.trustStorePassword}
         infinispan:
-            initialHosts: localhost[7600]
             persistence:
                 dataLocation: data
+
+logbackServiceName: ZWEACS1
+
+# This section contains only logging levels configuration common to all profiles.
+# Use a dedicated profile below or create a new one to configure logging levels.
 logging:
     level:
-        ROOT: WARN
-        org.zowe.apiml: INFO
-        org.zowe.apiml.enable: WARN
-        org.zowe.apiml.caching: WARN
-        org.springdoc: WARN
-        org.springframework: WARN
-        org.infinispan: ERROR
-        org.jgroups: ERROR
-        com.netflix: WARN
-        com.netflix.discovery: ERROR
-        com.netflix.config: ERROR
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
-        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        javax.net.ssl: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
 
 eureka:
     client:
@@ -159,9 +146,9 @@ server:
 
         keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
 
 management:
@@ -178,32 +165,57 @@ management:
         health:
             showDetails: always
 ---
+spring.config.activate.on-profile: quiet
+
+logging:
+    level:
+        ROOT: ERROR
+        org.zowe.apiml: INFO
+
+---
+spring.config.activate.on-profile: info
+
+logging:
+    level:
+        ROOT: WARN
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        javax.net.ssl: ERROR
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.infinispan: ERROR
+        org.jgroups: ERROR
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.zowe.apiml: INFO
+        org.zowe.apiml.enable: WARN
+        org.zowe.apiml.caching: WARN
+
+---
 spring.config.activate.on-profile: debug
 
 logging:
     level:
         ROOT: INFO
-        org.zowe.apiml: DEBUG
-        org.zowe.apiml.enable: DEBUG
-        org.zowe.apiml.caching: DEBUG
-        org.springframework: INFO
-        org.apache: INFO
-        org.apache.http: DEBUG
-        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        com.netflix: INFO
-        org.hibernate: INFO
-        org.jgroups.protocols: ERROR
-        org.springframework.web.servlet.PageNotFound: WARN
-        org.ehcache: INFO
-        org.apache.tomcat.util.net: DEBUG
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
         com.netflix.discovery.shared.transport.decorator: DEBUG
-        org.springframework.security.web: DEBUG
         javax.net.ssl: ERROR
-        org.apache.coyote.http11.Http11InputBuffer: TRACE
-        org.apache.tomcat: DEBUG
         org.apache.catalina: DEBUG
-        org.jgroups: TRACE
+        org.apache.coyote.http11.Http11InputBuffer: TRACE
+        org.apache.http: DEBUG
+        org.apache.tomcat: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.infinispan: DEBUG
+        org.jgroups: TRACE
+        org.jgroups.protocols: ERROR
+        org.jgroups.protocols.pbcast.GMS: DEBUG # prints infinispan cluster info
+        org.springdoc: WARN
+        org.springframework.web.servlet.PageNotFound: WARN
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.security.web: DEBUG
+        org.zowe.apiml: DEBUG
 
 management:
     endpoints:
@@ -212,10 +224,6 @@ management:
             base-path: /cachingservice/application
             exposure:
                 include: health,info,loggers
----
-spring.config.activate.on-profile: dev
-
-logbackServiceName: ZWEACS1
 
 ---
 spring.config.activate.on-profile: attlsServer

@@ -43,6 +43,8 @@ import com.netflix.eureka.util.batcher.TaskDispatcher;
 import com.netflix.eureka.util.batcher.TaskDispatchers;
 import com.netflix.eureka.util.batcher.TaskProcessor;
 import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
@@ -342,6 +344,11 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
     @Slf4j
     public static class ReplicationTaskProcessor implements TaskProcessor<ReplicationTask> {
 
+        private static final String PEER_REPLICATION_PERMANENT_ERROR = "org.zowe.apiml.common.peerReplicationPermanentError";
+        private static final String PEER_REPLICATION_READ_TIMEOUT = "org.zowe.apiml.common.peerReplicationReadTimeout";
+
+        private static final ApimlLogger apimlLog = ApimlLogger.of(ReplicationTaskProcessor.class, YamlMessageServiceInstance.getInstance());
+
         private final HttpReplicationClient replicationClient;
 
         private final String peerId;
@@ -364,7 +371,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
 
             final AtomicInteger counter = new AtomicInteger(0);
 
-            private String getCountText() {
+            String getCountText() {
                 int count = counter.get();
 
                 StringBuilder sb = new StringBuilder();
@@ -418,9 +425,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             } catch (Throwable e) {
                 networkIssueCounter.fail(e.getLocalizedMessage());
                 if (maybeReadTimeOut(e)) {
-                    log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
-                    //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
-                    return ProcessingResult.Congestion;
+                    return handleReadTimeout(e, "The replication task");
                 } else if (isNetworkConnectException(e) && !networkIssueCounter.hasReachedMax()) {
                     logNetworkErrorSample(task, "; retrying after delay.", e);
                     return ProcessingResult.TransientError;
@@ -455,9 +460,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             } catch (Throwable e) {
                 networkIssueCounter.fail(e.getLocalizedMessage());
                 if (maybeReadTimeOut(e)) {
-                    log.error("It seems to be a socket read timeout exception, it will retry later. if it continues to happen and some eureka node occupied all the cpu time, you should set property 'eureka.server.peer-node-read-timeout-ms' to a bigger value", e);
-                    //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
-                    return ProcessingResult.Congestion;
+                    return handleReadTimeout(e, "Batch replication tasks");
                 } else if (isNetworkConnectException(e) && !networkIssueCounter.hasReachedMax()) {
                     logNetworkErrorSample(null, "; retrying after delay.", e);
                     return ProcessingResult.TransientError;
@@ -468,6 +471,17 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
                 }
             }
             return ProcessingResult.Success;
+        }
+
+        private ProcessingResult handleReadTimeout(Throwable e, String taskDescription) {
+            if (networkIssueCounter.hasReachedMax()) {
+                apimlLog.log(PEER_REPLICATION_PERMANENT_ERROR, networkIssueCounter.getCountText(), taskDescription);
+                return ProcessingResult.PermanentError;
+            }
+            apimlLog.log(PEER_REPLICATION_READ_TIMEOUT, e.getMessage());
+            log.debug("Peer replication socket read timeout", e);
+            //read timeout exception is more Congestion than TransientError, return Congestion for longer delay
+            return ProcessingResult.Congestion;
         }
 
         /**

@@ -42,7 +42,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import static org.awaitility.Awaitility.await;
@@ -224,21 +224,23 @@ class WebSocketTest {
         }
 
         @Test
-        void whenConnectToServerWithWrongCert_thenReject() throws URISyntaxException, InterruptedException {
+        void whenConnectToServerWithWrongCert_thenReject() throws InterruptedException {
             webSocketClientStrict.connectBlocking();
-            var reasonValid = new AtomicBoolean(false);
+            var statusOnCose = new AtomicReference<Integer>();
+            var reasonOnClose = new AtomicReference<String>();
+
             webSocketClientStrict.setOnClose((status, reason) -> {
-                assertEquals(1011, status);
-                assertNotNull(reason);
-                // assertTrue(reason.contains("No name matching localhost found"), "reason was: " + reason); On Netty client
-                assertTrue(reason.contains("HTTP request to initiate the WebSocket connection to [wss://localhost:" + serviceStrictness.getPort() + "/websocketservicessl/ws] failed")); // On Tomcat client
-                reasonValid.set(true);
+                statusOnCose.set(status);
+                reasonOnClose.set(reason);
             });
 
             await()
                 .atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
-                    assertTrue(reasonValid.get());
+                    assertEquals(1011, statusOnCose.get());
+                    assertNotNull(reasonOnClose.get());
+                    // assertTrue(reasonOnClose.get().contains("No name matching localhost found"), "reason was: " + reason); On Netty client
+                    assertTrue(reasonOnClose.get().contains("HTTP request to initiate the WebSocket connection to [wss://localhost:" + serviceStrictness.getPort() + "/websocketservicessl/ws] failed")); // On Tomcat client
                 });
         }
 
@@ -297,6 +299,9 @@ class WebSocketTest {
         @Setter
         private BiConsumer<Integer, String> onClose;
 
+        @Getter
+        private final AtomicReference<Exception> error = new AtomicReference<>();
+
         public WebSocketTestClient(URI serverUri) {
             super(serverUri);
         }
@@ -323,9 +328,30 @@ class WebSocketTest {
             }
         }
 
+        /**
+         * Must not throw: this runs on the client's read/write thread, and
+         * {@link org.java_websocket.WebSocketImpl#closeConnection} only catches {@link RuntimeException}.
+         * An {@link AssertionError} escaping from here kills that thread before it counts down the
+         * connect/close latches, leaving the untimed connectBlocking()/closeBlocking() waiting forever.
+         * Record the error instead and let the test assert on it.
+         */
         @Override
         public void onError(Exception ex) {
-            fail(ex);
+            error.compareAndSet(null, ex);
+        }
+
+        /**
+         * Reports an error captured by {@link #onError(Exception)} on the calling (test) thread, so tests do not
+         * have to check for it explicitly. Note this only runs when the caller actually closes the client - a
+         * client that never opened is skipped by the {@code isOpen()} guard in {@code tearDown()}.
+         */
+        @Override
+        public void closeBlocking() throws InterruptedException {
+            super.closeBlocking();
+            var ex = error.get();
+            if (ex != null) {
+                fail("WebSocket client reported an error", ex);
+            }
         }
 
     }

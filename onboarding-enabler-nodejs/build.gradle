@@ -18,8 +18,8 @@ node {
     npmVersion = libs.versions.projectNpm.get()
     distBaseUrl = "https://nodejs.org/dist"
     npmInstallCommand = "ci"
-    workDir = file("${project.rootDir}/tools/nodejs")
-    npmWorkDir = file("${project.rootDir}/tools/npm")
+    workDir = file("${project.projectDir}/tools/nodejs")
+    npmWorkDir = file("${project.projectDir}/tools/npm")
     nodeProjectDir = file("${project.projectDir}")
 }
 

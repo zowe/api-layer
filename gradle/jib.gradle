@@ -12,6 +12,12 @@ def setJib(componentName, javaAgentPort, debugPort, applicationPorts) {
     jib.container.args = ['--spring.config.additional-location=file:/docker/' + componentName + '.yml']
     jib.container.jvmFlags = javaAgentOptions + addOpensOptions
     jib.extraDirectories.paths = ['../config', '../keystore', '../scripts']
+
+    // keystore/ is copied into the image but is not committed, so it has to be
+    // generated before any image is assembled.
+    tasks.matching { it.name in ['jib', 'jibDockerBuild', 'jibBuildTar'] }.configureEach {
+        dependsOn rootProject.tasks.named('generateCertificates')
+    }
 }
 
 ext.setJib =  { componentName, javaAgentPort, debugPort, applicationPort ->

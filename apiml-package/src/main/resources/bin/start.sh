@@ -49,17 +49,19 @@
 # - ZWE_configs_apiml_gateway_registry_refreshIntervalMs
 # - ZWE_configs_apiml_health_protected
 # - ZWE_configs_apiml_security_auth_jwt_customAuthHeader
-# - ZWE_configs_apiml_security_auth_passticket_customAuthHeader
 # - ZWE_configs_apiml_security_auth_passticket_customUserHeader
 # - ZWE_configs_apiml_security_authorization_endpoint_enabled
 # - ZWE_configs_apiml_security_authorization_endpoint_url
 # - ZWE_configs_apiml_security_authorization_provider
+# - ZWE_configs_apiml_security_enableStrictUrlValidation
 # - ZWE_configs_apiml_security_x509_acceptForwardedCert
 # - ZWE_configs_apiml_security_x509_certificatesUrl
 # - ZWE_configs_apiml_security_x509_enabled
 # - ZWE_configs_apiml_security_x509_registry_allowedUsers
-# - ZWE_configs_apiml_service_allowEncodedSlashes
 # - ZWE_configs_apiml_service_corsEnabled
+# - ZWE_configs_apiml_service_corsAllowedMethods
+# - ZWE_configs_apiml_service_corsDefaultAllowedOrigins
+# - ZWE_configs_apiml_service_corsDefaultAllowedHeaders
 # - ZWE_configs_apiml_service_forwardClientCertEnabled
 # - ZWE_configs_apimlId
 # - ZWE_configs_certificate_ciphers / ZWE_configs_ciphers
@@ -78,6 +80,7 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
 # - ZWE_configs_port - the port the api discovery service will use
@@ -142,6 +145,9 @@ if [ -n "${ZWE_DISCOVERY_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
 
+# Logging level
+add_profile "${ZWE_configs_logging_level:-${ZWE_components_gateway_logging_level:-info}}"
+
 # Debug profile
 if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then
     if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}" ]; then
@@ -190,6 +196,12 @@ if [ -n "${ZWE_GATEWAY_LIBRARY_PATH}" ]; then
     LIBPATH="$LIBPATH":"${ZWE_GATEWAY_LIBRARY_PATH}"
 fi
 
+INFINISPAN_VTHREADS=${ZWE_components_caching_service_storage_infinispan_useVirtualThreads:-${ZWE_configs_storage_infinispan_useVirtualThreads:-false}}
+if [ "${INFINISPAN_VTHREADS}" = "true" ] && [ "$(uname)" = "OS/390" ]; then
+    echo "Warning: Virtual Threads enabled can result to not working Caching Service"
+fi
+VIRTUAL_THREADS_OPTS="${VIRTUAL_THREADS_OPTS:--Dorg.infinispan.threads.virtual=${INFINISPAN_VTHREADS} -Djgroups.thread.virtual=${INFINISPAN_VTHREADS}}"
+
 # Start OpenTelemetry
 if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
     DISABLE_OTEL=false
@@ -225,9 +237,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${QUICK_START} \
     ${SHARED_CLASSES_OPTS} \
     ${ADD_OPENS} \
+    ${VIRTUAL_THREADS_OPTS} \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
+    ${EUREKA_IP_ADDRESS} \
     ${OTEL_ATTRIBUTES} \
     ${CUSTOM_JVM_OPTS} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
@@ -276,6 +290,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.authorization.provider=${ZWE_components_gateway_apiml_security_authorization_provider:-${ZWE_configs_apiml_security_authorization_provider:-"native"}} \
     -Dapiml.security.authorization.resourceClass=${ZWE_components_gateway_apiml_security_authorization_resourceClass:-${ZWE_configs_apiml_security_authorization_resourceClass:-ZOWE}} \
     -Dapiml.security.authorization.resourceNamePrefix=${ZWE_components_gateway_apiml_security_authorization_resourceNamePrefix:-${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-APIML.}} \
+    -Dapiml.security.enableStrictUrlValidation=${ZWE_components_gateway_apiml_security_enableStrictUrlValidation:-${ZWE_configs_apiml_security_enableStrictUrlValidation:-true}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-${ZWE_configs_apiml_security_jwtInitializerTimeout:-5}} \
     -Dapiml.security.oidc.enabled=${ZWE_components_gateway_apiml_security_oidc_enabled:-${ZWE_configs_apiml_security_oidc_enabled:-false}} \
     -Dapiml.security.oidc.identityMapperUrl=${ZWE_components_gateway_apiml_security_oidc_identityMapperUrl:-${ZWE_configs_apiml_security_oidc_identityMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"}} \
@@ -292,6 +307,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.saf.provider=${ZWE_components_gateway_apiml_security_saf_provider:-${ZWE_configs_apiml_security_saf_provider:-"rest"}} \
     -Dapiml.security.saf.urls.authenticate=${ZWE_components_gateway_apiml_security_saf_urls_authenticate:-${ZWE_configs_apiml_security_saf_urls_authenticate:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/authenticate"}} \
     -Dapiml.security.saf.urls.verify=${ZWE_components_gateway_apiml_security_saf_urls_verify:-${ZWE_configs_apiml_security_saf_urls_verify:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/saf/verify"}} \
+    -Dapiml.security.secFetch.enabled=${ZWE_components_gateway_apiml_security_secFetch_enabled:-${ZWE_configs_apiml_security_secFetch_enabled:-true}} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices} \
     -Dapiml.security.useInternalMapper=${ZWE_components_gateway_apiml_security_useInternalMapper:-${ZWE_configs_apiml_security_useInternalMapper:-true}} \
@@ -301,11 +317,12 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.x509.externalMapperUrl=${ZWE_components_gateway_apiml_security_x509_externalMapperUrl:-${ZWE_configs_apiml_security_x509_externalMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/x509/map"}} \
     -Dapiml.security.x509.externalMapperUser=${ZWE_components_gateway_apiml_security_x509_externalMapperUser:-${ZWE_configs_apiml_security_x509_externalMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}}} \
     -Dapiml.security.x509.registry.allowedUsers=${ZWE_components_gateway_apiml_security_x509_registry_allowedUsers:-${ZWE_configs_apiml_security_x509_registry_allowedUsers:-}} \
-    -Dapiml.security.zosmf.applid=${ZWE_zosmf_applId:-IZUDFLT} \
-    -Dapiml.service.allowEncodedSlashes=${ZWE_components_gateway_apiml_service_allowEncodedSlashes:-${ZWE_configs_apiml_service_allowEncodedSlashes:-true}} \
+    -Dapiml.security.zosmf.applid=${ZWE_zOSMF_applId:-${ZWE_zosmf_applId:-IZUDFLT}} \
     -Dapiml.service.apimlId=${ZWE_components_gateway_apimlId:-${ZWE_configs_apimlId:-}} \
     -Dapiml.service.corsAllowedMethods=${ZWE_components_gateway_apiml_service_corsAllowedMethods:-${ZWE_configs_apiml_service_corsAllowedMethods:-GET,HEAD,POST,PATCH,DELETE,PUT,OPTIONS}} \
     -Dapiml.service.corsEnabled=${ZWE_components_gateway_apiml_service_corsEnabled:-${ZWE_configs_apiml_service_corsEnabled:-false}} \
+    -Dapiml.service.corsDefaultAllowedOrigins=${ZWE_components_gateway_apiml_service_corsDefaultAllowedOrigins:-${ZWE_configs_apiml_service_corsDefaultAllowedOrigins:-}} \
+    -Dapiml.service.corsDefaultAllowedHeaders=${ZWE_components_gateway_apiml_service_corsDefaultAllowedHeaders:-${ZWE_configs_apiml_service_corsDefaultAllowedHeaders:-}} \
     -Dapiml.service.forwardClientCertEnabled=${ZWE_components_gateway_apiml_security_x509_enabled:-${ZWE_configs_apiml_security_x509_enabled:-false}} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_components_gateway_port:-${ZWE_configs_port:-7554}} \
@@ -322,7 +339,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dcaching.storage.evictionStrategy=${ZWE_components_caching_service_storage_evictionStrategy:-${ZWE_configs_storage_evictionStrategy:-reject}} \
-    -Dcaching.storage.infinispan.initialHosts=${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-"localhost[7600]"}} \
+    -Dcaching.storage.infinispan.initialHosts=${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-}} \
     -Dcaching.storage.mode=${ZWE_components_caching_service_storage_mode:-${ZWE_configs_storage_mode:-infinispan}} \
     -Dcaching.storage.size=${ZWE_components_caching_service_storage_size:-${ZWE_configs_storage_size:-10000}} \
     -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \

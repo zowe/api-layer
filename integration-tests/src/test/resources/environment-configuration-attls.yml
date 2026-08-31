@@ -44,13 +44,13 @@ tlsConfiguration:
     keyAlias: localhost
     keyPassword: password
     keyStoreType: PKCS12
-    keyStore: ../keystore/localhost/localhost.keystore.p12
-    serverKeyStore: ../keystore/localhost/localhost.keystore.p12
-    clientKeystore: ../keystore/client_cert/client-certs.p12
+    keyStore: ../keystore/service/service.keystore.p12
+    serverKeyStore: ../keystore/service/service.keystore.p12
+    clientKeystore: ../keystore/client/client-certs.p12
     clientCN: APIMTST
     keyStorePassword: password
     trustStoreType: PKCS12
-    trustStore: ../keystore/localhost/localhost.truststore.p12
+    trustStore: ../keystore/service/service.truststore.p12
     trustStorePassword: password
 zosmfServiceConfiguration:
     scheme: http
@@ -70,7 +70,7 @@ instanceEnv:
     CATALOG_PORT: 10014
     DISCOVERY_PORT: 10011
     GATEWAY_PORT: 10010
-    APIML_ALLOW_ENCODED_SLASHES: true
+    ZWE_configs_apiml_security_enableStrictUrlValidation: false
     APIML_PREFER_IP_ADDRESS: false
     APIML_CONNECTION_TIMEOUT: 10000
     APIML_SECURITY_X509_ENABLED: true

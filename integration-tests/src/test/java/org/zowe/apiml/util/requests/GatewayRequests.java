@@ -12,6 +12,7 @@ package org.zowe.apiml.util.requests;
 
 import com.jayway.jsonpath.ReadContext;
 import io.restassured.RestAssured;
+import io.restassured.config.RestAssuredConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.client.utils.URIBuilder;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -64,6 +65,7 @@ public class GatewayRequests {
 
         try {
             given()
+                .config(RestAssuredConfig.newConfig())
                 .contentType(JSON)
                 .auth().basic(credentials.getUser(), new String(credentials.getPassword()))
             .when()

@@ -25,18 +25,29 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
+import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.zowe.apiml.discovery.metadata.MetadataFilterService;
 import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 import org.zowe.apiml.util.EurekaUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
+
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_APPLID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.AUTHENTICATION_SCHEME;
 
 /**
  * This implementation of instance registry is solving known problem in Eureka. Discovery service notify about change
@@ -51,6 +62,8 @@ import java.util.regex.Pattern;
 public class ApimlInstanceRegistry extends InstanceRegistry {
 
     private static final String EXCEPTION_MESSAGE = "Implementation of InstanceRegistry changed, please verify fix of order sending events";
+
+    private static final ApimlLogger apimlLog = ApimlLogger.of(ApimlInstanceRegistry.class, YamlMessageServiceInstance.getInstance());
 
     private MethodHandle replicateToPeersMethodHandle;
 
@@ -199,7 +212,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * @param info the instance info
      */
     private void validateInstanceInfo(InstanceInfo info) {
-        metadataFilterService.verifyAllowedDomains(info);
+        info = metadataFilterService.verifyAllowedDomains(info);
 
         String instanceId = info.getInstanceId();
         String appName = StringUtils.lowerCase(info.getAppName());
@@ -220,6 +233,28 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         if (!Objects.equals(appName, StringUtils.lowerCase(serviceId))) {
             log.warn(
                 "Inconsistent service identity: instanceId contains serviceId '{}' but appName='{}'", serviceId, appName);
+        }
+
+        verifyAuthenticationSchemeConfiguration(info, appName);
+    }
+
+    /**
+     * Verifies the authentication scheme configuration of a registering instance. Warnings are reported here, on
+     * registration, rather than while the Gateway builds its routing rules - the routing rules are rebuilt on every
+     * heartbeat, which would flood the log with the same message.
+     *
+     * @param info      the instance info being registered
+     * @param serviceId the resolved service id used for logging
+     */
+    private void verifyAuthenticationSchemeConfiguration(InstanceInfo info, String serviceId) {
+        Map<String, String> metadata = info.getMetadata();
+        if (metadata == null) {
+            return;
+        }
+
+        boolean usesPassTicket = AuthenticationScheme.HTTP_BASIC_PASSTICKET.getScheme().equals(metadata.get(AUTHENTICATION_SCHEME));
+        if (usesPassTicket && StringUtils.isEmpty(metadata.get(AUTHENTICATION_APPLID))) {
+            apimlLog.log("org.zowe.apiml.discovery.registration.missingApplid", serviceId);
         }
     }
 

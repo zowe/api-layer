@@ -86,7 +86,7 @@ class OpenTelemetryResourceAttributesZosTest {
 
     @Nested
     @AcceptanceTest
-    @ActiveProfiles({"OpenTelemetryTest", "zos"})
+    @ActiveProfiles({"test", "OpenTelemetryTest", "zos"})
     @TestPropertySource(
         properties = {
             "otel.sdk.disabled=false",
@@ -135,7 +135,7 @@ class OpenTelemetryResourceAttributesZosTest {
             "apiml.security.personalAccessToken.enabled=true"
         }
     )
-    @ActiveProfiles({"OpenTelemetryTest", "zos"})
+    @ActiveProfiles({"test", "OpenTelemetryTest", "zos"})
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @NestedTestConfiguration(EnclosingConfiguration.OVERRIDE)
     class WhenOnboardedService extends AcceptanceTestWithMockServices {
@@ -169,7 +169,7 @@ class OpenTelemetryResourceAttributesZosTest {
         @BeforeAll
         void startMockServices() throws Exception {
             if (!SslContext.isInitialized()) {
-                SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
+                SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client/client-certs.p12", "../keystore/service/service.keystore.p12");
                 SslContext.prepareSslAuthentication(configurer);
             }
         }

@@ -20,10 +20,22 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 class InfinispanConfigTest {
+
+    @SuppressWarnings("unchecked")
+    Map<String, String> getEnvMap() {
+        try {
+            Class<?> envVarClass = System.getenv().getClass();
+            Field mField = envVarClass.getDeclaredField("m");
+            mField.setAccessible(true);
+            return (Map<String, String>) mField.get(System.getenv());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            fail(e);
+            return null;
+        }
+    }
 
     @Nested
     class Initialization {
@@ -94,18 +106,6 @@ class InfinispanConfigTest {
         private static final String INSTANCE = "ZWE_haInstance_id";
         private static final String WORKSPACE = "ZWE_zowe_workspaceDirectory";
 
-        Map<String, String> getEnvMap() {
-            try {
-                Class<?> envVarClass = System.getenv().getClass();
-                Field mField = envVarClass.getDeclaredField("m");
-                mField.setAccessible(true);
-                return (Map<String, String>) mField.get(System.getenv());
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                fail(e);
-                return null;
-            }
-        }
-
         @BeforeEach
         @AfterEach
         void cleanUp() {
@@ -143,6 +143,66 @@ class InfinispanConfigTest {
             assertEquals("infinispan.xml", new InfinispanConfig().getInfinispanConfigFile());
         }
 
+    }
+
+    @Nested
+    class ClusterConfiguration {
+
+        private static final String PORT = "7600";
+        private static final String HOSTNAME = "hostname";
+
+        @BeforeEach
+        @AfterEach
+        void cleanUp() {
+            getEnvMap().keySet().removeIf(key -> key.startsWith("ZWE_haInstances_"));
+        }
+
+        @Test
+        void givenInitialHostsIsAlreadySet_whenGetInitialHosts_thenReturnPredefinedValue() {
+            InfinispanConfig config = new InfinispanConfig();
+            ReflectionTestUtils.setField(config, "initialHosts", "customHost[1234]");
+
+            String result = ReflectionTestUtils.invokeMethod(config, "getInitialHosts");
+
+            assertEquals("customHost[1234]", result);
+        }
+
+        @Test
+        void givenNoInitialHostsAndHa_whenGetInitialHosts_thenParseAndReturnCombinedList() {
+            InfinispanConfig config = new InfinispanConfig();
+            ReflectionTestUtils.setField(config, "port", PORT);
+
+            getEnvMap().put("ZWE_haInstances_LPAR3_hostname", "lpr3.com");
+            getEnvMap().put("ZWE_haInstances_LPAR_4_hostname", "lpr4.com");
+
+            String result = ReflectionTestUtils.invokeMethod(config, "getInitialHosts");
+
+            String expected1 = "lpr3.com[7600],lpr4.com[7600]";
+            String expected2 = "lpr4.com[7600],lpr3.com[7600]";
+
+            assertNotNull(result);
+            assertTrue(result.equals(expected1) || result.equals(expected2),
+                "Result was: " + result);
+        }
+
+        @Test
+        void givenNoInitialHostsAndNoHa_whenGetInitialHosts_thenFallbackToLocalhost() {
+            InfinispanConfig config = new InfinispanConfig();
+            ReflectionTestUtils.setField(config, "port", PORT);
+            ReflectionTestUtils.setField(config, "hostname", HOSTNAME);
+
+            String result = ReflectionTestUtils.invokeMethod(config, "getInitialHosts");
+
+            assertEquals("hostname[7600]", result);
+        }
+
+        @Test
+        void whenCheckingDiscoveryRunsValue_thenEnsureFieldIsCorrectlySet() {
+            InfinispanConfig config = new InfinispanConfig();
+            ReflectionTestUtils.setField(config, "discoveryRuns", 20);
+
+            assertEquals(20, ReflectionTestUtils.getField(config, "discoveryRuns"));
+        }
     }
 
 }

@@ -1,9 +1,5 @@
 buildscript {
-    repositories {
-        maven {
-            setUrl('https://plugins.gradle.org/m2/')
-        }
-    }
+    repositories mavenRepositories
     dependencies {
         classpath libs.gradle.test.logger
     }
@@ -11,10 +7,6 @@ buildscript {
 
 plugins {
     alias(libs.plugins.test.logger)
-}
-
-repositories {
-    mavenCentral()
 }
 
 configurations.all {
@@ -170,7 +162,6 @@ task runAllIntegrationTestsNormal(type: Test) {
             'SAFAuthTest',
             'HATest',
             'ChaoticHATest',
-            'NotAttlsTest',
             'OidcOauth2Test',
             'MultipleRegistrationsTest',
             'InfinispanJGroupStabilityTest'
@@ -231,7 +222,8 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'GatewayCentralRegistry',
             'SafIdTokenTest',
             'InfinispanJGroupStabilityTest',
-            'DiscoveryBasicAuthTest'
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -280,7 +272,8 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'RateLimitTest',
             'GraphQLTest',
             'InfinispanJGroupStabilityTest',
-            'DiscoveryBasicAuthTest'
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -332,7 +325,8 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
             'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
             'NonModulithTest',
             'InfinispanJGroupStabilityTest',
-            'DiscoveryBasicAuthTest'
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 
@@ -385,7 +379,8 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'NonModulithTest',
             'InfinispanJGroupStabilityTest',
             'RateLimitTest',
-            'DiscoveryBasicAuthTest'
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
         )
     }
 

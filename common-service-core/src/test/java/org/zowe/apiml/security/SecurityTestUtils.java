@@ -23,13 +23,13 @@ public class SecurityTestUtils {
 
     public static HttpsConfig.HttpsConfigBuilder correctHttpsSettings() {
         return SecurityTestUtils.correctHttpsKeyStoreSettings()
-            .trustStore(pathFromRepository("keystore/localhost/localhost.truststore.p12"))
+            .trustStore(pathFromRepository("keystore/service/service.truststore.p12"))
             .trustStorePassword(STORE_PASSWORD);
     }
 
     public static HttpsConfig.HttpsConfigBuilder correctHttpsKeyStoreSettings() {
         return HttpsConfig.builder()
-            .keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost.keystore.p12"))
+            .keyStore(SecurityTestUtils.pathFromRepository("keystore/service/service.keystore.p12"))
             .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD);
     }
 

@@ -13,7 +13,6 @@ package org.zowe.apiml.caching.health;
 import org.apache.commons.lang3.StringUtils;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.spring.embedded.provider.SpringEmbeddedCacheManager;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
@@ -31,9 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @Component
 @ConditionalOnProperty(name = "caching.storage.mode", havingValue = "infinispan")
 public class InfinispanHealthIndicator extends AbstractHealthIndicator {
-
-    @Value("${caching.storage.infinispan.initialHosts:}")
-    private String initialHosts;
 
     private final AtomicReference<CacheManager> cacheManager = new AtomicReference<>();
 
@@ -66,6 +62,7 @@ public class InfinispanHealthIndicator extends AbstractHealthIndicator {
             }
             infinispan.put("caches", caches);
 
+            var initialHosts = System.getProperty("jgroups.tcpping.initial_hosts");
             var initialHostsArray = StringUtils.split(initialHosts, ",");
             boolean allMembers = initialHostsArray.length <= nativeCacheManager.getMembers().size();
             var cluster = Map.of(

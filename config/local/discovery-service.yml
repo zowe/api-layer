@@ -1,10 +1,13 @@
-spring.profiles.active: diag
+spring.profiles.active: https,debug,diag
+
+eureka:
+    instance:
+        ipAddress: 127.0.0.1
 
 apiml:
     health.protected: true
     service:
         hostname: localhost
-        ipAddress: 127.0.0.1
         port: 10011
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
@@ -21,6 +24,9 @@ management:
             exposure:
                 include: "*"
 
+logging:
+    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} <%blue(${logbackServiceName}):%magenta(%thread):${PID:}> %X{userid:-} %clr(%-5level) %cyan(\(%logger{15}\)) %msg%n'
+
 ---
 spring.config.activate.on-profile: https
 
@@ -29,8 +35,8 @@ server:
         keyAlias: localhost
         keyPassword: password
         keyStoreType: PKCS12
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
         trustStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password

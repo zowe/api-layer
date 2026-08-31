@@ -76,7 +76,7 @@ class OIDCTokenProviderTest {
     @BeforeAll
     static void init() throws Exception {
         var now = Instant.now();
-        var jwkAndSet = loadPrivateKey("../keystore/localhost/localhost.keystore.p12", "localhost", "password");
+        var jwkAndSet = loadPrivateKey("../keystore/service/service.keystore.p12", "localhost", "password");
         localJwkSet = jwkAndSet.jwkSet();
         VALID_TOKEN = Jwts.builder()
             .header().keyId("Lcxckkor94qkrunxHP7Tkib547rzmkXvsYV-nc6U-N4").and()

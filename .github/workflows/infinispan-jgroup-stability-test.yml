@@ -14,6 +14,8 @@ jobs:
     InfinispanJGroupStabilityTest:
         runs-on: ubuntu-latest
         timeout-minutes: 25
+        env:
+            EUREKA_INSTANCE_IPADDRESS: 127.0.0.1
 
         steps:
             -   uses: actions/checkout@v4

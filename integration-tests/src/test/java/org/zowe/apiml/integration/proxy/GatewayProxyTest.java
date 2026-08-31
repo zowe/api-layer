@@ -35,10 +35,13 @@ import static org.zowe.apiml.util.requests.Endpoints.*;
 
 @Tag("GatewayProxyTest")
 class GatewayProxyTest {
+
     private static final int SECOND = 1000;
     private static final int DEFAULT_TIMEOUT = 7 * SECOND;
 
     private static final String HEADER_X_FORWARD_TO = "X-Forward-To";
+
+    private static final Credentials CREDENTIALS = ConfigReader.environmentConfiguration().getCredentials();
 
     static ServiceConfiguration conf;
 
@@ -52,19 +55,42 @@ class GatewayProxyTest {
 
     @Test
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
-        given().header(HEADER_X_FORWARD_TO, "apiml1")
-            .get(new URI(scgUrl)).then().statusCode(200);
-        given().header(HEADER_X_FORWARD_TO, "apiml2")
-            .get(new URI(scgUrl)).then().statusCode(200);
+        var scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
+        given()
+            .auth().preemptive().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
+            .header(HEADER_X_FORWARD_TO, "apiml1")
+        .when()
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(200);
+
+        given()
+            .auth().preemptive().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
+            .header(HEADER_X_FORWARD_TO, "apiml2")
+        .when()
+            .get(new URI(scgUrl))
+        .then()
+            .statusCode(200);
     }
 
     @Test
     void givenBasePath_thenRouteToProvidedHost() throws URISyntaxException {
         String scgUrl1 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1/gateway/version");
         String scgUrl2 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml2/gateway/version");
-        given().get(new URI(scgUrl1)).then().statusCode(200).onFailMessage("Accessing " + scgUrl1);
-        given().get(new URI(scgUrl2)).then().statusCode(200).onFailMessage("Accessing " + scgUrl2);
+        given()
+            .auth().preemptive().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
+        .when()
+            .get(new URI(scgUrl1))
+        .then()
+            .statusCode(200)
+            .onFailMessage("Accessing " + scgUrl1);
+        given()
+            .auth().preemptive().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
+        .when()
+            .get(new URI(scgUrl2))
+        .then()
+            .statusCode(200)
+            .onFailMessage("Accessing " + scgUrl2);
     }
 
     @Test
@@ -73,9 +99,9 @@ class GatewayProxyTest {
         assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 3), () -> {
             given()
                 .header(HEADER_X_FORWARD_TO, "discoverableclient")
-                .when()
+            .when()
                 .get(scgUrl)
-                .then()
+            .then()
                 .statusCode(HttpStatus.SC_GATEWAY_TIMEOUT);
         });
     }
@@ -89,9 +115,9 @@ class GatewayProxyTest {
             given()
                 .config(SslContext.clientCertValid)
                 .header(HEADER_X_FORWARD_TO, "apiml1")
-                .when()
+            .when()
                 .get(scgUrl)
-                .then()
+            .then()
                 .statusCode(HttpStatus.SC_OK)
                 .body("dn", startsWith("CN=APIMTST"))
                 .body("cn", is("APIMTST"))
@@ -103,21 +129,21 @@ class GatewayProxyTest {
             String scgUrl = String.format("%s://%s:%s/%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1", X509_ENDPOINT);
             given()
                 .config(SslContext.clientCertValid)
-                .when()
+            .when()
                 .get(scgUrl)
-                .then()
+            .then()
                 .statusCode(HttpStatus.SC_OK)
                 .body("dn", startsWith("CN=APIMTST"))
                 .body("cn", is("APIMTST"))
                 .onFailMessage("Accessing " + scgUrl);
         }
+
     }
 
     @Nested
     class GivenGatewayCertificatesRequest {
 
         private final String trustedCerts;
-
         {
             TlsConfiguration tlsConf = ConfigReader.environmentConfiguration().getTlsConfiguration();
             HttpsConfig httpsConf = HttpsConfig.builder()
@@ -149,9 +175,9 @@ class GatewayProxyTest {
             String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_CERTIFICATES);
             String response =
                 given()
-                    .when()
+                .when()
                     .get(new URI(scgUrl))
-                    .then()
+                .then()
                     .statusCode(HttpStatus.SC_OK)
                     .extract().body().asString();
 
@@ -160,4 +186,5 @@ class GatewayProxyTest {
         }
 
     }
+
 }

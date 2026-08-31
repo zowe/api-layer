@@ -29,6 +29,11 @@ services:
       customMetadata:
             apiml:
                 okToRetryOnAllOperations: true
+                corsEnabled: true
+                corsAllowedOrigins: https://discoverable-client:10012
+                corsAllowedMethods: GET,POST,OPTIONS,HEAD
+                corsAllowedHeaders: Content-Type,Authorization
+                corsAllowCredentials: true
 
     - serviceId: zowejwt  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)
@@ -77,6 +82,9 @@ services:
         - apiId: zowe.apiml.discoverableclient
           gatewayUrl: api/v1
           version: 1.0.0
+      customMetadata:
+          apiml:
+            corsEnabled: false
 
     - serviceId: dcbypass  # unique lowercase ID of the service
       catalogUiTileId: static  # ID of the API Catalog UI tile (visual grouping of the services)

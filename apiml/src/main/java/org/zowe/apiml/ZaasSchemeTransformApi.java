@@ -124,8 +124,9 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         return createAuthorizationResponse((ErrorHeaders) response.getHeaders(), null);
     }
 
-    private <R> Mono<AuthorizationResponse<R>> handleMissingApplicationName(OtelRequestContext context) {
+    private <R> Mono<AuthorizationResponse<R>> handleMissingApplicationName(String serviceId, OtelRequestContext context) {
         context.authErrorType(ApplicationNameNotProvidedException.class.getName());
+        log.debug("Service '{}' is missing APPLID set", serviceId);
         return createAuthorizationResponse(createErrorMessage("ApplicationName not provided."),null);
     }
 
@@ -134,7 +135,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         var applicationName = requestCredentials.getApplId();
         var otelRequestContext = OtelRequestContext.of(exchange);
         if (StringUtils.isBlank(applicationName)) {
-            return handleMissingApplicationName(otelRequestContext);
+            return handleMissingApplicationName(requestCredentials.getServiceId(), otelRequestContext);
         }
 
         try {
@@ -186,7 +187,7 @@ public class ZaasSchemeTransformApi implements ZaasSchemeTransform {
         var applicationName = requestCredentials.getApplId();
         var otelRequestContext = OtelRequestContext.of(exchange);
         if (StringUtils.isBlank(applicationName)) {
-            return handleMissingApplicationName(otelRequestContext);
+            return handleMissingApplicationName(requestCredentials.getServiceId(), otelRequestContext);
         }
 
         try {

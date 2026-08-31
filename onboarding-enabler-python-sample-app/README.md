@@ -7,7 +7,7 @@ This is an example about how an API service implemented in Python can be registe
 
  This example contains the full HTTPS validation of both Discovery Service and the Hello World service.
 
- The certificate, private key for the service, and the local CA certificate are loaded from `keystore/localhost/localhost.keystore.p12`.
+ The certificate, private key for the service, and the local CA certificate are loaded from `keystore/service/service.keystore.p12`.
  
 ## How to run
 
@@ -45,7 +45,7 @@ If the APIML is already running then you should see the following messages:
 
 Then you can access it via Gateway by issuing the following command:
 
-    http --verify=../keystore/local_ca/localca.cer GET https://localhost:10010/pythonservice/api/v1/hello
+    http --verify=../keystore/ca/service-ca.cer GET https://localhost:10010/pythonservice/api/v1/hello
 
 ## Registration to the Discovery Service
 

@@ -38,12 +38,6 @@ public class BuildInfo {
 
     private ApimlLogger apimlLog = ApimlLogger.of(this.getClass(), YamlMessageServiceInstance.getInstance());
 
-    public void logBuildInfo() {
-        BuildInfoDetails buildInfo = getBuildInfoDetails();
-        log.info("Service {} version {} #{} on {} by {} commit {}", buildInfo.getArtifact(), buildInfo.getVersion(), buildInfo.getNumber(),
-            buildInfo.getTime(), buildInfo.getMachine(), buildInfo.getCommitId());
-    }
-
     public BuildInfoDetails getBuildInfoDetails() {
         Properties build = getProperties(buildProperties);
         Properties git = getProperties(gitProperties);

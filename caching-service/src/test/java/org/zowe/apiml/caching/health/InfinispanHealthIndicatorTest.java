@@ -115,7 +115,7 @@ class InfinispanHealthIndicatorTest {
             var infinispanHealthIndicator = new InfinispanHealthIndicator();
             ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(infinispanHealthIndicator, "cacheManager"))
                 .set(cacheManager);
-            ReflectionTestUtils.setField(infinispanHealthIndicator, "initialHosts", "");
+            System.setProperty("jgroups.tcpping.initial_hosts", "");
             var builder = mock(Health.Builder.class);
             infinispanHealthIndicator.doHealthCheck(builder);
 

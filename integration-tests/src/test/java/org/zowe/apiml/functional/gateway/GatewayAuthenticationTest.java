@@ -22,6 +22,7 @@ import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
+import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -53,7 +54,7 @@ class GatewayAuthenticationTest {
                 String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
                 // Gateway request to url
                 given()
-                    .header("Authorization", "Bearer " + token)
+                    .header(AUTHORIZATION, "Bearer " + token)
                     .when()
                     .get(HttpRequestUtils.getUriFromGateway(endpoint))
                     .then()
@@ -77,7 +78,7 @@ class GatewayAuthenticationTest {
                 String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
                 // Gateway request to url
                 given()
-                    .header("Authorization", "Bearer invalidToken")
+                    .header(AUTHORIZATION, "Bearer invalidToken")
                     .when()
                     .get(HttpRequestUtils.getUriFromGateway(endpoint))
                     .then()

@@ -167,17 +167,6 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
         return new ParsedTokenAuthSource(mappedUser, response.getCreation(), response.getExpiration(), origin);
     }
 
-    //this method should be removed from the unrelated auth sources
-    @Override
-    public String getLtpaToken(AuthSource authSource) {
-        String zosmfToken = getJWT(authSource);
-        AuthSource.Origin origin = authenticationService.getTokenOrigin(zosmfToken);
-        if (AuthSource.Origin.ZOWE.equals(origin)) {
-            zosmfToken = authenticationService.getLtpaToken(zosmfToken);
-        }
-        return zosmfToken;
-    }
-
     @Override
     public String getJWT(AuthSource authSource) {
         AuthSource.Parsed parsed = parse(authSource);

@@ -33,12 +33,26 @@ public class ApimlDuplicateMessagesFilter extends DuplicateMessageFilter {
 
     @Override
     public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
-        if (level.isGreaterOrEqual(logger.getEffectiveLevel())) {
-            String formattedMessage = getLogMessage(format, params, t);
-            // Sent the entire formatted message to the parent to ensure exact duplicates are filtered out
-            return super.decide(marker, logger, level, getMessageHash(formattedMessage), params, t);
+        if (isLevelProbe(format, params, t)) {
+            return FilterReply.NEUTRAL;
         }
-        return FilterReply.DENY;
+        if (!level.isGreaterOrEqual(logger.getEffectiveLevel())) {
+            return FilterReply.NEUTRAL;
+        }
+        String formattedMessage = getLogMessage(format, params, t);
+        return super.decide(marker, logger, level, getMessageHash(formattedMessage), params, t);
+    }
+
+    /**
+     * Logback consults the turbo filter chain from {@code Logger#isDebugEnabled()} and its siblings,
+     * passing no message at all - format, params and throwable are all null. Such a probe carries
+     * nothing to de-duplicate and must not consume a cache entry: with allowedRepetitions set to 0 the
+     * first probe would exhaust the only allowed repetition and every later isXxxEnabled() call in the
+     * whole application would be answered with false, silencing all logging guarded that way
+     * (reactor-netty and Netty's LoggingHandler guard every statement like this).
+     */
+    private boolean isLevelProbe(String format, Object[] params, Throwable t) {
+        return format == null && params == null && t == null;
     }
 
     private String getMessageHash(String message) {

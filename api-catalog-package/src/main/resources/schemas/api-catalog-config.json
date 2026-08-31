@@ -233,7 +233,7 @@
             }
         },
         "logging": {
-            "type": "string",
+            "type": "object",
             "description": "Logging configuration for API Catalog service.",
             "properties": {
                 "config": {
@@ -241,6 +241,16 @@
                     "description": "Path to custom logback configuration file.",
                     "minLength": 1,
                     "maxLength": 1024
+                },
+                "level": {
+                    "type": "string",
+                    "description": "Logging level to activate",
+                    "default": "info",
+                    "enum": [
+                        "quiet",
+                        "info",
+                        "debug"
+                    ]
                 }
             }
         }

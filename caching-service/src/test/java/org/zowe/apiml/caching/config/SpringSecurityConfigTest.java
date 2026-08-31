@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.caching.CachingServiceApplication;
@@ -74,7 +75,7 @@ public class SpringSecurityConfigTest {
     static void init() throws Exception {
         SslContext.reset();
         RestAssured.useRelaxedHTTPSValidation();
-        SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client_cert/client-certs.p12", "../keystore/localhost/localhost.keystore.p12");
+        SslContextConfigurer configurer = new SslContextConfigurer("password".toCharArray(), "../keystore/client/client-certs.p12", "../keystore/service/service.keystore.p12");
         SslContext.prepareSslAuthentication(configurer);
     }
 
@@ -95,6 +96,7 @@ public class SpringSecurityConfigTest {
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @ActiveProfiles("test")
     class GivenDisabledSSLVerificationAndCachingCredentials {
 
         @MockitoBean
@@ -165,6 +167,7 @@ public class SpringSecurityConfigTest {
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @ActiveProfiles("test")
     class GivenDisabledSSLVerificationAndNoCachingCredentials {
 
         @MockitoBean
@@ -237,6 +240,7 @@ public class SpringSecurityConfigTest {
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @ActiveProfiles("test")
     class GivenEnabledSSLVerificationAndCachingCredentials {
 
         @MockitoBean
@@ -342,6 +346,7 @@ public class SpringSecurityConfigTest {
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @ActiveProfiles("test")
     class GivenEnabledSSLVerificationAndNoCachingCredentials {
 
         @MockitoBean

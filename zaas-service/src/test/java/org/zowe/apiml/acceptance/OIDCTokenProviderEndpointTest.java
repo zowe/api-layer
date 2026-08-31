@@ -69,7 +69,7 @@ import static org.zowe.apiml.zaas.zaas.SchemeController.CONTROLLER_PATH;
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("OIDCTokenProviderEndpointTest")
+@ActiveProfiles({"test", "OIDCTokenProviderEndpointTest"})
 class OIDCTokenProviderEndpointTest {
 
     private static final String MF_USER = "USER";

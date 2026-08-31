@@ -42,6 +42,13 @@ messages:
       reason: "The endpoint you are looking for could not be located."
       action: "Verify that the URL of the endpoint you are trying to reach is correct."
 
+    - key: org.zowe.apiml.common.authentication.provider
+      number: ZWEAM105
+      type: INFO
+      text: "Using authentication provider: %s"
+      reason: "You have chosen an authentication provider, as seen in this message."
+      action: "No action required."
+
     # Ticket messages
     # 140 - 149
 
@@ -206,6 +213,20 @@ messages:
       text: "Pattern '*' is not recommended in apiml.corsAllowedOrigins"
       reason: "The pattern '*' is not recommended in apiml.corsAllowedOrigins."
       action: "Use a specific URL instead of a pattern."
+
+    - key: org.zowe.apiml.common.schemeNotAllowed
+      number: ZWEAM603
+      type: WARNING
+      text: "'%s' %s is not allowed for instance '%s'"
+      reason: "Using HTTP scheme in the URL is not allowed without AT-TLS."
+      action: "Use HTTPS protocol or enable AT-TLS."
+
+    - key: org.zowe.apiml.common.metadataNotAllowedInRegistration
+      number: ZWEAM604
+      type: WARNING
+      text: "Invalid metadata found in registration"
+      reason: "The URL / IP Address is not allowed"
+      action: "Validate URL / IP Address against the allowed domains configuration."
 
     # Service specific messages
     # 700-999

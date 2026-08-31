@@ -229,15 +229,18 @@ public class ReactiveAuthenticationController {
     /**
      * Invalidate JWT, hidden endpoint undocumented
      *
-     * @param token The JWT token to invalidate
      * @return
      */
     @Hidden
-    @DeleteMapping(path = "/invalidate/{token}")
-    public Mono<ResponseEntity<Void>> invalidateJwtToken(@PathVariable String token) {
+    @DeleteMapping(path = "/invalidate")
+    public Mono<ResponseEntity<Void>> invalidateJwtToken(@RequestHeader("Authorization") String authHeader) {
         try {
             var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
-            var invalidated = authenticationService.invalidateJwtTokenGateway(token, false, app);
+            if (!authHeader.startsWith("Bearer ")) {
+                return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
+            }
+            final var jwtToken = authHeader.substring(7).trim(); //Starts with "Bearer "
+            var invalidated = authenticationService.invalidateJwtTokenGateway(jwtToken, false, app);
             return Mono.just(ResponseEntity.status(invalidated ? SC_OK : SC_SERVICE_UNAVAILABLE).build());
         } catch (TokenNotValidException e) {
             return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());

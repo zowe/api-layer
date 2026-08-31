@@ -40,6 +40,7 @@
 # - ZWE_configs_certificate_truststore_file
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_port - the port the api catalog service will use
 # - ZWE_configs_spring_profiles_active
 # - ZWE_DISCOVERY_SERVICES_LIST
@@ -64,6 +65,9 @@ else
     . "$(pwd)/bin/parse_jvm_args.sh"
 fi
 echo "jar file: ${JAR_FILE}"
+
+# Logging level
+add_profile "${ZWE_configs_logging_level:-info}"
 
 # Debug profile
 if [ "${ZWE_configs_debug}" = "true" ]; then
@@ -109,65 +113,67 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     ${LOGBACK} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
+    ${EUREKA_IP_ADDRESS} \
     ${CUSTOM_JVM_OPTS} \
-    -Dibm.serversocket.recover=true \
-    -Dfile.encoding=UTF-8 \
-    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
-    -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
-    -Dapiml.service.port=${ZWE_configs_port:-7552} \
-    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
-    -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
-    -Dapiml.discovery.userid=${discoveryUserid} \
+    -Dapiml.catalog.customStyle.backgroundColor=${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-} \
+    -Dapiml.catalog.customStyle.docLink=${ZWE_configs_apiml_catalog_customStyle_docLink:-} \
+    -Dapiml.catalog.customStyle.fontFamily=${ZWE_configs_apiml_catalog_customStyle_fontFamily:-} \
+    -Dapiml.catalog.customStyle.headerColor=${ZWE_configs_apiml_catalog_customStyle_headerColor:-} \
+    -Dapiml.catalog.customStyle.logo=${ZWE_configs_apiml_catalog_customStyle_logo:-} \
+    -Dapiml.catalog.customStyle.textColor=${ZWE_configs_apiml_catalog_customStyle_textColor:-} \
+    -Dapiml.catalog.customStyle.titlesColor=${ZWE_configs_apiml_catalog_customStyle_titlesColor:-} \
+    -Dapiml.catalog.hide.serviceInfo=${ZWE_configs_apiml_catalog_hide_serviceInfo:-false} \
     -Dapiml.discovery.password=${discoveryPassword} \
-    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
-    -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
     -Dapiml.discovery.staticApiDefinitionsDirectories=${ZWE_STATIC_DEFINITIONS_DIR} \
-    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
-    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
-    -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-${ZWE_components_gateway_apiml_security_authorization_provider:-"native"}} \
+    -Dapiml.discovery.userid=${discoveryUserid} \
+    -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
+    -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
+    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.authorization.endpoint.enabled=${ZWE_components_gateway_apiml_security_authorization_endpoint_enabled:-false} \
     -Dapiml.security.authorization.endpoint.url=${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port}/zss/api/v1/saf-auth"} \
+    -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-${ZWE_components_gateway_apiml_security_authorization_provider:-"native"}} \
     -Dapiml.security.authorization.resourceClass=${ZWE_components_gateway_apiml_security_authorization_resourceClass:-ZOWE} \
-    -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
-    -Dapiml.catalog.hide.serviceInfo=${ZWE_configs_apiml_catalog_hide_serviceInfo:-false} \
-    -Dapiml.catalog.customStyle.logo=${ZWE_configs_apiml_catalog_customStyle_logo:-} \
-    -Dapiml.catalog.customStyle.fontFamily=${ZWE_configs_apiml_catalog_customStyle_fontFamily:-} \
-    -Dapiml.catalog.customStyle.backgroundColor=${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-} \
-    -Dapiml.catalog.customStyle.titlesColor=${ZWE_configs_apiml_catalog_customStyle_titlesColor:-} \
-    -Dapiml.catalog.customStyle.headerColor=${ZWE_configs_apiml_catalog_customStyle_headerColor:-} \
-    -Dapiml.catalog.customStyle.textColor=${ZWE_configs_apiml_catalog_customStyle_textColor:-} \
-    -Dapiml.catalog.customStyle.docLink=${ZWE_configs_apiml_catalog_customStyle_docLink:-} \
-    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
+    -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
+    -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
+    -Dapiml.service.discoveryServiceUrls=${ZWE_DISCOVERY_SERVICES_LIST} \
+    -Dapiml.service.gatewayHostname=${ZWE_GATEWAY_HOST:-${ZWE_haInstance_hostname:-localhost}} \
+    -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
+    -Dapiml.service.port=${ZWE_configs_port:-7552} \
     -Dapiml.service.ssl.ciphers=${ZWE_configs_apiml_service_ssl_ciphers:-${client_ciphers}} \
+    -Dapiml.service.ssl.enabled-protocols=${ZWE_configs_apiml_service_ssl_enabled_protocols:-${client_enabled_protocols}} \
     -Dapiml.service.ssl.key-alias="${client_key_alias}" \
     -Dapiml.service.ssl.key-password="${client_key_pass}" \
-    -Dapiml.service.ssl.key-store="${client_keystore_location}" \
     -Dapiml.service.ssl.key-store-password="${client_keystore_pass}" \
     -Dapiml.service.ssl.key-store-type="${client_keystore_type}" \
+    -Dapiml.service.ssl.key-store="${client_keystore_location}" \
     -Dapiml.service.ssl.protocol=${ZWE_configs_apiml_service_ssl_protocol:-${server_protocol}} \
-    -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
     -Dapiml.service.ssl.trust-store-password="${client_truststore_pass}" \
     -Dapiml.service.ssl.trust-store-type="${client_truststore_type}" \
+    -Dapiml.service.ssl.trust-store="${client_truststore_location}" \
+    -Dfile.encoding=UTF-8 \
+    -Dibm.serversocket.recover=true \
+    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
+    -Djava.library.path=${LIBPATH} \
+    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
-    -Dserver.ssl.ciphers=${server_ciphers} \
-    -Dserver.ssl.protocol=${server_protocol} \
-    -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
+    -Dloader.path=${COMMON_LIB} \
+    -Dotel.sdk.disabled=true \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
+    -Dserver.ssl.ciphers=${server_ciphers} \
+    -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
-    -Dserver.ssl.keyStore="${keystore_location}" \
-    -Dserver.ssl.keyStoreType="${keystore_type}" \
-    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
     -Dserver.ssl.keyAlias="${key_alias}" \
     -Dserver.ssl.keyPassword="${key_pass}" \
+    -Dserver.ssl.keyStore="${keystore_location}" \
+    -Dserver.ssl.keyStorePassword="${keystore_pass}" \
+    -Dserver.ssl.keyStoreType="${keystore_type}" \
+    -Dserver.ssl.protocol=${server_protocol} \
     -Dserver.ssl.trustStore="${truststore_location}" \
-    -Dserver.ssl.trustStoreType="${truststore_type}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
-    -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
-    -Dloader.path=${COMMON_LIB} \
-    -Djava.library.path=${LIBPATH} \
-    -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
-    -Dotel.sdk.disabled=true \
+    -Dserver.ssl.trustStoreType="${truststore_type}" \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"
