@@ -120,20 +120,22 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
             .then()
                 .statusCode(HttpStatus.FORBIDDEN.value());
         }
-    }
-
-    @Nested
-    class WhenCalledWithValidAuthentication {
 
         @Test
-        void givenCertificateButNoHeader_cachingApiEndpointsIsAccessible() {
+        void givenCertificateButNoHeader_cachingApiEndpointsIsNotAccessible() {
             given()
                 .config(SslContext.clientCertApiml)
             .when()
                 .get(caching_url + CACHING_PATH)
             .then()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.UNAUTHORIZED.value());
         }
+
+    }
+
+    @Nested
+    class WhenCalledWithValidAuthentication {
+
 
         @Test
         void cachingApiEndpointsAccessible() {
