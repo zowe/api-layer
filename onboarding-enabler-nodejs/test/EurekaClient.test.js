@@ -1538,6 +1538,28 @@ describe('Eureka client', () => {
       renewSpy.restore();
     });
 
+    it('should disable legacy retries for circuit-breaker-managed heartbeats', () => {
+      const requestSpy = sinon.stub(client, 'eurekaRequest');
+
+      client.startHeartbeats();
+      clock.tick(client.config.eureka.heartbeatInterval);
+
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy.firstCall.args[3]).to.equal(false);
+      requestSpy.restore();
+    });
+
+    it('should disable legacy retries for circuit-breaker-managed registry fetches', () => {
+      const requestSpy = sinon.stub(client, 'eurekaRequest');
+
+      client.startRegistryFetches();
+      clock.tick(client.config.eureka.registryFetchInterval);
+
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy.firstCall.args[3]).to.equal(false);
+      requestSpy.restore();
+    });
+
     // AC2: Circuit opens after N consecutive failures, WARN logged
     it('should open circuit after maxFailures and log WARN (AC2)', () => {
       const warnSpy = sinon.spy(client.logger, 'warn');
@@ -1776,7 +1798,7 @@ describe('Eureka client', () => {
       fetchSpy.restore();
     });
   });
-    
+
   describe('env var configuration', () => {
     const REGISTRY_ENV = 'EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS';
     const HEARTBEAT_ENV = 'EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS';

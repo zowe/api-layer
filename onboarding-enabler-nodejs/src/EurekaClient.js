@@ -413,6 +413,7 @@ export default class Eureka extends EventEmitter {
 
       // Schedule after renewal completes to avoid overlapping heartbeat requests.
       // The effective interval is heartbeatInterval plus request duration.
+      // The circuit breaker owns retry cadence; bypass eurekaRequest's legacy linear retries.
       this.renew((err) => {
         if (err) {
           const result = this.circuitBreaker.recordFailure();
@@ -422,7 +423,7 @@ export default class Eureka extends EventEmitter {
           this.circuitBreaker.recordSuccess();
           this._heartbeatTimeout = setTimeout(schedule, this.config.eureka.heartbeatInterval);
         }
-      });
+      }, false);
     };
 
     this._heartbeatTimeout = setTimeout(schedule, this.config.eureka.heartbeatInterval);
@@ -432,7 +433,7 @@ export default class Eureka extends EventEmitter {
     Sends a heartbeat renewal to Eureka. Optionally accepts a callback for
     success/failure notification (used by circuit breaker scheduling).
   */
-  renew(callback = noop) {
+  renew(callback = noop, retryEnabled = true) {
     this.eurekaRequest({
       method: 'PUT',
       uri: `${this.config.instance.app}/${this.instanceId}`,
@@ -458,7 +459,7 @@ export default class Eureka extends EventEmitter {
           `Heartbeat failed: status ${response ? response.statusCode : 'unknown'}`
         ));
       }
-    });
+    }, 0, retryEnabled);
   }
 
   /*
@@ -488,6 +489,7 @@ export default class Eureka extends EventEmitter {
 
       // Schedule after fetch completion to avoid overlapping registry requests.
       // The effective interval is registryFetchInterval plus request duration.
+      // The circuit breaker owns retry cadence; bypass eurekaRequest's legacy linear retries.
       this.fetchRegistry((err) => {
         if (err) {
           const result = this.circuitBreaker.recordFailure();
@@ -500,7 +502,7 @@ export default class Eureka extends EventEmitter {
             this.config.eureka.registryFetchInterval
           );
         }
-      });
+      }, false);
     };
 
     this._registryFetchTimeout = setTimeout(schedule, this.config.eureka.registryFetchInterval);
@@ -537,18 +539,18 @@ export default class Eureka extends EventEmitter {
   /*
     Orchestrates fetching registry
    */
-  fetchRegistry(callback = noop) {
+  fetchRegistry(callback = noop, retryEnabled = true) {
     if (this.config.shouldUseDelta && this.hasFullRegistry) {
-      this.fetchDelta(callback);
+      this.fetchDelta(callback, retryEnabled);
     } else {
-      this.fetchFullRegistry(callback);
+      this.fetchFullRegistry(callback, retryEnabled);
     }
   }
 
   /*
     Retrieves all applications registered with the Eureka server
   */
-  fetchFullRegistry(callback = noop) {
+  fetchFullRegistry(callback = noop, retryEnabled = true) {
     this.eurekaRequest({
       uri: '',
       headers: {
@@ -570,13 +572,13 @@ export default class Eureka extends EventEmitter {
         return callback(error);
       }
       callback(new Error('Unable to retrieve full registry from Eureka server'));
-    });
+    }, 0, retryEnabled);
   }
 
   /*
     Retrieves all applications registered with the Eureka server
    */
-  fetchDelta(callback = noop) {
+  fetchDelta(callback = noop, retryEnabled = true) {
     this.eurekaRequest({
       uri: 'delta',
       headers: {
@@ -599,7 +601,7 @@ export default class Eureka extends EventEmitter {
         return callback(error);
       }
       callback(new Error('Unable to retrieve delta registry from Eureka server'));
-    });
+    }, 0, retryEnabled);
   }
   /*
     Transforms the given registry and caches the registry locally
