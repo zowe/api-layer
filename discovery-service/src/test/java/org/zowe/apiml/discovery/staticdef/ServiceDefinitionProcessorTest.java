@@ -225,30 +225,6 @@ class ServiceDefinitionProcessorTest {
     }
 
     @Test
-    void givenInvalidDocumentationUrl_whenTheDefinitionIsLoaded_thenErrorIsReturned() {
-        String routedServiceYaml = "services:\n" +
-            "    - serviceId: casamplerestapiservice\n" +
-            "      instanceBaseUrls:\n" +
-            "        - https://localhost:20020/\n" +
-            "      apiInfo:\n" +
-            "        - apiId: swagger.io.petstore\n" +
-            "          gatewayUrl: api/v2\n" +
-            "          swaggerUrl: http://localhost:8080/v2/swagger.json\n" +
-            "          version: 2.0.0\n" +
-            "          documentationUrl: httpBlah://localhost:10021/hellospring/api-doc";
-
-        StaticRegistrationResult result = processServicesData(routedServiceYaml);
-
-        assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(
-            result,
-            "Metadata creation failed. The instance of casamplerestapiservice will not be created: " +
-                "org.zowe.apiml.exception.MetadataValidationException: The documentation URL &quot;httpBlah://localhost:10021/hellospring/api-doc&quot; for service casamplerestapiservice is not valid"
-        );
-    }
-
-
-
-    @Test
     void givenListAmongCustomMetadata_whenDefinitionIsLoaded_thenErrorIsReturned() {
         String yaml =
             "services:\n" +

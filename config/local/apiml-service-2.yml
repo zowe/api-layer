@@ -1,5 +1,8 @@
-spring.profiles.active: diag
+spring.profiles.active: debug,diag
+
+logbackServiceName: ZWEAGW2
 logging:
+    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} <%blue(${logbackServiceName}):%magenta(%thread):${PID:}> %X{userid:-} %clr(%-5level) %cyan(\(%logger{15}\)) %msg%n'
     level:
         org.springframework.web.socket.client.standard.AnnotatedEndpointConnectionManager: DEBUG
         org.springframework.web.reactive.socket.client.StandardWebSocketClient: TRACE
@@ -12,6 +15,9 @@ server:
 eureka:
     server:
         myUrl: https://localhost:10021/eureka/
+    instance:
+        ipAddress: 127.0.0.1
+
 apiml:
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
@@ -27,7 +33,6 @@ apiml:
         cookieNameForRateLimiter: apimlAuthenticationToken
     service:
         apimlId: apiml2
-
         discoveryServiceUrls: https://localhost:10021/eureka/
         forwardClientCertEnabled: false
         hostname: localhost

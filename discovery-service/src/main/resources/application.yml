@@ -1,29 +1,14 @@
 # for back-compatibility
 spring.profiles.group.attls: attlsServer,attlsClient
 
+logbackServiceName: ZWEADS1
+
+# This section contains only logging levels configuration common to all profiles.
+# Use a dedicated profile below or create a new one to configure logging levels.
 logging:
     level:
-        ROOT: INFO
-        org.zowe.apiml: INFO
-        org.springframework: WARN
-        com.netflix: WARN
-        com.netflix.discovery: ERROR
-        com.netflix.config: ERROR
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         com.netflix.discovery.DiscoveryClient: OFF
-        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
-        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
-        org.ehcache: WARN
-        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        org.springframework.security.web: INFO
-        # New Config
-        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
-        org.eclipse.jetty: WARN
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        javax.net.ssl: ERROR
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        com.netflix.eureka: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
 
 apiml:
     # The `apiml` node contains API Mediation Layer specific configuration
@@ -32,7 +17,8 @@ apiml:
         id: discovery  # Service ID of this service. It is fixed for APIML Discovery Service
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10011  # Default port name for discovery service
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        # The apiml.service.ipAddress was replaced by eureka.instance.ipAddress. Because the value must remain unset (null) to allow eureka fallback
+        # its native ip address discovery the field cannot just reference a value from another due to spring limitation in processing properties from yml file.
         preferIpAddress: false
     discovery:
         allPeersUrls: 'http://#{("${apiml.discovery.userid:}".isEmpty() or "${apiml.discovery.password:}".isEmpty()) ? "" : "${apiml.discovery.userid:}:${apiml.discovery.password:}@"}${apiml.service.hostname}:${apiml.service.port}/eureka/'
@@ -47,7 +33,6 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
         gateway:
             mvc.enabled: false
             enabled: false
@@ -66,7 +51,7 @@ otel:
         disabled: true
 
 server:
-    address: ${apiml.service.ipAddress}
+    address: 0.0.0.0
     port: ${apiml.service.port}
     ssl:
         enabled: false
@@ -77,7 +62,6 @@ eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
         port: ${server.port}
         securePort: 0
         nonSecurePortEnabled: true
@@ -94,7 +78,7 @@ eureka:
     server:
         max-threads-for-peer-replication: 6
         useReadOnlyResponseCache: false
-        peer-node-read-timeout-ms: 15000
+        peer-node-read-timeout-ms: 30000 # Gives peer replication more headroom before permanent-error escalation (GH#4777)
 
 management:
     endpoints:
@@ -129,9 +113,9 @@ server:
         trustStoreRequired: true
         keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
 
 eureka:
@@ -149,6 +133,36 @@ eureka:
             defaultZone: ${apiml.discovery.allPeersUrls}
 
 ---
+spring.config.activate.on-profile: quiet
+
+logging:
+    level:
+        ROOT: ERROR
+        org.zowe.apiml: INFO
+
+---
+spring.config.activate.on-profile: info
+
+logging:
+    level:
+        ROOT: INFO
+        com.netflix: WARN
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        com.netflix.eureka: ERROR
+        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
+        javax.net.ssl: ERROR
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.ehcache: WARN
+        org.springframework: WARN
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.security.web: INFO
+
+---
 spring.config.activate.on-profile: debug
 
 management:
@@ -162,19 +176,21 @@ management:
 logging:
     level:
         ROOT: DEBUG
-        org.zowe.apiml: DEBUG
+        com.netflix: INFO
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.netflix.eureka: DEBUG
+        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+        javax.net.ssl: ERROR
+        org.apache: INFO #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.http: DEBUG
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.ehcache: INFO
         org.springframework: INFO
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
-        org.apache: INFO
-        org.apache.http: DEBUG
-        org.apache.tomcat.util.net: DEBUG
-        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        com.netflix: INFO
-        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
-        org.ehcache: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
-        javax.net.ssl: ERROR
-        com.netflix.eureka: DEBUG
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
 
 ---
 spring.config.activate.on-profile: diag
@@ -186,8 +202,6 @@ management:
             base-path: /application
             exposure:
                 include: "*"
-
-logbackServiceName: ZWEADS1
 
 ---
 spring.config.activate.on-profile: attlsServer

@@ -26,9 +26,9 @@ server:
 
         keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
 
 eureka:
@@ -41,7 +41,7 @@ zosmf:
     password: validPassword,PASSTICKET
     baseVersion: 2.4
     appliedApars: PH12143,JwtKeys
-    jwtKeyStorePath: keystore/localhost/localhost.keystore.p12
+    jwtKeyStorePath: keystore/service/service.keystore.p12
     timeout: 60
 
 zss:

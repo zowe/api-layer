@@ -1,3 +1,4 @@
+spring.profiles.active: debug,diag
 
 server:
     max-http-request-header-size: 16348
@@ -13,12 +14,17 @@ server:
     # ssl:
     #     keyAlias: localhost
     #     keyPassword: password
-    #     keyStore: keystore/docker/all-services.keystore.p12
+    #     keyStore: keystore/service/service.keystore.p12
     #     keyStorePassword: password
     #     keyStoreType: PKCS12
-    #     trustStore: keystore/docker/all-services.truststore.p12
+    #     trustStore: keystore/service/service.truststore.p12
     #     trustStorePassword: password
     #     trustStoreType: PKCS12
+
+eureka:
+    instance:
+        ipAddress: 127.0.0.1
+
 apiml:
     catalog:
         eureka:
@@ -26,7 +32,7 @@ apiml:
                 metadata-map:
                     apiml:
                         corsEnabled: true
-                        corsAllowedOrigins: http://localhost:5173
+                        corsAllowedOrigins: https://localhost:3000
     internal-discovery:
         port: 10011
     health:
@@ -62,6 +68,7 @@ apiml:
             zosmf:
                 serviceId: mockzosmf  # Replace me with the correct z/OSMF service id
         allowedDomains: localhost,localhost2,www.ibm.com,zowe.github.io,www.zowe.org
+
 caching:
     storage:
         mode: infinispan
@@ -108,3 +115,6 @@ management:
         web:
             exposure:
                 include: "*"
+
+logging:
+    pattern: '%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} <%blue(${logbackServiceName}):%magenta(%thread):${PID:}> %X{userid:-} %clr(%-5level) %cyan(\(%logger{15}\)) %msg%n'

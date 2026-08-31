@@ -40,9 +40,9 @@ instance:
   app: pythonservice
 
 ssl:
-  certificate: "../keystore/localhost/localhost.keystore.cer"
-  keystore: "../keystore/localhost/localhost.keystore.key"
-  caFile: "../keystore/localhost/localhost.pem"
+  certificate: "../keystore/service/service.cer"
+  keystore: "../keystore/service/service.key"
+  caFile: "../keystore/service/service.pem"
   keyPassword: "password"
 """
 
@@ -91,8 +91,8 @@ async def test_http_client_ssl_setup(mock_config_loader, mock_ssl_context, mock_
     response = await client.urlopen(request_mock, data=None)
 
     mock_ssl_context.load_cert_chain.assert_called_once_with(
-        certfile="../keystore/localhost/localhost.keystore.cer",
-        keyfile="../keystore/localhost/localhost.keystore.key",
+        certfile="../keystore/service/service.cer",
+        keyfile="../keystore/service/service.key",
         password="password"
     )
 

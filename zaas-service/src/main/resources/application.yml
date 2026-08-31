@@ -1,33 +1,14 @@
 # for back-compatibility
 spring.profiles.group.attls: attlsServer,attlsClient
 
+logbackServiceName: ZWEAZS1
+
+# This section contains only logging levels configuration common to all profiles.
+# Use a dedicated profile below or create a new one to configure logging levels.
 logging:
     level:
-        ROOT: INFO
-        org.zowe.apiml: INFO
-        org.springframework: WARN
-        com.netflix: WARN
-        com.netflix.discovery: ERROR
-        com.netflix.config: ERROR
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
         org.springframework.cloud.client.discovery.DiscoveryClient: OFF
-        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.springframework.web.socket: WARN
-        org.zowe.apiml.zaas.error: INFO
-        org.eclipse.jetty: WARN
-        org.springframework.web.servlet.PageNotFound: ERROR
-        org.ehcache: WARN
-        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
-
-        # New Config
-        org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
-        javax.servlet: INFO
-        javax.net.ssl: ERROR
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        org.eclipse.jetty.util.ssl: ERROR
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
 
 apiml:
     service:
@@ -36,7 +17,8 @@ apiml:
         hostname: localhost  # Hostname that is advertised in Eureka. Contains the actual hostname of the instance.
                              # Default is valid only for localhost
         port: 10023  # Default port name for ZAAS
-        ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        # The apiml.service.ipAddress was replaced by eureka.instance.ipAddress. Because the value must remain unset (null) to allow eureka fallback
+        # its native ip address discovery the field cannot just reference a value from another due to spring limitation in processing properties from yml file.
         scheme: https  # "https" or "http"
         preferIpAddress: false
 
@@ -102,7 +84,6 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         client:
             hostname: ${apiml.service.hostname}
-            ipAddress: ${apiml.service.ipAddress}
         gateway:
             mvc.enabled: false
             server:
@@ -126,7 +107,7 @@ springdoc:
     writer-with-order-by-keys: true
 
 server:
-    address: ${apiml.service.ipAddress}
+    address: 0.0.0.0
     port: ${apiml.service.port}
     ssl:
         enabled: true
@@ -165,7 +146,6 @@ eureka:
     instance:
         instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
         hostname: ${apiml.service.hostname}
-        ipAddress: ${apiml.service.ipAddress}
         securePortEnabled: true
         #ports are computed in code
         preferIpAddress: ${apiml.service.preferIpAddress}
@@ -202,6 +182,36 @@ eureka:
             enabled: true
 
 ---
+spring.config.activate.on-profile: quiet
+
+logging:
+    level:
+        ROOT: ERROR
+        org.zowe.apiml: INFO
+
+---
+spring.config.activate.on-profile: info
+
+logging:
+    level:
+        ROOT: INFO
+        com.netflix: WARN
+        com.netflix.discovery: ERROR
+        com.netflix.config: ERROR
+        javax.net.ssl: ERROR
+        org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.ehcache: WARN
+        org.springframework: WARN
+        org.springframework.cloud.client.loadbalancer.reactive.[ReactorLoadBalancerClientAutoConfiguration$ReactorLoadBalancerClientRibbonWarnLogger]: ERROR
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.web.servlet.PageNotFound: ERROR
+        org.springframework.web.socket: WARN
+
+---
 spring:
     config.activate.on-profile: debug
 
@@ -216,21 +226,23 @@ management:
 logging:
     level:
         ROOT: INFO
-        org.zowe.apiml: DEBUG
-        org.springframework: INFO
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
-        org.apache: INFO
+        com.netflix: DEBUG
+        com.netflix.config: ERROR
+        javax.net.ssl: ERROR
         org.apache.http: DEBUG
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        com.netflix: DEBUG
-        org.hibernate: INFO
-        org.springframework.web.servlet.PageNotFound: WARN
-        org.springframework.security: DEBUG
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.ehcache: DEBUG
         org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
-        javax.net.ssl: ERROR
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.security: DEBUG
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.web.servlet.PageNotFound: WARN
+        org.springframework.web.socket: WARN
+        org.zowe.apiml: DEBUG
 
 ---
 spring.config.activate.on-profile: diag
@@ -245,11 +257,6 @@ management:
 
 server:
     max-http-request-header-size: 40000
-
----
-spring.config.activate.on-profile: dev
-
-logbackServiceName: ZWEAZS1
 
 ---
 spring.config.activate.on-profile: attlsServer

@@ -6,9 +6,7 @@ plugins {
 version "0.1"
 group "org.zowe.apiml"
 
-repositories {
-    mavenCentral()
-}
+repositories mavenRepositories
 
 micronaut {
     importMicronautPlatform = true

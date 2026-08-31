@@ -1,6 +1,4 @@
 # for back-compatibility
-spring.profiles.group.attls: attlsServer,attlsClient
-
 eureka:
     dashboard:
         path: /eureka
@@ -16,8 +14,12 @@ eureka:
     server:
         max-threads-for-peer-replication: 6
         useReadOnlyResponseCache: false
-        peer-node-read-timeout-ms: 15000
+        peer-node-read-timeout-ms: 30000 # Gives peer replication more headroom before permanent-error escalation (GH#4777)
 spring:
+    profiles:
+        group:
+            attls: attlsServer,attlsClient
+            debug-control: debug
     cloud:
         gateway:
             server:
@@ -192,12 +194,11 @@ apiml:
         apimlId: apiml1
         corsEnabled: true
         corsAllowedEndpoints: /gateway/**,/apicatalog/**,/cachingservice/**,/v3/api-docs/**
-        allowEncodedSlashes: true
         discoveryServiceUrls: https://localhost:10011/eureka/
         forwardClientCertEnabled: false
         hostname: localhost
         id: ${spring.application.name}
-        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Access-Control-Allow-Origin,Access-Control-Allow-Methods,Access-Control-Allow-Headers,Access-Control-Allow-Credentials,Origin
+        ignoredHeadersWhenCorsEnabled: Access-Control-Request-Method,Access-Control-Request-Headers,Origin
         port: 10010
         scheme: https  # "https" or "http"
         preferIpAddress: false
@@ -205,6 +206,8 @@ apiml:
         securePortEnabled: true
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
+        csrf:
+            preserveOriginForCrossSite: true
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName
         ssl:
             nonStrictVerifySslCertificatesOfServices: false
@@ -240,6 +243,8 @@ apiml:
             urls:
                 authenticate: https://${apiml.service.hostname}:10013/zss/saf/authenticate
                 verify: https://${apiml.service.hostname}:10013/zss/saf/verify
+        secFetch:
+            enabled: true
     health:
         protected: true
     webClientConfig.enabled: true
@@ -252,10 +257,10 @@ server:
         clientAuth: want
         keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
     max-http-request-header-size: 48000
@@ -269,46 +274,16 @@ jgroups:
     bind:
         port: 7600
         address: localhost
+
 logbackServiceName: ZWEAGW1
 
+# This section contains only logging levels configuration common to all profiles.
+# Use a dedicated profile below or create a new one to configure logging levels.
 logging:
     level:
-        ROOT: INFO
-        # New Config
-        com.netflix: WARN
-        com.netflix.config: ERROR
-        com.netflix.discovery: ERROR
         com.netflix.discovery.DiscoveryClient: OFF
         com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
-        com.netflix.eureka: ERROR
-        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
-        io.netty.resolver.dns: WARN
-        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
-        javax.net.ssl: ERROR
-        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: WARN #logs only SSLException
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.eclipse.jetty: WARN
-        org.ehcache: WARN
-        org.springframework: WARN
-        org.springframework.beans: WARN
-        org.springframework.boot.autoconfigure.web: WARN
-        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        org.springframework.cloud.gateway: INFO
-        org.springframework.cloud.gateway.filter: WARN
-        org.springframework.cloud.gateway.route: WARN
-        org.springframework.context.support: WARN
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
-        org.springframework.http.server.reactive: INFO
-        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        org.springframework.security.web: WARN
-        org.springframework.web.reactive: WARN
-        org.zowe.apiml: INFO
-        reactor.netty: WARN
-        reactor.netty.http.client: INFO
         reactor.netty.http.client.HttpClientConnect: OFF
-        org.infinispan: ERROR
-        org.jgroups: ERROR
 
 management:
     endpoint:
@@ -324,42 +299,108 @@ management:
                 include: health,info
 
 ---
+spring.config.activate.on-profile: quiet
+
+logging:
+    level:
+        ROOT: ERROR
+        org.zowe.apiml: INFO
+
+---
+spring.config.activate.on-profile: info
+
+logging:
+    level:
+        ROOT: INFO
+        com.netflix: WARN
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        com.netflix.eureka: ERROR
+        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
+        io.netty.resolver.dns: WARN
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        javax.net.ssl: ERROR
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.ehcache: WARN
+        org.springframework: WARN
+        org.springframework.beans: WARN
+        org.springframework.boot.autoconfigure.web: WARN
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.cloud.gateway: INFO
+        org.springframework.cloud.gateway.filter: WARN
+        org.springframework.cloud.gateway.route: WARN
+        org.springframework.context.support: WARN
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: ERROR
+        org.springframework.http.server.reactive: INFO
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.security.web: WARN
+        org.springframework.web.reactive: WARN
+        reactor.netty: WARN
+        reactor.netty.http.client: INFO
+        org.infinispan: ERROR
+        org.jgroups: ERROR
+
+---
 spring.config.activate.on-profile: debug
 
 logging:
     level:
-        org.springframework.cloud.gateway: DEBUG
-        org.springframework.web.reactive: DEBUG
-        org.springframework.web.reactive.socket: DEBUG
-        com.netflix: INFO # Update to DEBUG
+        ROOT: INFO
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
         com.netflix.discovery.shared.transport.decorator: DEBUG
         com.netflix.eureka: DEBUG
-        com.netflix.eureka.cluster: DEBUG
         com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+        io.netty.resolver.dns: WARN
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
         javax.net.ssl: ERROR
-        org.apache: INFO
         org.apache.http: DEBUG
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: WARN #logs only SSLException
         org.apache.tomcat.util.net: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        org.ehcache: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.infinispan: DEBUG
         org.jgroups: TRACE
         org.jgroups.protocols: ERROR
-        org.infinispan: DEBUG
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
-        org.springframework.security: TRACE
-        org.springframework.security.web: TRACE
-        org.springframework.security.authentication: DEBUG
+        org.jgroups.protocols.pbcast.GMS: DEBUG  # prints infinispan cluster info
         org.springdoc.core: DEBUG
+        org.springframework: WARN
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.cloud.gateway: DEBUG
+        org.springframework.cloud.gateway.filter: WARN
+        org.springframework.cloud.gateway.route: WARN
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
+        org.springframework.http.server.reactive: INFO
+        org.springframework.security: TRACE
+        org.springframework.security.authentication: DEBUG
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        org.springframework.web.reactive: DEBUG
+        reactor.netty: WARN
+        reactor.netty.http.client: INFO
         org.zowe.apiml: DEBUG
 
 management:
     endpoint:
         gateway:
-            access: unrestricted
+            access: read-only
+        loggers:
+            access: read-only
     endpoints:
         web:
             exposure:
                 include: health,info,gateway,loggers
+
+---
+spring.config.activate.on-profile: debug-control
+
+management:
+    endpoint:
+        gateway:
+            access: unrestricted
+        loggers:
+            access: unrestricted
+
 ---
 spring.config.activate.on-profile: wiretap
 
@@ -401,14 +442,3 @@ apiml:
         nonSecurePortEnabled: true
         securePortEnabled: false
 
----
-spring.config.activate.on-profile: dev
-
-logging:
-    level:
-        org.springframework: DEBUG
-        org.infinispan: DEBUG
-        reactor.netty: DEBUG
-        reactor.netty.http.client: DEBUG
-        reactor.netty.http.client.HttpClient: DEBUG
-        reactor.netty.http.client.HttpClientConnect: DEBUG

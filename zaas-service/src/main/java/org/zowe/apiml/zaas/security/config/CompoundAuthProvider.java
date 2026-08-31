@@ -31,6 +31,7 @@ public class CompoundAuthProvider implements AuthenticationProvider {
 
     public static final String ORG_ZOWE_APIML_SECURITY_INVALID_AUTHENTICATION_PROVIDER = "org.zowe.apiml.security.invalidAuthenticationProvider";
     public static final String ORG_ZOWE_APIML_SECURITY_LOGIN_ENDPOINT_IN_DUMMY_MODE = "org.zowe.apiml.security.loginEndpointInDummyMode";
+    public static final String ORG_ZOWE_APIML_AUTHENTICATION_PROVIDER = "org.zowe.apiml.common.authentication.provider";
     public static final String DUMMY = "dummy";
 
     private final ApimlLogger apimlLog = ApimlLogger.of(CompoundAuthProvider.class, YamlMessageServiceInstance.getInstance());
@@ -41,6 +42,7 @@ public class CompoundAuthProvider implements AuthenticationProvider {
     private LoginProvider loginProvider;
 
     public CompoundAuthProvider(Map<String, AuthenticationProvider> authProvidersMap, Environment environment, @Value("${apiml.security.auth.provider:zosmf}") String defaultProviderName) {
+        apimlLog.log(ORG_ZOWE_APIML_AUTHENTICATION_PROVIDER, defaultProviderName);
         this.authProvidersMap = authProvidersMap;
         this.environment = environment;
         warnForDummyProvider(defaultProviderName);

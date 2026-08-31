@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.util.config.TestConfig;
@@ -21,8 +22,16 @@ import org.zowe.apiml.util.config.TestConfig;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {ServerSentEventController.class})
-@Import({ SecurityConfiguration.class, TestConfig.class })
+@WebMvcTest(
+    controllers = {
+        ServerSentEventController.class
+    }
+)
+@Import({
+    SecurityConfiguration.class,
+    TestConfig.class
+})
+@ActiveProfiles("test")
 class ServerSentEventControllerTest {
     @Autowired
     private MockMvc mockMvc;
