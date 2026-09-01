@@ -64,7 +64,7 @@ class ApiDocServiceTest {
 
     private static final String SERVICE_ID = "service";
     private static final String SERVICE_HOST = "service";
-    private static final int SERVICE_PORT = 8080;
+    private static final int SERVICE_PORT = 10010;
     private static final String SERVICE_VERSION = "1.0.0";
     private static final String HIGHER_SERVICE_VERSION = "2.0.0";
     private static final String SERVICE_VERSION_V = "test.app v1.0.0";
@@ -73,7 +73,7 @@ class ApiDocServiceTest {
     private static final String GATEWAY_HOST = "gateway:10000";
     private static final String GATEWAY_URL = "api/v1";
     private static final String API_ID = "test.app";
-    private static final String SWAGGER_URL = "https://service:8080/service/api-doc";
+    private static final String SWAGGER_URL = "https://service:10010/service/api-doc";
 
     private static final ServiceAddress GW_SERVICE_ADDRESS = ServiceAddress.builder().scheme(GATEWAY_SCHEME).hostname(GATEWAY_HOST).build();
 
@@ -617,6 +617,7 @@ class ApiDocServiceTest {
         @BeforeEach
         void onboardCatalog() {
             InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
+                .setSecurePort(10010)
                 .setAppName("apicatalog")
                 .setMetadata(Map.of(
                     "apiml.apiInfo.0.apiId", "zowe.apiml.apicatalog",
@@ -639,7 +640,7 @@ class ApiDocServiceTest {
                 .expectNextMatches(apiDoc -> apiDoc.contains("/containers/{id}"))
                 .verifyComplete();
 
-            verify(metadataFilterService, times(2)).verifyAllowedDomains(apiCatalogInstance.getInstanceInfo());
+            verify(metadataFilterService).verifyAllowedDomains(apiCatalogInstance.getInstanceInfo());
             verify(apiDocRetrievalServiceLocal).retrieveApiDoc(any(), any());
         }
 
