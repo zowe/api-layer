@@ -12,7 +12,10 @@ package org.zowe.apiml.discovery.config;
 
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.eureka.*;
+import com.netflix.eureka.DefaultEurekaServerContext;
+import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.EurekaServerContext;
+import com.netflix.eureka.EurekaServerContextHolder;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
@@ -32,9 +35,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
-import org.zowe.apiml.discovery.metadata.MetadataFilterService;
+import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
 import javax.net.ssl.SSLContext;
+
 import java.util.Collection;
 
 /**
