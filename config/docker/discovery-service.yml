@@ -13,7 +13,7 @@ apiml:
         staticApiDefinitionsDirectories: /api-defs;/docker/api-defs
         allPeersUrls: https://discovery-service:10011/eureka
     security:
-        allowedDomains: discovery-service,discovery-service-2,discoverable-client,discoverable-client-2,api-catalog-services,api-catalog-services-2,caching-service,caching-service-2,caching-service-3,gateway-service,gateway-service-2,zaas-service,zaas-service-2,mock-services,mock-services-2,zowe.github.io,www.zowe.org,localhost,www.ibm.com,central-gateway-service,central-gateway-service-2,testrunner
+        allowedDomains: discovery-service,discovery-service-2,discoverable-client,discoverable-client-2,api-catalog-services,api-catalog-services-2,caching-service,caching-service-2,caching-service-3,gateway-service,gateway-service-2,zaas-service,zaas-service-2,mock-services,mock-services-2,zowe.github.io,www.zowe.org:*,localhost,www.ibm.com,central-gateway-service,central-gateway-service-2,testrunner
         ssl:
             verifySslCertificatesOfServices: true
     banner: console
