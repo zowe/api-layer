@@ -224,6 +224,7 @@ public class SecurityConfiguration {
                     "",
                     "/",
                     "/static/**",
+                    "/ui/v1/**",
                     "/favicon.ico",
                     "/v3/api-docs",
                     "/index.html",

@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog;
+package org.zowe.apiml;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 @AutoConfigureWebTestClient
 @TestPropertySource(properties = {
     "server.ssl.keyStore=../keystore/service/service.keystore.p12",
-    "server.ssl.trustStore=../keystore/service/service.truststore.p12"
+    "server.ssl.trustStore=../keystore/service/service.truststore.p12",
+    "apiml.security.auth.zosmf.serviceId=testService"
 })
 class ApiCatalogUiSecurityHeaderTest {
 
