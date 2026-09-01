@@ -44,7 +44,6 @@ class ApiCatalogUiSecurityHeaderTest {
             .exchange()
             .expectHeader().valueMatches(CONTENT_SECURITY_POLICY, ".*default-src 'self'.*")
             .expectHeader().valueEquals("X-Frame-Options", "SAMEORIGIN")
-
             .expectHeader().valueEquals("X-Content-Type-Options", "nosniff");
     }
 
