@@ -152,7 +152,6 @@ class MetadataFilterServiceTest {
                 Map<String, String> metadata = new HashMap<>();
                 metadata.put("apiml.corsAllowedOrigins", "https://localhost:3000");
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
-                when(instanceInfo.getSecurePort()).thenReturn(3000);
 
                 metadataFilterService.verifyAllowedDomains(instanceInfo);
 

@@ -89,7 +89,7 @@ public class MetadataFilterService implements InitializingBean {
             apimlLogger.log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
         } else {
             urls.forEach(url -> {
-                if (!validator.validateEntry("API ML CORS Allowed Origin", url, true)) {
+                if (!validator.validateEntry("API ML CORS Allowed Origin", url, false)) {
                     result.set(false);
                 }
             });
