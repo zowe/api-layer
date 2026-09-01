@@ -12,10 +12,12 @@ package org.zowe.apiml.security.client.login;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import org.zowe.apiml.product.gateway.GatewayNotAvailableException;
 import org.zowe.apiml.security.client.service.GatewaySecurityService;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
@@ -65,6 +67,8 @@ public class GatewayLoginProvider implements AuthenticationProvider {
             tokenAuthentication.setAuthenticated(true);
 
             return tokenAuthentication;
+        } catch (GatewayNotAvailableException e) {
+            throw new AuthenticationServiceException(e.getMessage(), e);
         } finally {
             if (cleanup) {
                 Arrays.fill(password, (char) 0);

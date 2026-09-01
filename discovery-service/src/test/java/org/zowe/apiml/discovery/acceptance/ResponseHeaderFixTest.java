@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
+import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -42,7 +43,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 )
 @ActiveProfiles("ResponseHeaderFixTest")
 @DirtiesContext
-class ResponseHeaderFixTest {
+class ResponseHeaderFixTest extends DiscoveryFunctionalTest {
 
     private static final int ADD_HEADER = 0;
     private static final int SET_HEADER = 1;
@@ -67,7 +68,7 @@ class ResponseHeaderFixTest {
             .relaxedHTTPSValidation()
             .auth().preemptive().basic("eureka", "password")
         .when()
-            .get(String.format("http://localhost:%d/test/%d/%s", port, method, CONTENT_LENGTH))
+            .get(String.format("https://localhost:%d/test/%d/%s", port, method, CONTENT_LENGTH))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH, String.valueOf(TEST_CONTENT_LENGTH))
@@ -88,7 +89,7 @@ class ResponseHeaderFixTest {
             .relaxedHTTPSValidation()
             .auth().preemptive().basic("eureka", "password")
         .when()
-            .get(String.format("http://localhost:%d/test/%d/%s", port, method, "otherHeaderName"))
+            .get(String.format("https://localhost:%d/test/%d/%s", port, method, "otherHeaderName"))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH,"0")

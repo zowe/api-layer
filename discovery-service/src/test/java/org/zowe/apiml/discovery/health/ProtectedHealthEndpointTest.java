@@ -14,7 +14,6 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
@@ -30,23 +29,22 @@ import static org.hamcrest.core.Is.is;
     classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
 )
 class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
+
     @Nested
-    @ActiveProfiles("http")
     class GivenProtectedHealthEndpointWithHttp {
 
-    @Test
-    void applicationHealthEndpointsWhenProtected() {
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/health"))
-            .then()
-            .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
+        @Test
+        void applicationHealthEndpointsWhenProtected() {
+            given()
+                .when()
+                .get(getDiscoveryUriWithPath("/application/health"))
+                .then()
+                .statusCode(is(HttpStatus.SC_UNAUTHORIZED));
         }
 
     }
 
     @Nested
-    @ActiveProfiles("https")
     class GivenProtectedHealthEndpointWithHttps {
 
         @Test

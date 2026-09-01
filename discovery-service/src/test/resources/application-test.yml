@@ -27,10 +27,6 @@ logging:
         ROOT: DEBUG
         org.springframework: DEBUG
 
----
-spring:
-    profiles: https
-
 server:
     ssl:
         protocol: TLSv1.2

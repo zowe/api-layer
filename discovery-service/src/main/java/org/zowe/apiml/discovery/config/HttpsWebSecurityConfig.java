@@ -12,6 +12,7 @@ package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
@@ -89,6 +91,11 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Value("${apiml.discovery.password:#{null}}")
     private char[] discoveryPassword;
 
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) {
+        // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
+        auth.authenticationProvider(new EurekaBasicAuthenticationProvider(discoveryUserId, discoveryPassword));
+    }
 
     @Bean
     public WebSecurityCustomizer httpsWebSecurityCustomizer() {
