@@ -55,7 +55,7 @@ class IPAddressUtil {
     }
 
     static boolean isIPV6CIDR(String input) {
-        return isIPV6(input) && input.indexOf("/") > 0;
+        return isIPV6(input) && input.contains("/");
     }
 
     static InetAddress[] getInetAddresses(String domain) {
