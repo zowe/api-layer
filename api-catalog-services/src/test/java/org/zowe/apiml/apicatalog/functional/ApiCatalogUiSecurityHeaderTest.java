@@ -8,29 +8,23 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.apicatalog;
+package org.zowe.apiml.apicatalog.functional;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles({"test", "attlsClient", "attlsServer"})
 @DirtiesContext
 @AutoConfigureWebTestClient
 @TestPropertySource(properties = {
     "server.ssl.keyStore=../keystore/service/service.keystore.p12",
     "server.ssl.trustStore=../keystore/service/service.truststore.p12"
 })
-class ApiCatalogUiSecurityHeaderTest {
+class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest{
 
     @Autowired
     private WebTestClient webTestClient;
