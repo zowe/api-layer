@@ -24,7 +24,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
     "server.ssl.keyStore=../keystore/service/service.keystore.p12",
     "server.ssl.trustStore=../keystore/service/service.truststore.p12"
 })
-class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest{
+class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
 
     @Autowired
     private WebTestClient webTestClient;
