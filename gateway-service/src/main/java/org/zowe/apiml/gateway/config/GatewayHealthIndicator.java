@@ -107,9 +107,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator implements I
     }
 
     private void refreshInstanceCounts() {
-        gatewayCount.compareAndSet(expectedInstanceCount, this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size());
-        discoveryCount.compareAndSet(expectedInstanceCount, this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).size());
-        zaasCount.compareAndSet(expectedInstanceCount, this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size());
+        gatewayCount.set(this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size());
+        discoveryCount.set(this.discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId()).size());
+        zaasCount.set(this.discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).size());
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -135,7 +135,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator implements I
 
     private void onFullyHaUp() {
         if (startedHaInformationPublished.compareAndSet(false, true)) {
-            apimlLog.log("null");
+            apimlLog.log("org.zowe.apiml.common.mediationLayerStartedHA");
         }
     }
 

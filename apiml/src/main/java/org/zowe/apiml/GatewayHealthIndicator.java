@@ -111,7 +111,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator implements I
 
     private void refreshInstanceCounts() {
         // Keeping for backwards compatibility, in modulith the amount of gateways is the amount of authentication services available
-        gatewayCount.compareAndSet(expectedInstanceCount, this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size());
+        gatewayCount.set(this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size());
         zaasCount.set(gatewayCount.get());
     }
 
