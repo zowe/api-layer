@@ -47,6 +47,7 @@ public class SslContext {
     private static AtomicBoolean isInitialized = new AtomicBoolean(false);
     private static AtomicReference<SslContextConfigurer> configurer = new AtomicReference<>();
     public static String clientCertValidCert;
+    public static String apimlServiceCertBase64;
 
     public synchronized static void prepareSslAuthentication(SslContextConfigurer providedConfigurer) throws Exception {
 
@@ -87,6 +88,19 @@ public class SslContext {
                 .loadTrustMaterial(null, trustStrategy)
                 .build();
             clientCertApiml = RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(new SSLSocketFactory(sslContext2, hostnameVerifier)));
+
+            // The certificate sslContext2 presents. Read here rather than asserted as a
+            // literal, because the certificates are generated on demand and every run
+            // mints a fresh key pair - see keystore/generate-certificates.sh.
+            KeyStore keystoreApiml = KeyStore.getInstance("PKCS12");
+            try (FileInputStream fis = new FileInputStream(ResourceUtils.getFile(providedConfigurer.getKeystore()))) {
+                keystoreApiml.load(fis, providedConfigurer.getKeystorePassword());
+            }
+            Certificate apimlcert = keystoreApiml.getCertificate("localhost");
+            if (apimlcert != null) {
+                apimlServiceCertBase64 = Base64.getEncoder().encodeToString(apimlcert.getEncoded());
+                log.debug("Loaded {}[localhost]", providedConfigurer.getKeystore());
+            }
 
             SSLContext sslContext3 = SSLContextBuilder
                 .create()
