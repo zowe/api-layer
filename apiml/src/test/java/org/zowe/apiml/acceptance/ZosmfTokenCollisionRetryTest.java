@@ -24,8 +24,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.security.common.util.JWTTestUtils;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -91,10 +89,6 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
 
         assertEquals(3, loginCallCount.get(),
             "expected 3 authenticate() calls to z/OSMF: first login, second login's failed attempt, second login's retry");
-    }
-
-    private static String base64Url(String json) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes(StandardCharsets.UTF_8));
     }
 
     private ValidatableResponse login() {
