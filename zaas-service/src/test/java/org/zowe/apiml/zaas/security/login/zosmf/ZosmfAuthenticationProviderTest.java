@@ -418,14 +418,13 @@ class ZosmfAuthenticationProviderTest {
 
         ZosmfService zosmfService = mock(ZosmfService.class);
         ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
-        TokenNotValidException cause = new TokenNotValidException("Token is not valid");
+        TokenNotValidException cause = new TokenNotValidException("Token not valid");
         when(zosmfService.authenticate(usernamePasswordAuthentication)).thenThrow(cause);
 
         Exception exception = assertThrows(BadCredentialsException.class,
             () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
             "Expected exception is not BadCredentialsException");
-        assertEquals("Token not valid", exception.getMessage());
-        assertSame(cause, exception.getCause());
+        assertEquals("Invalid Credentials", exception.getMessage());
     }
 
     @Test

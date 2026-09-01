@@ -13,6 +13,7 @@ package org.zowe.apiml.acceptance;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.sun.net.httpserver.Headers;
 import io.restassured.http.Cookie;
+import io.restassured.response.ValidatableResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.MockService;
+import org.zowe.apiml.security.common.util.JWTTestUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -32,6 +34,7 @@ import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 /**
  * z/OSMF issues JWTs with only 1-second (iat) granularity, so two independent logins for the same principal
@@ -50,8 +53,9 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
     private static final String LOGOUT_ENDPOINT = "/gateway/api/v1/auth/logout";
     private static final String LOGIN_BASIC_AUTH = "Basic dXNlcjpwYXNz";
 
-    private static final String JWT_COLLIDING = fakeZosmfJwt("same-second-token");
-    private static final String JWT_AFTER_RETRY = fakeZosmfJwt("next-second-token");
+    private static final String USERNAME = "user";
+    private static final String JWT_COLLIDING = JWTTestUtils.createDummyZOSMFToken(USERNAME);
+    private static final String JWT_AFTER_RETRY = JWTTestUtils.createDummyZOSMFToken(USERNAME);
 
     @Autowired
     @Qualifier("cacheManager")
@@ -72,9 +76,8 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
 
     @Test
     void givenSecondLoginCollidesWithJustLoggedOutToken_whenRetryIsEnabled_thenItRecoversOnRetry() throws JsonProcessingException {
+        assertNotEquals(JWT_COLLIDING, JWT_AFTER_RETRY);
         var loginCallCount = new AtomicInteger();
-        // the first call's jwtToken is reused for the second login's first attempt (the collision);
-        // the third real call (the retry) gets a distinct one, simulating the next z/OSMF second.
         mockZosmfAuthenticateEndpoint(List.of(JWT_COLLIDING, JWT_COLLIDING, JWT_AFTER_RETRY), loginCallCount);
 
         String firstToken = login().statusCode(SC_NO_CONTENT).extract().cookie(AUTH_COOKIE);
@@ -82,9 +85,6 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
 
         logout(firstToken).statusCode(SC_NO_CONTENT);
 
-        // z/OSMF hands back the very same (now-invalidated) jwtToken for this brand-new, unrelated login attempt.
-        // Without @EnableRetry actually active, ZosmfService.authenticate() gets a single attempt and this call fails
-        // with 401.
         String secondToken = login().statusCode(SC_NO_CONTENT).extract().cookie(AUTH_COOKIE);
         assertEquals(JWT_AFTER_RETRY, secondToken,
             "expected the retry to have landed on the non-colliding token from the next second z/OSMF call");
@@ -93,24 +93,11 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
             "expected 3 authenticate() calls to z/OSMF: first login, second login's failed attempt, second login's retry");
     }
 
-    /**
-     * Builds a minimal, structurally valid unsecured JWT ({@code alg=none}, per RFC 7519/7515) - just enough for
-     * Nimbus's {@code JWTParser.parse} and {@code TokenAuthentication}'s issuer check to accept it as a real
-     * z/OSMF token.
-     */
-    private static String fakeZosmfJwt(String marker) {
-        long now = System.currentTimeMillis() / 1000;
-        String header = "{\"alg\":\"none\",\"typ\":\"JWT\"}";
-        String payload = "{\"sub\":\"user\",\"iss\":\"zOSMF\",\"iat\":" + now + ",\"exp\":" + (now + 3600)
-            + ",\"marker\":\"" + marker + "\"}";
-        return base64Url(header) + "." + base64Url(payload) + ".";
-    }
-
     private static String base64Url(String json) {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes(StandardCharsets.UTF_8));
     }
 
-    private io.restassured.response.ValidatableResponse login() {
+    private ValidatableResponse login() {
         return given()
             .auth().preemptive().basic("user", "pass")
         .when()
@@ -118,7 +105,7 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
         .then();
     }
 
-    private io.restassured.response.ValidatableResponse logout(String token) {
+    private ValidatableResponse logout(String token) {
         return given()
             .cookie(new Cookie.Builder(AUTH_COOKIE, token).build())
         .when()
