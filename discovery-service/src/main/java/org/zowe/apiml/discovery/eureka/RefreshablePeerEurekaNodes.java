@@ -25,21 +25,31 @@ import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.JerseyReplicationClient;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
 import org.springframework.context.ApplicationListener;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
     implements ApplicationListener<EnvironmentChangeEvent> {
+
+    @Value("${apiml.discovery.userid:}")
+    private String eurekaUserId;
+
+    @Value("${apiml.discovery.password:}")
+    private String eurekaPassword;
 
     private Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> eurekaJerseyClientBuilder;
     private ReplicationClientAdditionalFilters replicationClientAdditionalFilters;
@@ -154,6 +164,32 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
             }
         }
         return false;
+    }
+
+    String setCredentials(String uri) {
+        try {
+            if (StringUtils.isBlank(eurekaUserId) || StringUtils.isBlank(eurekaPassword)) {
+                return uri;
+            }
+
+            return UriComponentsBuilder.fromUriString(uri)
+                .userInfo(
+                    String.format("%s:%s",
+                        URLEncoder.encode(eurekaUserId, StandardCharsets.UTF_8.name()),
+                        URLEncoder.encode(eurekaPassword, StandardCharsets.UTF_8.name())
+                    )
+                ).build().toUriString();
+        } catch (IllegalArgumentException | UnsupportedEncodingException e) {
+            log.warn("Cannot set credentials to the URL: {}", uri, e);
+            return uri;
+        }
+    }
+
+    @Override
+    protected List<String> resolvePeerUrls() {
+        return super.resolvePeerUrls()
+            .stream().map(this::setCredentials)
+            .collect(Collectors.toList());
     }
 
 }

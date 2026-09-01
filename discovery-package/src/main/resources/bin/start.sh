@@ -136,10 +136,6 @@ if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
   ZWE_configs_server_ssl_enabled="false"
 fi
 
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" ]; then
-    add_profile "https"
-fi
-
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
 if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
@@ -285,7 +281,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Dfile.encoding=UTF-8 \
     -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Djava.io.tmpdir=${TMPDIR:-/tmp} \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
+    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -Dspring.profiles.include=$LOG_LEVEL \
     -Dserver.address=0.0.0.0 \
     -Dapiml.discovery.userid=${discoveryUserid} \
@@ -302,16 +298,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \
     -Dapiml.service.port=${ZWE_configs_port:-7553} \
-    -Dfile.encoding=UTF-8 \
-    -Dibm.serversocket.recover=true \
-    -Djava.io.tmpdir=${TMPDIR:-/tmp} \
     -Djava.library.path=${LIBPATH} \
     -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Dloader.path=${DISCOVERY_LOADER_PATH} \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
-    -Dserver.address=0.0.0.0 \
     -Dserver.ssl.ciphers=${server_ciphers} \
     -Dserver.ssl.enabled-protocols=${server_enabled_protocols} \
     -Dserver.ssl.enabled=${ZWE_configs_server_ssl_enabled:-true}  \
@@ -324,9 +315,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} java \
     -Dserver.ssl.trustStore="${truststore_location}" \
     -Dserver.ssl.trustStorePassword="${truststore_pass}" \
     -Dserver.ssl.trustStoreType="${truststore_type}" \
-    -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-https} \
-    -Dspring.profiles.include=$LOG_LEVEL \
-    -Dsun.io.useCanonCaches=false \
     -jar "${JAR_FILE}" &
 pid=$!
 echo "pid=${pid}"

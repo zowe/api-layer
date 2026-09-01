@@ -33,9 +33,10 @@ apiml:
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10011  # Default port name for discovery service
         ipAddress: 127.0.0.1  # IP address that is advertised in Eureka. Default is valid only for localhost
+        scheme: https  # "https" or "http"
         preferIpAddress: false
     discovery:
-        allPeersUrls: 'http://#{("${apiml.discovery.userid:}".isEmpty() or "${apiml.discovery.password:}".isEmpty()) ? "" : "${apiml.discovery.userid:}:${apiml.discovery.password:}@"}${apiml.service.hostname}:${apiml.service.port}/eureka/'
+        allPeersUrls: ${apiml.service.scheme:}://${apiml.service.hostname}:${apiml.service.port}/eureka/
     health:
         protected: false
     security:
@@ -62,7 +63,20 @@ server:
     address: ${apiml.service.ipAddress}
     port: ${apiml.service.port}
     ssl:
-        enabled: false
+        enabled: true
+        clientAuth: want
+        protocol: TLS
+        enabled-protocols: TLSv1.2+TLSv1.3
+        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
+        keyStoreType: PKCS12
+        trustStoreType: PKCS12
+        trustStoreRequired: true
+        keyAlias: localhost
+        keyPassword: password
+        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStorePassword: password
+        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStorePassword: password
 
 archaius.deployment.environment: test
 
@@ -72,12 +86,14 @@ eureka:
         hostname: ${apiml.service.hostname}
         ipAddress: ${apiml.service.ipAddress}
         port: ${server.port}
-        securePort: 0
-        nonSecurePortEnabled: true
-        securePortEnabled: false
+        securePort: ${server.port}
+        nonSecurePortEnabled: false
+        securePortEnabled: true
         preferIpAddress: ${apiml.service.preferIpAddress}
-        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/info
-        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
+        statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
     client:
         registerWithEureka: true
         fetchRegistry: true
@@ -105,44 +121,6 @@ management:
             show-details: always
 
 hystrix.command.default.execution.timeout.enabled: false
----
-spring:
-    profiles: https
-
-apiml:
-    discovery:
-        allPeersUrls: https://${apiml.service.hostname}:${apiml.service.port}/eureka/
-
-server:
-    ssl:
-        enabled: true
-        clientAuth: want
-        protocol: TLS
-        enabled-protocols: TLSv1.2+TLSv1.3
-        ciphers: TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256,TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384,TLS_AES_128_GCM_SHA256,TLS_AES_256_GCM_SHA384
-        keyStoreType: PKCS12
-        trustStoreType: PKCS12
-        trustStoreRequired: true
-        keyAlias: localhost
-        keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
-        keyStorePassword: password
-        trustStore: keystore/localhost/localhost.truststore.p12
-        trustStorePassword: password
-
-eureka:
-    instance:
-        nonSecurePortEnabled: false
-        securePortEnabled: true
-        port: 0
-        securePort: ${server.port}
-        homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}/
-        statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/info
-        healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
-        secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
-    client:
-        serviceUrl:
-            defaultZone: ${apiml.discovery.allPeersUrls}
 
 ---
 spring:

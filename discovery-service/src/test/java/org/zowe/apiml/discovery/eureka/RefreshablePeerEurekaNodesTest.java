@@ -18,17 +18,16 @@ import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.servo.monitor.StatsMonitor;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import java.lang.reflect.Field;
@@ -40,8 +39,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -121,4 +119,46 @@ class RefreshablePeerEurekaNodesTest {
         when(clientConfig.shouldUseDnsForFetchingServiceUrls()).thenReturn(false);
         assertFalse(eurekaNodes.shouldUpdate(new HashSet<>()));
     }
+
+    @Nested
+    class Credentials {
+
+        RefreshablePeerEurekaNodes getPeerEurekaNode(String userId, String password) {
+            ReflectionTestUtils.setField(eurekaNodes, "eurekaUserId", userId);
+            ReflectionTestUtils.setField(eurekaNodes, "eurekaPassword", password);
+            return eurekaNodes;
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            ",password",
+            "userId,",
+            ",",
+        })
+        void givenEmptyCredentials_whenSetCredentials_thenDoNotUpdate(String userId, String password) {
+            String url = "someUrl";
+            assertSame(url,
+                getPeerEurekaNode(userId, password).setCredentials(url)
+            );
+        }
+
+        @Test
+        void givenInvalidUrl_whenSetCredentials_thenDoNotUpdate() {
+            String url = "http:////invalid$url/path";
+            assertSame(url,
+                getPeerEurekaNode("userId", "password").setCredentials(url)
+            );
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "userId,password,https://userId:password@localhost",
+            "us:rId,passw:rd,https://us%3ArId:passw%3Ard@localhost"
+        })
+        void givenCredentials_whenSetCredentials_thenSetCredentials(String userId, String password, String url) {
+            assertEquals(url, getPeerEurekaNode(userId, password).setCredentials(url));
+        }
+
+    }
+
 }

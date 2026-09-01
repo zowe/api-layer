@@ -21,8 +21,6 @@ spring:
         ansi:
             enabled: always
 
----
-spring.profiles: https
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
