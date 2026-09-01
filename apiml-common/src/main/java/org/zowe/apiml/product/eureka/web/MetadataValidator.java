@@ -11,29 +11,22 @@
 package org.zowe.apiml.product.eureka.web;
 
 import ch.qos.logback.core.util.IpAddressMatcher;
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Objects;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.net.IDN;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -42,11 +35,7 @@ public class MetadataValidator {
 
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
     private static final String ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED = "org.zowe.apiml.common.schemeNotAllowed";
-
-    private static final Cache<String, InetAddress[]> domainToIpAddresses = Caffeine.newBuilder()
-        .maximumSize(100)
-        .expireAfterWrite(5, TimeUnit.MINUTES)
-        .build();
+    private static final String DEFAULT_PORT_TLS = "443";
 
     private final InstanceInfo instanceInfo;
 
@@ -56,22 +45,22 @@ public class MetadataValidator {
 
     private final boolean isClientAttlsEnabled;
 
-    boolean isAllowedDomain(String input) {
+    boolean isAllowedDomain(String input, boolean validatePort) {
         if (StringUtils.isBlank(input)) {
             return true;
         }
         var inputToCheck = input.endsWith("null") ? input.substring(0, input.lastIndexOf("null")) : input;
-        return allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, inputToCheck));
+        return allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, inputToCheck, validatePort));
     }
 
-    boolean validateEntry(String label, String input) {
+    boolean validateEntry(String label, String input, boolean validatePort) {
         if (StringUtils.isBlank(input)) {
             return true;
         }
 
         boolean isValid = true;
 
-        if (!isAllowedDomain(input)) {
+        if (!isAllowedDomain(input, validatePort)) {
             apimlLogger.log(ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED, label, input, instanceInfo.getInstanceId());
             isValid = false;
         }
@@ -88,41 +77,57 @@ public class MetadataValidator {
         return isValid;
     }
 
-    private boolean isAllowed(String allowedDomainEntry, String input) {
+    private boolean isAllowed(String allowedDomainEntry, String input, boolean validatePort) {
         log.debug("checking domain {} against allowed domain {}", input, allowedDomainEntry);
 
-        allowedDomainEntry = parseDomain(allowedDomainEntry);
+        var allowedDomainDomain = parseDomain(allowedDomainEntry);
         var allowedDomainPort = parsePort(allowedDomainEntry);
 
         input = input.toLowerCase();
-        input = extractDomain(input);
+        var domain = extractDomain(input);
         var result = false;
-        if (input == null) {
+        if (domain == null) {
             result = false;
-        } else if (input.equals(allowedDomainEntry)) {
+        } else if (domain.equals(allowedDomainDomain)) {
             result = true;
-        } else if (isWildCard(allowedDomainEntry)) {
-            result = isMatchingWildCard(input, allowedDomainEntry);
+        } else if (isWildCard(allowedDomainDomain)) {
+            result = isMatchingWildCard(domain, allowedDomainDomain);
         } else {
-            result = isAllowedIpAddress(input, allowedDomainEntry);
+            result = isAllowedIpAddress(domain, allowedDomainDomain);
         }
 
-        if (result) {
+        if (result && validatePort) {
             result = isAllowedPort(input, allowedDomainPort);
         }
 
         return result;
     }
 
+    /**
+     * Parse port from an allowedDomain configuration entry
+     *
+     * @param allowedDomainEntry
+     * @return the port or null
+     */
     private String parsePort(String allowedDomainEntry) {
+        if (IPAddressUtil.isIPV6Single(allowedDomainEntry)) {
+            return IPAddressUtil.getPortIPV6(allowedDomainEntry);
+        } else if (IPAddressUtil.isIPV6CIDR(allowedDomainEntry)) {
+            return null;
+        }
         var idx = allowedDomainEntry.lastIndexOf(":");
-        if (idx > 0) {
-            return allowedDomainEntry.substring(0, idx);
+        if (idx > 0 && allowedDomainEntry.length() > idx) {
+            return allowedDomainEntry.substring(idx + 1);
         }
         return null;
     }
 
     private String parseDomain(String allowedDomainEntry) {
+        if (IPAddressUtil.isIPV6Single(allowedDomainEntry)) {
+            return IPAddressUtil.getHostIPV6(allowedDomainEntry);
+        } else if (IPAddressUtil.isIPV6CIDR(allowedDomainEntry)) {
+            return allowedDomainEntry;
+        }
         var idx = allowedDomainEntry.lastIndexOf(":");
         if (idx > 0) {
             return allowedDomainEntry.substring(0, idx);
@@ -159,10 +164,18 @@ public class MetadataValidator {
     }
 
     private boolean isAllowedPort(String input, String allowedDomainPort) {
-        if ("*".equals(allowedDomainPort)) {
+        var port = Integer.parseInt(extractPort(input));
+        if (instanceInfo.getSecurePort() == port) {
             return true;
+        } else if (instanceInfo.getPort() == port) {
+            return true;
+        } else {
+            log.debug("Port {} in input value {} from service {} does not match service declared secure port {} (unsecure {}). Port will be validated against allowed port {}", port, input, instanceInfo.getInstanceId(), instanceInfo.getSecurePort(), instanceInfo.getPort(), allowedDomainPort);
+            if ("*".equals(allowedDomainPort)) {
+                return true;
+            }
+            return Objects.equal(String.valueOf(port), allowedDomainPort);
         }
-        return Objects.equal(input, allowedDomainPort);
     }
 
     /**
@@ -184,7 +197,7 @@ public class MetadataValidator {
             log.debug("{} is a wildcard match, can't evaluate against it against an IP address");
             return false;
         }
-        allowedDomainIps = domainToIpAddresses.get(allowedDomain, this::getInetAddresses);
+        allowedDomainIps = IPAddressUtil.getIPAddresses(allowedDomain);
         if (allowedDomainIps != null && allowedDomainIps.length > 0) {
             allowedDomainIpsString = Arrays.stream(allowedDomainIps).map(InetAddress::getHostAddress).toList().toArray(new String[0]);
         } else {
@@ -205,42 +218,15 @@ public class MetadataValidator {
         }
     }
 
-    private InetAddress[] getInetAddresses(String domain) {
-        try {
-            var addresses = InetAddress.getAllByName(domain);
-            if (log.isDebugEnabled()) {
-                log.debug("Addresses resolved for domain {}: {}", domain,
-                    Arrays.stream(addresses)
-                        .map(InetAddress::getHostAddress)
-                        .collect(Collectors.joining(", ")));
-            }
-            return addresses;
-        } catch (UnknownHostException | SecurityException e) {
-            log.debug("Cannot list IP address of domain {}", domain, e);
-            return new InetAddress[0];
-        }
-    }
-
-    String getIpAddress(String domain) {
-        if (StringUtils.isBlank(domain)) {
-            return null;
-        }
-        var allowedAddresses = domainToIpAddresses.get(domain, this::getInetAddresses);
-        if (ArrayUtils.isEmpty(allowedAddresses)) {
-            return null;
-        }
-        return Arrays.stream(allowedAddresses)
-            .filter(Inet4Address.class::isInstance)
-            .findFirst()
-            .orElse(allowedAddresses[0])
-            .getHostAddress();
-    }
-
     private String extractPort(String input) {
         try {
-            return String.valueOf(new URL(input).getPort());
+            var port = new URL(input).getPort();
+            if (port > 0) {
+                return String.valueOf(port);
+            }
+            return DEFAULT_PORT_TLS;
         } catch (MalformedURLException e) {
-            return null;
+            return DEFAULT_PORT_TLS;
         }
     }
 

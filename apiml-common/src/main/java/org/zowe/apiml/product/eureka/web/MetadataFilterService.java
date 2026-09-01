@@ -10,12 +10,8 @@
 
 package org.zowe.apiml.product.eureka.web;
 
-import ch.qos.logback.core.util.IpAddressMatcher;
-import com.google.common.base.Objects;
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,19 +20,10 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,11 +34,12 @@ import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
 @Slf4j
 public class MetadataFilterService implements InitializingBean {
 
-    private static final List<String> METADATA_KEYS_TO_VERIFY = List.of(
-        "swaggerUrl",
-        "graphqlUrl",
-        "documentationUrl",
-        "externalUrl"
+    // map k: metadata key, v: whether to validate port or not
+    private static final Map<String, Boolean> METADATA_URL_KEYS_TO_VERIFY = Map.of(
+        "swaggerUrl", true,
+        "graphqlUrl", true,
+        "documentationUrl", false,
+        "externalUrl", true
     );
 
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname:localhost}}")
@@ -72,7 +60,7 @@ public class MetadataFilterService implements InitializingBean {
         allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
         onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
 
-        log.info("Allowed domains in Discovery Service: {}", allowedDomains);
+        log.info("Allowed domains: {}", allowedDomains);
 
         if (onlyWarn) {
             log.info("Only warning on URL not allowed is enabled");
@@ -82,8 +70,15 @@ public class MetadataFilterService implements InitializingBean {
     private boolean validateMetadataEntry(String key, String value, MetadataValidator validator) {
         if (!key.startsWith("apiml.")) return true;
         var segments = key.split("\\.", -1);   // -1 keeps the empty trailing segment
-        boolean sensitive = Arrays.stream(segments).anyMatch(METADATA_KEYS_TO_VERIFY::contains);
-        return !sensitive || validator.validateEntry(key, value);
+        return Arrays.stream(segments)
+            .map(segment -> METADATA_URL_KEYS_TO_VERIFY.entrySet().stream()
+                .filter(e -> e.getKey().contains(segment))
+                .findFirst())
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .findFirst()
+            .map(entry -> validator.validateEntry(key, value, entry.getValue()))
+            .orElse(true);
     }
 
     private boolean verifyCorsAllowedOrigins(String allowedOrigins, MetadataValidator validator) {
@@ -94,7 +89,7 @@ public class MetadataFilterService implements InitializingBean {
             apimlLogger.log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
         } else {
             urls.forEach(url -> {
-                if (!validator.validateEntry("API ML CORS Allowed Origin", url)) {
+                if (!validator.validateEntry("API ML CORS Allowed Origin", url, true)) {
                     result.set(false);
                 }
             });
@@ -118,24 +113,24 @@ public class MetadataFilterService implements InitializingBean {
             .isClientAttlsEnabled(isClientAttlsEnabled)
             .build();
 
-        if (!validator.validateEntry("IP Address", instanceInfo.getIPAddr())) {
+        if (!validator.validateEntry("IP Address", instanceInfo.getIPAddr(), false)) {
             log.debug("IP address {} is not allowed. It is removed from the registration data.", instanceInfo.getIPAddr());
             // this is updating the same instance even it looks like creating a new instance of InstanceInfo
-            instanceInfo = new InstanceInfo.Builder(instanceInfo).setIPAddr(getIpAddress(instanceInfo.getHostName())).build();
+            instanceInfo = new InstanceInfo.Builder(instanceInfo).setIPAddr(IPAddressUtil.getIpAddress(instanceInfo.getHostName())).build();
         }
-        if (!validator.validateEntry("Instance Hostname", instanceInfo.getHostName())) {
+        if (!validator.validateEntry("Instance Hostname", instanceInfo.getHostName(), false)) {
             result.set(false);
         }
-        if (!validator.validateEntry("Home Page URL", instanceInfo.getHomePageUrl())) {
+        if (!validator.validateEntry("Home Page URL", instanceInfo.getHomePageUrl(), true)) {
             result.set(false);
         }
-        if (!validator.validateEntry("HealthCheck URL", instanceInfo.getHealthCheckUrl())) {
+        if (!validator.validateEntry("HealthCheck URL", instanceInfo.getHealthCheckUrl(), true)) {
             result.set(false);
         }
-        if (!validator.validateEntry("Status Page URL", instanceInfo.getStatusPageUrl())) {
+        if (!validator.validateEntry("Status Page URL", instanceInfo.getStatusPageUrl(), true)) {
             result.set(false);
         }
-        if (!validator.validateEntry("Secure Health Check URL", instanceInfo.getSecureHealthCheckUrl())) {
+        if (!validator.validateEntry("Secure Health Check URL", instanceInfo.getSecureHealthCheckUrl(), true)) {
             result.set(false);
         }
 
