@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml;
+package org.zowe.apiml.acceptance;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +29,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
     "server.ssl.trustStore=../keystore/service/service.truststore.p12",
     "apiml.security.auth.zosmf.serviceId=testService"
 })
+
 class ApiCatalogUiSecurityHeaderTest {
 
     @Autowired
