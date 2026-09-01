@@ -16,12 +16,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
+@ActiveProfiles({"test", "attlsClient", "attlsServer"})
+@DirtiesContext
 @TestPropertySource(properties = {
     "server.ssl.keyStore=../keystore/service/service.keystore.p12",
     "server.ssl.trustStore=../keystore/service/service.truststore.p12",
@@ -40,6 +44,7 @@ class ApiCatalogUiSecurityHeaderTest {
             .exchange()
             .expectHeader().valueMatches(CONTENT_SECURITY_POLICY, ".*default-src 'self'.*")
             .expectHeader().valueEquals("X-Frame-Options", "SAMEORIGIN")
+
             .expectHeader().valueEquals("X-Content-Type-Options", "nosniff");
     }
 
