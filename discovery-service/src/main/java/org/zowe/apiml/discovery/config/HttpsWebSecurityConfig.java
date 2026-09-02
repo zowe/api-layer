@@ -39,6 +39,7 @@ import org.springframework.security.web.authentication.preauth.x509.X509Authenti
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.zowe.apiml.filter.AttlsFilter;
 import org.zowe.apiml.filter.SecureConnectionFilter;
+import org.zowe.apiml.security.FixedHeadersConfigurer;
 import org.zowe.apiml.security.client.EnableApimlAuth;
 import org.zowe.apiml.security.client.login.GatewayLoginProvider;
 import org.zowe.apiml.security.client.token.GatewayTokenProvider;
@@ -125,9 +126,8 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(3)
     public SecurityFilterChain basicAuthOrTokenFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
-            new AntPathRequestMatcher("/application/**"),
-            new AntPathRequestMatcher("/*")
+        http = baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
+            new AntPathRequestMatcher("/**")
         )))
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
@@ -138,7 +138,9 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             http.addFilterBefore(new SecureConnectionFilter(), UsernamePasswordAuthenticationFilter.class);
         }
 
-        return http.apply(new CustomSecurityFilters()).and().build();
+        http.apply(new CustomSecurityFilters());
+
+        return FixedHeadersConfigurer.fix(http).build();
     }
 
     /**
@@ -147,7 +149,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(2)
     public SecurityFilterChain clientCertificateFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.securityMatcher("/eureka/**"));
+        http = baseConfigure(http.securityMatcher("/eureka/**"));
         if (verifySslCertificatesOfServices || !nonStrictVerifySslCertificatesOfServices) {
             http.authorizeHttpRequests(requests -> requests
                 .anyRequest().authenticated()).x509(x509 -> x509.userDetailsService(x509UserDetailsService()));
@@ -161,7 +163,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
 
         }
-        return http.build();
+        return FixedHeadersConfigurer.fix(http).build();
     }
 
     /**
@@ -170,7 +172,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     @Bean
     @Order(1)
     public SecurityFilterChain basicAuthOrTokenOrCertFilterChain(HttpSecurity http) throws Exception {
-        baseConfigure(http.securityMatcher("/discovery/**"))
+        http = baseConfigure(http.securityMatcher("/discovery/**"))
             .authenticationProvider(gatewayLoginProvider)
             .authenticationProvider(gatewayTokenProvider)
             .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
@@ -185,7 +187,9 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
         }
 
-        return http.apply(new CustomSecurityFilters()).and().build();
+        http.apply(new CustomSecurityFilters());
+
+        return FixedHeadersConfigurer.fix(http).build();
     }
 
     private class CustomSecurityFilters extends AbstractHttpConfigurer<CustomSecurityFilters, HttpSecurity> {

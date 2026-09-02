@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
-import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -37,13 +36,15 @@ import static org.hamcrest.CoreMatchers.notNullValue;
     },
     properties = {
         "apiml.discovery.userid=eureka",
-        "apiml.discovery.password=password"
+        "apiml.discovery.password=password",
+        "apiml.security.ssl.verifySslCertificatesOfServices=false",
+        "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true"
     },
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@ActiveProfiles("ResponseHeaderFixTest")
+@ActiveProfiles({"ResponseHeaderFixTest", "test"})
 @DirtiesContext
-class ResponseHeaderFixTest extends DiscoveryFunctionalTest {
+class ResponseHeaderFixTest {
 
     private static final int ADD_HEADER = 0;
     private static final int SET_HEADER = 1;
