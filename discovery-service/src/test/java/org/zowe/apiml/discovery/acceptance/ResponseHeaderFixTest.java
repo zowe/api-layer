@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.discovery.acceptance;
 
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -104,7 +106,11 @@ class ResponseHeaderFixTest {
     static class TestController {
 
         @GetMapping(value = "/test/{method}/{headerName}")
-        public void getApiDoc(@PathVariable("method") int method, @PathVariable("headerName") String headerName, HttpServletResponse response) {
+        public void getApiDoc(@PathVariable("method") int method, @PathVariable("headerName") String headerName, HttpServletResponse response) throws IOException {
+            if (Strings.CI.equals(headerName, CONTENT_LENGTH)) {
+                // when content length is manually changed it is necessary to generate some data to avoid freezing on client side
+                response.getOutputStream().write(new byte[200]);
+            }
             switch (method) {
                 case ADD_HEADER:
                     response.addHeader(headerName, String.valueOf(TEST_CONTENT_LENGTH));
