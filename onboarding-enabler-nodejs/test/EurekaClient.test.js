@@ -1804,10 +1804,12 @@ describe('Eureka client', () => {
   describe('env var configuration', () => {
     const REGISTRY_ENV = 'EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS';
     const HEARTBEAT_ENV = 'EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS';
+    const BACKOFF_TIMEOUT_ENV = 'EUREKA_CLIENT_CIRCUITBREAKERBACKOFFTIMEOUTMILLISECONDS';
 
     afterEach(() => {
       delete process.env[REGISTRY_ENV];
       delete process.env[HEARTBEAT_ENV];
+      delete process.env[BACKOFF_TIMEOUT_ENV];
       sinon.restore();
     });
 
@@ -1821,6 +1823,20 @@ describe('Eureka client', () => {
       process.env[HEARTBEAT_ENV] = '45';
       const client = new Eureka(makeConfig());
       expect(client.config.eureka.heartbeatInterval).to.equal(45000);
+    });
+
+    it('should override circuit breaker backoffTimeout from an environment variable in milliseconds', () => {
+      process.env[BACKOFF_TIMEOUT_ENV] = '2500';
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.circuitBreaker.backoffTimeout).to.equal(2500);
+    });
+
+    it('should let constructor circuit breaker config override the backoff environment variable', () => {
+      process.env[BACKOFF_TIMEOUT_ENV] = '2500';
+      const client = new Eureka(makeConfig({
+        eureka: { circuitBreaker: { backoffTimeout: 5000 } },
+      }));
+      expect(client.config.eureka.circuitBreaker.backoffTimeout).to.equal(5000);
     });
 
     it('should let constructor config override env var', () => {
