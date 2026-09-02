@@ -17,18 +17,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @ActiveProfiles("test")
 @DirtiesContext
-@TestPropertySource(properties = {
-    "server.ssl.keyStore=../keystore/service/service.keystore.p12",
-    "server.ssl.trustStore=../keystore/service/service.truststore.p12",
-    "apiml.security.auth.zosmf.serviceId=testService"
-})
 
 class ApiCatalogUiSecurityHeaderTest {
 

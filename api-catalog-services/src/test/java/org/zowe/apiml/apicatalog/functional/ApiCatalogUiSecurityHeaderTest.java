@@ -15,15 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 @DirtiesContext
 @AutoConfigureWebTestClient
-@TestPropertySource(properties = {
-    "server.ssl.keyStore=../keystore/service/service.keystore.p12",
-    "server.ssl.trustStore=../keystore/service/service.truststore.p12"
-})
+
 class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
 
     @Autowired
