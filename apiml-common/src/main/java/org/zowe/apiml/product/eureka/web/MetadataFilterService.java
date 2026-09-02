@@ -12,6 +12,7 @@ package org.zowe.apiml.product.eureka.web;
 
 import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -33,6 +35,9 @@ import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
 @Service
 @Slf4j
 public class MetadataFilterService implements InitializingBean {
+
+    private static final String HTTPS = "https://";
+    private static final String HTTP = "http://";
 
     // map k: metadata key, v: whether to validate port or not
     private static final Map<String, Boolean> METADATA_URL_KEYS_TO_VERIFY = Map.of(
@@ -57,7 +62,7 @@ public class MetadataFilterService implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() {
-        allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
+        allowedDomainsSet = sanitizeAllowedDomains();
         onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
 
         log.info("Allowed domains: {}", allowedDomains);
@@ -65,6 +70,21 @@ public class MetadataFilterService implements InitializingBean {
         if (onlyWarn) {
             log.info("Only warning on URL not allowed is enabled");
         }
+    }
+
+    private Set<String> sanitizeAllowedDomains() {
+        var set = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
+        Set<String> resultSet = new HashSet<>();
+        set.forEach(domain -> {
+            if (Strings.CI.startsWithAny(domain, HTTP, HTTPS)) {
+                var replacement = domain.replace(HTTP, "").replace(HTTPS, "");
+                log.warn("Allowed domains list must not include schemes, entry {} replaced with {}", domain, replacement);
+                resultSet.add(replacement);
+            } else {
+                resultSet.add(domain);
+            }
+        });
+        return resultSet;
     }
 
     private boolean validateMetadataEntry(String key, String value, MetadataValidator validator) {
