@@ -10,39 +10,58 @@
 
 package org.zowe.apiml.apicatalog.functional;
 
+import io.restassured.RestAssured;
+import org.hamcrest.Matchers;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.reactive.server.WebTestClient;
+
+import static io.restassured.RestAssured.given;
 
 @DirtiesContext
 @AutoConfigureWebTestClient
 
 class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
 
-    @Autowired
-    private WebTestClient webTestClient;
+    private static final String X_FRAME_OPTIONS = "X-Frame-Options";
+    private static final String X_CONTENT_TYPE_OPTIONS = "X-Content-Type-Options";
+    private static final String SAMEORIGIN = "SAMEORIGIN";
+    private static final String DEFAULT_SRC_SELF = "default-src 'self'";
     private static final String CONTENT_SECURITY_POLICY = "Content-Security-Policy";
+
+    @LocalServerPort
+    private int port;
+
+    @Override
+    @BeforeEach
+    void setUp() {
+        RestAssured.port = port;
+        RestAssured.baseURI = "https://localhost";
+        RestAssured.useRelaxedHTTPSValidation();
+    }
 
     @Test
     void shouldReturnContentSecurityPolicyHeaderForUiIndex() {
-        webTestClient.get()
-            .uri("/apicatalog/ui/v1/index.html")
-            .exchange()
-            .expectHeader().valueMatches(CONTENT_SECURITY_POLICY, ".*default-src 'self'.*")
-            .expectHeader().valueEquals("X-Frame-Options", "SAMEORIGIN")
-            .expectHeader().valueEquals("X-Content-Type-Options", "nosniff");
+        given()
+            .when()
+            .get("/apicatalog/ui/v1/index.html")
+            .then()
+            .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
+            .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
+            .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));
     }
 
     @Test
     void shouldReturnContentSecurityPolicyHeaderForUiRootPath() {
-        webTestClient.get()
-            .uri("/apicatalog/ui/v1/")
-            .exchange()
-            .expectHeader().valueMatches(CONTENT_SECURITY_POLICY, ".*default-src 'self'.*")
-            .expectHeader().valueEquals("X-Frame-Options", "SAMEORIGIN")
-            .expectHeader().valueEquals("X-Content-Type-Options", "nosniff");
+        given()
+            .when()
+            .get("/apicatalog/ui/v1/")
+            .then()
+            .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
+            .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
+            .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));
     }
 }
