@@ -210,10 +210,32 @@ public class SecurityConfiguration {
     }
 
     /**
-     * Default filter chain to protect all routes with MF credentials.
+     * Security filter chain specifically for API Catalog UI static resources and SPA routes.
      */
     @Bean
     @Order(6)
+    @ConditionalOnMissingBean(name = "modulithConfig")
+    SecurityWebFilterChain apiCatalogUiSecurityWebFilterChain(
+        ServerHttpSecurity http,
+        ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
+    ) {
+        return baseConfiguration(http, serverAuthenticationEntryPoint)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET,
+                getFullUrls(
+                    "/ui/v1",
+                    "/ui/v1/",
+                    "/ui/v1/index.html"
+                )
+            ))
+            .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().permitAll())
+            .build();
+    }
+
+    /**
+     * Default filter chain to protect all routes with MF credentials.
+     */
+    @Bean
+    @Order(7)
     SecurityWebFilterChain webSecurityCustomizer(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
@@ -224,9 +246,6 @@ public class SecurityConfiguration {
                     "",
                     "/",
                     "/static/**",
-                    "/ui/v1",
-                    "/ui/v1/",
-                    "/ui/v1/index.html",
                     "/favicon.ico",
                     "/v3/api-docs",
                     "/index.html",
