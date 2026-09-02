@@ -11,16 +11,26 @@
 package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import org.springframework.context.support.MessageSourceAccessor;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.SpringSecurityMessageSource;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.SecurityFilterChain;
@@ -37,6 +47,10 @@ import org.zowe.apiml.security.common.content.BasicContentFilter;
 import org.zowe.apiml.security.common.content.BearerContentFilter;
 import org.zowe.apiml.security.common.content.CookieContentFilter;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collections;
 
 /**
@@ -47,7 +61,6 @@ import java.util.Collections;
 @Configuration
 @RequiredArgsConstructor
 @EnableApimlAuth
-@Profile({"https", "attlsServer"})
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
@@ -72,6 +85,12 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
 
     @Value("${apiml.discovery.password:#{null}}")
     private char[] discoveryPassword;
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) {
+        // we cannot use `auth.inMemoryAuthentication()` because it does not support char array
+        auth.authenticationProvider(new EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword));
+    }
 
     @Bean
     WebSecurityCustomizer httpsWebSecurityCustomizer() {
@@ -143,7 +162,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
         } else {
             // Without TLS validation the client certificate cannot be trusted, so authentication is
             // enforced through basic authentication instead. Authentication is never disabled.
-            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword))
+            http.authenticationProvider(new HttpsWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword))
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .httpBasic(basic -> basic.realmName(DISCOVERY_REALM));
         }
@@ -168,7 +187,7 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
                 http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);
             }
         } else {
-            http.authenticationProvider(new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword))
+            http.authenticationProvider(new HttpsWebSecurityConfig.EurekaBasicAuthenticationProvider(discoveryUserid, discoveryPassword))
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
         }
 
@@ -217,4 +236,84 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
     private UserDetailsService x509UserDetailsService() {
         return username -> new User("eurekaClient", "", Collections.emptyList());
     }
+
+    @Slf4j
+    static class EurekaBasicAuthenticationProvider implements AuthenticationProvider {
+
+        private final boolean discoveryCredentialsProvider;
+        private final byte[] discoveryUserid;
+        private final byte[] discoveryPassword;
+
+        private final MessageSourceAccessor messages = SpringSecurityMessageSource.getAccessor();
+
+        EurekaBasicAuthenticationProvider(String discoveryUserid, char[] discoveryPassword) {
+            this.discoveryUserid = getBytes(discoveryUserid);
+            this.discoveryPassword = getBytes(discoveryPassword);
+
+            discoveryCredentialsProvider = (this.discoveryUserid.length > 0) && (this.discoveryPassword.length > 0);
+            if (!discoveryCredentialsProvider) {
+                log.warn("Eureka credentials are not set. Please configure properties `apiml.discovery.userid` and `apiml.discovery.password` or change type of Eureka authentication.");
+            }
+        }
+
+        private boolean isValid(Authentication authentication) {
+            byte[] userId = getUser(authentication);
+            boolean userMatching = MessageDigest.isEqual(userId, discoveryUserid);
+
+            byte[] password = getPassword(authentication);
+            boolean passwordMatching = MessageDigest.isEqual(password, discoveryPassword);
+
+            return discoveryCredentialsProvider && userMatching && passwordMatching;
+        }
+
+        static byte[] getBytes(Object obj) {
+            if (obj == null) {
+                return new byte[0];
+            }
+            if (obj instanceof byte[]) {
+                return (byte[]) obj;
+            }
+            if (obj instanceof char[]) {
+                ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap((char[]) obj));
+                byte[] bytes = new byte[byteBuffer.limit()];
+                byteBuffer.get(bytes);
+                return bytes;
+            }
+            if (obj instanceof String) {
+                return ((String) obj).getBytes(StandardCharsets.UTF_8);
+            }
+            return String.valueOf(obj).getBytes(StandardCharsets.UTF_8);
+        }
+
+        private byte[] getPassword(Authentication authentication) {
+            return getBytes(authentication.getCredentials());
+        }
+
+        private byte[] getUser(Authentication authentication) {
+            return getBytes(authentication.getPrincipal());
+        }
+
+        @Override
+        public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+            if (isValid(authentication)) {
+                UsernamePasswordAuthenticationToken result = UsernamePasswordAuthenticationToken.authenticated(
+                    authentication.getPrincipal(),
+                    authentication.getCredentials(),
+                    Collections.singleton(new SimpleGrantedAuthority("EUREKA"))
+                );
+                result.setDetails(authentication.getDetails());
+                return result;
+            }
+
+            throw new BadCredentialsException(this.messages
+                .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+        }
+
+        @Override
+        public boolean supports(Class<?> authentication) {
+            return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
+        }
+
+    }
+
 }
