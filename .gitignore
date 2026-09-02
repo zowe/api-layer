@@ -127,3 +127,5 @@ data/*
 index/*
 
 tools/*
+# Node/npm toolchains, one per project that applies the Node plugin
+*/tools/
