@@ -23,7 +23,6 @@ import static io.restassured.RestAssured.given;
 
 @DirtiesContext
 @AutoConfigureWebTestClient
-
 class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
 
     private static final String X_FRAME_OPTIONS = "X-Frame-Options";
