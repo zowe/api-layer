@@ -38,7 +38,7 @@ class IPAddressUtil {
         try {
             var str = StringUtils.substringBetween(input, "[", "]");
             new IpAddressMatcher(str == null ? input : str);
-            return input.indexOf(":") >= 0;
+            return input.contains(":");
         } catch (IllegalArgumentException e) {
             return false;
         }
@@ -57,7 +57,7 @@ class IPAddressUtil {
         try {
             var str = StringUtils.substringBetween(input, "[", "]");
             new IpAddressMatcher(str == null ? input : str);
-            return input.indexOf(":") >= 0 && input.indexOf("/") < 0;
+            return input.contains(":") && !input.contains("/");
         } catch (IllegalArgumentException e) {
             return false;
         }

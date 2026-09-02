@@ -93,7 +93,7 @@ public class MetadataValidator {
         input = input.toLowerCase();
         var domain = parseDomain(input);
         var result = false;
-        if (domain == null) {
+        if (domain == null || allowedDomainDomain == null) {
             result = false;
         } else if (domain.equals(allowedDomainDomain)) {
             result = true;
@@ -211,7 +211,7 @@ public class MetadataValidator {
         InetAddress[] allowedDomainIps = null;
         String[] allowedDomainIpsString = null;
         if (isWildCard(allowedDomain)) {
-            log.debug("{} is a wildcard match, can't evaluate against it against an IP address");
+            log.debug("{} is a wildcard match, can't evaluate against it against an IP address", allowedDomain);
             return false;
         }
         allowedDomainIps = IPAddressUtil.getIPAddresses(allowedDomain);
@@ -257,7 +257,7 @@ public class MetadataValidator {
     }
 
     boolean isWildCard(String allowedDomain) {
-        return allowedDomain.startsWith("*.");
+        return Strings.CI.startsWith(allowedDomain, "*.");
     }
 
     boolean isMatchingWildCard(String domain, String wildCard) {

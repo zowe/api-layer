@@ -72,7 +72,7 @@ public class MetadataFilterService implements InitializingBean {
         var segments = key.split("\\.", -1);   // -1 keeps the empty trailing segment
         return Arrays.stream(segments)
             .map(segment -> METADATA_URL_KEYS_TO_VERIFY.entrySet().stream()
-                .filter(e -> e.getKey().contains(segment))
+                .filter(e -> e.getKey().equals(segment))
                 .findFirst())
             .filter(Optional::isPresent)
             .map(Optional::get)
