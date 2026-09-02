@@ -270,17 +270,17 @@ public class HttpsWebSecurityConfig extends AbstractWebSecurityConfigurer {
             if (obj == null) {
                 return new byte[0];
             }
-            if (obj instanceof byte[]) {
-                return (byte[]) obj;
+            if (obj instanceof byte[] byteArray) {
+                return byteArray;
             }
-            if (obj instanceof char[]) {
-                ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap((char[]) obj));
+            if (obj instanceof char[] charArray) {
+                ByteBuffer byteBuffer = StandardCharsets.UTF_8.encode(CharBuffer.wrap(charArray));
                 byte[] bytes = new byte[byteBuffer.limit()];
                 byteBuffer.get(bytes);
                 return bytes;
             }
-            if (obj instanceof String) {
-                return ((String) obj).getBytes(StandardCharsets.UTF_8);
+            if (obj instanceof String string) {
+                return string.getBytes(StandardCharsets.UTF_8);
             }
             return String.valueOf(obj).getBytes(StandardCharsets.UTF_8);
         }
