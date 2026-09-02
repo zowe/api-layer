@@ -31,8 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     "apiml.discovery.password=password",
     "apiml.security.ssl.verifySslCertificatesOfServices=false",
     "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true"
-    }
-)
+})
 @AutoConfigureMockMvc
 class EurekaSecuredEndpointsTest extends DiscoveryFunctionalTest {
 

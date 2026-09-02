@@ -13,21 +13,15 @@ package org.zowe.apiml.discovery.health;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.zowe.apiml.discovery.DiscoveryServiceApplication;
-import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "apiml.health.protected=true"
-    },
-    classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
-)
+@TestPropertySource(properties = {
+    "apiml.health.protected=true"
+})
 class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
 
     @Nested
