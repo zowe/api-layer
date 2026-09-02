@@ -23,9 +23,6 @@ eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
         registryFetchIntervalSeconds: 1
----
-spring:
-    profiles: https
 
 server:
     address: ${apiml.service.hostname}

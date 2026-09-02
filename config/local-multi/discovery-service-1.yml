@@ -7,7 +7,7 @@ apiml:
         port: 10011
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-        allPeersUrls: http://localhost:10011/eureka,http://localhost2:10021/eureka
+        allPeersUrls: https://localhost:10011/eureka,https://localhost2:10021/eureka
     security:
         ssl:
             verifySslCertificatesOfServices: true
@@ -18,8 +18,6 @@ spring:
         ansi:
             enabled: always
 
----
-spring.profiles: https
 eureka:
     client:
         initialInstanceInfoReplicationIntervalSeconds: 1
@@ -35,7 +33,3 @@ server:
         trustStoreType: PKCS12
         trustStore: keystore/localhost/localhost-multi.truststore.p12
         trustStorePassword: password
-
-apiml:
-    discovery:
-        allPeersUrls: https://localhost:10011/eureka,https://localhost2:10021/eureka

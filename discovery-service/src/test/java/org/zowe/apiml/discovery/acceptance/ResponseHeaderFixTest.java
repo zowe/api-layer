@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.discovery.acceptance;
 
+import org.apache.commons.lang3.Strings;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
 import static javax.servlet.http.HttpServletResponse.SC_OK;
@@ -36,11 +38,13 @@ import static org.hamcrest.CoreMatchers.notNullValue;
     },
     properties = {
         "apiml.discovery.userid=eureka",
-        "apiml.discovery.password=password"
+        "apiml.discovery.password=password",
+        "apiml.security.ssl.verifySslCertificatesOfServices=false",
+        "apiml.security.ssl.nonStrictVerifySslCertificatesOfServices=true"
     },
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
 )
-@ActiveProfiles("ResponseHeaderFixTest")
+@ActiveProfiles({"ResponseHeaderFixTest", "test"})
 @DirtiesContext
 class ResponseHeaderFixTest {
 
@@ -67,7 +71,7 @@ class ResponseHeaderFixTest {
             .relaxedHTTPSValidation()
             .auth().preemptive().basic("eureka", "password")
         .when()
-            .get(String.format("http://localhost:%d/test/%d/%s", port, method, CONTENT_LENGTH))
+            .get(String.format("https://localhost:%d/test/%d/%s", port, method, CONTENT_LENGTH))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH, String.valueOf(TEST_CONTENT_LENGTH))
@@ -88,7 +92,7 @@ class ResponseHeaderFixTest {
             .relaxedHTTPSValidation()
             .auth().preemptive().basic("eureka", "password")
         .when()
-            .get(String.format("http://localhost:%d/test/%d/%s", port, method, "otherHeaderName"))
+            .get(String.format("https://localhost:%d/test/%d/%s", port, method, "otherHeaderName"))
         .then()
             .statusCode(SC_OK)
             .header(CONTENT_LENGTH,"0")
@@ -102,7 +106,11 @@ class ResponseHeaderFixTest {
     static class TestController {
 
         @GetMapping(value = "/test/{method}/{headerName}")
-        public void getApiDoc(@PathVariable("method") int method, @PathVariable("headerName") String headerName, HttpServletResponse response) {
+        public void getApiDoc(@PathVariable("method") int method, @PathVariable("headerName") String headerName, HttpServletResponse response) throws IOException {
+            if (Strings.CI.equals(headerName, CONTENT_LENGTH)) {
+                // when content length is manually changed it is necessary to generate some data to avoid freezing on client side
+                response.getOutputStream().write(new byte[200]);
+            }
             switch (method) {
                 case ADD_HEADER:
                     response.addHeader(headerName, String.valueOf(TEST_CONTENT_LENGTH));

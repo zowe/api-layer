@@ -25,7 +25,7 @@ import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class HttpWebSecurityConfigTest {
+class HttpsWebSecurityConfigTest {
 
     private static final String USER = "user";
     private static final String PASSWORD = "password";
@@ -45,7 +45,7 @@ class HttpWebSecurityConfigTest {
                 ",password,"
             })
             void givenNoCompleteCredentials_whenAuthorize_thenThrowException(String user, String password) {
-                AuthenticationProvider provider = new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(user, password == null ? null : password.toCharArray());
+                AuthenticationProvider provider = new HttpsWebSecurityConfig.EurekaBasicAuthenticationProvider(user, password == null ? null : password.toCharArray());
                 assertThrows(BadCredentialsException.class, () -> provider.authenticate(VALID_AUTHENTICATION));
             }
 
@@ -54,7 +54,7 @@ class HttpWebSecurityConfigTest {
         @Nested
         class ValidCredentials {
 
-            private AuthenticationProvider provider = new HttpWebSecurityConfig.EurekaBasicAuthenticationProvider(USER, PASSWORD.toCharArray());
+            private AuthenticationProvider provider = new HttpsWebSecurityConfig.EurekaBasicAuthenticationProvider(USER, PASSWORD.toCharArray());
 
             @Test
             void givenValidCredentials_whenAuthenticate_thenSuccess() {
@@ -103,17 +103,17 @@ class HttpWebSecurityConfigTest {
 
             @Test
             void givenNull_whenGetBytes_thenEmptyArray() {
-                assertArrayEquals(new byte[0], HttpWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(null));
+                assertArrayEquals(new byte[0], HttpsWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(null));
             }
 
             @Test
             void givenString_whenGetBytes_thenGetArray() {
-                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(HELLO_WORLD));
+                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpsWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(HELLO_WORLD));
             }
 
             @Test
             void givenCharArray_whenGetBytes_thenGetArray() {
-                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(HELLO_WORLD.toCharArray()));
+                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpsWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(HELLO_WORLD.toCharArray()));
             }
 
             @Test
@@ -124,7 +124,7 @@ class HttpWebSecurityConfigTest {
                         return HELLO_WORLD;
                     }
                 };
-                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(object));
+                assertArrayEquals(HELLO_WORLD.getBytes(StandardCharsets.UTF_8), HttpsWebSecurityConfig.EurekaBasicAuthenticationProvider.getBytes(object));
             }
 
         }

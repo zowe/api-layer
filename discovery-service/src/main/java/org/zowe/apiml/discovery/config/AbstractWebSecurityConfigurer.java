@@ -12,14 +12,14 @@ package org.zowe.apiml.discovery.config;
 
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.zowe.apiml.security.FixedHeadersConfigurer;
 
 public abstract class AbstractWebSecurityConfigurer {
 
     protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
-        return FixedHeadersConfigurer.fix(http.csrf().disable()    // NOSONAR
-            .headers().httpStrictTransportSecurity().disable()
-            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and());
+        return http
+            .csrf().disable()    // NOSONAR
+            .headers().httpStrictTransportSecurity().disable().and()
+            .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and();
     }
+
 }
