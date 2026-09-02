@@ -79,7 +79,7 @@ dependencyResolutionManagement {
             version('lettuce', '6.8.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.26.1')
-            version('lombok', '1.18.46')
+            version('lombok', '1.18.48')
             version('mailapi', '1.6.8')
             version('netty', '4.2.17.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
@@ -121,7 +121,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.83.1')
+            version('ioGrpc', '1.84.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
