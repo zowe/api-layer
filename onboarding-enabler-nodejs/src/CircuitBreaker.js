@@ -28,7 +28,7 @@ const STATES = {
  *   HALF_OPEN → OPEN  on recordFailure()
  *
  * OPEN cooldown uses exponential backoff: cooldownTime × 2^(openCycleCount-1),
- * capped at backoffMax. CLOSED backoff uses cooldownTime × 2^(failureCount-1).
+ * capped at backoffMax. CLOSED retry backoff uses backoffTimeout × 2^(failureCount-1).
  *
  * Emits events: 'circuitOpen', 'circuitHalfOpen', 'circuitClose'
  */
@@ -36,18 +36,20 @@ export default class CircuitBreaker extends EventEmitter {
   /**
    * @param {Object} options
    * @param {number} [options.maxFailures=5] Consecutive failures before circuit opens
-   * @param {number} [options.cooldownTime=60000] Base cooldown time in ms (used for
-   *   both CLOSED exponential backoff and OPEN exponential cooldown base)
+   * @param {number} [options.cooldownTime=60000] Base OPEN-circuit cooldown time in ms
+   * @param {number} [options.backoffTimeout=1000] Base CLOSED-state retry backoff in ms
    * @param {number} [options.backoffMax=300000] Maximum backoff cap in ms
    */
   constructor({
     maxFailures = 5,
     cooldownTime = 60000,
+    backoffTimeout = 1000,
     backoffMax = 300000,
   } = {}) {
     super();
     this.maxFailures = maxFailures;
     this.cooldownTime = cooldownTime;
+    this.backoffTimeout = backoffTimeout;
     this.backoffMax = backoffMax;
 
     this._state = STATES.CLOSED;
@@ -140,8 +142,8 @@ export default class CircuitBreaker extends EventEmitter {
   /**
    * Compute the cooldown/delay for the next scheduling cycle.
    * OPEN state: exponential cooldown based on openCycleCount.
-   * CLOSED state: exponential backoff based on failureCount (a single failure uses cooldownTime).
-   * Both use cooldownTime as base, capped at backoffMax.
+   * CLOSED state: exponential retry backoff based on failureCount (a single failure uses
+   * backoffTimeout). Both are capped at backoffMax.
    *
    * @returns {number} Delay in milliseconds
    */
@@ -150,9 +152,9 @@ export default class CircuitBreaker extends EventEmitter {
       return this._computeOpenCooldown();
     }
     if (this.failureCount === 0) {
-      return this.cooldownTime;
+      return this.backoffTimeout;
     }
-    const backoff = this.cooldownTime * (2 ** (this.failureCount - 1));
+    const backoff = this.backoffTimeout * (2 ** (this.failureCount - 1));
     return Math.min(backoff, this.backoffMax);
   }
 

@@ -29,6 +29,7 @@ describe('CircuitBreaker', () => {
     breaker = new CircuitBreaker({
       maxFailures: 3,
       cooldownTime: 10000,
+      backoffTimeout: 10000,
       backoffMax: 60000,
     });
   });
@@ -58,6 +59,7 @@ describe('CircuitBreaker', () => {
       const defaultBreaker = new CircuitBreaker();
       expect(defaultBreaker.maxFailures).to.equal(5);
       expect(defaultBreaker.cooldownTime).to.equal(60000);
+      expect(defaultBreaker.backoffTimeout).to.equal(1000);
       expect(defaultBreaker.backoffMax).to.equal(300000);
     });
   });
@@ -200,7 +202,20 @@ describe('CircuitBreaker', () => {
   });
 
   describe('getNextCooldown()', () => {
-    it('should return cooldownTime when failureCount is 0', () => {
+    it('should use backoffTimeout for CLOSED retries and cooldownTime after the circuit opens', () => {
+      const configuredBreaker = new CircuitBreaker({
+        maxFailures: 3,
+        cooldownTime: 10000,
+        backoffTimeout: 1000,
+        backoffMax: 60000,
+      });
+
+      expect(configuredBreaker.recordFailure().delay).to.equal(1000);
+      expect(configuredBreaker.recordFailure().delay).to.equal(2000);
+      expect(configuredBreaker.recordFailure().delay).to.equal(10000);
+    });
+
+    it('should return backoffTimeout when failureCount is 0', () => {
       expect(breaker.getNextCooldown()).to.equal(10000);
     });
 
@@ -251,7 +266,7 @@ describe('CircuitBreaker', () => {
       expect(breaker.getNextCooldown()).to.equal(60000); // capped
     });
 
-    it('should return cooldownTime after success resets failureCount', () => {
+    it('should return backoffTimeout after success resets failureCount', () => {
       breaker.recordFailure();
       breaker.recordFailure();
       expect(breaker.getNextCooldown()).to.be.above(10000);

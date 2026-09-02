@@ -148,6 +148,7 @@ export default class Eureka extends EventEmitter {
     this.circuitBreaker = new CircuitBreaker({
       maxFailures: cbConfig.maxFailures,
       cooldownTime: cbConfig.cooldownTime,
+      backoffTimeout: cbConfig.backoffTimeout,
       backoffMax: cbConfig.backoffMax,
     });
 
