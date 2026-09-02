@@ -52,6 +52,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.http.server.reactive.HttpHandler;
 import org.springframework.http.server.reactive.TomcatHttpHandlerAdapter;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -79,6 +80,7 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
 import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 
 @EnableScheduling
+@EnableRetry
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties
