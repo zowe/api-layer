@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.net.IDN;
@@ -33,6 +34,8 @@ import java.util.Set;
 @Builder
 public class MetadataValidator {
 
+    private static final String HTTP = "http://";
+    private static final String HTTPS = "https://";
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
     private static final String ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED = "org.zowe.apiml.common.schemeNotAllowed";
     private static final String DEFAULT_PORT_TLS = "443";
@@ -50,7 +53,11 @@ public class MetadataValidator {
             return true;
         }
         var inputToCheck = input.endsWith("null") ? input.substring(0, input.lastIndexOf("null")) : input;
-        return allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, inputToCheck, validatePort));
+        var result = allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, inputToCheck, validatePort));
+        if (!result && log.isDebugEnabled()) {
+            log.debug("{} (validate port {}) is not allowed", input, validatePort);
+        }
+        return result;
     }
 
     boolean validateEntry(String label, String input, boolean validatePort) {
@@ -84,7 +91,7 @@ public class MetadataValidator {
         var allowedDomainPort = parsePort(allowedDomainEntry);
 
         input = input.toLowerCase();
-        var domain = extractDomain(input);
+        var domain = parseDomain(input);
         var result = false;
         if (domain == null) {
             result = false;
@@ -106,38 +113,39 @@ public class MetadataValidator {
     /**
      * Parse port from an allowedDomain configuration entry
      *
-     * @param allowedDomainEntry
+     * @param input
      * @return the port or null
      */
-    private String parsePort(String allowedDomainEntry) {
-        if (IPAddressUtil.isIPV6Single(allowedDomainEntry)) {
-            return IPAddressUtil.getPortIPV6(allowedDomainEntry);
-        } else if (IPAddressUtil.isIPV6CIDR(allowedDomainEntry)) {
+    private String parsePort(String input) {
+        if (IPAddressUtil.isIPV6Single(input)) {
+            return IPAddressUtil.getPortIPV6(input);
+        } else if (IPAddressUtil.isIPV6CIDR(input)) {
             return null;
         }
-        var idx = allowedDomainEntry.lastIndexOf(":");
-        if (idx > 0 && allowedDomainEntry.length() > idx) {
-            return allowedDomainEntry.substring(idx + 1);
+        var idx = input.lastIndexOf(":");
+        if (idx > 0 && input.length() > idx) {
+            return input.substring(idx + 1);
         }
         return null;
     }
 
-    private String parseDomain(String allowedDomainEntry) {
-        if (IPAddressUtil.isIPV6Single(allowedDomainEntry)) {
-            return IPAddressUtil.getHostIPV6(allowedDomainEntry);
-        } else if (IPAddressUtil.isIPV6CIDR(allowedDomainEntry)) {
-            return allowedDomainEntry;
+    private String parseDomain(String input) {
+        if (IPAddressUtil.isIPV6Single(input)) {
+            return IPAddressUtil.getHostIPV6(input);
+        } else if (IPAddressUtil.isIPV6CIDR(input)) {
+            return input;
+        } else if (IPAddressUtil.isIPV4CIDR(input)) {
+            return input;
         }
-        var idx = allowedDomainEntry.lastIndexOf(":");
-        if (idx > 0) {
-            return allowedDomainEntry.substring(0, idx);
-        }
-        return allowedDomainEntry;
-    }
+        var noScheme = clearValidSchemes(input);
+        input = StringUtils.isBlank(noScheme) ? input : noScheme;
+        var idx = input.lastIndexOf(":");
 
-    private String extractDomain(String input) {
+        if (idx > 0) {
+            input = input.substring(0, idx);
+        }
         try {
-            return new URL(input).getHost().toLowerCase();
+            return new URL(Strings.CI.startsWithAny(input, HTTP, HTTPS) ? input : HTTPS + input).getHost().toLowerCase();
         } catch (MalformedURLException e) {
             // continue
         }
@@ -148,6 +156,15 @@ public class MetadataValidator {
         }
         log.debug("{} is not a URL / hostname / IP Address", input);
         return null;
+    }
+
+    private String clearValidSchemes(String input) {
+        if (Strings.CI.startsWith(input, HTTP)) {
+            return StringUtils.substringAfter(input, HTTP);
+        } else if (Strings.CI.startsWith(input, HTTPS)) {
+            return StringUtils.substringAfter(input, HTTPS);
+        }
+        return input;
     }
 
     private boolean isAllowedScheme(String url) {
@@ -220,7 +237,7 @@ public class MetadataValidator {
 
     private String extractPort(String input) {
         try {
-            var port = new URL(input).getPort();
+            var port = new URL(Strings.CI.startsWithAny(input, HTTP, HTTPS) ? input : HTTPS + input).getPort();
             if (port > 0) {
                 return String.valueOf(port);
             }

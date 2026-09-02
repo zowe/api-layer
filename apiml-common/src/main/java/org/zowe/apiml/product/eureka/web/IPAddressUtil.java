@@ -44,6 +44,15 @@ class IPAddressUtil {
         }
     }
 
+    private static boolean isIPV4(String input) {
+        try {
+            new IpAddressMatcher(input);
+            return !input.contains(":");
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
+    }
+
     static boolean isIPV6Single(String input) {
         try {
             var str = StringUtils.substringBetween(input, "[", "]");
@@ -56,6 +65,10 @@ class IPAddressUtil {
 
     static boolean isIPV6CIDR(String input) {
         return isIPV6(input) && input.contains("/");
+    }
+
+    static boolean isIPV4CIDR(String input) {
+        return isIPV4(input) && input.contains("/");
     }
 
     static InetAddress[] getInetAddresses(String domain) {
