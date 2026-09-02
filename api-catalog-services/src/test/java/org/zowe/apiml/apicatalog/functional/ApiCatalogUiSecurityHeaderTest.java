@@ -45,9 +45,10 @@ class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
     @Test
     void shouldReturnContentSecurityPolicyHeaderForUiIndex() {
         given()
-            .when()
+        .when()
             .get("/apicatalog/ui/v1/index.html")
-            .then()
+        .then()
+            .statusCode(HttpStatus.SC_OK)
             .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
             .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
             .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));
