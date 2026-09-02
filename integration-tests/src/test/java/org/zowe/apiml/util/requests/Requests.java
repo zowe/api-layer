@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
+import static io.restassured.http.ContentType.JSON;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 
@@ -37,6 +38,22 @@ public class Requests {
             .extract()
             .body()
             .asString();
+
+        return JsonPath.parse(apps);
+    }
+
+    public ReadContext getJson(URI uri, String userName, String password) {
+        String apps = given()
+                .accept(ContentType.JSON)
+                .contentType(JSON)
+                .auth().basic(userName, password)
+            .when()
+                .get(uri)
+            .then()
+                .statusCode(is(HttpStatus.SC_OK))
+                .extract()
+                .body()
+                .asString();
 
         return JsonPath.parse(apps);
     }
