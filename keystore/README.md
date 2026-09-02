@@ -140,7 +140,7 @@ always the one that signed them — none of these keystores is committed.
 
 | Authority | Signs | Alias | Password |
 |---|---|---|---|
-| `ca/service-ca.keystore.p12` | The API ML component identity, both split-role identities, and the hostname-mismatch certificate | `service-ca` | `local_ca_password` |
+| `ca/service-ca.keystore.p12` | The API ML component identity | `service-ca` | `local_ca_password` |
 | `ca/client-ca.keystore.p12` | Only the user certificates in `client/` | `client-ca` | `password` |
 | `ca/untrusted-ca.keystore.p12` | Only the untrusted negative certificate. Deliberately absent from every truststore except `negative/untrusted-ca.truststore.p12` | `untrusted-ca` | `local_ca_password` |
 
@@ -183,20 +183,7 @@ sample:
 * `service/service.key` — the private key, PEM, unencrypted
 * `service/service.pem` — the certificate followed by `service-ca`
 
-## Split-role identities
-
-A pair of certificates separated by extended key usage, so that a listener
-certificate cannot be replayed as a client identity:
-
-* `service/server-only.p12` — password `password`, alias `localhost`, `serverAuth` only
-* `service/client-cert.p12` — password `password`, alias `localhost`, `clientAuth` only, no SAN
-
-Nothing on this branch references them. They are generated because `v3.x.x` splits
-the inbound and outbound identities of a component in `config/docker/*.yml`, and
-keeping the generator identical across branches keeps the two sets of certificates
-comparable. On this branch every component presents `service/service.keystore.p12`
-for both roles, which is what the checked-in `docker/all-services.keystore.p12` did
-before it was replaced.
+## Paths inside the container images
 
 `gradle/jib.gradle` copies `config/`, `keystore/` and `scripts/` into the
 container image root, so these subdirectories appear as absolute paths inside the
@@ -213,11 +200,15 @@ image — `keystore/service/` becomes `/service/`, and the configurations refer 
   Holds `service-ca` and `client-ca`, plus the public anchors merged in from
   `public_ca/public-roots.p12`.
 
-  The public anchors have to be here rather than only in a separate store, because
-  API ML validates live HTTPS endpoints with this truststore instead of the JVM
-  default one. The OIDC support fetches a JWKS over TLS through
-  `HttpConfig.getSecureSslContextWithoutKeystore()` — see `HttpsJwksProvider` — so
-  without them that fetch fails path validation.
+  The public anchors are here because the truststore this replaces already carried
+  them: the checked-in `localhost.truststore.p12` and `docker/all-services.truststore.p12`
+  both held DigiCert roots. They are kept so that anything validating a live
+  third-party HTTPS endpoint with the API ML truststore keeps working.
+
+  Note that OIDC on this branch does **not** depend on them: `OIDCTokenProviderJWK`
+  fetches the JWKS with `JWKSet.load(new URL(...))`, which uses the JVM default trust
+  store rather than this one. On `v3.x.x` that fetch goes through
+  `HttpConfig.getSecureSslContextWithoutKeystore()` and does depend on them.
 
 * `public_ca/public-roots.p12` — password `password`
 
@@ -255,13 +246,7 @@ reason.
 | Artifact | Failure mode | Signed by |
 |---|---|---|
 | `negative/untrusted-ca.keystore.p12` + `negative/untrusted-ca.truststore.p12` | Chain rooted in an authority that is not trusted | `untrusted-ca` |
-| `negative/hostname-mismatch.keystore.p12` (alias `nonlocalhost`) | Valid, trusted chain whose name does not match the host | **`service-ca`** |
 | `negative/selfsigned.keystore.p12` | Self-signed, no issuer at all | itself |
-
-The hostname-mismatch certificate must stay on `service-ca`: `gateway-service`
-`WebSocketTest` relies on its chain validating so that hostname verification is the
-only thing that fails. It also has no subject alternative name, so verification
-falls back to the CN.
 
 ## Distinguished names that must not change
 

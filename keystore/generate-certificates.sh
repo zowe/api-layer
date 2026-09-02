@@ -210,24 +210,6 @@ cp "${WORK}/service.key" service/service.key
 cat "${WORK}/service.crt" ca/service-ca.cer > service/service.pem
 
 ###################################################################
-# Split-role identities
-#
-# A pair separated by extended key usage, so that a listener certificate cannot
-# be replayed as a client identity.
-#
-# Nothing on this branch references them - every component presents
-# service.keystore.p12 for both roles. They are generated because v3.x.x splits
-# the inbound and outbound identities in config/docker/*.yml, and keeping this
-# script identical across branches keeps the two certificate sets comparable.
-###################################################################
-
-sign_cert service/server-only.ext server-only service-ca
-build_keystore service/server-only.p12 localhost server-only service-ca
-
-sign_cert service/client-cert.ext client-cert service-ca
-build_keystore service/client-cert.p12 localhost client-cert service-ca
-
-###################################################################
 # Client certificates for client-certificate authentication
 #
 # Three user identities in one keystore, selected by alias at connection time.
@@ -252,12 +234,8 @@ done
 ###################################################################
 # Negative-test certificates
 #
-# Three distinct failure modes, one certificate each.
+# Two distinct failure modes, one certificate each.
 ###################################################################
-
-# Valid chain, hostname does not match.
-sign_cert negative/hostname-mismatch.ext hostname-mismatch service-ca
-build_keystore negative/hostname-mismatch.keystore.p12 nonlocalhost hostname-mismatch service-ca
 
 # Chain rooted in an authority that is not in the default truststore. The work
 # name must differ from the CA name - see the note on sign_cert.
@@ -427,9 +405,6 @@ verify_ca_pair client-ca    "${PASSWORD}"
 verify_ca_pair untrusted-ca "${PASSWORD_CA}"
 
 verify_chain "service identity"         service-ca   service/service.keystore.p12            localhost
-verify_chain "serverAuth-only"          service-ca   service/server-only.p12                 localhost
-verify_chain "clientAuth-only"          service-ca   service/client-cert.p12                 localhost
-verify_chain "hostname mismatch"        service-ca   negative/hostname-mismatch.keystore.p12 nonlocalhost
 verify_chain "untrusted CA leaf"        untrusted-ca negative/untrusted-ca.keystore.p12      localhost
 verify_chain "client cert APIMTST"      client-ca    client/client-certs.p12                 apimtst
 verify_chain "client cert USER"         client-ca    client/client-certs.p12                 user

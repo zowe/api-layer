@@ -133,10 +133,7 @@ def generatedCertificates = [
     'ca/untrusted-ca.keystore.p12',
     'service/service.keystore.p12',
     'service/service.truststore.p12',
-    'service/server-only.p12',
-    'service/client-cert.p12',
     'client/client-certs.p12',
-    'negative/hostname-mismatch.keystore.p12',
     'negative/untrusted-ca.keystore.p12',
     'negative/selfsigned.keystore.p12',
 ].collect { new File(keystoreDir, it) }
