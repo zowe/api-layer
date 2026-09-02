@@ -51,7 +51,9 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.PlatformPwdErrno;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -1068,6 +1070,116 @@ class ZosmfServiceTest {
             assertThrows(ServiceNotFoundException.class, () -> underTest.exchangeAuthenticationForZosmfToken("OidcToken", authParsedSource));
         }
 
+    }
+
+    @Nested
+    class GivenExpiredPasswordResponse {
+
+        private ZosmfService zosmfService;
+        private Authentication authentication;
+
+        @BeforeEach
+        void setUp() {
+            zosmfService = getZosmfServiceSpy();
+            doReturn(true).when(zosmfService).loginEndpointExists();
+            authentication = new UsernamePasswordAuthenticationToken("user", "pass");
+        }
+
+        @Test
+        void whenZosmfReturnsExpiredPassword_thenThrowZosAuthenticationException() {
+            String responseBody = """
+                {
+                    "safMessages": [
+                        {
+                            "SAFReturnCode": 8,
+                            "SAFReasonCode": 24,
+                            "SAFMessageText": "ICH408I USER(user) EXPIRED PASSWORD"
+                        }
+                    ]
+                }
+                """;
+            HttpClientErrorException.Unauthorized exception = (HttpClientErrorException.Unauthorized)
+                HttpClientErrorException.create(
+                HttpStatus.UNAUTHORIZED, "Unauthorized", null,
+                responseBody.getBytes(), null);
+
+            doThrow(exception).when(restTemplate).exchange(
+                anyString(),
+                any(HttpMethod.class),
+                any(HttpEntity.class),
+                (Class<?>) any()
+            );
+
+            ZosAuthenticationException thrown = assertThrows(ZosAuthenticationException.class,
+                () -> zosmfService.authenticate(authentication));
+            assertEquals(PlatformPwdErrno.EMVSEXPIRE, thrown.getPlatformError());
+        }
+
+        @Test
+        void whenZosmfReturnsInvalidCredentials_thenThrowBadCredentialsException() {
+            String responseBody = """
+                {
+                    "safMessages": [
+                        {
+                            "SAFReturnCode": 8,
+                            "SAFReasonCode": 16,
+                            "SAFMessageText": "ICH408I USER(user) INVALID PASSWORD"
+                        }
+                    ]
+                }
+                """;
+            HttpClientErrorException.Unauthorized exception = (HttpClientErrorException.Unauthorized)
+                HttpClientErrorException.create(
+                HttpStatus.UNAUTHORIZED, "Unauthorized", null,
+                responseBody.getBytes(), null);
+
+            doThrow(exception).when(restTemplate).exchange(
+                anyString(),
+                any(HttpMethod.class),
+                any(HttpEntity.class),
+                (Class<?>) any()
+            );
+
+            assertThrows(BadCredentialsException.class,
+                () -> zosmfService.authenticate(authentication));
+        }
+
+        @Test
+        void whenZosmfReturnsEmptyBody_thenThrowBadCredentialsException() {
+            HttpClientErrorException.Unauthorized exception = (HttpClientErrorException.Unauthorized)
+                HttpClientErrorException.create(
+                HttpStatus.UNAUTHORIZED, "Unauthorized", null,
+                new byte[0], null);
+
+            doThrow(exception).when(restTemplate).exchange(
+                anyString(),
+                any(HttpMethod.class),
+                any(HttpEntity.class),
+                (Class<?>) any()
+            );
+
+            assertThrows(BadCredentialsException.class,
+                () -> zosmfService.authenticate(authentication));
+        }
+
+        @Test
+        void whenZosmfReturnsMalformedJson_thenThrowBadCredentialsException() {
+            String malformedJson = "{ not valid json }";
+            HttpClientErrorException.Unauthorized exception = (HttpClientErrorException.Unauthorized)
+                HttpClientErrorException.create(
+                HttpStatus.UNAUTHORIZED, "Unauthorized", null,
+                malformedJson.getBytes(), null);
+
+            doThrow(exception).when(restTemplate).exchange(
+                anyString(),
+                any(HttpMethod.class),
+                any(HttpEntity.class),
+                (Class<?>) any()
+            );
+
+            assertThrows(BadCredentialsException.class,
+                () -> zosmfService.authenticate(authentication));
+        }
     }
 
 }
