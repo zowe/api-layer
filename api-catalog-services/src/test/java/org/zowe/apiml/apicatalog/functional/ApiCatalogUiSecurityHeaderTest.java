@@ -11,6 +11,7 @@
 package org.zowe.apiml.apicatalog.functional;
 
 import io.restassured.RestAssured;
+import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,8 +38,6 @@ class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
     @Override
     @BeforeEach
     void setUp() {
-        RestAssured.port = port;
-        RestAssured.baseURI = "https://localhost";
         RestAssured.useRelaxedHTTPSValidation();
     }
 
@@ -46,7 +45,7 @@ class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
     void shouldReturnContentSecurityPolicyHeaderForUiIndex() {
         given()
         .when()
-            .get("/apicatalog/ui/v1/index.html")
+            .get("https://localhost:" + port + "/apicatalog/index.html")
         .then()
             .statusCode(HttpStatus.SC_OK)
             .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
@@ -57,9 +56,10 @@ class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
     @Test
     void shouldReturnContentSecurityPolicyHeaderForUiRootPath() {
         given()
-            .when()
-            .get("/apicatalog/ui/v1/")
-            .then()
+        .when()
+            .get("https://localhost:" + port + "/apicatalog/")
+        .then()
+            .statusCode(HttpStatus.SC_OK)
             .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
             .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
             .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));

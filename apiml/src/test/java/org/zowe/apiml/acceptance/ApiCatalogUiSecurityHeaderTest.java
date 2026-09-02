@@ -11,6 +11,7 @@
 package org.zowe.apiml.acceptance;
 
 import io.restassured.RestAssured;
+import org.apache.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,17 +34,16 @@ class ApiCatalogUiSecurityHeaderTest {
 
     @BeforeEach
     void setUp() {
-        RestAssured.port = port;
-        RestAssured.baseURI = "https://localhost";
         RestAssured.useRelaxedHTTPSValidation();
     }
 
     @Test
     void shouldReturnContentSecurityPolicyHeaderForUiIndex() {
-        given()
-            .when()
-            .get("/apicatalog/ui/v1/index.html")
-            .then()
+        given().
+        when()
+            .get("https://localhost:" + port + "/apicatalog/ui/v1/index.html")
+        .then()
+            .statusCode(HttpStatus.SC_OK)
             .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
             .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
             .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));
