@@ -44,6 +44,7 @@ import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 import org.zowe.apiml.security.common.token.InvalidTokenTypeException;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
+import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
@@ -410,6 +411,20 @@ class ZosmfAuthenticationProviderTest {
         when(authenticationService.createTokenAuthentication(USERNAME, jwtToken)).thenReturn(authentication2);
 
         assertSame(authentication2, zosmfAuthenticationProvider.authenticate(authentication));
+    }
+
+    @Test
+    void testAuthenticate_givenTokenNotValidException_thenThrowBadCredentials() {
+
+        ZosmfService zosmfService = mock(ZosmfService.class);
+        ZosmfAuthenticationProvider zosmfAuthenticationProvider = new ZosmfAuthenticationProvider(authenticationService, zosmfService, authConfigurationProperties);
+        TokenNotValidException cause = new TokenNotValidException("Token not valid");
+        when(zosmfService.authenticate(usernamePasswordAuthentication)).thenThrow(cause);
+
+        Exception exception = assertThrows(BadCredentialsException.class,
+            () -> zosmfAuthenticationProvider.authenticate(usernamePasswordAuthentication),
+            "Expected exception is not BadCredentialsException");
+        assertEquals("Invalid Credentials", exception.getMessage());
     }
 
     @Test

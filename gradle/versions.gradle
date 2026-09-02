@@ -79,7 +79,7 @@ dependencyResolutionManagement {
             version('lettuce', '6.8.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.26.1')
-            version('lombok', '1.18.46')
+            version('lombok', '1.18.48')
             version('mailapi', '1.6.8')
             version('netty', '4.2.17.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
@@ -92,10 +92,10 @@ dependencyResolutionManagement {
             version('restAssured', '5.5.7')
             version('rhino', '1.9.1')
             version('springDoc', '2.9.0')
-            version('swaggerCore', '2.2.54')
+            version('swaggerCore', '2.2.55')
             version('swaggerInflector', '2.0.17')
             version('swagger2Parser', '1.0.76')
-            version('swagger3Parser', '2.1.47')
+            version('swagger3Parser', '2.1.48')
             version('thymeleaf', '3.1.5.RELEASE')
             version('tomcat', '10.1.59')
             version('velocity', '2.4.1')
@@ -121,7 +121,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.83.1')
+            version('ioGrpc', '1.84.0')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
