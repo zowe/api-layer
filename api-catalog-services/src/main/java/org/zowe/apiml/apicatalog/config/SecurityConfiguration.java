@@ -222,7 +222,6 @@ public class SecurityConfiguration {
         return baseConfiguration(http, serverAuthenticationEntryPoint)
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET,
                 getFullUrls(
-                    "/ui/v1",
                     "/ui/v1/",
                     "/ui/v1/index.html"
                 )

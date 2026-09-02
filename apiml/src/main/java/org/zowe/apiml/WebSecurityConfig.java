@@ -730,7 +730,6 @@ public class WebSecurityConfig {
     SecurityWebFilterChain apiCatalogUiSecurityFilterChain(ServerHttpSecurity http) {
         return http
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(
-                "/apicatalog/ui/v1/**",
                 "/apicatalog/ui/v1/index.html"
             ))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)

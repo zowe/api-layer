@@ -46,15 +46,7 @@ class ApiCatalogUiSecurityHeaderTest {
             .then()
             .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
             .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
-            .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));    }
+            .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));
+    }
 
-    @Test
-    void shouldReturnContentSecurityPolicyHeaderForUiRootPath() {
-        given()
-            .when()
-            .get("/apicatalog/ui/v1/")
-            .then()
-            .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
-            .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
-            .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));    }
 }
