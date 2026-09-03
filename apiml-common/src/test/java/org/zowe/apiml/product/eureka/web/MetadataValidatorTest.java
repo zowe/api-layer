@@ -90,7 +90,9 @@ class MetadataValidatorTest {
         "localhost:8080|https://localhost:8080/v3/api-doc|true|true",
         "zowe.github.io|https://zowe.github.io/docs-site/|true|false",
         "localhost:7553|https://:7553/|false|true",
+        "localhost:7553|https://:7553/|false|false",
         "localhost:443|https://:443@/|false|true",
+        "localhost:443|https://:443@/|false|false",
     })
     void givenAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed, boolean validatePort) {
         ReflectionTestUtils.setField(metadataValidator,"allowedDomainsSet", new HashSet<>(Arrays.asList(allowList.split(","))));
