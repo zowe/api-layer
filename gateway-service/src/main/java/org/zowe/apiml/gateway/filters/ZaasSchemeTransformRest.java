@@ -48,7 +48,7 @@ import static org.zowe.apiml.gateway.x509.ForwardClientCertFilterFactory.CLIENT_
 public class ZaasSchemeTransformRest implements ZaasSchemeTransform {
 
     private static final String HEADER_SERVICE_ID = "X-Service-Id";
-    private static final String SERVICE_IS_UNAVAILABLE_MESSAGE = "There are no instance of ZAAS available";
+    private static final String SERVICE_IS_UNAVAILABLE_MESSAGE = "There are no instances of ZAAS available";
 
     private static final ObjectWriter WRITER = new ObjectMapper().writer();
 

@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.zowe.apiml.extension.ExtensionConfigReader;
@@ -27,6 +28,7 @@ import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 
 @EnableWebSecurity
+@EnableRetry
 @SpringBootApplication(
     exclude = {
         OpenTelemetryAutoConfiguration.class,
