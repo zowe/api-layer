@@ -197,34 +197,32 @@ image — `keystore/service/` becomes `/service/`, and the configurations refer 
 * `service/service.truststore.p12` — password `password`
 
   The default truststore for every API ML component and for the integration tests.
-  Holds `service-ca` and `client-ca`, plus the public anchors merged in from
+  It holds `service-ca`, `client-ca`, and the public roots merged in from
   `public_ca/public-roots.p12`.
 
-  The public anchors are here because the truststore this replaces already carried
-  them: the checked-in `localhost.truststore.p12` and `docker/all-services.truststore.p12`
-  both held DigiCert roots. They are kept so that anything validating a live
-  third-party HTTPS endpoint with the API ML truststore keeps working.
-
-  Note that OIDC on this branch does **not** depend on them: `OIDCTokenProviderJWK`
-  fetches the JWKS with `JWKSet.load(new URL(...))`, which uses the JVM default trust
-  store rather than this one. On `v3.x.x` that fetch goes through
-  `HttpConfig.getSecureSslContextWithoutKeystore()` and does depend on them.
+  `HttpConfig` builds every outbound HTTPS client from `server.ssl.trustStore`, so
+  this store decides which endpoints a component can call as well as which peer
+  certificates it accepts. The public roots are what allow a call to a publicly
+  signed endpoint — an onboarded service or an OIDC provider holding a certificate
+  from a real authority.
 
 * `public_ca/public-roots.p12` — password `password`
 
-  The maintained source of those public anchors, kept as its own file because these
-  are real third-party certificates: they are not generated, and they expire on
-  their own schedule. The generator merges them into `service/service.truststore.p12`.
+  The source of those public roots, and the only certificate material in this
+  directory that is not generated: they are real third-party certificates on their
+  own expiry schedule. The Let's Encrypt `E7` intermediate is valid until
+  2027-03-13.
 
-  **This store is not generated** and it expires on its own schedule — the
-  Let's Encrypt `E7` intermediate in it is valid only until 2027-03-13. Refresh an
-  entry by exporting the current certificate from the endpoint or from a JDK
-  `cacerts` and re-importing it:
+  Refresh an entry by exporting the current certificate from the endpoint or from a
+  JDK `cacerts` and re-importing it:
 
   ```bash
   keytool -importcert -keystore public_ca/public-roots.p12 -storetype PKCS12 \
       -alias "<alias>" -file <certificate.pem> -storepass password
   ```
+
+`negative/untrusted-ca.truststore.p12` is also a truststore; it is described under
+[Negative-test certificates](#negative-test-certificates).
 
 ## Client certificates
 
