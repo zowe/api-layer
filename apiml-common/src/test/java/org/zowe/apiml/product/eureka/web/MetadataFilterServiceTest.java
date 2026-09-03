@@ -18,9 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -37,7 +35,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -67,10 +64,10 @@ class MetadataFilterServiceTest {
 
         @BeforeEach
         void setUp() {
-            ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "localhost, *.zowe.org");
+            ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "localhost:*, *.zowe.org:*");
             metadataFilterService.afterPropertiesSet();
             var allowedDomainsSet = ReflectionTestUtils.getField(metadataFilterService, "allowedDomainsSet");
-            assertEquals(Set.of("localhost", "*.zowe.org", "www.ibm.com", "zowe.github.io", "www.zowe.org", "techdocs.broadcom.com"), allowedDomainsSet);
+            assertEquals(Set.of("localhost:*", "*.zowe.org:*", "www.ibm.com", "zowe.github.io", "www.zowe.org", "techdocs.broadcom.com"), allowedDomainsSet);
         }
 
         @ParameterizedTest(name = "Key: {0}, Value: {1} -> Allowed: {2}")
@@ -133,46 +130,6 @@ class MetadataFilterServiceTest {
                 });
                 verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname), anyString());
             }
-        }
-
-        @ParameterizedTest
-        @CsvSource(delimiterString = "|", value = {
-            "localhost,192.168.0.2,example.com|192.168.0.2|true",
-            "localhost,192.168.0.2,example.com|192.168.0.1|false",
-            "localhost|127.0.0.1|true",
-            "localhost|invalid#1|false",
-            "::1|::1|true",
-            "::1|::2|false",
-            "2001:db8::1|2001:db8::1|true",
-            "2001:db8::1|2001:db8::2|false",
-            "2001:db8::/32|2001:db8:abcd:1234::1|true",
-            "2001:db8::/32|2001:db9::1|false",
-            "fe80::/10|fe80::1234:5678:9abc|true",
-            "fe80::/10|fc00::1|false",
-            "2001:db8::/64|2001:db8:0:0:ffff:ffff:ffff:ffff|true",
-            "2001:db8::/64|2001:db8:0:1::1|false",
-            "localhost,192.168.0.0/24,2001:db8::/32|192.168.0.10|true",
-            "localhost,192.168.0.0/24,2001:db8::/32|2001:db8::abcd|true",
-            "localhost,192.168.0.0/24,2001:db8::/32|127.0.0.1|true",
-            "localhost,192.168.0.0/24,2001:db8::/32|10.0.0.1|false",
-            "localhost,192.168.0.0/24,2001:db8::/32|fe80::1|false",
-            "192.168.0.2|192.168.0.2|true",
-            "192.168.0.2|192.168.0.3|false",
-            "192.168.0.0/24|192.168.0.55|true",
-            "192.168.0.0/24|192.168.1.1|false",
-            "10.0.0.0/8|10.255.255.255|true",
-            "10.0.0.0/8|11.0.0.1|false",
-            "172.16.0.0/12|172.31.255.254|true",
-            "172.16.0.0/12|172.32.0.1|false",
-            "192.168.0.0/32|192.168.0.0|true",
-            "192.168.0.0/32|192.168.0.1|false",
-            "192.168.0.0/abc|192.168.0.0|false"
-        })
-        void givenIpAddressInAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed) {
-            var service = new MetadataFilterService();
-            ReflectionTestUtils.setField(service,"allowedDomains", allowList);
-            service.afterPropertiesSet();
-            assertEquals(isAllowed, service.isAllowedDomain(domain));
         }
 
         @Nested
@@ -314,16 +271,6 @@ class MetadataFilterServiceTest {
             }
 
             @Test
-            void givenLocalHost_whenGetIpAddress_theReturnLoopback() {
-                assertEquals("127.0.0.1", metadataFilterService.getIpAddress("localhost"));
-            }
-
-            @Test
-            void givenUnknownDomain_whenGetIpAddress_theReturnNull() {
-                assertNull(metadataFilterService.getIpAddress("absolutellyunknowndomainatall"));
-            }
-
-            @Test
             void givenInvalidIpAddress_whenValidate_thenReturnUpdatedInstanceInfo() {
                 var ii = InstanceInfo.Builder.newBuilder()
                     .setInstanceId("testNotAllowedIpAddress")
@@ -335,13 +282,6 @@ class MetadataFilterServiceTest {
                 ii = metadataFilterService.verifyAllowedDomains(ii);
                 assertEquals("127.0.0.1", ii.getIPAddr());
                 assertEquals("localhost", ii.getHostName());
-            }
-
-            @ParameterizedTest
-            @EmptySource
-            @NullSource
-            void givenNoHostname_whenGetIpAddress_thenReturnNull(String hostname) {
-                assertNull(metadataFilterService.getIpAddress(hostname));
             }
 
         }
