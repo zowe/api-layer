@@ -48,7 +48,7 @@
  * SOFTWARE.
  */
 
-/* eslint-disable no-unused-expressions, max-len */
+/* eslint-disable no-unused-expressions, max-len, no-underscore-dangle */
 import sinon from 'sinon';
 import * as chai from 'chai';
 const expect = chai.expect;
@@ -321,7 +321,13 @@ describe('Eureka client', () => {
       });
     });
 
-    it('should return error on start failure', (done) => {
+    it('should return error on start failure when circuit breaker is disabled', (done) => {
+      config = makeConfig({
+        eureka: {
+          circuitBreaker: { enabled: false },
+        },
+      });
+      client = new Eureka(config);
       registerSpy = sinon.stub(client, 'register').yields(new Error('fail'));
       fetchRegistrySpy = sinon.stub(client, 'fetchRegistry').callsArg(0);
       heartbeatsSpy = sinon.stub(client, 'startHeartbeats');
@@ -335,6 +341,51 @@ describe('Eureka client', () => {
         done();
       });
     });
+
+    it('should retry initial registration through the circuit breaker', () => {
+      config = makeConfig({
+        eureka: {
+          fetchRegistry: false,
+          circuitBreaker: {
+            enabled: true,
+            maxFailures: 2,
+            cooldownTime: 100,
+            backoffTimeout: 100,
+            backoffMax: 1000,
+          },
+        },
+      });
+      client = new Eureka(config);
+      const clock = sinon.useFakeTimers();
+      registerSpy = sinon.stub(client, 'register');
+      registerSpy.onCall(0).callsArgWith(0, new Error('Eureka unavailable'));
+      registerSpy.onCall(1).callsArgWith(0, new Error('Eureka unavailable'));
+      registerSpy.onCall(2).callsArgWith(0, null);
+      fetchRegistrySpy = sinon.stub(client, 'fetchRegistry').callsArg(0);
+      heartbeatsSpy = sinon.stub(client, 'startHeartbeats');
+      registryFetchSpy = sinon.stub(client, 'startRegistryFetches');
+      const startedSpy = sinon.spy();
+      client.on('started', startedSpy);
+
+      client.start();
+      expect(registerSpy).to.have.been.calledOnce;
+      expect(registerSpy).to.have.been.calledWithMatch(sinon.match.func, false);
+
+      clock.tick(100); // Second failure opens the circuit.
+      expect(registerSpy).to.have.been.calledTwice;
+      expect(client.circuitBreaker.state).to.equal('OPEN');
+
+      clock.tick(99); // OPEN: no registration attempt before cooldown expiry.
+      expect(registerSpy).to.have.been.calledTwice;
+
+      clock.tick(1); // HALF_OPEN probe succeeds and startup continues.
+      expect(registerSpy).to.have.been.calledThrice;
+      expect(client.circuitBreaker.state).to.equal('CLOSED');
+      expect(heartbeatsSpy).to.have.been.calledOnce;
+      expect(startedSpy).to.have.been.calledOnce;
+      expect(client._registrationTimeout).to.be.null;
+      clock.restore();
+    });
   });
 
   describe('startHeartbeats()', () => {
@@ -343,7 +394,11 @@ describe('Eureka client', () => {
     let renewSpy;
     let clock;
     before(() => {
-      config = makeConfig();
+      config = makeConfig({
+        eureka: {
+          circuitBreaker: { enabled: false },
+        },
+      });
       client = new Eureka(config);
       renewSpy = sinon.stub(client, 'renew');
       clock = sinon.useFakeTimers();
@@ -369,7 +424,11 @@ describe('Eureka client', () => {
     let fetchRegistrySpy;
     let clock;
     before(() => {
-      config = makeConfig();
+      config = makeConfig({
+        eureka: {
+          circuitBreaker: { enabled: false },
+        },
+      });
       client = new Eureka(config);
       fetchRegistrySpy = sinon.stub(client, 'fetchRegistry');
       clock = sinon.useFakeTimers();
@@ -637,6 +696,20 @@ describe('Eureka client', () => {
         on: () => {},
       }).returns(req);
       callbacks.end.apply();
+    });
+
+    it('should preserve the error message in heartbeat failure logging', () => {
+      const error = new Error('connection refused');
+      const warnSpy = sinon.spy(client.logger, 'warn');
+      const requestStub = sinon.stub(client, 'eurekaRequest').callsFake((opts, callback) => {
+        callback(error, null, 'response body');
+      });
+
+      client.renew();
+
+      expect(warnSpy).to.have.been.calledWithMatch(/connection refused/);
+      requestStub.restore();
+      warnSpy.restore();
     });
   });
 
@@ -1422,13 +1495,321 @@ describe('Eureka client', () => {
     });
   });
 
+  describe('CircuitBreaker integration', () => {
+    let config;
+    let client;
+    let clock;
+
+    beforeEach(() => {
+      config = makeConfig({
+        eureka: {
+          host: '127.0.0.1',
+          port: 9999,
+          heartbeatInterval: 5000,
+          registryFetchInterval: 5000,
+          circuitBreaker: {
+            enabled: true,
+            maxFailures: 3,
+            cooldownTime: 10000,
+            backoffTimeout: 10000,
+            backoffMax: 300000,
+          },
+        },
+      });
+      client = new Eureka(config);
+      clock = sinon.useFakeTimers();
+    });
+
+    afterEach(() => {
+      clock.restore();
+      if (client._heartbeatTimeout) clearTimeout(client._heartbeatTimeout);
+      if (client._registryFetchTimeout) clearTimeout(client._registryFetchTimeout);
+    });
+
+    // AC1: Normal interval behavior preserved when Eureka reachable
+    it('should call renew at heartbeat interval (AC1)', () => {
+      const renewSpy = sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(null); });
+
+      client.startHeartbeats();
+      clock.tick(5000);
+      expect(renewSpy).to.have.been.calledOnce;
+
+      clock.tick(5000);
+      expect(renewSpy).to.have.been.calledTwice;
+
+      renewSpy.restore();
+    });
+
+    it('should disable legacy retries for circuit-breaker-managed heartbeats', () => {
+      const requestSpy = sinon.stub(client, 'eurekaRequest');
+
+      client.startHeartbeats();
+      clock.tick(client.config.eureka.heartbeatInterval);
+
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy.firstCall.args[3]).to.equal(false);
+      requestSpy.restore();
+    });
+
+    it('should disable legacy retries for circuit-breaker-managed registry fetches', () => {
+      const requestSpy = sinon.stub(client, 'eurekaRequest');
+
+      client.startRegistryFetches();
+      clock.tick(client.config.eureka.registryFetchInterval);
+
+      expect(requestSpy).to.have.been.calledOnce;
+      expect(requestSpy.firstCall.args[3]).to.equal(false);
+      requestSpy.restore();
+    });
+
+    // AC2: Circuit opens after N consecutive failures, WARN logged
+    it('should open circuit after maxFailures and log WARN (AC2)', () => {
+      const warnSpy = sinon.spy(client.logger, 'warn');
+      sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
+
+      client.startHeartbeats();
+
+      // Exponential backoff with cooldownTime=10000 base:
+      // Failure 1 after 5000ms initial, failure 2 after 10000ms backoff,
+      // failure 3 after 20000ms backoff → circuit opens.
+      clock.tick(5000); // failure 1
+      clock.tick(10000); // failure 2
+      clock.tick(20000); // failure 3 → OPEN
+
+      expect(warnSpy).to.have.been.calledWithMatch(/Circuit breaker transition.*CLOSED.*OPEN/);
+      expect(client.circuitBreaker.isOpen()).to.be.true;
+
+      warnSpy.restore();
+    });
+
+    // AC3: No HTTP calls while circuit is OPEN
+    it('should not make HTTP calls while circuit is OPEN (AC3)', () => {
+      const renewSpy = sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
+
+      // Open the circuit by causing failures
+      client.startHeartbeats();
+      clock.tick(5000); // failure 1
+      clock.tick(10000); // failure 2
+      clock.tick(20000); // failure 3 → OPEN
+
+      renewSpy.resetHistory();
+
+      // Tick just under cooldown (9999ms < 10000ms cooldownTime).
+      // The setTimeout from recordFailure won't fire yet, renew stays uncalled.
+      clock.tick(9999);
+      expect(renewSpy).to.not.have.been.called;
+
+      renewSpy.restore();
+    });
+
+    // AC4: HALF_OPEN after cooldown, probe sent
+    it('should enter HALF_OPEN after cooldown and send probe (AC4)', () => {
+      const halfOpenSpy = sinon.spy();
+      client.circuitBreaker.on('circuitHalfOpen', halfOpenSpy);
+      sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
+
+      // Open the circuit
+      client.startHeartbeats();
+      clock.tick(5000); // failure 1
+      clock.tick(10000); // failure 2
+      clock.tick(20000); // failure 3 → OPEN
+
+      expect(client.circuitBreaker.isOpen()).to.be.true;
+
+      // Advance past cooldown → allowRequest transitions to HALF_OPEN,
+      // 'circuitHalfOpen' event emitted, probe sent via renew
+      clock.tick(client.config.eureka.circuitBreaker.cooldownTime);
+
+      // Verify probe was sent and HALF_OPEN was reached
+      expect(halfOpenSpy).to.have.been.calledOnce;
+      // Probe fails → back to OPEN (verified by AC6)
+
+      client.renew.restore();
+    });
+
+    // AC5: Probe success → CLOSED, 'circuitClose' emitted
+    it('should close circuit on probe success and emit circuitClose (AC5)', () => {
+      // Open the circuit first with failures
+      sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
+      client.startHeartbeats();
+      clock.tick(5000);
+      clock.tick(10000);
+      clock.tick(20000); // OPEN
+      client.renew.restore();
+
+      expect(client.circuitBreaker.isOpen()).to.be.true;
+
+      // Advance past cooldown — allowRequest will set HALF_OPEN, renew called
+      const closeSpy = sinon.spy();
+      client.circuitBreaker.on('circuitClose', closeSpy);
+
+      // Stub renew to succeed this time
+      sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(null); });
+
+      clock.tick(client.config.eureka.circuitBreaker.cooldownTime);
+
+      expect(client.circuitBreaker.state).to.equal('CLOSED');
+      expect(closeSpy).to.have.been.calledOnce;
+
+      client.renew.restore();
+    });
+
+    // AC6: Probe failure → re-OPEN, cooldown restarts
+    it('should re-open circuit on probe failure (AC6)', () => {
+      // Open the circuit first
+      sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
+      client.startHeartbeats();
+      clock.tick(5000);
+      clock.tick(10000);
+      clock.tick(20000); // OPEN
+
+      expect(client.circuitBreaker.isOpen()).to.be.true;
+
+      // Advance past cooldown → HALF_OPEN, probe sent, fail → re-OPEN
+      clock.tick(client.config.eureka.circuitBreaker.cooldownTime);
+
+      expect(client.circuitBreaker.isOpen()).to.be.true;
+
+      client.renew.restore();
+    });
+
+    // AC7: Exponential backoff in CLOSED state, capped at backoffMax
+    it('should use exponential backoff capped at backoffMax (AC7)', () => {
+      sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
+      client.startHeartbeats();
+
+      // After 1 failure: backoff = cooldownTime * 2^0 = 10000
+      clock.tick(5000);
+      expect(client.circuitBreaker.failureCount).to.equal(1);
+      expect(client.circuitBreaker.getNextCooldown()).to.equal(10000);
+
+      // After 2 failures: backoff = 10000 * 2^1 = 20000
+      clock.tick(10000);
+      expect(client.circuitBreaker.failureCount).to.equal(2);
+      expect(client.circuitBreaker.getNextCooldown()).to.equal(20000);
+
+      // After 3 failures: circuit opens, openCycleCount=1, cooldown = 10000
+      clock.tick(20000);
+      expect(client.circuitBreaker.isOpen()).to.be.true;
+      expect(client.circuitBreaker.getNextCooldown()).to.equal(client.config.eureka.circuitBreaker.cooldownTime);
+
+      // Backoff cap test: manually set failure count high
+      client.circuitBreaker.reset();
+      client.circuitBreaker.failureCount = 20;
+      expect(client.circuitBreaker.getNextCooldown()).to.be.at.most(client.config.eureka.circuitBreaker.backoffMax);
+
+      client.renew.restore();
+    });
+
+    // AC8: Success resets failure counter
+    it('should reset failure counter on success (AC8)', () => {
+      sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
+      client.startHeartbeats();
+
+      // Cause a failure
+      clock.tick(5000);
+      expect(client.circuitBreaker.failureCount).to.equal(1);
+
+      client.renew.restore();
+
+      // Now succeed
+      sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(null); });
+      clock.tick(10000); // after backoff (cooldownTime * 2^0), renew succeeds
+
+      expect(client.circuitBreaker.failureCount).to.equal(0);
+      expect(client.circuitBreaker.state).to.equal('CLOSED');
+
+      client.renew.restore();
+    });
+
+    // AC9: Config merges correctly from defaultConfig.js
+    it('should merge circuitBreaker config from defaults (AC9)', () => {
+      // Client was created with explicit circuitBreaker config
+      expect(client.config.eureka.circuitBreaker).to.exist;
+      expect(client.config.eureka.circuitBreaker.enabled).to.equal(true);
+      expect(client.config.eureka.circuitBreaker.maxFailures).to.equal(3);
+      expect(client.config.eureka.circuitBreaker.cooldownTime).to.equal(10000);
+      expect(client.config.eureka.circuitBreaker.backoffMax).to.equal(300000);
+
+      // Test that defaults fill in when values are not provided
+      const defaultClient = new Eureka(makeConfig({
+        eureka: {
+          host: '127.0.0.1',
+          port: 9999,
+          heartbeatInterval: 5000,
+        },
+      }));
+      expect(defaultClient.config.eureka.circuitBreaker).to.exist;
+      expect(defaultClient.config.eureka.circuitBreaker.maxFailures).to.equal(5); // from defaultConfig
+      expect(defaultClient.config.eureka.circuitBreaker.cooldownTime).to.equal(60000); // from defaultConfig
+    });
+
+    // Test circuit-breaker-disabled falls back to setInterval
+    it('should use setInterval when circuitBreaker is disabled', () => {
+      const disabledClient = new Eureka(makeConfig({
+        eureka: {
+          host: '127.0.0.1',
+          port: 9999,
+          heartbeatInterval: 30000,
+          circuitBreaker: { enabled: false },
+        },
+      }));
+      const renewSpy = sinon.stub(disabledClient, 'renew');
+
+      disabledClient.startHeartbeats();
+      clock.tick(30000);
+      expect(renewSpy).to.have.been.calledOnce;
+      clock.tick(30000);
+      expect(renewSpy).to.have.been.calledTwice;
+
+      renewSpy.restore();
+      clearInterval(disabledClient.heartbeat);
+    });
+
+    // Test registry fetch with circuit breaker
+    it('should skip registry fetch when circuit is OPEN', () => {
+      const fetchSpy = sinon.stub(client, 'fetchRegistry').callsFake((cb) => { if (cb) cb(null); });
+
+      // Open the circuit first
+      client.circuitBreaker.failureCount = 3;
+      client.circuitBreaker._transitionTo('OPEN');
+
+      expect(client.circuitBreaker.isOpen()).to.be.true;
+
+      client.startRegistryFetches();
+      clock.tick(5000);
+
+      // Circuit is OPEN, allowRequest returns false, fetchRegistry NOT called
+      expect(fetchSpy).to.not.have.been.called;
+
+      fetchSpy.restore();
+    });
+
+    it('should skip registry fetch while a HALF_OPEN probe is in flight', () => {
+      const fetchSpy = sinon.stub(client, 'fetchRegistry').callsFake((cb) => { if (cb) cb(null); });
+
+      for (let i = 0; i < 3; i += 1) client.circuitBreaker.recordFailure();
+      clock.tick(client.config.eureka.circuitBreaker.cooldownTime + 1);
+      expect(client.circuitBreaker.allowRequest()).to.be.true;
+      expect(client.circuitBreaker.state).to.equal('HALF_OPEN');
+
+      client.startRegistryFetches();
+      clock.tick(client.config.eureka.registryFetchInterval);
+
+      expect(fetchSpy).to.not.have.been.called;
+      fetchSpy.restore();
+    });
+  });
+
   describe('env var configuration', () => {
     const REGISTRY_ENV = 'EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS';
     const HEARTBEAT_ENV = 'EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS';
+    const BACKOFF_TIMEOUT_ENV = 'EUREKA_CLIENT_CIRCUITBREAKERBACKOFFTIMEOUTMILLISECONDS';
 
     afterEach(() => {
       delete process.env[REGISTRY_ENV];
       delete process.env[HEARTBEAT_ENV];
+      delete process.env[BACKOFF_TIMEOUT_ENV];
       sinon.restore();
     });
 
@@ -1442,6 +1823,20 @@ describe('Eureka client', () => {
       process.env[HEARTBEAT_ENV] = '45';
       const client = new Eureka(makeConfig());
       expect(client.config.eureka.heartbeatInterval).to.equal(45000);
+    });
+
+    it('should override circuit breaker backoffTimeout from an environment variable in milliseconds', () => {
+      process.env[BACKOFF_TIMEOUT_ENV] = '2500';
+      const client = new Eureka(makeConfig());
+      expect(client.config.eureka.circuitBreaker.backoffTimeout).to.equal(2500);
+    });
+
+    it('should let constructor circuit breaker config override the backoff environment variable', () => {
+      process.env[BACKOFF_TIMEOUT_ENV] = '2500';
+      const client = new Eureka(makeConfig({
+        eureka: { circuitBreaker: { backoffTimeout: 5000 } },
+      }));
+      expect(client.config.eureka.circuitBreaker.backoffTimeout).to.equal(5000);
     });
 
     it('should let constructor config override env var', () => {
