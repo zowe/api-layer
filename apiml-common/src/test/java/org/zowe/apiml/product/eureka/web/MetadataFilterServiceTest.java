@@ -204,7 +204,6 @@ class MetadataFilterServiceTest {
             void whenHttpAndAttlsEnabled_thenAllowed() {
                 ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", true);
                 when(instanceInfo.getHomePageUrl()).thenReturn("http://localhost:8080");
-                when(instanceInfo.getSecurePort()).thenReturn(8080);
 
                 metadataFilterService.verifyAllowedDomains(instanceInfo);
 
@@ -215,7 +214,6 @@ class MetadataFilterServiceTest {
             void whenHttpsAndAttlsDisabled_thenAllowed() {
                 ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", false);
                 when(instanceInfo.getHomePageUrl()).thenReturn("https://localhost:8080");
-                when(instanceInfo.getSecurePort()).thenReturn(8080);
 
                 metadataFilterService.verifyAllowedDomains(instanceInfo);
 

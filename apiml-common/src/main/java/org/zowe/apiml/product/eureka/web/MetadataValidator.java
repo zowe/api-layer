@@ -48,6 +48,8 @@ public class MetadataValidator {
 
     private final boolean isClientAttlsEnabled;
 
+    private final boolean disablePortValidation;
+
     boolean isAllowedDomain(String input, boolean validatePort) {
         if (StringUtils.isBlank(input)) {
             return true;
@@ -93,7 +95,7 @@ public class MetadataValidator {
         input = input.toLowerCase();
         var domain = parseDomain(input);
         var result = false;
-        if (domain == null || allowedDomainDomain == null) {
+        if (StringUtils.isBlank(domain) || StringUtils.isBlank(allowedDomainDomain)) {
             result = false;
         } else if (domain.equals(allowedDomainDomain)) {
             result = true;
@@ -103,7 +105,7 @@ public class MetadataValidator {
             result = isAllowedIpAddress(domain, allowedDomainDomain);
         }
 
-        if (result && validatePort) {
+        if (result && !disablePortValidation && validatePort) {
             result = isAllowedPort(input, allowedDomainPort);
         }
 
@@ -182,17 +184,11 @@ public class MetadataValidator {
 
     private boolean isAllowedPort(String input, String allowedDomainPort) {
         var port = Integer.parseInt(extractPort(input));
-        if (instanceInfo.getSecurePort() == port) {
+        if ("*".equals(allowedDomainPort) || Objects.equal(String.valueOf(port), allowedDomainPort)) {
             return true;
-        } else if (instanceInfo.getPort() == port) {
-            return true;
-        } else {
-            log.debug("Port {} in input value {} from service {} does not match service declared secure port {} (unsecure {}). Port will be validated against allowed port {}", port, input, instanceInfo.getInstanceId(), instanceInfo.getSecurePort(), instanceInfo.getPort(), allowedDomainPort);
-            if ("*".equals(allowedDomainPort)) {
-                return true;
-            }
-            return Objects.equal(String.valueOf(port), allowedDomainPort);
         }
+        log.debug("Port {} in input value {} from service {} does not match port {}", port, input, instanceInfo.getInstanceId(), allowedDomainPort);
+        return false;
     }
 
     /**

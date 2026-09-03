@@ -26,6 +26,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -53,10 +54,29 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Collections.singletonList;
 import static org.apache.hc.core5.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.hc.core5.http.HttpStatus.SC_OK;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_API_ID;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_IS_DEFAULT;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_SWAGGER_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.API_INFO_VERSION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_GATEWAY_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.ROUTES_SERVICE_URL;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_DESCRIPTION;
+import static org.zowe.apiml.constants.EurekaMetadataDefinition.SERVICE_TITLE;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -598,6 +618,11 @@ class ApiDocServiceTest {
     @Nested
     @SpringBootTest
     @ActiveProfiles("test")
+    @TestPropertySource(
+        properties = {
+            "apiml.security.allowedDomains=localhost:*"
+        }
+    )
     class ViaApiCall {
 
         @MockitoSpyBean

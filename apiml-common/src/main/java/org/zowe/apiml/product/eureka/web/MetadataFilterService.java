@@ -36,6 +36,9 @@ import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
 @Slf4j
 public class MetadataFilterService implements InitializingBean {
 
+    private static final String ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED = "ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED";
+    private static final String ZWE_DISABLE_PORT_VALIDATION = "ZWE_DISABLE_PORT_VALIDATION";
+
     private static final String HTTPS = "https://";
     private static final String HTTP = "http://";
 
@@ -54,6 +57,7 @@ public class MetadataFilterService implements InitializingBean {
     private boolean isClientAttlsEnabled;
 
     private boolean onlyWarn = false;
+    private boolean disablePortValidation = false;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLogger = ApimlLogger.empty();
@@ -63,12 +67,16 @@ public class MetadataFilterService implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         allowedDomainsSet = sanitizeAllowedDomains();
-        onlyWarn = Optional.ofNullable(System.getenv("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED")).map(Boolean::parseBoolean).orElse(false);
+        onlyWarn = Optional.ofNullable(System.getenv(ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED)).map(Boolean::parseBoolean).orElse(false);
+        disablePortValidation = Optional.ofNullable(System.getenv(ZWE_DISABLE_PORT_VALIDATION)).map(Boolean::parseBoolean).orElse(false);
 
         log.info("Allowed domains: {}", allowedDomains);
 
         if (onlyWarn) {
             log.info("Only warning on URL not allowed is enabled");
+        }
+        if (disablePortValidation) {
+            log.info("Port validation in domain allow list is disabled");
         }
     }
 
@@ -131,6 +139,7 @@ public class MetadataFilterService implements InitializingBean {
             .apimlLogger(apimlLogger)
             .instanceInfo(instanceInfo)
             .isClientAttlsEnabled(isClientAttlsEnabled)
+            .disablePortValidation(disablePortValidation)
             .build();
 
         if (!validator.validateEntry("IP Address", instanceInfo.getIPAddr(), false)) {
