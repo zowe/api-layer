@@ -24,6 +24,7 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -161,6 +162,47 @@ class RefreshablePeerEurekaNodesTest {
             ReflectionTestUtils.setField(eurekaNodes, "nonStrictVerifySslCertificatesOfServices", false);
 
             assertTrue(config.getHostnameVerifier() instanceof DefaultHostnameVerifier);
+        }
+
+    }
+
+    @Nested
+    class Credentials {
+
+        RefreshablePeerEurekaNodes getPeerEurekaNode(String userId, String password) {
+            ReflectionTestUtils.setField(eurekaNodes, "eurekaUserId", userId);
+            ReflectionTestUtils.setField(eurekaNodes, "eurekaPassword", password);
+            return eurekaNodes;
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            ",password",
+            "userId,",
+            ",",
+        })
+        void givenEmptyCredentials_whenSetCredentials_thenDoNotUpdate(String userId, String password) {
+            String url = "someUrl";
+            assertSame(url,
+                getPeerEurekaNode(userId, password).setCredentials(url)
+            );
+        }
+
+        @Test
+        void givenInvalidUrl_whenSetCredentials_thenDoNotUpdate() {
+            String url = "http:////\\\\invalid$url:port/path";
+            assertSame(url,
+                getPeerEurekaNode("userId", "password").setCredentials(url)
+            );
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "userId,password,https://userId:password@localhost",
+            "us:rId,passw:rd,https://us%3ArId:passw%3Ard@localhost"
+        })
+        void givenCredentials_whenSetCredentials_thenSetCredentials(String userId, String password, String url) {
+            assertEquals(url, getPeerEurekaNode(userId, password).setCredentials(url));
         }
 
     }
