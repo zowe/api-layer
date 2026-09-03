@@ -88,6 +88,8 @@ public class MetadataFilterService implements InitializingBean {
                 var replacement = domain.replace(HTTP, "").replace(HTTPS, "");
                 log.warn("Allowed domains list must not include schemes, entry {} replaced with {}", domain, replacement);
                 resultSet.add(replacement);
+            } else if (Strings.CI.endsWith(domain, ":")) {
+                log.warn("Entry {} is not properly formed. It will be ignored", domain);
             } else {
                 resultSet.add(domain);
             }
