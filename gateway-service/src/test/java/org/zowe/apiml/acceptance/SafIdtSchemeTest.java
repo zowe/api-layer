@@ -63,7 +63,7 @@ class SafIdtSchemeTest extends AcceptanceTestWithTwoServices {
     private char[] keystorePassword;
     @Value("${server.ssl.keyStore}")
     private String keystore;
-    private final String clientKeystore = "../keystore/client_cert/client-certs.p12";
+    private final String clientKeystore = "../keystore/client/client-certs.p12";
 
     @Autowired
     protected SafRestAuthenticationService safRestAuthenticationService;

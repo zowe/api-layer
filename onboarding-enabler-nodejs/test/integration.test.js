@@ -66,9 +66,9 @@ describe('Integration Test', () => {
       port: 10011,
     },
     ssl: {
-      certificate: '../keystore/localhost/localhost.keystore.cer',
-      keystore: '../keystore/localhost/localhost.keystore.key',
-      caFile: '../keystore/localhost/localhost.pem',
+      certificate: '../keystore/service/service.cer',
+      keystore: '../keystore/service/service.key',
+      caFile: '../keystore/service/service.pem',
       keyPassword: 'password',
     },
     requestMiddleware: (requestOpts, done) => {

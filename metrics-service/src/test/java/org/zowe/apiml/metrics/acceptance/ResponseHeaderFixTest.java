@@ -36,8 +36,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
     },
     webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
     properties = {
-        "server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
-        "server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12"
+        "server.ssl.keyStore=../keystore/service/service.keystore.p12",
+        "server.ssl.trustStore=../keystore/service/service.truststore.p12"
     }
 )
 @ActiveProfiles("ResponseHeaderFixTest")

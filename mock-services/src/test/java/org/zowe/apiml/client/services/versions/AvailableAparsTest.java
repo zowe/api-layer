@@ -25,7 +25,7 @@ class AvailableAparsTest {
 
     @BeforeEach
     void setUp() {
-        underTest = new AvailableApars(Collections.singletonList("USER"), Collections.singletonList("validPassword"), "keystore/localhost/localhost.keystore.p12", 60);
+        underTest = new AvailableApars(Collections.singletonList("USER"), Collections.singletonList("validPassword"), "keystore/service/service.keystore.p12", 60);
     }
 
     @Test

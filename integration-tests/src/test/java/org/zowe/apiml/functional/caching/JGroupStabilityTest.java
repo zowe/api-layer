@@ -180,12 +180,12 @@ public class JGroupStabilityTest {
             env.put("ZWE_configs_storage_infinispan_initialHosts", Arrays.stream(BASE_PORTS).mapToObj(bp -> "localhost[" + (bp + 600) + "]").collect(Collectors.joining(",")));
             env.put("ZWE_configs_storage_mode", "infinispan");
 
-            env.put("ZWE_zowe_certificate_keystore_file", "keystore/localhost/localhost.keystore.p12");
+            env.put("ZWE_zowe_certificate_keystore_file", "keystore/service/service.keystore.p12");
             env.put("ZWE_zowe_certificate_keystore_password", "password");
             env.put("ZWE_zowe_certificate_keystore_alias", "localhost");
             env.put("ZWE_zowe_certificate_key_password", "password");
 
-            env.put("ZWE_zowe_certificate_truststore_file", "keystore/localhost/localhost.truststore.p12");
+            env.put("ZWE_zowe_certificate_truststore_file", "keystore/service/service.truststore.p12");
             env.put("ZWE_zowe_certificate_truststore_password", "password");
 
             env.put("ZWE_configs_apiml_health_protected", "false");

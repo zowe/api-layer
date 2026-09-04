@@ -9,6 +9,12 @@ def setJib(componentName, javaAgentPort, debugPort) {
 
     jib.container.jvmFlags = project.hasProperty("zowe.docker.debug") ? ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort, '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=' + debugPort]: ['-javaagent:/jacocoagent.jar=output=tcpserver,address=*,port=' + javaAgentPort]
     jib.extraDirectories.paths = ['../config', '../keystore', '../scripts']
+
+    // keystore/ is copied into the image but is not committed, so it has to be
+    // generated before any image is assembled.
+    tasks.matching { it.name in ['jib', 'jibDockerBuild', 'jibBuildTar'] }.configureEach {
+        dependsOn rootProject.tasks.named('generateCertificates')
+    }
 }
 
 ext.setJib =  { componentName, javaAgentPort, debugPort ->
