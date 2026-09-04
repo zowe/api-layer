@@ -18,6 +18,7 @@ import org.apache.coyote.AbstractProtocol;
 import org.apache.coyote.ProtocolHandler;
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.NioEndpoint;
+import org.apache.tomcat.util.net.SocketWrapperBase;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -54,8 +55,9 @@ public class TomcatAcceptFixConfig {
     private static final Field ENDPOINT_FIELD;
     private static final Field NIO_SOCKET_FIELD;
 
-    private static final MethodHandle IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE; // NOSONAR
+    private static final MethodHandle IMPL_CLOSE_SELECTABLE_CHANNEL_HANDLE; // NOSONAR
     private static final MethodHandle IMPL_CONFIGURE_BLOCKING; // NOSONAR
+    private static final String NETWORK_RECYCLED_EXCEPTION_CLASS = "com.ibm.net.NetworkRecycledException";
 
     /**
      * To mitigate parallel treatment of socket rebinding
@@ -69,7 +71,7 @@ public class TomcatAcceptFixConfig {
 
             Method implCloseSelectableChannel = AbstractSelectableChannel.class.getDeclaredMethod("implCloseSelectableChannel");
             implCloseSelectableChannel.setAccessible(true); // NOSONAR
-            IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE = MethodHandles.lookup().unreflect(implCloseSelectableChannel);
+            IMPL_CLOSE_SELECTABLE_CHANNEL_HANDLE = MethodHandles.lookup().unreflect(implCloseSelectableChannel);
 
             Method implConfigureBlocking = AbstractSelectableChannel.class.getDeclaredMethod("implConfigureBlocking", boolean.class);
             implConfigureBlocking.setAccessible(true); // NOSONAR
@@ -143,12 +145,32 @@ public class TomcatAcceptFixConfig {
         running.set(false);
     }
 
+    static boolean isRecycledClass(Throwable t) {
+        return NETWORK_RECYCLED_EXCEPTION_CLASS.equals(t.getClass().getName());
+    }
+
+    static boolean isTcpStackRestarted(Throwable t) {
+        if ((t.getMessage() != null) && t.getMessage().contains("EDC5122I")) {
+            return true;
+        }
+
+        if (isRecycledClass(t)) {
+            return true;
+        }
+
+        Throwable cause = t.getCause();
+        if ((cause != null) && (cause != t)) {
+            return isTcpStackRestarted(cause);
+        }
+
+        return false;
+    }
+
     /**
      * Socket implementation wrapper to handle rebinding on TCP Stack restart
      */
     class FixedServerSocketChannel extends ServerSocketChannel {
 
-        private static final String NETWORK_RECYCLED_EXCEPTION_CLASS = "com.ibm.net.NetworkRecycledException";
 
         /**
          * Wrapper server socket inside
@@ -181,7 +203,7 @@ public class TomcatAcceptFixConfig {
         @Override
         protected void implCloseSelectableChannel() throws IOException {
             try {
-                IMPL_CLOSE_SELECTABGLE_CHANNEL_HANLE.invoke(socket);
+                IMPL_CLOSE_SELECTABLE_CHANNEL_HANDLE.invoke(socket);
             } catch (IOException | RuntimeException e) {
                 throw e;
             } catch (Throwable t) {
@@ -222,6 +244,20 @@ public class TomcatAcceptFixConfig {
             }
         }
 
+        private void closeConnectionsAfterTcpStackRestart() {
+            SocketWrapperBase<?>[] connections = abstractEndpoint.getConnections().toArray(SocketWrapperBase<?>[]::new);
+            int closed = 0;
+            for (SocketWrapperBase<?> connection : connections) {
+                try {
+                    connection.close();
+                    closed++;
+                } catch (RuntimeException e) {
+                    log.debug("Unable to close a stale client connection after TCP/IP stack restart", e);
+                }
+            }
+            log.info("Closed {} client connection(s) after TCP/IP stack restart", closed);
+        }
+
         /**
          * Rebind the server socket. The action could be done just by one thread. Other treats are waiting to be finish
          * by first one.
@@ -233,6 +269,8 @@ public class TomcatAcceptFixConfig {
         private synchronized void rebind(int stateBefore) throws IOException {
             if (state.compareAndSet(stateBefore, stateBefore + 1)) {
                 try {
+                    closeConnectionsAfterTcpStackRestart();
+
                     // socket must be closed before new binding
                     socket.close();
 
@@ -249,25 +287,8 @@ public class TomcatAcceptFixConfig {
             }
         }
 
-        boolean isRecycledClass(Throwable t) {
-            return NETWORK_RECYCLED_EXCEPTION_CLASS.equals(t.getClass().getName());
-        }
-
         boolean isTcpStackRestarted(Throwable t) {
-            if ((t.getMessage() != null) && t.getMessage().contains("EDC5122I")) {
-                return true;
-            }
-
-            if (isRecycledClass(t)) {
-                return true;
-            }
-
-            Throwable cause = t.getCause();
-            if ((cause != null) && (cause != t)) {
-                return isTcpStackRestarted(cause);
-            }
-
-            return false;
+            return TomcatAcceptFixConfig.isTcpStackRestarted(t);
         }
 
         public SocketChannel accept() throws IOException {
@@ -276,7 +297,7 @@ public class TomcatAcceptFixConfig {
             try {
                 return socket.accept();
             } catch (IOException ioe) {
-                if (isTcpStackRestarted(ioe)) {
+                if (TomcatAcceptFixConfig.isTcpStackRestarted(ioe)) {
                     // the fix solve just one issue about stopped TCP/IP stack
                     log.debug("The TCP/IP stack was probably restarted. The socket of Tomcat will rebind.");
                     rebind(stateBefore);
@@ -289,7 +310,7 @@ public class TomcatAcceptFixConfig {
     }
 
     /**
-     * The list of final methods, which cannot be delegated. See {@link FixedServerSocketChannel#socket}
+     * Methods final on {@link ServerSocketChannel} that Lombok must not delegate.
      */
     private interface Overridden {
 

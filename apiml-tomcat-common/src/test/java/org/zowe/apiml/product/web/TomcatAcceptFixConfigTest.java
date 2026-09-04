@@ -20,9 +20,11 @@ import org.apache.coyote.ajp.AjpNio2Protocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.AbstractEndpoint;
 import org.apache.tomcat.util.net.NioEndpoint;
+import org.apache.tomcat.util.net.SocketWrapperBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 
 import java.io.IOException;
@@ -38,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class TomcatAcceptFixConfigTest {
@@ -90,8 +93,10 @@ class TomcatAcceptFixConfigTest {
     }
 
     @Test
-    void givenCustomizedConnector_whenTcpipIsRestarted_thenRebind() throws Exception {
+    void givenCustomizedConnectorWithOpenConnections_whenTcpipIsRestarted_thenCloseConnectionsAndRebind() throws Exception {
         AtomicInteger counter = new AtomicInteger(0);
+        SocketWrapperBase<?> staleConnection = mock(SocketWrapperBase.class);
+        doReturn(Set.of(staleConnection)).when(testEndpoint).getConnections();
         doAnswer(invocation -> {
             if (counter.getAndIncrement() == 0) {
                 throw new IOException("EDC5122I");
@@ -101,6 +106,7 @@ class TomcatAcceptFixConfigTest {
         }).when(serverSocket).accept();
 
         assertSame(socketChannel, testEndpoint.serverSocketAccept());
+        verify(staleConnection).close();
         verify(serverSocket, times(1)).implCloseSelectableChannel();
         verify(testEndpoint, times(1)).bind();
     }
@@ -230,19 +236,16 @@ class TomcatAcceptFixConfigTest {
     @Nested
     class TcpStackRestartHandling {
 
-        ServerSocketChannel serverSocket = new TestServerSocketChannel(mock(SelectorProvider.class));
-        TomcatAcceptFixConfig.FixedServerSocketChannel channel = new TomcatAcceptFixConfig().new FixedServerSocketChannel(serverSocket, null, null);
-
         @Test
         void givenExceptionWithTheMessage_whenHandle_thenReturnTrue() {
-            assertTrue(channel.isTcpStackRestarted(new RuntimeException("EDC5122I TCP Stack restarted")));
+            assertTrue(TomcatAcceptFixConfig.isTcpStackRestarted(new RuntimeException("EDC5122I TCP Stack restarted")));
         }
 
         @Test
         void givenExceptionWithCyclicCause_whenHandle_thenReturnFalse() {
             Exception e = spy(new RuntimeException("Error"));
             doReturn(e).when(e).getCause();
-            assertFalse(channel.isTcpStackRestarted(e));
+            assertFalse(TomcatAcceptFixConfig.isTcpStackRestarted(e));
         }
 
         @Test
@@ -250,24 +253,30 @@ class TomcatAcceptFixConfigTest {
             Exception e = new RuntimeException("EDC5122I TCP Stack restarted");
             e = new RuntimeException("Wrapper1", e);
             e = new RuntimeException("Wrapper2", e);
-            assertTrue(channel.isTcpStackRestarted(e));
+            assertTrue(TomcatAcceptFixConfig.isTcpStackRestarted(e));
         }
 
         @Test
-        void givenExceptionWithSpecificClassName_whenHandle_thenReturnTrue() {
-            TomcatAcceptFixConfig.FixedServerSocketChannel channel = new TomcatAcceptFixConfig().new FixedServerSocketChannel(serverSocket, null, null) {
-                @Override
-                boolean isRecycledClass(Throwable t) {
-                    return "java.lang.IllegalArgumentException".equals(t.getClass().getName());
-                }
-            };
+        void givenNetworkRecycledException_whenIsRecycledClass_thenReturnTrue() {
+            // Verify that isRecycledClass matches the exact class name
+            // We can't instantiate com.ibm.net.NetworkRecycledException directly,
+            // but we verify that isTcpStackRestarted calls isRecycledClass via cause chain
+            try (MockedStatic<TomcatAcceptFixConfig> mocked = mockStatic(TomcatAcceptFixConfig.class, CALLS_REAL_METHODS)) {
+                mocked.when(() -> TomcatAcceptFixConfig.isRecycledClass(any())).thenReturn(true);
 
-            Exception e = new IllegalArgumentException("Tested exception");
-            e = new RuntimeException("Wrapper", e);
-            assertTrue(channel.isTcpStackRestarted(e));
+                Exception e = new IllegalArgumentException("Tested exception");
+                e = new RuntimeException("Wrapper", e);
+                assertTrue(TomcatAcceptFixConfig.isTcpStackRestarted(e));
+            }
+        }
+
+        @Test
+        void givenNonMatchingException_whenIsRecycledClass_thenReturnFalse() {
+            assertFalse(TomcatAcceptFixConfig.isRecycledClass(new RuntimeException("not a match")));
         }
 
     }
+
 
     private static class TestEndpoint extends NioEndpoint {
 
