@@ -31,12 +31,12 @@ The API Mediation Layer (API ML) provides a single point of access for mainframe
 
 ### Prerequisites
 
-The following platform is required to run the API Mediation Layer:
+The following platform is required to build and run the API Mediation Layer:
 
-* Java SE Development Kit 8 or 11
-* Java version 17 isn't supported for building yet
+* Java SE Development Kit 8 or 11 (recommended latest IBM Semeru)
+* Java version 17 isn't supported for building
 
-The following tools are required to build and develop the API Mediation Layer:
+In addition, the following tools are required to build and develop the API Mediation Layer:
 
 * Node.js and npm are required to be installed globally to run npm commands in project root folder.
   
