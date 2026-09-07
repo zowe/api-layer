@@ -62,6 +62,7 @@ dependencies {
     api project(":api-catalog-services")
 
     implementation libs.bundles.modulith
+    implementation libs.spring.retry
     implementation libs.spring.boot.starter.web
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser

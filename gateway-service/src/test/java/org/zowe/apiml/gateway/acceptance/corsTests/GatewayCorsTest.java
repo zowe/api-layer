@@ -47,7 +47,8 @@ class GatewayCorsTest {
     @ActiveProfiles({"GatewayCorsEnabledWithProvidedDefaultTest"})
     @TestPropertySource(properties = {
         "apiml.service.corsDefaultAllowedOrigins=https://foo.bar.org",
-        "apiml.service.corsEnabled=true"
+        "apiml.service.corsEnabled=true",
+        "apiml.health.protected=false"
     })
     class GatewayCorsEnabledWithProvidedDefaultTest extends AcceptanceTestWithMockServices {
 

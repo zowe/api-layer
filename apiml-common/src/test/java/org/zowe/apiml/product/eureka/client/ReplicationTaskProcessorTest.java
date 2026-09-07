@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLException;
+import java.net.SocketTimeoutException;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -128,6 +129,51 @@ public class ReplicationTaskProcessorTest {
 
             // 10th network issue should cause PermanentError
             status = replicationTaskProcessor.process(task2);
+            assertThat(status, is(ProcessingResult.PermanentError));
+        }
+
+        @Test
+        void whenReadTimeoutRepeatedMultipleTimes_thenEscalatesToPermanentError() {
+            TestableInstanceReplicationTask task = aReplicationTask()
+                .withAction(Action.Heartbeat)
+                .withException(new SocketTimeoutException("Read timed out"))
+                .withNetworkFailures(DEFAULT_MAX_RETRIES)
+                .build();
+
+            // First read timeout should cause Congestion
+            ProcessingResult status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.Congestion));
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(task));
+
+            // 9th read timeout should still cause Congestion
+            status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.Congestion));
+
+            // 10th read timeout should escalate to PermanentError
+            status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.PermanentError));
+        }
+
+        @Test
+        void whenConnectionFailureRepeatedMultipleTimes_thenBehaviorUnchanged() {
+            TestableInstanceReplicationTask task = aReplicationTask()
+                .withAction(Action.Heartbeat)
+                .withNetworkFailures(DEFAULT_MAX_RETRIES)
+                .build();
+
+            // First connection failure should cause TransientError
+            ProcessingResult status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(task));
+
+            // 9th connection failure should still cause TransientError
+            status = replicationTaskProcessor.process(task);
+            assertThat(status, is(ProcessingResult.TransientError));
+
+            // 10th connection failure should cause PermanentError
+            status = replicationTaskProcessor.process(task);
             assertThat(status, is(ProcessingResult.PermanentError));
         }
     }
@@ -264,6 +310,51 @@ public class ReplicationTaskProcessorTest {
             // 10th network issue should cause PermanentError, but was changed to keep as transient one
             status = replicationTaskProcessor.process(tasks);
             assertThat(status, is(ProcessingResult.TransientError));
+        }
+
+        @Test
+        void whenReadTimeoutRepeatedMultipleTimes_thenEscalatesToPermanentError() {
+            TestableInstanceReplicationTask task = aReplicationTask().build();
+            List<ReplicationTask> tasks = Collections.singletonList(task);
+            replicationClient.withReadtimeOut(DEFAULT_MAX_RETRIES);
+
+            // First read timeout should cause Congestion
+            ProcessingResult status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.Congestion));
+
+            IntStream.range(1, DEFAULT_MAX_RETRIES - 2).forEach(n -> replicationTaskProcessor.process(tasks));
+
+            // 9th read timeout should still cause Congestion
+            status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.Congestion));
+
+            // 10th read timeout should escalate to PermanentError
+            status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.PermanentError));
+        }
+
+        @Test
+        void whenSuccessfulReplicationResetsReadTimeoutCounter() {
+            TestableInstanceReplicationTask task = aReplicationTask().build();
+            List<ReplicationTask> tasks = Collections.singletonList(task);
+
+            // Accumulate 5 read timeouts (not enough to reach max of 10)
+            replicationClient.withReadtimeOut(5);
+            IntStream.range(0, 5).forEach(n -> replicationTaskProcessor.process(tasks));
+
+            // Successful replication should reset the counter
+            replicationClient.withReadtimeOut(0);
+            replicationClient.withBatchReply(200);
+            replicationClient.withNetworkStatusCode(200);
+            ProcessingResult status = replicationTaskProcessor.process(tasks);
+            assertThat(status, is(ProcessingResult.Success));
+
+            // Now 5 more read timeouts should start fresh (Congestion, not PermanentError)
+            replicationClient.withReadtimeOut(10);  // client counter at 5, so 5 more timeouts fire
+            for (int i = 0; i < 5; i++) {
+                status = replicationTaskProcessor.process(tasks);
+                assertThat(status, is(ProcessingResult.Congestion));
+            }
         }
     }
 }

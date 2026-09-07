@@ -11,6 +11,7 @@
 package org.zowe.apiml.zaas.security.login.zosmf;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -32,6 +33,7 @@ import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.
 /**
  * Authentication provider that verifies credentials against z/OSMF service
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(value = "apiml.security.auth.provider", havingValue = "zosmf", matchIfMissing = true)
@@ -59,6 +61,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
         try {
             ar = zosmfService.authenticate(authentication);
         } catch (TokenNotValidException e) {
+            log.debug("Token not valid: {}", e.getMessage());
             throw new BadCredentialsException("Invalid Credentials");
         }
         if (( authConfigurationProperties.getZosmf().getJwtAutoconfiguration() != AuthConfigurationProperties.JWT_AUTOCONFIGURATION_MODE.LTPA )) {
@@ -75,6 +78,7 @@ public class ZosmfAuthenticationProvider implements AuthenticationProvider {
             }
         }
       //   JWT and LTPA tokens are missing, authentication was wrong
+        log.debug("JWT and LTPA tokens are missing in z/OSMF authentication response");
         throw new BadCredentialsException("Invalid Credentials");
     }
 

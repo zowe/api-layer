@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -405,26 +406,9 @@ public class MockService implements AutoCloseable {
     public static class Endpoint {
 
         /**
-         * Response code of a response, as default 200
+         * The default response, used unless {@link #responseProvider} is set.
          */
-        @Builder.Default
-        private int responseCode = 200;
-
-        /**
-         * Content type of the response. As default null (no header is generated).
-         */
-        private String contentType;
-
-        /**
-         * Added response headers
-         */
-        @Builder.Default
-        private Headers headers = new Headers();
-
-        /**
-         * Response body to answer
-         */
-        private String body;
+        private Response response;
 
         /**
          * Path of the endpoint
@@ -444,10 +428,18 @@ public class MockService implements AutoCloseable {
         @Builder.Default
         private AtomicInteger counter = new AtomicInteger();
 
+        /**
+         * Computes the response from the request itself, instead of the static {@link #response}.
+         * Useful when the response needs to vary per call.
+         */
+        private Function<HttpExchange, Response> responseProvider;
+
         void process(HttpExchange httpExchange) throws IOException {
             try {
-                if (contentType != null) {
-                    httpExchange.getResponseHeaders().add(HttpHeaders.CONTENT_TYPE, contentType);
+                Response response = getResponse(httpExchange);
+
+                if (response.getContentType() != null) {
+                    httpExchange.getResponseHeaders().add(HttpHeaders.CONTENT_TYPE, response.getContentType());
                 }
 
                 if (assertions != null) {
@@ -460,17 +452,17 @@ public class MockService implements AutoCloseable {
                     });
                 }
 
-                byte[] bodyBytes = body == null ? null : body.getBytes(StandardCharsets.UTF_8);
+                byte[] bodyBytes = response.getBody() == null ? null : response.getBody().getBytes(StandardCharsets.UTF_8);
 
                 log.debug("Request headers: " + Joiner.on(",").withKeyValueSeparator("=").join(httpExchange.getRequestHeaders()));
                 log.debug("Response headers: " + Joiner.on(",").withKeyValueSeparator("=").join(httpExchange.getResponseHeaders()));
 
-                for (Map.Entry<String, List<String>> headerEntry : headers.entrySet()) {
+                for (Map.Entry<String, List<String>> headerEntry : response.getHeaders().entrySet()) {
                     for (String value : headerEntry.getValue()) {
                         httpExchange.getResponseHeaders().add(headerEntry.getKey(), value);
                     }
                 }
-                httpExchange.sendResponseHeaders(responseCode, bodyBytes == null ? 0 : bodyBytes.length);
+                httpExchange.sendResponseHeaders(response.getResponseCode(), bodyBytes == null ? 0 : bodyBytes.length);
 
                 if (bodyBytes != null) {
                     try (OutputStream os = httpExchange.getResponseBody()) {
@@ -481,6 +473,10 @@ public class MockService implements AutoCloseable {
                 counter.getAndIncrement();
                 httpExchange.close();
             }
+        }
+
+        private Response getResponse(HttpExchange httpExchange) {
+            return responseProvider != null ? responseProvider.apply(httpExchange) : response;
         }
 
         /**
@@ -501,15 +497,38 @@ public class MockService implements AutoCloseable {
 
             private MockServiceBuilder mockServiceBuilder;
 
+            private final Response.ResponseBuilder responseBuilder = Response.builder();
+
             /**
-             * Definition of the endpoint is done, continue with defining of the MockService
-             *
-             * @return instance of MockService's builder
+             * Response code of a response, as default 200
              */
-            public MockServiceBuilder and() {
-                Endpoint endpoint = build();
-                mockServiceBuilder.endpoints.add(endpoint);
-                return mockServiceBuilder;
+            public EndpointBuilder responseCode(int responseCode) {
+                responseBuilder.responseCode(responseCode);
+                return this;
+            }
+
+            /**
+             * Content type of the response. As default null (no header is generated).
+             */
+            public EndpointBuilder contentType(String contentType) {
+                responseBuilder.contentType(contentType);
+                return this;
+            }
+
+            /**
+             * Added response headers
+             */
+            public EndpointBuilder headers(Headers headers) {
+                responseBuilder.headers(headers);
+                return this;
+            }
+
+            /**
+             * Response body to answer
+             */
+            public EndpointBuilder body(String body) {
+                responseBuilder.body(body);
+                return this;
             }
 
             /**
@@ -530,6 +549,34 @@ public class MockService implements AutoCloseable {
                     return body(writer.writeValueAsString(body));
                 }
             }
+
+            /**
+             * Definition of the endpoint is done, continue with defining of the MockService
+             *
+             * @return instance of MockService's builder
+             */
+            public MockServiceBuilder and() {
+                response(responseBuilder.build());
+                Endpoint endpoint = build();
+                mockServiceBuilder.endpoints.add(endpoint);
+                return mockServiceBuilder;
+            }
+
+        }
+
+        @Builder
+        @Value
+        public static class Response {
+
+            @Builder.Default
+            private int responseCode = 200;
+
+            private String contentType;
+
+            @Builder.Default
+            private Headers headers = new Headers();
+
+            private String body;
 
         }
 

@@ -34,6 +34,20 @@ messages:
       reason: "Too many concurrent connection requests were made."
       action: "Further connections will be queued until there is room in the connection pool. You may also increase the total connection limit via the gateway start-up script by setting the Gateway configuration for maxTotalConnections."
 
+    - key: org.zowe.apiml.common.peerReplicationPermanentError
+      number: ZWEAO107
+      type: ERROR
+      text: "Socket read timeout has repeatedly reached the maximum retry count (%s). %s will be dropped as a permanent error."
+      reason: "Peer replication did not receive a response before the configured read timeout for the maximum number of retries."
+      action: "Verify the peer Discovery Service is reachable and responsive. If the condition persists, increase eureka.server.peer-node-read-timeout-ms. The peer will catch up through periodic registry synchronization."
+
+    - key: org.zowe.apiml.common.peerReplicationReadTimeout
+      number: ZWEAO108
+      type: ERROR
+      text: "Peer replication socket read timeout occurred: %s. The replication task will be retried later."
+      reason: "The peer Discovery Service did not respond before the configured read timeout."
+      action: "If the timeout continues, verify the peer Discovery Service is reachable and responsive, and consider increasing eureka.server.peer-node-read-timeout-ms."
+
     # HTTP,Protocol messages
     # 400-499
 

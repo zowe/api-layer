@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-package org.zowe.apiml.discovery.metadata;
+package org.zowe.apiml.product.eureka;
 
 import org.zowe.apiml.exception.MetadataValidationException;
 

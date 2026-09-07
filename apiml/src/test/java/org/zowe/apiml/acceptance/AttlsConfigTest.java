@@ -87,6 +87,11 @@ class AttlsConfigTest {
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     @TestInstance(Lifecycle.PER_CLASS)
+    @TestPropertySource(
+        properties = {
+            "apiml.health.protected=false"
+        }
+    )
     class GivenAttlsProfile {
 
         @LocalServerPort
@@ -157,6 +162,7 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
+            "apiml.health.protected=false",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",

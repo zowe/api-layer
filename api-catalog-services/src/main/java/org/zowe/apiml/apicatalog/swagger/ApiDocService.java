@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -24,6 +25,8 @@ import org.zowe.apiml.apicatalog.exceptions.ApiVersionNotFoundException;
 import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.exception.MetadataValidationException;
+import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -48,6 +51,7 @@ public class ApiDocService {
     private final TransformApiDocService transformApiDocService;
     private final ApiDocRetrievalServiceLocal apiDocRetrievalServiceLocal;
     private final ApiDocRetrievalServiceRest apiDocRetrievalServiceRest;
+    private final MetadataFilterService metadataFilterService;
 
     ServiceInstance getInstanceInfo(String serviceId) {
         return EurekaUtils.getInstanceInfo(discoveryClient, serviceId)
@@ -329,8 +333,15 @@ public class ApiDocService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public Mono<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
-        ServiceInstance serviceInstance = getInstanceInfo(serviceId);
-        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
+        EurekaServiceInstance serviceInstance = (EurekaServiceInstance) getInstanceInfo(serviceId);
+        try {
+            serviceInstance = new EurekaServiceInstance(metadataFilterService.verifyAllowedDomains(serviceInstance.getInstanceInfo()));
+        } catch (MetadataValidationException e) {
+            log.debug("Failure validating metadata against allowed domains", e);
+            throw new ApiDocNotFoundException(e.getMessage());
+        }
+
+        var apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
         var apiInfo = findApi(apiInfoList, apiVersion);
         return retrieveApiDoc(serviceInstance, apiInfo);
     }
@@ -348,8 +359,15 @@ public class ApiDocService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public Mono<String> retrieveDefaultApiDoc(@NonNull String serviceId) {
-        ServiceInstance serviceInstance = getInstanceInfo(serviceId);
-        List<ApiInfo> apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
+        EurekaServiceInstance serviceInstance = (EurekaServiceInstance) getInstanceInfo(serviceId);
+        try {
+            serviceInstance = new EurekaServiceInstance(metadataFilterService.verifyAllowedDomains(serviceInstance.getInstanceInfo()));
+        } catch (MetadataValidationException e) {
+            log.debug("Failure validating metadata against allowed domains", e);
+            throw new ApiDocNotFoundException(e.getMessage());
+        }
+
+        var apiInfoList = metadataParser.parseApiInfo(serviceInstance.getMetadata());
         var apiInfo = getDefaultApiInfo(apiInfoList);
         return retrieveApiDoc(serviceInstance, apiInfo);
     }

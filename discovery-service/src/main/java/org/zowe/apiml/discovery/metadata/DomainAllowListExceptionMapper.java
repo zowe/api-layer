@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 
 @Provider
 @Slf4j

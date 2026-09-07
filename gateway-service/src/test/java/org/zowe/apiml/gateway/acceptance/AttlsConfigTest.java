@@ -126,6 +126,7 @@ class AttlsConfigTest {
     @Nested
     @TestPropertySource(
         properties = {
+            "apiml.health.protected=false",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",

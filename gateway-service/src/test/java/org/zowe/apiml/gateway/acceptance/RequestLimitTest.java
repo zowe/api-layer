@@ -13,6 +13,7 @@ package org.zowe.apiml.gateway.acceptance;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithBasePath;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 
@@ -25,6 +26,11 @@ import static org.hamcrest.Matchers.is;
  */
 @MicroservicesAcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestPropertySource(
+    properties = {
+        "apiml.health.protected=false"
+    }
+)
 class RequestLimitTest extends AcceptanceTestWithBasePath {
 
     private static final String HEADER_10KB = StringUtils.repeat("1", 10_000);

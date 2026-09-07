@@ -259,6 +259,28 @@ class ZosmfServiceTest {
     }
 
     @Nested
+    class GivenInvalidCredentials {
+
+        @Test
+        void thenThrowBadCredentialsException() {
+            Authentication authentication = new UsernamePasswordAuthenticationToken("user", "pass");
+            ZosmfService zosmfService = getZosmfServiceSpy();
+            doReturn(true).when(zosmfService).loginEndpointExists();
+
+            HttpHeaders requestHeaders = getBasicRequestHeaders();
+            doThrow(HttpClientErrorException.create(HttpStatus.UNAUTHORIZED, "Unauthorized", null, null, null))
+                .when(restTemplate).exchange(
+                    "http://zosmf:1433/zosmf/services/authenticate",
+                    HttpMethod.POST,
+                    new HttpEntity<>(null, requestHeaders),
+                    String.class
+                );
+
+            assertThrows(BadCredentialsException.class, () -> zosmfService.authenticate(authentication));
+        }
+    }
+
+    @Nested
     class GivenLoginRequestCredentials {
         @Nested
         class WhenAuthenticate {
