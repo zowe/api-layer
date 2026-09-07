@@ -11,6 +11,8 @@ dependencies {
     implementation libs.opentelemetry.spring.boot.starter
     implementation libs.opentelemetry.exporter.common
     implementation libs.opentelemetry.exporter.sender.okhttp
+    implementation libs.caffeine
+    implementation libs.guava
 
     compileOnly libs.netty.reactor.http
     implementation libs.eureka.core

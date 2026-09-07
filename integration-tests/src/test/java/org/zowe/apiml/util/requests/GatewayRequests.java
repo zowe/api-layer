@@ -67,7 +67,7 @@ public class GatewayRequests {
             given()
                 .config(RestAssuredConfig.newConfig())
                 .contentType(JSON)
-                .auth().basic(credentials.getUser(), new String(credentials.getPassword()))
+                .auth().basic(credentials.getUser(), credentials.getPassword())
             .when()
                 .post(getGatewayUriWithPath(Endpoints.SHUTDOWN))
             .then()
@@ -81,7 +81,7 @@ public class GatewayRequests {
         try {
             log.info("GatewayRequests#isUp Instance: {}", instance);
 
-            ReadContext healthResponse = requests.getJson(getGatewayUriWithPath(Endpoints.HEALTH));
+            ReadContext healthResponse = requests.getJson(getGatewayUriWithPath(Endpoints.HEALTH), credentials.getUser(), credentials.getPassword());
             String health = healthResponse.read("$.status");
 
             return health.equals("UP");

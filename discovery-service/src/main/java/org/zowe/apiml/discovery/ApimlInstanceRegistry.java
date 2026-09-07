@@ -27,17 +27,22 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.zowe.apiml.discovery.metadata.MetadataFilterService;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 import org.zowe.apiml.util.EurekaUtils;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 

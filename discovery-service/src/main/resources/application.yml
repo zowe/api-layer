@@ -78,7 +78,7 @@ eureka:
     server:
         max-threads-for-peer-replication: 6
         useReadOnlyResponseCache: false
-        peer-node-read-timeout-ms: 15000
+        peer-node-read-timeout-ms: 30000 # Gives peer replication more headroom before permanent-error escalation (GH#4777)
 
 management:
     endpoints:

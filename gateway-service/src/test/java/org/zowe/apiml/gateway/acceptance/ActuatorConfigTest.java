@@ -117,7 +117,12 @@ class ActuatorConfigTest {
         @ParameterizedTest
         @CsvSource({
             "/application/loggers",
-            "/application/gateway"
+            "/application/gateway",
+            "/application/version",
+            "/application/health",
+            "/application/info",
+            "/gateway/version",
+            "/gateway/api/v1/version"
         })
         void whenAccessDangerousActuatorWithoutCredentials_thenBlock(String endpoint) {
             given()
@@ -125,6 +130,21 @@ class ActuatorConfigTest {
                 .get(basePath + endpoint)
             .then()
                 .statusCode(SC_UNAUTHORIZED);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "/application/version",
+            "/application/health",
+            "/application/info"
+        })
+        void whenAccessInfoActuatorWithCredentials_thenAllow(String endpoint) {
+            given()
+                .cookie(AUTH_COOKIE, login(USER))
+            .when()
+                .get(basePath + "/application/info")
+            .then()
+                .statusCode(SC_OK);
         }
 
         @ParameterizedTest
@@ -241,10 +261,10 @@ class ActuatorConfigTest {
             "server.ssl.trustStore=../keystore/service/service.truststore.p12",
             "apiml.security.auth.provider=dummy",
             "logging.level.reactor.netty=ERROR",
-            "org.springframework.http.server.reactive=DEBUG",
-            "org.springframework.security=DEBUG",
-            "org.springframework.web.reactive=DEBUG",
-            "org.springframework.web.reactive.socket=DEBUG"
+            "logging.level.org.springframework.http.server.reactive=DEBUG",
+            "logging.level.org.springframework.security=DEBUG",
+            "logging.level.org.springframework.web.reactive=DEBUG",
+            "logging.level.org.springframework.web.reactive.socket=DEBUG"
         }
     )
     @MicroservicesAcceptanceTest
