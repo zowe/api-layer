@@ -17,7 +17,7 @@
     <Parameter name="apiml.ssl.keyPassword" value="password" />
     <Parameter name="apiml.ssl.keystore.password" value="password" />
     <Parameter name="apiml.ssl.truststore.password" value="password" />
-    <Parameter name="apiml.ssl.keystore" value="../keystore/localhost/localhost.truststore.p12" />
-    <Parameter name="apiml.ssl.truststore" value="../keystore/localhost/localhost.truststore.p12" />
+    <Parameter name="apiml.ssl.keystore" value="../keystore/service/service.truststore.p12" />
+    <Parameter name="apiml.ssl.truststore" value="../keystore/service/service.truststore.p12" />
     
 </Context>

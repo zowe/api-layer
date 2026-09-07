@@ -69,7 +69,7 @@ class ApimlSslKeyExchangeTest {
         };
 
         apimlSslKeyExchange.setPortRange(0);
-        apimlSslKeyExchange.setKeystoreName("../keystore/localhost/localhost.keystore.p12");
+        apimlSslKeyExchange.setKeystoreName("../keystore/service/service.keystore.p12");
         apimlSslKeyExchange.setKeystorePassword("password");
         apimlSslKeyExchange.setKeystoreType("PKCS12");
 

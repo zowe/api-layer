@@ -18,11 +18,11 @@ server:
     ssl:
         keyAlias: localhost
         keyPassword: password
-        keyStore: /docker/all-services.keystore.p12
+        keyStore: /service/service.keystore.p12
         keyStorePassword: password
         keyStoreType: PKCS12
         clientAuth: want
-        trustStore: /docker/all-services.truststore.p12
+        trustStore: /service/service.truststore.p12
         trustStorePassword: password
         trustStoreType: PKCS12
 

@@ -1,0 +1,5 @@
+# Git for Windows checks out with CRLF by default, and bash cannot execute a script
+# with CRLF line endings - it fails on the first line with "$'\r': command not
+# found". This script is run by the Gradle build (see gradle/certificates.gradle),
+# so it has to keep LF endings regardless of the client's core.autocrlf setting.
+keystore/generate-certificates.sh text eol=lf

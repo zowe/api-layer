@@ -22,8 +22,8 @@ class StoresTest {
     class GivenWrongPassword {
         @Test
         void whenExecuteCommand_thenStoresNotInitializeExceptionIsThrown() {
-            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-                "--truststore", "../keystore/localhost/localhost.truststore.p12",
+            String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
+                "--truststore", "../keystore/service/service.truststore.p12",
                 "--keypasswd", "wrongPass",
                 "--keyalias", "localhost"};
             ApimlConf conf = new ApimlConf();
@@ -37,7 +37,7 @@ class StoresTest {
     class GivenWrongTrustStorePath {
         @Test
         void whenExecuteCommand_thenStoresNotInitializeExceptionIsThrown() {
-            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
+            String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
                 "--truststore", "../wrongPath/localhost.truststore.p12",
                 "--keypasswd", "password",
                 "--keyalias", "localhost"};

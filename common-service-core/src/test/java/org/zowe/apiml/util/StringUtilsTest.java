@@ -100,10 +100,10 @@ class StringUtilsTest {
             "    protocol: TLSv1.2\n" +
             "    keyAlias: localhost\n" +
             "    keyPassword: ${apiml.ssl.keyPassword} #password\n" +
-            "    keyStore: ../keystore/localhost/localhost.keystore.p12\n" +
+            "    keyStore: ../keystore/service/service.keystore.p12\n" +
             "    keyStorePassword: ${apiml.ssl.keystore.password}\n" +
             "    keyStoreType: PKCS12\n" +
-            "    trustStore: ${apiml.ssl.truststore} # keystore/localhost/localhost.truststore.p12\n" +
+            "    trustStore: ${apiml.ssl.truststore} # keystore/service/service.truststore.p12\n" +
             "    trustStorePassword: ${apiml.ssl.truststore.password}\n" +
             "    trustStoreType: PKCS12\n" +
             "\n" +
@@ -131,7 +131,7 @@ class StringUtilsTest {
         properties.put("apiml.serviceId", "serviced");
         properties.put("apiml.serviceIpAddress", "192.168.0.");
         properties.put("apiml.ssl.keyPassword", "passworth");
-        properties.put("apiml.ssl.truststore", "keystore/localhost/localhost.truststore.p123");
+        properties.put("apiml.ssl.truststore", "keystore/service/service.truststore.p123");
 
         String resolved = StringUtils.resolveExpressions(expression, null);
         assertNotEquals(resolved.indexOf("${apiml.serviceId}"), -1);
@@ -145,7 +145,7 @@ class StringUtilsTest {
         assertNotEquals(resolved.indexOf("serviced"), -1);
         assertNotEquals(resolved.indexOf("192.168.0."), -1);
         assertNotEquals(resolved.indexOf("passworth"), -1);
-        assertNotEquals(resolved.indexOf("keystore/localhost/localhost.truststore.p123"), -1);
+        assertNotEquals(resolved.indexOf("keystore/service/service.truststore.p123"), -1);
         assertNotEquals(resolved.indexOf("${apiml.ssl.truststore.password}"), -1);
         assertEquals(resolved.indexOf("${apiml.ssl.truststore.password2}"), -1);
     }

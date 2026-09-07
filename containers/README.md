@@ -29,10 +29,10 @@ docker pull zowe-docker-release.jfrog.io/ompzowe/gateway-service:2
 # start container
 docker run -it --rm -p 7554:7554 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/service/service.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
     -e ZWE_configs_certificate_keystore_password=password \
-    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/service/service.truststore.p12 \
     -e ZWE_configs_certificate_truststore_password=password \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
     -e ZWE_zowe_workspaceDirectory=/component \
@@ -61,10 +61,10 @@ docker pull zowe-docker-release.jfrog.io/ompzowe/discovery-service:2
 # start container
 docker run -it --rm -p 7553:7553 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/service/service.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
     -e ZWE_configs_certificate_keystore_password=password \
-    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/service/service.truststore.p12 \
     -e ZWE_configs_certificate_truststore_password=password \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
     -e ZWE_zowe_workspaceDirectory=/component \
@@ -94,10 +94,10 @@ docker pull zowe-docker-release.jfrog.io/ompzowe/api-catalog-services:2
 # start container
 docker run -it --rm -p 7552:7552 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/service/service.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
     -e ZWE_configs_certificate_keystore_password=password \
-    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/service/service.truststore.p12 \
     -e ZWE_configs_certificate_truststore_password=password \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
     -e ZWE_zowe_workspaceDirectory=/component \
@@ -126,10 +126,10 @@ docker pull zowe-docker-release.jfrog.io/ompzowe/caching-service:2
 # start container
 docker run -it --rm -p 7555:7555 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/service/service.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
     -e ZWE_configs_certificate_keystore_password=password \
-    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/service/service.truststore.p12 \
     -e ZWE_configs_certificate_truststore_password=password \
     -e ZWE_zowe_workspaceDirectory=/component \
     zowe-docker-release.jfrog.io/ompzowe/caching-service:2
@@ -157,10 +157,10 @@ docker pull zowe-docker-release.jfrog.io/ompzowe/metrics-service:2
 # start container
 docker run -it --rm -p 7551:7551 \
     -v $(pwd)/keystore:/home/zowe/keystore \
-    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/localhost/localhost.keystore.p12 \
+    -e ZWE_configs_certificate_keystore_file=/home/zowe/keystore/service/service.keystore.p12 \
     -e ZWE_configs_certificate_keystore_alias=localhost \
     -e ZWE_configs_certificate_keystore_password=password \
-    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/localhost/localhost.truststore.p12 \
+    -e ZWE_configs_certificate_truststore_file=/home/zowe/keystore/service/service.truststore.p12 \
     -e ZWE_configs_certificate_truststore_password=password \
     -e CMMN_LB=apiml-common-lib/bin/api-layer-lite-lib-all.jar \
     -e ZWE_zowe_workspaceDirectory=/component \

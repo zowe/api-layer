@@ -42,7 +42,7 @@ class PH34201Test {
         List<String> usernames = Collections.singletonList(USERNAME);
         List<String> passwords = Collections.singletonList(PASSWORD);
 
-        underTest = new PH34201(usernames, passwords, "../keystore/localhost/localhost.keystore.p12", 60);
+        underTest = new PH34201(usernames, passwords, "../keystore/service/service.keystore.p12", 60);
         mockResponse = mock(HttpServletResponse.class);
         headers = new HashMap<>();
     }

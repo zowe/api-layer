@@ -121,9 +121,9 @@ Example to launch Gateway application in `launch.json`:
     ],
     "args": [
         "--apiml.security.ssl.verifySslCertificatesOfServices=true",
-        "--server.ssl.keyStore=../keystore/localhost/localhost.keystore.p12",
-        "--server.ssl.trustStore=../keystore/localhost/localhost.truststore.p12",
-        "--server.internal.ssl.keyStore=../keystore/localhost/localhost-multi.keystore.p12",
+        "--server.ssl.keyStore=../keystore/service/service.keystore.p12",
+        "--server.ssl.trustStore=../keystore/service/service.truststore.p12",
+        "--server.internal.ssl.keyStore=../keystore/service/service.keystore.p12",
         "--apiml.security.auth.provider=dummy"
     ]
 }

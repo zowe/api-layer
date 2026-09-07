@@ -1,0 +1,23 @@
+# No private key material belongs in this repository.
+#
+# Everything below is produced by generate-certificates.sh, which Gradle runs
+# automatically before any test that needs it. Regenerating mints fresh CA
+# keypairs, so the public certificates and truststores derived from them are
+# generated too - committing them would leave a fresh clone with trust anchors
+# that do not match its own keys.
+#
+# Tracked here: generate-certificates.sh, README.md, the .ext openssl configs,
+# and public_ca/public-roots.p12 (real third-party roots, public entries only,
+# not derived from any key we generate).
+
+*.p12
+*.cer
+*.key
+*.pem
+*.crt
+*.csr
+*.srl
+
+# Public roots are not generated - they are real third-party certificates and
+# contain no private key. See README.md for the refresh procedure.
+!public_ca/public-roots.p12

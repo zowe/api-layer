@@ -50,11 +50,11 @@ server:
         enabled: true
         port: 10017
         ssl:
-            keyStore: /docker/all-services.keystore.p12
+            keyStore: /service/service.keystore.p12
     ssl:
         keyAlias: localhost
         keyPassword: password
-        keyStore: /docker/all-services.keystore.p12
+        keyStore: /service/service.keystore.p12
         keyStorePassword: password
-        trustStore: /docker/all-services.truststore.p12
+        trustStore: /service/service.truststore.p12
         trustStorePassword: password

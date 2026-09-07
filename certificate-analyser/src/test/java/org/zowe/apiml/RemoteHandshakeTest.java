@@ -44,8 +44,8 @@ class RemoteHandshakeTest {
 
     @Test
     void providedCorrectKey_thenRequestPasses() throws Exception {
-        String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+        String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
+            "--truststore", "../keystore/service/service.truststore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-r", "https://localhost:10010"};
@@ -59,7 +59,7 @@ class RemoteHandshakeTest {
         when(client.executeCall(any())).thenReturn(200);
         remoteHandshake.verify();
         String expectedMsg = "Start of the remote SSL handshake.\n" +
-            "Handshake was successful. Service \"https://localhost:10010\" is trusted by truststore \"../keystore/localhost/localhost.truststore.p12\".\n";
+            "Handshake was successful. Service \"https://localhost:10010\" is trusted by truststore \"../keystore/service/service.truststore.p12\".\n";
         assertEquals(expectedMsg, TerminalUtils.normalizeLineEnds(outputStream.toString()));
     }
 
@@ -67,8 +67,8 @@ class RemoteHandshakeTest {
     class WhenErrorOccurs {
         @Test
         void malformedUrlIsDisplayed() throws Exception {
-            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-                "--truststore", "../keystore/localhost/localhost.truststore.p12",
+            String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
+                "--truststore", "../keystore/service/service.truststore.p12",
                 "--keypasswd", "password",
                 "--keyalias", "localhost",
                 "-r", "malformedurl"};
@@ -86,8 +86,8 @@ class RemoteHandshakeTest {
 
         @Test
         void sslErrorIsTranslated() throws Exception {
-            String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-                "--truststore", "../keystore/localhost/localhost.truststore.p12",
+            String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
+                "--truststore", "../keystore/service/service.truststore.p12",
                 "--keypasswd", "password",
                 "--keyalias", "localhost",
                 "-r", "https://localhost:10010"};

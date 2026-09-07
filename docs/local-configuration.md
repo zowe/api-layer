@@ -91,7 +91,7 @@ To run onboarding-enabler-nodejs-sample-app, follow the steps below:
 To run onboarding-enabler-java-sample-app, follow the steps below:
 
 1. Run `npm run onboarding-enabler-java-sample-app`
-  **Optional** : You can override the keystore and truststore location with these additional parameters on the java commandline: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\localhost\localhost.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
+  **Optional** : You can override the keystore and truststore location with these additional parameters on the java commandline: `-Djavax.net.ssl.trustStore="{your-project-directory}\api-layer\keystore\service\service.truststore.p12" -Djavax.net.ssl.trustStorePassword="password"`. 
 If you need debug information about SSL configuration while deploying, use this parameter `-Djavax.net.debug=SSL`.
 
 2. Navigate to [https://localhost:10011]([https://localhost:10011]) and check if the service `ENABLERJAVASAMPLEAPP` is registered to the discovery service. You should be able to reach the following endpoints using HTTPS:
@@ -197,9 +197,9 @@ If your editor of choice happens to be Idea and you want to use its 'Run Dashboa
          preferIpAddress: false
          registryServiceInitialDelayInSeconds: 10
          registryServiceRetryDelayInSeconds: 5
-         truststore: keystore/local/localhost_truststore.jks
-         truststorePassword: trustword
-         truststoreType: JKS
+         truststore: keystore/service/service.truststore.p12
+         truststorePassword: password
+         truststoreType: PKCS12
          updateThresholdInMillis: 10000
 
      spring:

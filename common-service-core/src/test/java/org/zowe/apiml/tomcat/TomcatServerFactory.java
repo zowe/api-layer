@@ -112,9 +112,9 @@ public class TomcatServerFactory {
         log.debug("Cwd: {}", System.getProperty("user.dir"));
 
         HttpsConfig httpsConfig = HttpsConfig.builder()
-            .keyStore(new File("keystore/localhost/localhost.keystore.p12").getCanonicalPath())
+            .keyStore(new File("keystore/service/service.keystore.p12").getCanonicalPath())
             .keyStorePassword(STORE_PASSWORD).keyPassword(STORE_PASSWORD)
-            .trustStore(new File("keystore/localhost/localhost.truststore.p12").getCanonicalPath())
+            .trustStore(new File("keystore/service/service.truststore.p12").getCanonicalPath())
             .trustStorePassword(STORE_PASSWORD).protocol("TLSv1.2").build();
         HttpsFactory httpsFactory = new HttpsFactory(httpsConfig);
 

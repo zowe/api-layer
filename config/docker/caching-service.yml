@@ -8,8 +8,8 @@ apiml:
 server:
     ssl:
         keyAlias: localhost
-        keyStore: /docker/all-services.keystore.p12
-        trustStore: /docker/all-services.truststore.p12
+        keyStore: /service/service.keystore.p12
+        trustStore: /service/service.truststore.p12
 spring:
     output:
         ansi:

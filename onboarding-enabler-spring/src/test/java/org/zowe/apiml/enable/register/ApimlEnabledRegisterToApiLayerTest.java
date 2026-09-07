@@ -50,8 +50,8 @@ class ApimlEnabledRegisterToApiLayerTest {
         assertEquals("discoverableclient2", apiMediationServiceConfig.getServiceId(), "Service id is not equal");
 
         assertNotNull(apiMediationServiceConfig.getSsl(), "SslConfig is null");
-        assertEquals("keystore/localhost/localhost.keystore.p12", apiMediationServiceConfig.getSsl().getKeyStore(), "keystore is not equal");
-        assertEquals("keystore/localhost/localhost.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore(), "truststore id is not equal");
+        assertEquals("keystore/service/service.keystore.p12", apiMediationServiceConfig.getSsl().getKeyStore(), "keystore is not equal");
+        assertEquals("keystore/service/service.truststore.p12", apiMediationServiceConfig.getSsl().getTrustStore(), "truststore id is not equal");
 
         verify(apiMediationClient, times(1)).register(apiMediationServiceConfig);
     }

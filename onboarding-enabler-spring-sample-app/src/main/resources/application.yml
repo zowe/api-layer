@@ -68,9 +68,9 @@ apiml:
             ### DEFINE FOLLOWING PROPERTIES IN EXTERNAL CONFIGURATION
             keyAlias: ${server.ssl.keyAlias} #localhost-blah
             keyPassword: ${server.ssl.keyPassword} #password-blah
-            keyStore: ${server.ssl.keyStore} #keystore/localhost/localhost.keystore.p12-blah
+            keyStore: ${server.ssl.keyStore} #keystore/service/service.keystore.p12-blah
             keyStorePassword: ${server.ssl.keyStorePassword} #password-blah
-            trustStore: ${server.ssl.trustStore} #keystore/localhost/localhost.truststore.p12-blah
+            trustStore: ${server.ssl.trustStore} #keystore/service/service.truststore.p12-blah
             trustStorePassword: ${server.ssl.trustStorePassword} #password-blah
 
 ##############################################################################################
@@ -91,9 +91,9 @@ server:
 
         keyAlias: localhost
         keyPassword: password
-        keyStore: keystore/localhost/localhost.keystore.p12
+        keyStore: keystore/service/service.keystore.p12
         keyStorePassword: password
-        trustStore: keystore/localhost/localhost.truststore.p12
+        trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
 
 springdoc:

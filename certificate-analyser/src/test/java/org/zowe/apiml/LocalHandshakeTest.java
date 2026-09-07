@@ -39,8 +39,8 @@ class LocalHandshakeTest {
 
     @Test
     void providedCorrectInputs_thenSuccessMessageIsDisplayed() throws IOException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        String[] args = {"--keystore", "../keystore/localhost/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+        String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
+            "--truststore", "../keystore/service/service.truststore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-l"};
@@ -58,8 +58,8 @@ class LocalHandshakeTest {
 
     @Test
     void providedNotTrustedKey_thenHandshakeExceptionIsDisplayed() throws IOException, CertificateException, UnrecoverableKeyException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
-        String[] args = {"--keystore", "../keystore/selfsigned/localhost.keystore.p12",
-            "--truststore", "../keystore/localhost/localhost.truststore.p12",
+        String[] args = {"--keystore", "../keystore/negative/selfsigned.keystore.p12",
+            "--truststore", "../keystore/service/service.truststore.p12",
             "--keypasswd", "password",
             "--keyalias", "localhost",
             "-l"};

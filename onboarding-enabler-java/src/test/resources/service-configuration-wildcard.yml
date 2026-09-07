@@ -38,7 +38,7 @@ ssl:
     keyStore: ${apiml.keystore}
     keyStorePassword: password
     keyStoreType: PKCS12
-    trustStore: keystore/localhost/localhost.truststore.p12
+    trustStore: keystore/service/service.truststore.p12
     trustStorePassword: password
     trustStoreType: PKCS12
 

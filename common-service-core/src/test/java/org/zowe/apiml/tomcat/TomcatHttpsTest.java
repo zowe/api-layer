@@ -68,7 +68,7 @@ class TomcatHttpsTest {
     @Test
     void trustStoreWithDifferentCertificateAuthorityShouldFail() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings()
-            .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
+            .trustStore(SecurityTestUtils.pathFromRepository("keystore/negative/untrusted-ca.truststore.p12")).build();
         try {
             startTomcatAndDoHttpsRequest(httpsConfig);
             fail(EXPECTED_SSL_HANDSHAKE_EXCEPTION_NOT_THROWN);
@@ -80,7 +80,7 @@ class TomcatHttpsTest {
     @Test
     void trustStoreWithDifferentCertificateAuthorityShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
         HttpsConfig httpsConfig = SecurityTestUtils.correctHttpsSettings().verifySslCertificatesOfServices(false)
-            .trustStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.truststore.p12")).build();
+            .trustStore(SecurityTestUtils.pathFromRepository("keystore/negative/untrusted-ca.truststore.p12")).build();
         startTomcatAndDoHttpsRequest(httpsConfig);
     }
 
@@ -116,7 +116,7 @@ class TomcatHttpsTest {
     @Test
     void wrongClientCertificateShouldNotFailWhenClientAuthIsWant() throws Exception {
         HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth("want").build();
-        HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
+        HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/negative/untrusted-ca.keystore.p12")).build();
 
         startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
 
@@ -125,7 +125,7 @@ class TomcatHttpsTest {
     @Test
     void wrongClientCertificateShouldNotFailWhenCertificateValidationIsDisabled() throws IOException, LifecycleException {
         HttpsConfig serverConfig = SecurityTestUtils.correctHttpsSettings().clientAuth("true").verifySslCertificatesOfServices(false).build();
-        HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/localhost/localhost2.keystore.p12")).build();
+        HttpsConfig clientConfig = SecurityTestUtils.correctHttpsSettings().keyStore(SecurityTestUtils.pathFromRepository("keystore/negative/untrusted-ca.keystore.p12")).build();
         startTomcatAndDoHttpsRequest(serverConfig, clientConfig);
     }
 

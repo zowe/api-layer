@@ -17,10 +17,10 @@ ssl:
     protocol: TLSv1.2
     keyAlias: localhost
     keyPassword: ${apiml.ssl.keyPassword} #password
-    keyStore: ../keystore/localhost/localhost.keystore.p12
+    keyStore: ../keystore/service/service.keystore.p12
     keyStorePassword: ${apiml.ssl.keystore.password}
     keyStoreType: PKCS12
-    trustStore: ${apiml.ssl.truststore} # keystore/localhost/localhost.truststore.p12
+    trustStore: ${apiml.ssl.truststore} # keystore/service/service.truststore.p12
     trustStorePassword: ${apiml.ssl.truststore.password}
     trustStoreType: PKCS12
 

@@ -62,7 +62,7 @@ public class ClientCertificateAuthentication {
     }
 
     protected String getClientCertPath() {
-        return Optional.ofNullable(getSystemVariable(CLIENT_CERT_PATH)).orElse("../keystore/client_cert/client-certs.p12");
+        return Optional.ofNullable(getSystemVariable(CLIENT_CERT_PATH)).orElse("../keystore/client/client-certs.p12");
     }
 
     protected String getClientCertPassword() {
