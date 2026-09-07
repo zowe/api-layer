@@ -162,6 +162,24 @@ describe('CircuitBreaker', () => {
   });
 
   describe('recordFailure()', () => {
+    [1, 5].forEach((maxFailures) => {
+      it(`should open on exactly failure ${maxFailures} when maxFailures is ${maxFailures}`, () => {
+        const configuredBreaker = new CircuitBreaker({ maxFailures });
+        expect(configuredBreaker.state).to.equal('CLOSED');
+        for (let failure = 1; failure < maxFailures; failure += 1) {
+          expect(configuredBreaker.recordFailure().transition).to.be.null;
+          expect(configuredBreaker.state).to.equal('CLOSED');
+        }
+        expect(configuredBreaker.failureCount).to.equal(maxFailures - 1);
+        expect(configuredBreaker.allowRequest()).to.be.true;
+
+        expect(configuredBreaker.recordFailure().transition).to.equal('OPEN');
+        expect(configuredBreaker.failureCount).to.equal(maxFailures);
+        expect(configuredBreaker.state).to.equal('OPEN');
+        expect(configuredBreaker.allowRequest()).to.be.false;
+      });
+    });
+
     it('should increment failureCount', () => {
       breaker.recordFailure();
       expect(breaker.failureCount).to.equal(1);
@@ -202,6 +220,27 @@ describe('CircuitBreaker', () => {
   });
 
   describe('getNextCooldown()', () => {
+    it('should retain capped OPEN cooldown while HALF_OPEN probes are in flight', () => {
+      const configuredBreaker = new CircuitBreaker({
+        maxFailures: 1,
+        cooldownTime: 10000,
+        backoffTimeout: 1000,
+        backoffMax: 25000,
+      });
+
+      configuredBreaker.recordFailure();
+      [10000, 20000, 25000, 25000].forEach((expectedCooldown) => {
+        expect(configuredBreaker.state).to.equal('OPEN');
+        expect(configuredBreaker.getNextCooldown()).to.equal(expectedCooldown);
+        clock.tick(expectedCooldown);
+        expect(configuredBreaker.allowRequest()).to.be.true;
+        expect(configuredBreaker.state).to.equal('HALF_OPEN');
+        expect(configuredBreaker.getNextCooldown()).to.equal(expectedCooldown);
+        expect(configuredBreaker.allowRequest()).to.be.false;
+        configuredBreaker.recordFailure();
+      });
+    });
+
     it('should use backoffTimeout for CLOSED retries and cooldownTime after the circuit opens', () => {
       const configuredBreaker = new CircuitBreaker({
         maxFailures: 3,

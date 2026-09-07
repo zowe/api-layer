@@ -57,6 +57,7 @@ import { EventEmitter } from 'events';
 import { join } from 'path';
 import merge from 'lodash/merge.js';
 import https from 'https';
+import net from 'net';
 
 import Eureka from '../src/EurekaClient.js';
 import DnsClusterResolver from '../src/DnsClusterResolver.js';
@@ -102,6 +103,655 @@ function mockSuccessfulResponse(accumulator, statusCode) {
 }
 
 describe('Eureka client', () => {
+  describe('synchronous transport cleanup', () => {
+    let clock;
+    beforeEach(() => {
+      clock = sinon.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date'] });
+    });
+    afterEach(() => { sinon.restore(); clock.restore(); });
+
+    it('reports request construction failure without an allocated request', () => {
+      const client = new Eureka(makeConfig());
+      const failure = new Error('construction failed');
+      sinon.stub(https, 'request').throws(failure);
+      const done = sinon.spy();
+      expect(() => client.eurekaRequest({ uri: '' }, done)).not.to.throw();
+      expect(done).to.have.been.calledOnce;
+      expect(done.firstCall.args[0]).to.equal(failure);
+      expect(client._requestCancels.size).to.equal(0);
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('releases the request even when the setup failure callback throws', () => {
+      const client = new Eureka(makeConfig());
+      const req = new EventEmitter();
+      req.end = sinon.stub().throws(new Error('end failed'));
+      req.destroy = sinon.spy();
+      sinon.stub(https, 'request').returns(req);
+      const callbackError = new Error('callback failed');
+      const done = sinon.stub().throws(callbackError);
+      expect(() => client.eurekaRequest({ uri: '' }, done)).to.throw(callbackError);
+      expect(done).to.have.been.calledOnce;
+      expect(req.destroy).not.to.have.been.called;
+      return new Promise(resolve => process.nextTick(resolve)).then(() => {
+        expect(req.destroy).to.have.been.calledOnce;
+        expect(client._requestCancels.size).to.equal(0);
+        expect(clock.countTimers()).to.equal(0);
+      });
+    });
+
+    it('does not swallow a callback exception from synchronous completion', () => {
+      const client = new Eureka(makeConfig());
+      const req = new EventEmitter();
+      const res = new EventEmitter();
+      res.statusCode = 200;
+      req.end = () => res.emit('end');
+      req.destroy = sinon.spy();
+      sinon.stub(https, 'request').callsFake((options, respond) => {
+        respond(res);
+        return req;
+      });
+      const callbackError = new Error('callback failed');
+      const done = sinon.stub().throws(callbackError);
+      expect(() => client.eurekaRequest({ uri: '' }, done)).to.throw(callbackError);
+      expect(done).to.have.been.calledOnce;
+      expect(client._requestCancels.size).to.equal(0);
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('rejects serialization failure before allocating a request or deadline', () => {
+      const client = new Eureka(makeConfig());
+      const request = sinon.stub(https, 'request');
+      const failure = new Error('serialization failed');
+      const done = sinon.spy();
+      client.eurekaRequest({ uri: '', body: { toJSON() { throw failure; } } }, done);
+      expect(done).to.have.been.calledOnce;
+      expect(done.firstCall.args[0]).to.equal(failure);
+      expect(request).not.to.have.been.called;
+      expect(client._requestCancels.size).to.equal(0);
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    [undefined, () => {}, Symbol('body')].forEach((body, index) => {
+      it(`rejects unsupported serialized body ${index} before allocation`, () => {
+        const client = new Eureka(makeConfig());
+        const request = sinon.stub(https, 'request');
+        const done = sinon.spy();
+        client.eurekaRequest({ uri: '', body: { toJSON: () => body } }, done);
+        expect(done).to.have.been.calledOnce;
+        expect(done.firstCall.args[0]).to.be.instanceOf(TypeError);
+        expect(request).not.to.have.been.called;
+        expect(client._requestCancels.size).to.equal(0);
+        expect(clock.countTimers()).to.equal(0);
+      });
+    });
+
+    ['write', 'end'].forEach(stage => {
+      it(`destroys the allocated request once after ${stage} throws`, () => {
+        const client = new Eureka(makeConfig({ eureka: { requestTimeout: 25, registerWithEureka: false } }));
+        const req = new EventEmitter();
+        const failure = new Error(`${stage} failed`);
+        req.write = sinon.stub();
+        req.end = sinon.stub();
+        const socket = { destroy: sinon.spy() };
+        req.destroy = sinon.spy(() => {
+          if (req.socket) req.socket.destroy();
+          req.emit('error', new Error('destroy error'));
+        });
+        sinon.stub(https, 'request').callsFake(() => {
+          process.nextTick(() => { req.socket = socket; });
+          return req;
+        });
+        const body = {};
+        req[stage].throws(failure);
+        const done = sinon.spy();
+
+        client.eurekaRequest({ uri: '', method: 'POST', body }, done);
+
+        expect(done).to.have.been.calledOnce;
+        expect(done.firstCall.args[0]).to.equal(failure);
+        expect(req.destroy).not.to.have.been.called;
+        expect(client._requestCancels.size).to.equal(0);
+        expect(clock.countTimers()).to.equal(0);
+        return new Promise(resolve => process.nextTick(resolve)).then(() => {
+          expect(req.destroy).to.have.been.calledOnceWithExactly(failure);
+          expect(socket.destroy).to.have.been.calledOnce;
+          req.emit('error', new Error('late error'));
+          clock.tick(100);
+          client.stop();
+          expect(done).to.have.been.calledOnce;
+          expect(req.destroy).to.have.been.calledOnce;
+          expect(client._requestCancels.size).to.equal(0);
+          expect(clock.countTimers()).to.equal(0);
+        });
+      });
+    });
+  });
+  describe('real HTTPS synchronous cleanup', () => {
+    ['write', 'end'].forEach(stage => {
+      [false, true].forEach(callbackThrows => {
+        it(`closes the real pre-TLS socket after ${stage} throws (callbackThrows=${callbackThrows})`, () => {
+          const sockets = new Set();
+          const server = net.createServer(socket => {
+            sockets.add(socket);
+            socket.resume();
+            socket.on('close', () => sockets.delete(socket));
+          });
+          return new Promise(resolve => server.listen(0, '127.0.0.1', resolve)).then(() => {
+            const client = new Eureka(makeConfig({
+              eureka: { port: server.address().port, requestTimeout: 25, registerWithEureka: false },
+            }));
+            const originalRequest = https.request;
+            const failure = new Error(`${stage} failed`);
+            const callbackError = new Error('callback failed');
+            let req;
+            let socketClosed = false;
+            const request = sinon.stub(https, 'request').callsFake((...args) => {
+              req = originalRequest(...args);
+              req.once('socket', socket => {
+                socket.once('close', () => { socketClosed = true; });
+              });
+              req[stage] = () => { throw failure; };
+              sinon.spy(req, 'destroy');
+              return req;
+            });
+            const done = sinon.spy(error => {
+              expect(error).to.equal(failure);
+              if (callbackThrows) throw callbackError;
+            });
+            return Promise.resolve().then(() => {
+              const invoke = () => client.eurekaRequest({ uri: '', method: 'POST', body: {} }, done);
+              if (callbackThrows) expect(invoke).to.throw(callbackError);
+              else invoke();
+              return new Promise(resolve => setTimeout(resolve, 100));
+            }).then(() => {
+              expect(done).to.have.been.calledOnce;
+              expect(req.destroy).to.have.been.calledOnceWithExactly(failure);
+              expect(sockets.size).to.equal(0);
+              expect(socketClosed).to.equal(true);
+              expect(client._requestCancels.size).to.equal(0);
+              client.stop();
+              return new Promise(resolve => setTimeout(resolve, 30));
+            })
+              .then(() => {
+                expect(done).to.have.been.calledOnce;
+                expect(req.destroy).to.have.been.calledOnce;
+                expect(sockets.size).to.equal(0);
+                expect(client._requestCancels.size).to.equal(0);
+              })
+              .finally(() => {
+                request.restore();
+                client.stop();
+                if (req) req.destroy();
+                sockets.forEach(socket => socket.destroy());
+                return new Promise(resolve => server.close(resolve));
+              });
+          });
+        });
+      });
+    });
+  });
+  describe('transport deadlines', () => {
+    let clock;
+    beforeEach(() => { clock = sinon.useFakeTimers(); });
+    afterEach(() => { sinon.restore(); clock.restore(); });
+    it('bounds a hung request and ignores late completion even when destroy emits nothing', () => {
+      const client = new Eureka(makeConfig({ eureka: { requestTimeout: 25 } }));
+      const req = new EventEmitter();
+      req.end = sinon.spy();
+      req.destroy = sinon.spy();
+      const request = sinon.stub(https, 'request').returns(req);
+      const done = sinon.spy();
+      client.eurekaRequest({ uri: '' }, done);
+      clock.tick(25);
+      expect(done).to.have.been.calledOnce;
+      expect(done.firstCall.args[0].code).to.equal('ETIMEDOUT');
+      expect(req.destroy).to.have.been.calledOnce;
+      const res = new EventEmitter();
+      res.statusCode = 200;
+      request.firstCall.args[1](res);
+      res.emit('end');
+      req.emit('error', new Error('late'));
+      expect(done).to.have.been.calledOnce;
+    });
+    it('requires a positive finite timeout and defaults to 10000ms', () => {
+      expect(new Eureka(makeConfig()).config.eureka.requestTimeout).to.equal(10000);
+      [0, -1, Infinity, NaN, '10'].forEach(requestTimeout => {
+        expect(() => new Eureka(makeConfig({ eureka: { requestTimeout } }))).to.throw(TypeError);
+      });
+    });
+  });
+  describe('scheduler lifecycle regression', () => {
+    let clock;
+    let client;
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+      client = new Eureka(makeConfig({ eureka: { heartbeatInterval: 10, registryFetchInterval: 10 } }));
+      sinon.stub(client, 'deregister').yields();
+    });
+    afterEach(() => { client.stop(); sinon.restore(); clock.restore(); });
+    ['startHeartbeats', 'startRegistryFetches', 'startRegistration'].forEach((start, i) => {
+      [null, new Error('late failure')].forEach(error => {
+        it(`${start} ignores old callbacks after stop and restart: ${error}`, () => {
+          const operation = sinon.stub(client, ['renew', 'fetchRegistry', 'register'][i]);
+          const failure = sinon.spy(client.circuitBreaker, 'recordFailure');
+          const success = sinon.spy(client.circuitBreaker, 'recordSuccess');
+          client[start]();
+          clock.tick(10);
+          const old = operation.firstCall.args[0];
+          client.stop();
+          client[start]();
+          clock.tick(10);
+          old(error);
+          clock.tick(100);
+          expect(operation.callCount).to.equal(2);
+          expect(failure).not.to.have.been.called;
+          expect(success).not.to.have.been.called;
+        });
+      });
+      it(`${start} duplicate starts do not overlap operations`, () => {
+        const operation = sinon.stub(client, ['renew', 'fetchRegistry', 'register'][i]);
+        client[start]();
+        client[start]();
+        clock.tick(10);
+        expect(operation).to.have.been.calledOnce;
+      });
+    });
+  });
+  describe('startup registry regression', () => {
+    let clock;
+    let client;
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+      client = new Eureka(makeConfig({ eureka: {
+        registerWithEureka: false, registryFetchInterval: 10, waitForRegistry: true,
+        circuitBreaker: { backoffTimeout: 20, cooldownTime: 20 },
+      } }));
+    });
+    afterEach(() => { client.stop(); sinon.restore(); clock.restore(); });
+    it('uses the breaker for initial fetch and polling without periodic overlap', () => {
+      const fetch = sinon.stub(client, 'fetchRegistry');
+      const done = sinon.spy();
+      client.start(done);
+      expect(fetch).to.have.been.calledOnce;
+      fetch.firstCall.args[0](new Error('offline'));
+      expect(client.circuitBreaker.failureCount).to.equal(1);
+      clock.tick(19);
+      expect(fetch).to.have.been.calledOnce;
+      clock.tick(1);
+      expect(fetch).to.have.been.calledTwice;
+      fetch.secondCall.args[0](null);
+      clock.tick(1999);
+      expect(fetch).to.have.been.calledTwice;
+      clock.tick(1);
+      client.cache.vip[client.config.instance.vipAddress] = [{}];
+      fetch.thirdCall.args[0](null);
+      expect(done).to.have.been.calledOnce;
+      clock.tick(10);
+      expect(fetch.callCount).to.equal(4);
+    });
+    [true, false].forEach(enabled => {
+      it(`stop cancels queued waitForRegistry polling with breaker enabled=${enabled}`, () => {
+        client.config.eureka.circuitBreaker.enabled = enabled;
+        const fetch = sinon.stub(client, 'fetchRegistry').yields(null);
+        const done = sinon.spy();
+        client.start(done);
+        expect(fetch).to.have.been.calledOnce;
+        client.stop();
+        clock.tick(5000);
+        expect(fetch).to.have.been.calledOnce;
+        expect(done).not.to.have.been.called;
+        expect(clock.countTimers()).to.equal(0);
+      });
+    });
+    it('stop during pending initial fetch prevents startup completion and restart leakage', () => {
+      const fetch = sinon.stub(client, 'fetchRegistry');
+      const old = sinon.spy();
+      client.start(old);
+      client.stop();
+      client.start();
+      fetch.firstCall.args[0](null);
+      clock.tick(3000);
+      expect(old).not.to.have.been.called;
+      expect(fetch).to.have.been.calledTwice;
+    });
+  });
+  describe('404 recovery regression', () => {
+    afterEach(() => sinon.restore());
+    [null, new Error('registration failed')].forEach(error => {
+      it(`awaits registration and reports its outcome: ${error}`, () => {
+        const client = new Eureka(makeConfig());
+        sinon.stub(client, 'eurekaRequest').yields(null, { statusCode: 404 });
+        const register = sinon.stub(client, 'register');
+        const done = sinon.spy();
+        client.renew(done);
+        expect(done).not.to.have.been.called;
+        register.firstCall.args[0](error);
+        expect(done).to.have.been.calledOnceWithExactly(error);
+      });
+    });
+  });
+  describe('stopped transport regression', () => {
+    let clock;
+    beforeEach(() => { clock = sinon.useFakeTimers(); });
+    afterEach(() => { sinon.restore(); clock.restore(); });
+    it('stop clears request deadlines and late registration cannot emit or complete after restart', () => {
+      const client = new Eureka(makeConfig({ eureka: { fetchRegistry: false } }));
+      const req = new EventEmitter();
+      req.end = sinon.spy();
+      req.write = sinon.spy();
+      req.destroy = sinon.spy();
+      const request = sinon.stub(https, 'request').returns(req);
+      sinon.stub(client, 'deregister').yields();
+      const registered = sinon.spy();
+      const done = sinon.spy();
+      client.on('registered', registered);
+      client.start(done);
+      client.stop();
+      expect(clock.countTimers()).to.equal(0);
+      client.start();
+      const res = new EventEmitter();
+      res.statusCode = 204;
+      request.firstCall.args[1](res);
+      res.emit('end');
+      expect(registered).not.to.have.been.called;
+      expect(done).not.to.have.been.called;
+      client.stop();
+    });
+  });
+  describe('single-shot transport regression', () => {
+    let clock;
+    afterEach(() => { sinon.restore(); if (clock) clock.restore(); });
+    it('uses one HTTPS attempt when enabled and rotates the next call after failure', () => {
+      clock = sinon.useFakeTimers();
+      const client = new Eureka(makeConfig({ eureka: {
+        maxRetries: 3, requestRetryDelay: 10,
+        serviceUrls: { default: ['https://serverA/', 'https://serverB/'] },
+      } }));
+      const request = sinon.stub(https, 'request').callsFake(() => {
+        const req = new EventEmitter();
+        req.end = () => req.emit('error', new Error('offline'));
+        return req;
+      });
+      const done = sinon.spy();
+      client.eurekaRequest({ uri: '' }, done);
+      clock.tick(100);
+      expect(request.callCount).to.equal(1);
+      expect(done).to.have.been.calledOnce;
+      client.eurekaRequest({ uri: '' }, done);
+      expect(request.secondCall.args[0].hostname).to.equal('serverb');
+    });
+  });
+  describe('review transport and scheduling matrix', () => {
+    let clock;
+    let client;
+    let request;
+    const pending = [];
+    function respond(index, statusCode, body = '') {
+      const res = new EventEmitter();
+      res.statusCode = statusCode;
+      pending[index].callback(res);
+      if (body) res.emit('data', body);
+      res.emit('end');
+      return res;
+    }
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+      pending.length = 0;
+      client = new Eureka(makeConfig({ eureka: {
+        requestTimeout: 50, heartbeatInterval: 10, registryFetchInterval: 10,
+        maxRetries: 3, requestRetryDelay: 10,
+        serviceUrls: { default: ['https://serverA/', 'https://serverB/'] },
+        circuitBreaker: { maxFailures: 1, cooldownTime: 20, backoffTimeout: 10 },
+      } }));
+      sinon.stub(client, 'deregister').yields();
+      request = sinon.stub(https, 'request').callsFake((options, callback) => {
+        const req = new EventEmitter();
+        req.end = sinon.spy();
+        req.write = sinon.spy();
+        req.destroy = sinon.spy();
+        pending.push({ req, callback });
+        return req;
+      });
+    });
+    afterEach(() => { client.stop(); sinon.restore(); clock.restore(); });
+
+    it('disabled transport makes exactly maxRetries + 1 attempts with bounded linear delays', () => {
+      client.config.eureka.circuitBreaker.enabled = false;
+      const done = sinon.spy();
+      client.eurekaRequest({ uri: '' }, done);
+      respond(0, 500);
+      [10, 20, 30].forEach((delay, i) => {
+        clock.tick(delay - 1);
+        expect(request.callCount).to.equal(i + 1);
+        clock.tick(1);
+        expect(request.callCount).to.equal(i + 2);
+        respond(i + 1, 500);
+      });
+      clock.tick(1000);
+      expect(request.callCount).to.equal(4);
+      expect(done).to.have.been.calledOnce;
+      expect(request.args.map(args => args[0].hostname)).to.deep.equal(['servera', 'serverb', 'servera', 'serverb']);
+    });
+
+    it('stop cancels disabled retry timers', () => {
+      client.config.eureka.circuitBreaker.enabled = false;
+      const done = sinon.spy();
+      client.eurekaRequest({ uri: '' }, done);
+      respond(0, 500);
+      client.stop();
+      clock.tick(1000);
+      expect(request).to.have.been.calledOnce;
+      expect(done).not.to.have.been.called;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('rotates Discovery endpoints across managed registration failures without nested retries', () => {
+      client.startRegistration();
+      respond(0, 500);
+      clock.tick(19);
+      expect(request).to.have.been.calledOnce;
+      clock.tick(1);
+      expect(request.secondCall.args[0].hostname).to.equal('serverb');
+      respond(1, 500);
+      clock.tick(40);
+      expect(request.thirdCall.args[0].hostname).to.equal('servera');
+      respond(2, 204);
+      expect(client.circuitBreaker.state).to.equal('CLOSED');
+      clock.tick(100);
+      expect(request.callCount).to.equal(3);
+    });
+
+    ['request error', 'response error', 'aborted', 'body timeout', 'synchronous exception'].forEach(kind => {
+      it(`settles ${kind} exactly once and releases the deadline`, () => {
+        const done = sinon.spy();
+        if (kind === 'synchronous exception') request.throws(new Error('synchronous'));
+        client.eurekaRequest({ uri: '' }, done);
+        let res;
+        if (kind !== 'synchronous exception') {
+          res = new EventEmitter();
+          res.statusCode = 200;
+          pending[0].callback(res);
+          if (kind === 'request error') pending[0].req.emit('error', new Error('request'));
+          if (kind === 'response error') res.emit('error', new Error('response'));
+          if (kind === 'aborted') res.emit('aborted');
+          if (kind === 'body timeout') {
+            res.emit('data', 'partial');
+            clock.tick(49);
+            expect(done).not.to.have.been.called;
+            clock.tick(1);
+            expect(done.firstCall.args[0].code).to.equal('ETIMEDOUT');
+            expect(pending[0].req.destroy).to.have.been.calledOnce;
+          }
+          res.emit('end');
+          res.emit('error', new Error('late response'));
+          pending[0].req.emit('error', new Error('late request'));
+        }
+        clock.tick(100);
+        expect(done).to.have.been.calledOnce;
+        expect(done.firstCall.args[0]).to.be.instanceOf(Error);
+        expect(clock.countTimers()).to.equal(0);
+      });
+    });
+
+    it('successful response settles once and cancels its body deadline', () => {
+      const done = sinon.spy();
+      client.eurekaRequest({ uri: '' }, done);
+      const res = respond(0, 200, 'body');
+      res.emit('end');
+      clock.tick(100);
+      expect(done).to.have.been.calledOnce;
+      expect(done.firstCall.args[2]).to.equal('body');
+      expect(pending[0].req.destroy).not.to.have.been.called;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    [204, 500].forEach(status => {
+      it(`counts 404 plus re-registration ${status} as one completed heartbeat operation`, () => {
+        const failure = sinon.spy(client.circuitBreaker, 'recordFailure');
+        const success = sinon.spy(client.circuitBreaker, 'recordSuccess');
+        client.startHeartbeats();
+        clock.tick(10);
+        respond(0, 404);
+        expect(request.secondCall.args[0].method).to.equal('POST');
+        expect(failure).not.to.have.been.called;
+        expect(success).not.to.have.been.called;
+        clock.tick(9);
+        expect(request.callCount).to.equal(2);
+        respond(1, status);
+        expect(status === 204 ? success : failure).to.have.been.calledOnce;
+        expect(status === 204 ? failure : success).not.to.have.been.called;
+      });
+    });
+
+    it('late HTTP 404 after stop does not re-register or mutate breaker state', () => {
+      const failure = sinon.spy(client.circuitBreaker, 'recordFailure');
+      client.startHeartbeats();
+      clock.tick(10);
+      client.stop();
+      respond(0, 404);
+      clock.tick(1000);
+      expect(request).to.have.been.calledOnce;
+      expect(failure).not.to.have.been.called;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('stop cancels a queued registration backoff without another POST', () => {
+      client.startRegistration();
+      respond(0, 500);
+      client.stop();
+      clock.tick(1000);
+      expect(request).to.have.been.calledOnce;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('preserves zero OPEN cooldownTime for an immediate registration probe', () => {
+      client.circuitBreaker.cooldownTime = 0;
+      client.startRegistration();
+      respond(0, 500);
+      clock.tick(0);
+      expect(request).to.have.been.calledTwice;
+      expect(client.circuitBreaker.state).to.equal('HALF_OPEN');
+      respond(1, 204);
+      expect(client.circuitBreaker.state).to.equal('CLOSED');
+    });
+
+    ['startHeartbeats', 'startRegistryFetches'].forEach(start => {
+      it(`${start} releases a hung transport and recovers with a later probe`, () => {
+        client[start]();
+        clock.tick(10);
+        expect(request).to.have.been.calledOnce;
+        clock.tick(50);
+        expect(client.circuitBreaker.state).to.equal('OPEN');
+        expect(pending[0].req.destroy).to.have.been.calledOnce;
+        clock.tick(20);
+        expect(request).to.have.been.calledTwice;
+        respond(1, 200, '{"applications":{"application":[]}}');
+        expect(client.circuitBreaker.state).to.equal('CLOSED');
+        clock.tick(10);
+        expect(request.callCount).to.equal(3);
+      });
+    });
+
+    it('registration 400 counts as a managed failure rather than success', () => {
+      const done = sinon.spy();
+      client.startRegistration(done);
+      respond(0, 400);
+      expect(client.circuitBreaker.state).to.equal('OPEN');
+      expect(done).not.to.have.been.called;
+      clock.tick(20);
+      expect(request).to.have.been.calledTwice;
+    });
+
+    it('preserves an explicit zero CLOSED retry delay', () => {
+      client.config.eureka.circuitBreaker.maxFailures = 3;
+      client.circuitBreaker.maxFailures = 3;
+      client.circuitBreaker.backoffTimeout = 0;
+      client.startRegistration();
+      respond(0, 500);
+      clock.tick(0);
+      expect(request).to.have.been.calledTwice;
+    });
+
+    ['startRegistration', 'startHeartbeats'].forEach(start => {
+      it(`${start} is denied while a registry HALF_OPEN probe is pending`, () => {
+        client.circuitBreaker.recordFailure();
+        clock.tick(20);
+        client.startRegistryFetches(() => {});
+        expect(client.circuitBreaker.state).to.equal('HALF_OPEN');
+        client[start]();
+        clock.tick(10);
+        expect(request).to.have.been.calledOnce;
+        expect(request.firstCall.args[0].method).to.equal('GET');
+        respond(0, 200, '{"applications":{"application":[]}}');
+        clock.tick(10);
+        expect(request.callCount).to.be.greaterThan(1);
+      });
+    });
+
+    it('resolver errors terminate safely with no transport or legacy retry', () => {
+      client.config.eureka.circuitBreaker.enabled = false;
+      const error = new Error('DNS failure');
+      sinon.stub(client.clusterResolver, 'resolveEurekaUrl').yields(error);
+      const done = sinon.spy();
+      client.eurekaRequest({ uri: '' }, done);
+      clock.tick(1000);
+      expect(done).to.have.been.calledOnceWithExactly(error, undefined, undefined);
+      expect(request).not.to.have.been.called;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('does not launch a probe when a HALF_OPEN listener stops the client', () => {
+      client.circuitBreaker.recordFailure();
+      client.circuitBreaker.on('circuitHalfOpen', () => client.stop());
+      client.startRegistration();
+      clock.tick(20);
+      expect(request).not.to.have.been.called;
+      expect(clock.countTimers()).to.equal(0);
+    });
+
+    it('invalidates admission when a synchronous listener stops and restarts the lifecycle', () => {
+      client.circuitBreaker.recordFailure();
+      client.circuitBreaker.once('circuitHalfOpen', () => {
+        client.stop();
+        client.startHeartbeats();
+        // A listener may also drive the new lifecycle breaker state before returning.
+        client.circuitBreaker._transitionTo('HALF_OPEN');
+      });
+      client.startRegistration();
+      clock.tick(20);
+      expect(request).not.to.have.been.called;
+    });
+
+    it('reports invalid resolved URLs through the callback rather than throwing', () => {
+      sinon.stub(client.clusterResolver, 'resolveEurekaUrl').yields(null, 'not a URL');
+      const done = sinon.spy();
+      expect(() => client.eurekaRequest({ uri: '' }, done)).not.to.throw();
+      expect(done).to.have.been.calledOnce;
+      expect(done.firstCall.args[0]).to.be.instanceOf(Error);
+      expect(request).not.to.have.been.called;
+    });
+  });
   describe('Eureka()', () => {
     it('should extend EventEmitter', () => {
       expect(new Eureka(makeConfig())).to.be.instanceof(EventEmitter);
@@ -272,6 +922,7 @@ describe('Eureka client', () => {
     });
 
     afterEach(() => {
+      clearTimeout(client._registryFetchTimeout);
       registerSpy.restore();
       fetchRegistrySpy.restore();
       heartbeatsSpy.restore();
@@ -282,7 +933,7 @@ describe('Eureka client', () => {
       registerSpy = sinon.stub(client, 'register').callsArg(0);
       fetchRegistrySpy = sinon.stub(client, 'fetchRegistry').callsArg(0);
       heartbeatsSpy = sinon.stub(client, 'startHeartbeats');
-      registryFetchSpy = sinon.stub(client, 'startRegistryFetches');
+      registryFetchSpy = sinon.spy(client, 'startRegistryFetches');
       const eventSpy = sinon.spy();
       client.on('started', eventSpy);
 
@@ -307,7 +958,7 @@ describe('Eureka client', () => {
       registerSpy = sinon.stub(client, 'register').callsArg(0);
       fetchRegistrySpy = sinon.stub(client, 'fetchRegistry').callsArg(0);
       heartbeatsSpy = sinon.stub(client, 'startHeartbeats');
-      registryFetchSpy = sinon.stub(client, 'startRegistryFetches');
+      registryFetchSpy = sinon.spy(client, 'startRegistryFetches');
       const eventSpy = sinon.spy();
       client.on('started', eventSpy);
 
@@ -331,7 +982,7 @@ describe('Eureka client', () => {
       registerSpy = sinon.stub(client, 'register').yields(new Error('fail'));
       fetchRegistrySpy = sinon.stub(client, 'fetchRegistry').callsArg(0);
       heartbeatsSpy = sinon.stub(client, 'startHeartbeats');
-      registryFetchSpy = sinon.stub(client, 'startRegistryFetches');
+      registryFetchSpy = sinon.spy(client, 'startRegistryFetches');
       const eventSpy = sinon.spy();
       client.on('started', eventSpy);
 
@@ -363,13 +1014,13 @@ describe('Eureka client', () => {
       registerSpy.onCall(2).callsArgWith(0, null);
       fetchRegistrySpy = sinon.stub(client, 'fetchRegistry').callsArg(0);
       heartbeatsSpy = sinon.stub(client, 'startHeartbeats');
-      registryFetchSpy = sinon.stub(client, 'startRegistryFetches');
+      registryFetchSpy = sinon.spy(client, 'startRegistryFetches');
       const startedSpy = sinon.spy();
       client.on('started', startedSpy);
 
       client.start();
       expect(registerSpy).to.have.been.calledOnce;
-      expect(registerSpy).to.have.been.calledWithMatch(sinon.match.func, false);
+      expect(registerSpy).to.have.been.calledWithExactly(sinon.match.func);
 
       clock.tick(100); // Second failure opens the circuit.
       expect(registerSpy).to.have.been.calledTwice;
@@ -1322,6 +1973,7 @@ describe('Eureka client', () => {
             default: ['http://serverA', 'http://serverB'],
           },
           maxRetries: 3,
+          circuitBreaker: { enabled: false },
           requestRetryDelay: 0,
         },
       };
@@ -1547,7 +2199,7 @@ describe('Eureka client', () => {
       clock.tick(client.config.eureka.heartbeatInterval);
 
       expect(requestSpy).to.have.been.calledOnce;
-      expect(requestSpy.firstCall.args[3]).to.equal(false);
+      expect(requestSpy.firstCall.args).to.have.length(2);
       requestSpy.restore();
     });
 
@@ -1558,7 +2210,7 @@ describe('Eureka client', () => {
       clock.tick(client.config.eureka.registryFetchInterval);
 
       expect(requestSpy).to.have.been.calledOnce;
-      expect(requestSpy.firstCall.args[3]).to.equal(false);
+      expect(requestSpy.firstCall.args).to.have.length(2);
       requestSpy.restore();
     });
 

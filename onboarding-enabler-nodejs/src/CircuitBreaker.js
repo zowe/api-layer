@@ -141,14 +141,14 @@ export default class CircuitBreaker extends EventEmitter {
 
   /**
    * Compute the cooldown/delay for the next scheduling cycle.
-   * OPEN state: exponential cooldown based on openCycleCount.
+   * OPEN and HALF_OPEN states: exponential cooldown based on openCycleCount.
    * CLOSED state: exponential retry backoff based on failureCount (a single failure uses
    * backoffTimeout). Both are capped at backoffMax.
    *
    * @returns {number} Delay in milliseconds
    */
   getNextCooldown() {
-    if (this._state === STATES.OPEN) {
+    if (this._state === STATES.OPEN || this._state === STATES.HALF_OPEN) {
       return this._computeOpenCooldown();
     }
     if (this.failureCount === 0) {

@@ -53,6 +53,7 @@ export default {
   requestMiddleware: (request, done) => done(request),
   shouldUseDelta: false,
   eureka: {
+    requestTimeout: 10000,
     heartbeatInterval: 30000,
     registryFetchInterval: 30000,
     maxRetries: 3,
