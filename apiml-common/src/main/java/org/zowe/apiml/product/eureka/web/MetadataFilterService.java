@@ -36,6 +36,7 @@ import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
 @Slf4j
 public class MetadataFilterService implements InitializingBean {
 
+    private static final String INSTANCE_HOSTNAME = "Instance Hostname";
     private static final String ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED = "ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED";
     private static final String ZWE_DISABLE_PORT_VALIDATION = "ZWE_DISABLE_PORT_VALIDATION";
 
@@ -134,6 +135,7 @@ public class MetadataFilterService implements InitializingBean {
      * @return InstanceInfo, may be updated
      * @throws MetadataValidationException If one or more validations failed
      */
+    @SuppressWarnings("java:S3776")
     public InstanceInfo verifyAllowedDomains(InstanceInfo instanceInfo) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
         var validator = MetadataValidator.builder()
@@ -149,9 +151,16 @@ public class MetadataFilterService implements InitializingBean {
             // this is updating the same instance even it looks like creating a new instance of InstanceInfo
             instanceInfo = new InstanceInfo.Builder(instanceInfo).setIPAddr(IPAddressUtil.getIpAddress(instanceInfo.getHostName())).build();
         }
-        if (!validator.validateEntry("Instance Hostname", instanceInfo.getHostName(), false)) {
+        if (disablePortValidation) {
+            if (!validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName(), false)) {
+                result.set(false);
+            }
+        } else if (!isClientAttlsEnabled && !validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName() + ":" + instanceInfo.getSecurePort(), true)) {
+            result.set(false);
+        } else if (!validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName() + ":" + instanceInfo.getPort(), true)) {
             result.set(false);
         }
+
         if (!validator.validateEntry("Home Page URL", instanceInfo.getHomePageUrl(), true)) {
             result.set(false);
         }

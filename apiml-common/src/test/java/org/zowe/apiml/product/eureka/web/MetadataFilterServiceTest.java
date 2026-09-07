@@ -57,6 +57,8 @@ class MetadataFilterServiceTest {
     void setUp() {
         metadataFilterService = new MetadataFilterService();
         ReflectionTestUtils.setField(metadataFilterService, "apimlLogger", apimlLogger);
+        lenient().when(instanceInfo.getHostName()).thenReturn("localhost");
+        lenient().when(instanceInfo.getSecurePort()).thenReturn(8080);
     }
 
     @Nested
@@ -108,27 +110,28 @@ class MetadataFilterServiceTest {
 
         @ParameterizedTest(name = "Value: {0} -> Allowed: {1}")
         @CsvSource({
-            "https://localhost:8080, true",
-            "https://example.com:8080, false",
-            "https://sub.zowe.org:8080, true",
-            "https://invalid.org:8080, false",
-            "invalid-url, false",
-            "HTTPS://LOCALHOST:8080, true",
-            "HTTPS://INVALID.ORG:8080, false"
+            "https://localhost, 8080, true",
+            "https://example.com, 8080, false",
+            "https://sub.zowe.org, 8080, true",
+            "https://invalid.org, 8080, false",
+            "invalid-url, 0, false",
+            "HTTPS://LOCALHOST, 8080, true",
+            "HTTPS://INVALID.ORG, 8080, false"
         })
-        void shouldVerifyHostname(String hostname, boolean isAllowed) {
+        void shouldVerifyHostname(String hostname, int port, boolean isAllowed) {
             when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
             when(instanceInfo.getHostName()).thenReturn(hostname);
+            when(instanceInfo.getSecurePort()).thenReturn(port);
             lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
             if (isAllowed) {
                 metadataFilterService.verifyAllowedDomains(instanceInfo);
-                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname), anyString());
+                verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname + ":" + port), anyString());
             } else {
                 assertThrows(MetadataValidationException.class, () -> {
                     metadataFilterService.verifyAllowedDomains(instanceInfo);
                 });
-                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname), anyString());
+                verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname + ":" + port), anyString());
             }
         }
 
@@ -250,13 +253,14 @@ class MetadataFilterServiceTest {
             @ParameterizedTest(name = "Given local address {0} when validate then fail")
             @MethodSource("localIpAddresses")
             void givenLocalIpAddress_whenValidate_itIsAccepted(String ipAddress) {
-                ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "non-local");
+                ReflectionTestUtils.setField(metadataFilterService, "allowedDomains", "non-local:*");
                 metadataFilterService.afterPropertiesSet();
 
-                InstanceInfo ii = InstanceInfo.Builder.newBuilder()
+                var ii = InstanceInfo.Builder.newBuilder()
                     .setIPAddr(ipAddress)
                     .setAppName("service")
                     .setInstanceId("test-instance")
+                    .setHostName("non-local")
                     .build();
 
                 metadataFilterService.verifyAllowedDomains(ii);

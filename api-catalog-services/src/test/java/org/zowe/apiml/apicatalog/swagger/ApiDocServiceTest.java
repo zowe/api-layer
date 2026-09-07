@@ -462,10 +462,12 @@ class ApiDocServiceTest {
                 verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
                 assertEquals(0L, elapsed.toSeconds());
             }
+
         }
 
         @Nested
         class WhenGetApiVersions {
+
             @Test
             void givenApiVersions_thenReturnThem() {
                 when(discoveryClient.getInstances(SERVICE_ID))
@@ -484,10 +486,12 @@ class ApiDocServiceTest {
                 );
                 assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
             }
+
         }
 
         @Nested
         class WhenGetDefaultApiVersion {
+
             @Test
             void givenDefaultApiVersion_thenReturnIt() {
                 when(discoveryClient.getInstances(SERVICE_ID))
@@ -518,6 +522,7 @@ class ApiDocServiceTest {
                 );
                 assertEquals("Could not load instance information for service " + SERVICE_ID + ".", exception.getMessage());
             }
+
         }
 
         private EurekaServiceInstance getStandardInstance(Map<String, String> metadata, Boolean isPortSecure) {
@@ -641,9 +646,10 @@ class ApiDocServiceTest {
 
         @BeforeEach
         void onboardCatalog() {
-            InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
+            var instanceInfo = InstanceInfo.Builder.newBuilder()
                 .setSecurePort(10010)
                 .setAppName("apicatalog")
+                .setHostName("localhost")
                 .setMetadata(Map.of(
                     "apiml.apiInfo.0.apiId", "zowe.apiml.apicatalog",
                     "apiml.apiInfo.0.gatewayUrl", "api/v1",

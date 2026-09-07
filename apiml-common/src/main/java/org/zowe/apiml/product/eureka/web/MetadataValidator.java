@@ -38,7 +38,6 @@ public class MetadataValidator {
     private static final String HTTPS = "https://";
     private static final String ORG_ZOWE_APIML_COMMON_URL_NOT_ALLOWED = "org.zowe.apiml.common.urlNotAllowed";
     private static final String ORG_ZOWE_APIML_COMMON_SCHEME_NOT_ALLOWED = "org.zowe.apiml.common.schemeNotAllowed";
-    private static final String DEFAULT_PORT_TLS = "443";
 
     private final InstanceInfo instanceInfo;
 
@@ -131,6 +130,7 @@ public class MetadataValidator {
         return null;
     }
 
+    // method has to work for allowList entries and input values to validate
     private String parseDomain(String input) {
         if (IPAddressUtil.isIPV6Single(input)) {
             return IPAddressUtil.getHostIPV6(input);
@@ -141,15 +141,15 @@ public class MetadataValidator {
         }
         var noScheme = clearValidSchemes(input);
         input = StringUtils.isBlank(noScheme) ? input : noScheme;
-        var idx = input.lastIndexOf(":");
-
-        if (idx > 0) {
-            input = input.substring(0, idx);
-        }
         try {
             return new URL(Strings.CI.startsWithAny(input, HTTP, HTTPS) ? input : HTTPS + input).getHost().toLowerCase();
         } catch (MalformedURLException e) {
             // continue
+        }
+        var idx = input.lastIndexOf(":");
+
+        if (idx > 0) {
+            input = input.substring(0, idx);
         }
         try {
             return IDN.toASCII(input, IDN.ALLOW_UNASSIGNED);
@@ -183,8 +183,8 @@ public class MetadataValidator {
     }
 
     private boolean isAllowedPort(String input, String allowedDomainPort) {
-        var port = Integer.parseInt(extractPort(input));
-        if ("*".equals(allowedDomainPort) || Objects.equal(String.valueOf(port), allowedDomainPort)) {
+        var port = extractPort(input);
+        if ("*".equals(allowedDomainPort) || Objects.equal(port, allowedDomainPort)) {
             return true;
         }
         log.debug("Port {} in input value {} from service {} does not match port {}", port, input, instanceInfo.getInstanceId(), allowedDomainPort);
@@ -237,9 +237,9 @@ public class MetadataValidator {
             if (port > 0) {
                 return String.valueOf(port);
             }
-            return DEFAULT_PORT_TLS;
+            return null;
         } catch (MalformedURLException e) {
-            return DEFAULT_PORT_TLS;
+            return null;
         }
     }
 

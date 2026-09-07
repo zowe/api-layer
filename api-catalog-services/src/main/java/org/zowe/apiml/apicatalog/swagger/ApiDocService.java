@@ -219,6 +219,10 @@ public class ApiDocService {
             return null;
         }
 
+        if (StringUtils.isBlank(serviceInstance.getHost())) {
+            return null;
+        }
+
         UriComponents uri = UriComponentsBuilder
             .newInstance()
             .scheme(scheme)
