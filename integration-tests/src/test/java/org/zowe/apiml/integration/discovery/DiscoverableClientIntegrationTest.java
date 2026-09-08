@@ -118,7 +118,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                         .config(SslContext.clientCertValid)
                         .contentType(ContentType.JSON)
                     .when()
-                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.externalUrl=https://baddomain.net", instanceId))
+                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.apiInfo.api-v1.externalUrl=https://baddomain.net", instanceId))
                     .then()
                         .statusCode(is(SC_INTERNAL_SERVER_ERROR));
 
