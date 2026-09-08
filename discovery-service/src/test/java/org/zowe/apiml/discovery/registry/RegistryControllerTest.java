@@ -18,7 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.registry.InMemoryServiceRegistry;
 import org.zowe.apiml.registry.RegistrationKind;
-import org.zowe.apiml.registry.RegistryConfig;
+import org.zowe.apiml.registry.RegistrySettings;
 import org.zowe.apiml.registry.model.InstanceStatus;
 import org.zowe.apiml.registry.model.Lease;
 import org.zowe.apiml.registry.model.ServiceInstance;
@@ -53,8 +53,8 @@ class RegistryControllerTest {
 
     @BeforeEach
     void setUp() {
-        registry = new InMemoryServiceRegistry(RegistryConfig.defaults(), List.of(), () -> NOW);
-        mvc = MockMvcBuilders.standaloneSetup(new RegistryController(registry)).build();
+        registry = new InMemoryServiceRegistry(RegistrySettings.defaults(), List.of(), () -> NOW);
+        mvc = MockMvcBuilders.standaloneSetup(new RegistryController(registry, new org.zowe.apiml.registry.codec.RegistryCodec())).build();
         registry.register(discoverableClient(), RegistrationKind.DYNAMIC);
     }
 

@@ -26,7 +26,7 @@ import org.zowe.apiml.apicatalog.model.ApiDocInfo;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.exception.MetadataValidationException;
-import org.zowe.apiml.product.eureka.web.MetadataFilterService;
+import org.zowe.apiml.product.eureka.web.EurekaMetadataFilterAdapter;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.routing.RoutedService;
@@ -51,7 +51,7 @@ public class ApiDocService {
     private final TransformApiDocService transformApiDocService;
     private final ApiDocRetrievalServiceLocal apiDocRetrievalServiceLocal;
     private final ApiDocRetrievalServiceRest apiDocRetrievalServiceRest;
-    private final MetadataFilterService metadataFilterService;
+    private final EurekaMetadataFilterAdapter metadataFilterService;
 
     ServiceInstance getInstanceInfo(String serviceId) {
         return EurekaUtils.getInstanceInfo(discoveryClient, serviceId)

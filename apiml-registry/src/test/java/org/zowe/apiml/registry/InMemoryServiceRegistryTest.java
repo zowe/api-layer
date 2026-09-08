@@ -50,10 +50,10 @@ class InMemoryServiceRegistryTest {
     void setUp() {
         now = T0;
         events = new ArrayList<>();
-        registry = newRegistry(RegistryConfig.defaults(), List.of());
+        registry = newRegistry(RegistrySettings.defaults(), List.of());
     }
 
-    private InMemoryServiceRegistry newRegistry(RegistryConfig config, List<RegistrationInterceptor> interceptors) {
+    private InMemoryServiceRegistry newRegistry(RegistrySettings config, List<RegistrationInterceptor> interceptors) {
         InMemoryServiceRegistry created = new InMemoryServiceRegistry(config, interceptors, () -> now);
         created.addListener(events::add);
         return created;
@@ -261,7 +261,7 @@ class InMemoryServiceRegistryTest {
             // 10 * (60/30) * 0.85 = 17.0
             assertEquals(17, registry.renewalThresholdPerMinute());
 
-            InMemoryServiceRegistry three = newRegistry(RegistryConfig.defaults(), List.of());
+            InMemoryServiceRegistry three = newRegistry(RegistrySettings.defaults(), List.of());
             three.openForTraffic(3);
             // 3 * 2 * 0.85 = 5.1, truncated to 5 - Eureka truncates and so do we
             assertEquals(5, three.renewalThresholdPerMinute());
@@ -322,7 +322,7 @@ class InMemoryServiceRegistryTest {
         @Test
         @DisplayName("even with eviction enabled, one sweep cannot take more than (1 - threshold) of the registry")
         void theEvictionLimitCapsASingleSweep() {
-            RegistryConfig noSelfPreservation = RegistryConfig.defaults().withSelfPreservation(false);
+            RegistrySettings noSelfPreservation = RegistrySettings.defaults().withSelfPreservation(false);
             InMemoryServiceRegistry open = newRegistry(noSelfPreservation, List.of());
 
             for (int i = 0; i < 20; i++) {
@@ -339,7 +339,7 @@ class InMemoryServiceRegistryTest {
 
         @Test
         void selfPreservationCanBeTurnedOff() {
-            RegistryConfig off = RegistryConfig.defaults().withSelfPreservation(false);
+            RegistrySettings off = RegistrySettings.defaults().withSelfPreservation(false);
             InMemoryServiceRegistry open = newRegistry(off, List.of());
             open.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
             open.openForTraffic(1);
@@ -352,7 +352,7 @@ class InMemoryServiceRegistryTest {
         @Test
         @DisplayName("additionalLeaseMs postpones eviction, absorbing a GC pause or clock drift")
         void additionalLeaseSlackPostponesEviction() {
-            RegistryConfig off = RegistryConfig.defaults().withSelfPreservation(false);
+            RegistrySettings off = RegistrySettings.defaults().withSelfPreservation(false);
             InMemoryServiceRegistry open = newRegistry(off, List.of());
             open.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
             open.openForTraffic(1);
@@ -396,7 +396,7 @@ class InMemoryServiceRegistryTest {
             registry.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
             assertFalse(registry.delta().applications().isEmpty());
 
-            now += RegistryConfig.DEFAULT_DELTA_RETENTION_MS + 1;
+            now += RegistrySettings.DEFAULT_DELTA_RETENTION_MS + 1;
             assertTrue(registry.delta().applications().isEmpty());
         }
 
@@ -404,7 +404,7 @@ class InMemoryServiceRegistryTest {
         void carriesTheHashCodeOfTheWholeRegistryNotOfTheDelta() {
             registry.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
             registry.register(instance("catalog", 10014), RegistrationKind.DYNAMIC);
-            now += RegistryConfig.DEFAULT_DELTA_RETENTION_MS + 1;
+            now += RegistrySettings.DEFAULT_DELTA_RETENTION_MS + 1;
             registry.register(instance("zaas", 10023), RegistrationKind.DYNAMIC);
 
             // Only the newest change is in the delta window, but the hashcode still describes all three - that is
@@ -446,7 +446,7 @@ class InMemoryServiceRegistryTest {
                 }
             };
 
-            InMemoryServiceRegistry withInterceptors = newRegistry(RegistryConfig.defaults(), List.of(tag, prefix));
+            InMemoryServiceRegistry withInterceptors = newRegistry(RegistrySettings.defaults(), List.of(tag, prefix));
             withInterceptors.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
 
             ServiceInstance stored = withInterceptors.instance("ZOWEGATEWAY", "localhost:gateway:10010")
@@ -461,7 +461,7 @@ class InMemoryServiceRegistryTest {
             RegistrationInterceptor denyList = instance -> {
                 throw new RegistrationRejectedException("host not in the allow list: " + instance.hostName());
             };
-            InMemoryServiceRegistry guarded = newRegistry(RegistryConfig.defaults(), List.of(denyList));
+            InMemoryServiceRegistry guarded = newRegistry(RegistrySettings.defaults(), List.of(denyList));
 
             assertThrows(RegistrationRejectedException.class,
                 () -> guarded.register(instance("gateway", 10010), RegistrationKind.DYNAMIC));
@@ -492,7 +492,7 @@ class InMemoryServiceRegistryTest {
 
         @Test
         void marksAnEvictionAsExpiredSoItCanBeDistinguishedFromADeliberateShutdown() {
-            RegistryConfig off = RegistryConfig.defaults().withSelfPreservation(false);
+            RegistrySettings off = RegistrySettings.defaults().withSelfPreservation(false);
             InMemoryServiceRegistry open = newRegistry(off, List.of());
             open.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
             open.openForTraffic(1);

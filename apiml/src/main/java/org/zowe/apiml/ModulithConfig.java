@@ -17,8 +17,6 @@ import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
-import com.netflix.eureka.EurekaServerContext;
-import com.netflix.eureka.EurekaServerContextHolder;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -60,8 +58,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.context.ServletContextAware;
 import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.config.ApplicationInfo;
-import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.registry.RegistrationKind;
+import org.zowe.apiml.registry.ServiceRegistry;
+import org.zowe.apiml.registry.replication.PeerReplicator;
 import org.zowe.apiml.filter.PreFluxFilter;
 import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.message.core.MessageService;
@@ -106,7 +106,7 @@ import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 public class ModulithConfig {
 
     private final ApplicationContext applicationContext;
-    private final Map<String, InstanceInfo> instances = new HashMap<>();
+    private final Map<String, org.zowe.apiml.registry.model.ServiceInstance> instances = new HashMap<>();
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
     private final CatalogEurekaInstanceConfigBean catalogEurekaInstanceConfigBean;
     private final EurekaClientConfig eurekaConfig;
@@ -156,15 +156,18 @@ public class ModulithConfig {
         return Strings.CI.equals(serviceId, CoreService.DISCOVERY.getServiceId()) ? discoveryPort : gatewayPort;
     }
 
-    private InstanceInfo getInstanceInfo(String serviceId) {
+    private org.zowe.apiml.registry.model.ServiceInstance getInstanceInfo(String serviceId) {
         int port = getPort(serviceId);
 
-        var leaseInfo = LeaseInfo.Builder.newBuilder()
-            .setDurationInSecs(90)
-            .setRegistrationTimestamp(System.currentTimeMillis())
-            .setRenewalTimestamp(System.currentTimeMillis())
-            .setRenewalIntervalInSecs(30)
-            .setServiceUpTimestamp(System.currentTimeMillis())
+        // PERMANENT: a core service inside the modulith does not heartbeat to a registry running in the same
+        // JVM. The duration values are carried only for the wire representation peers receive.
+        var leaseInfo = org.zowe.apiml.registry.model.Lease.builder()
+            .kind(org.zowe.apiml.registry.model.Lease.Kind.PERMANENT)
+            .durationSecs(90)
+            .renewalIntervalSecs(30)
+            .registrationTimestamp(System.currentTimeMillis())
+            .lastRenewalTimestamp(System.currentTimeMillis())
+            .serviceUpTimestamp(System.currentTimeMillis())
             .build();
 
 
@@ -190,32 +193,34 @@ public class ModulithConfig {
             scheme = "http";
         }
 
-        return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(String.format("%s:%s:%d", hostname, serviceId, port))
-            .setAppName(serviceId)
-            .setHostName(hostname)
-            .setHomePageUrl(null, String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
-            .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setIPAddr(ipAddress)
-            .setPort(port)
-            .setSecurePort(port)
-            .enablePort(InstanceInfo.PortType.SECURE, https || isServerAttlsEnabled)
-            .enablePort(InstanceInfo.PortType.UNSECURE, !https && !isServerAttlsEnabled)
-            .setVIPAddress(serviceId)
-            .setDataCenterInfo(() -> DataCenterInfo.Name.MyOwn)
-            .setLeaseInfo(leaseInfo)
-            .setLastUpdatedTimestamp(System.currentTimeMillis())
-            .setMetadata(metadata)
-            .setVIPAddress(serviceId)
+        boolean secure = https || isServerAttlsEnabled;
+        return org.zowe.apiml.registry.model.ServiceInstance.builder()
+            .instanceId(String.format("%s:%s:%d", hostname, serviceId, port))
+            .appName(serviceId)
+            .hostName(hostname)
+            .homePageUrl(String.format("%s://%s:%d%s", scheme, hostname, port, homePagePath))
+            .status(org.zowe.apiml.registry.model.InstanceStatus.UP)
+            .ipAddr(ipAddress)
+            .port(new org.zowe.apiml.registry.model.PortInfo(port, !secure))
+            .securePort(new org.zowe.apiml.registry.model.PortInfo(port, secure))
+            .vipAddress(serviceId)
+            .secureVipAddress(serviceId)
+            .dataCenterInfo(org.zowe.apiml.registry.model.DataCenterInfo.MY_OWN)
+            .lease(leaseInfo)
+            .lastUpdatedTimestamp(System.currentTimeMillis())
+            .metadata(metadata)
             .build();
     }
 
-    static ApimlInstanceRegistry getRegistry() {
-        return Optional.ofNullable(EurekaServerContextHolder.getInstance())
-            .map(EurekaServerContextHolder::getServerContext)
-            .map(EurekaServerContext::getRegistry)
-            .map(ApimlInstanceRegistry.class::cast)
-            .orElse(null);
+    /**
+     * The registry, injected.
+     * <p>
+     * Was a static lookup through {@code EurekaServerContextHolder} - a global singleton that had to be
+     * initialised by hand from this class before anything could use it, and which made the wiring order
+     * load-bearing and untestable.
+     */
+    private ServiceRegistry registry() {
+        return applicationContext.getBean(ServiceRegistry.class);
     }
 
     void createLocalInstances() {
@@ -223,10 +228,9 @@ public class ModulithConfig {
         instances.put(CoreService.DISCOVERY.getServiceId(), getInstanceInfo(CoreService.DISCOVERY.getServiceId()));
         instances.put(CoreService.CACHING.getServiceId(), getInstanceInfo(CoreService.CACHING.getServiceId()));
         instances.put(CoreService.API_CATALOG.getServiceId(), getInstanceInfo(CoreService.API_CATALOG.getServiceId()));
-        EurekaServerContextHolder.initialize(applicationContext.getBean(EurekaServerContext.class));
 
-        ApimlInstanceRegistry registry = getRegistry();
-        instances.forEach((key, value) -> registry.registerStatically(instances.get(key), false, CoreService.GATEWAY.getServiceId().equalsIgnoreCase(key)));
+        var registry = registry();
+        instances.values().forEach(instance -> registry.register(instance, RegistrationKind.STATIC));
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -236,16 +240,17 @@ public class ModulithConfig {
         log.info("Initialize timer for static services peer-replicated heartbeats");
         eventPublisher.publishEvent(new ApiCatalogServiceAvailableEvent(new Object()));
 
-        // This timer calls Eureka registry's peerReplicate method to accumulate all heartbeats of statically-onboarded services once
+        // Keeps the peers' copies of the locally-registered core services alive. Their leases here are
+        // permanent, but a peer holds them as ordinary renewable registrations and would evict them.
         timer.scheduleAtFixedRate(new TimerTask() {
 
             @Override
             public void run() {
-                var registry = getRegistry();
-                if (registry != null) {
-                    registry.peerAwareHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
-                } else {
-                    log.debug("Eureka registry is not available yet.");
+                try {
+                    applicationContext.getBean(PeerReplicator.class)
+                        .replicateHeartbeat(instances.get(CoreService.GATEWAY.getServiceId()));
+                } catch (RuntimeException e) {
+                    log.debug("Peer replication is not available yet: {}", e.getMessage());
                 }
             }
 
@@ -288,41 +293,8 @@ public class ModulithConfig {
     }
 
     @Bean
-    DiscoveryClient registryDiscoveryClient() {
-        return new DiscoveryClient() {
-            @Override
-            public String description() {
-                return "Discovery client of local instances";
-            }
-
-            @Override
-            public List<ServiceInstance> getInstances(String serviceId) {
-                var registry = getRegistry();
-                if (registry == null) {
-                    return Collections.emptyList();
-                }
-                return Optional.ofNullable(registry.getApplication(StringUtils.upperCase(serviceId)))
-                    .map(Application::getInstances)
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .map(EurekaServiceInstance::new)
-                    .map(ServiceInstance.class::cast)
-                    .toList();
-            }
-
-            @Override
-            public List<String> getServices() {
-                var registry = getRegistry();
-                if (registry == null) {
-                    return Collections.emptyList();
-                }
-
-                return Optional.ofNullable(registry.getApplications())
-                    .map(Applications::getRegisteredApplications)
-                    .map(applications -> applications.stream().map(Application::getName).distinct().toList())
-                    .orElse(List.of());
-            }
-        };
+    DiscoveryClient registryDiscoveryClient(ServiceRegistry serviceRegistry) {
+        return new org.zowe.apiml.discovery.registry.RegistryDiscoveryClient(serviceRegistry);
     }
 
     @Bean

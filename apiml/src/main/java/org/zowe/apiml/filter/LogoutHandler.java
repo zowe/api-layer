@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.filter;
 
-import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
+import org.zowe.apiml.discovery.registry.EurekaApplicationAdapter;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
@@ -38,7 +38,7 @@ public class LogoutHandler implements ServerLogoutHandler {
 
     private final AuthenticationService authenticationService;
     private final FailedAuthenticationWebHandler failure;
-    private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
+    private final EurekaApplicationAdapter eurekaApplicationAdapter;
     private final HttpUtils httpUtils;
     private final ApplicationContext applicationContext;
 
@@ -65,7 +65,7 @@ public class LogoutHandler implements ServerLogoutHandler {
             return failure.onAuthenticationFailure(exchange, new TokenNotValidException("The token you are trying to logout is not valid"));
         } else {
             try {
-                var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
+                var app = eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId());
                 authenticationService.invalidateJwtTokenGateway(token, distribute, app);
             } catch (TokenNotValidException e) {
                 // TokenNotValidException thrown in cases where the format is not valid

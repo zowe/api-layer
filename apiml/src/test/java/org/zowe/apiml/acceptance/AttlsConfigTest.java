@@ -37,9 +37,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
-import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.filter.AttlsHttpHandler;
 import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
@@ -175,7 +173,6 @@ class AttlsConfigTest {
     @SpringBootTest(
         classes = {
             ApimlApplication.class,
-            FreeMarkerConfigurer.class,
             TestConfig.class
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -185,9 +182,6 @@ class AttlsConfigTest {
 
         @MockitoBean
         private AttlsHttpHandler attlsHttpHandler;
-
-        @MockitoBean
-        private ApimlInstanceRegistry apimlInstanceRegistry;
 
         @LocalServerPort
         private int port;
@@ -199,7 +193,6 @@ class AttlsConfigTest {
 
         @BeforeEach
         void setUp() {
-            when(apimlInstanceRegistry.getApplications()).thenReturn(new Applications());
             doNothing().when(apimlTomcatCustomizer).customize(any());
         }
 
@@ -251,9 +244,6 @@ class AttlsConfigTest {
                 "Yjiwkwf1IY7xv7HBJ4BsbUwxjxMcxa1HNqE8oAqEtiFxRmPkAi+g1lijvF26AKZd" +
                 "WxKFTLJV1HxUsa5l8b7cHN9yya6IVixVcB9Cla06Rg7dkaI4Deb5JCxFXjoznDKY" +
                 "kv8ZumkzQI9Ov90d1FYyVr7VWPEun/XV2XmH9nGHWyJSkA==";
-
-        @MockitoBean
-        private ApimlInstanceRegistry apimlInstanceRegistry;
 
         @LocalServerPort
         private int port;

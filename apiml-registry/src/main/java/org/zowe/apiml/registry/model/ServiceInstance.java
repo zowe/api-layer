@@ -11,6 +11,7 @@
 package org.zowe.apiml.registry.model;
 
 import java.util.Collections;
+import java.util.Locale;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -207,10 +208,12 @@ public final class ServiceInstance {
     }
 
     public Builder toBuilder() {
+        // Uses the from-wire setters: these values are already stored, and re-normalising them here would
+        // silently change an instance that was decoded with a lower-case name.
         return new Builder()
             .instanceId(instanceId)
-            .appName(appName)
-            .appGroupName(appGroupName)
+            .appNameFromWire(appName)
+            .appGroupNameFromWire(appGroupName)
             .hostName(hostName)
             .ipAddr(ipAddr)
             .sid(sid)
@@ -293,12 +296,40 @@ public final class ServiceInstance {
             return this;
         }
 
+        /**
+         * Sets the app name, upper-casing it.
+         * <p>
+         * Netflix's {@code InstanceInfo.Builder.setAppName} did
+         * {@code appName.toUpperCase(Locale.ROOT)} and callers relied on it - the static-definition processor,
+         * for one, passes a lower-case service id and expects the registry to hold and publish the upper-case
+         * form. The {@code app} field is upper-case on the wire, so not doing this would change the body every
+         * client sees. Use {@link #appNameFromWire(String)} when decoding.
+         */
         public Builder appName(String appName) {
+            this.appName = appName == null ? null : appName.toUpperCase(Locale.ROOT);
+            return this;
+        }
+
+        /**
+         * Sets the app name exactly as received, without upper-casing.
+         * <p>
+         * The counterpart of Netflix's {@code setAppNameForDeser}, which deliberately skipped the upper-casing
+         * its sibling applied. A decoder must round-trip what the sender actually sent; normalising here would
+         * make {@code decode(encode(x))} differ from {@code x} for any client that registers a lower-case name.
+         */
+        public Builder appNameFromWire(String appName) {
             this.appName = appName;
             return this;
         }
 
+        /** Upper-cases, like Netflix's {@code setAppGroupName}. Null stays null. */
         public Builder appGroupName(String appGroupName) {
+            this.appGroupName = appGroupName == null ? null : appGroupName.toUpperCase(Locale.ROOT);
+            return this;
+        }
+
+        /** Sets the app group name exactly as received. Counterpart of {@code setAppGroupNameForDeser}. */
+        public Builder appGroupNameFromWire(String appGroupName) {
             this.appGroupName = appGroupName;
             return this;
         }

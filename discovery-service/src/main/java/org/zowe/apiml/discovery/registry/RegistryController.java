@@ -11,11 +11,8 @@
 package org.zowe.apiml.discovery.registry;
 
 import jakarta.annotation.Nullable;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,92 +25,65 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.zowe.apiml.registry.RegistrationKind;
 import org.zowe.apiml.registry.ServiceRegistry;
 import org.zowe.apiml.registry.codec.RegistryCodec;
-import org.zowe.apiml.registry.codec.WireFormat;
-import org.zowe.apiml.registry.model.InstanceStatus;
-import org.zowe.apiml.registry.model.ServiceInstance;
-import org.zowe.apiml.registry.replication.ReplicationAction;
-import org.zowe.apiml.registry.replication.ReplicationBatch;
-import org.zowe.apiml.registry.replication.ReplicationItem;
-import org.zowe.apiml.registry.replication.ReplicationResponse;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
- * The {@code /eureka} HTTP surface, served from {@link ServiceRegistry}.
+ * Servlet adapter for the {@code /eureka} surface. All behaviour lives in {@link RegistryEndpoints}.
  * <p>
- * Replaces Eureka's Jersey resources and the {@code EurekaRestController} adapter the modulith needed to call them
- * from a reactive stack. Every status code, header and body shape here is pinned by
- * {@code apiml-registry/src/test/resources/wire-contract} - both the response bodies and
- * {@code http-contract.json}, which was captured from the running Eureka-based service.
- * <p>
- * Two things that look like bugs and are not:
- * <ul>
- *     <li>A miss returns {@code 404} with a <b>completely empty body and no Content-Type</b>. Enablers rely on
- *         this to detect that they must re-register; returning a JSON error document breaks reconnect
- *         (api-layer commit {@code 9f58010c6}).</li>
- *     <li>XML is the default representation. See {@link RegistryRepresentation}.</li>
- * </ul>
+ * Active only on a servlet stack - the standalone Discovery Service. The modulith is reactive and uses
+ * {@code ReactiveRegistryController} instead.
  */
 @RestController
 @RequestMapping("/eureka")
-@RequiredArgsConstructor
-@Slf4j
-@ConditionalOnBean(ServiceRegistry.class)
+@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class RegistryController {
 
-    /*
-     * The condition above keeps this dormant until something defines a ServiceRegistry bean.
-     * <p>
-     * While the Eureka implementation is still wired in, Jersey owns /eureka/* and there is no registry bean, so
-     * activating this would both clash on the path and fail context startup. It is not a runtime feature toggle -
-     * decision D2 rules those out - it is a build-order guard that disappears by itself at cutover, when the
-     * Spring configuration that replaces EurekaConfig defines the registry.
-     */
+    private static final String REPLICATION_HEADER = "x-netflix-discovery-replication";
+    private static final String EUREKA_ACCEPT = RegistryRepresentation.EUREKA_ACCEPT_HEADER;
 
-    private final ServiceRegistry registry;
-    private final RegistryCodec codec = new RegistryCodec();
+    private final RegistryEndpoints endpoints;
 
-    // ---------------------------------------------------------------------------------------------------------
-    // Reads
-    // ---------------------------------------------------------------------------------------------------------
+    public RegistryController(ServiceRegistry registry, RegistryCodec codec) {
+        this.endpoints = new RegistryEndpoints(registry, codec);
+    }
+
+    private static ResponseEntity<String> toResponse(RegistryEndpoints.Result result) {
+        var builder = ResponseEntity.status(result.status());
+        // Deliberately no Content-Type when the result carries none: an empty 404 must stay completely empty.
+        if (result.contentType() != null) {
+            builder = builder.contentType(MediaType.parseMediaType(result.contentType()));
+        }
+        return result.body() == null ? builder.build() : builder.body(result.body());
+    }
 
     @GetMapping({"/apps", "/apps/"})
     public ResponseEntity<String> applications(
         @Nullable @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @Nullable @RequestHeader(value = RegistryRepresentation.EUREKA_ACCEPT_HEADER, required = false) String eurekaAccept,
-        // Accepted and ignored: APIML does not federate regions, but a client sending it must not get a 400.
+        @Nullable @RequestHeader(value = EUREKA_ACCEPT, required = false) String eurekaAccept,
         @Nullable @RequestParam(value = "regions", required = false) String regions
     ) {
-        WireFormat format = RegistryRepresentation.resolve(accept, eurekaAccept);
-        return body(codec.encode(registry.applications(), format), format);
+        return toResponse(endpoints.applications(accept, eurekaAccept));
     }
 
     @GetMapping("/apps/delta")
     public ResponseEntity<String> delta(
         @Nullable @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @Nullable @RequestHeader(value = RegistryRepresentation.EUREKA_ACCEPT_HEADER, required = false) String eurekaAccept,
+        @Nullable @RequestHeader(value = EUREKA_ACCEPT, required = false) String eurekaAccept,
         @Nullable @RequestParam(value = "regions", required = false) String regions
     ) {
-        WireFormat format = RegistryRepresentation.resolve(accept, eurekaAccept);
-        return body(codec.encode(registry.delta(), format), format);
+        return toResponse(endpoints.delta(accept, eurekaAccept));
     }
 
     @GetMapping("/apps/{appId}")
     public ResponseEntity<String> application(
         @PathVariable String appId,
         @Nullable @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @Nullable @RequestHeader(value = RegistryRepresentation.EUREKA_ACCEPT_HEADER, required = false) String eurekaAccept
+        @Nullable @RequestHeader(value = EUREKA_ACCEPT, required = false) String eurekaAccept
     ) {
-        WireFormat format = RegistryRepresentation.resolve(accept, eurekaAccept);
-        return registry.application(appId)
-            .map(application -> body(codec.encode(application, format), format))
-            .orElseGet(RegistryController::notFound);
+        return toResponse(endpoints.application(appId, accept, eurekaAccept));
     }
 
     @GetMapping("/apps/{appId}/{instanceId}")
@@ -121,226 +91,105 @@ public class RegistryController {
         @PathVariable String appId,
         @PathVariable String instanceId,
         @Nullable @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @Nullable @RequestHeader(value = RegistryRepresentation.EUREKA_ACCEPT_HEADER, required = false) String eurekaAccept
+        @Nullable @RequestHeader(value = EUREKA_ACCEPT, required = false) String eurekaAccept
     ) {
-        WireFormat format = RegistryRepresentation.resolve(accept, eurekaAccept);
-        return registry.instance(appId, instanceId)
-            .map(found -> body(codec.encode(found, format), format))
-            .orElseGet(RegistryController::notFound);
+        return toResponse(endpoints.instance(appId, instanceId, accept, eurekaAccept));
     }
 
     @GetMapping("/instances/{instanceId}")
     public ResponseEntity<String> instanceById(
         @PathVariable String instanceId,
         @Nullable @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @Nullable @RequestHeader(value = RegistryRepresentation.EUREKA_ACCEPT_HEADER, required = false) String eurekaAccept
+        @Nullable @RequestHeader(value = EUREKA_ACCEPT, required = false) String eurekaAccept
     ) {
-        WireFormat format = RegistryRepresentation.resolve(accept, eurekaAccept);
-        return registry.applications().applications().stream()
-            .flatMap(application -> application.instances().stream())
-            .filter(candidate -> instanceId.equals(candidate.instanceId()))
-            .findFirst()
-            .map(found -> body(codec.encode(found, format), format))
-            .orElseGet(RegistryController::notFound);
+        return toResponse(endpoints.instanceById(instanceId, accept, eurekaAccept));
     }
 
     @GetMapping("/vips/{vipAddress}")
     public ResponseEntity<String> vip(
         @PathVariable String vipAddress,
         @Nullable @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @Nullable @RequestHeader(value = RegistryRepresentation.EUREKA_ACCEPT_HEADER, required = false) String eurekaAccept
+        @Nullable @RequestHeader(value = EUREKA_ACCEPT, required = false) String eurekaAccept
     ) {
-        return vipResponse(registry.byVipAddress(vipAddress), accept, eurekaAccept);
+        return toResponse(endpoints.vip(vipAddress, accept, eurekaAccept));
     }
 
     @GetMapping("/svips/{svipAddress}")
     public ResponseEntity<String> secureVip(
         @PathVariable String svipAddress,
         @Nullable @RequestHeader(value = HttpHeaders.ACCEPT, required = false) String accept,
-        @Nullable @RequestHeader(value = RegistryRepresentation.EUREKA_ACCEPT_HEADER, required = false) String eurekaAccept
+        @Nullable @RequestHeader(value = EUREKA_ACCEPT, required = false) String eurekaAccept
     ) {
-        return vipResponse(registry.bySecureVipAddress(svipAddress), accept, eurekaAccept);
+        return toResponse(endpoints.secureVip(svipAddress, accept, eurekaAccept));
     }
-
-    /** A VIP lookup answers with the same envelope as a full registry read, filtered to the matching instances. */
-    private ResponseEntity<String> vipResponse(
-        List<ServiceInstance> instances, String accept, String eurekaAccept
-    ) {
-        WireFormat format = RegistryRepresentation.resolve(accept, eurekaAccept);
-        Map<String, List<ServiceInstance>> grouped = new java.util.LinkedHashMap<>();
-        for (ServiceInstance instance : instances) {
-            grouped.computeIfAbsent(instance.appName(), name -> new ArrayList<>()).add(instance);
-        }
-        List<org.zowe.apiml.registry.model.Application> applications = new ArrayList<>();
-        grouped.forEach((name, list) ->
-            applications.add(new org.zowe.apiml.registry.model.Application(name, list)));
-
-        var snapshot = registry.applications();
-        var filtered = new org.zowe.apiml.registry.model.Applications(
-            applications, snapshot.version(), snapshot.appsHashCode());
-        return body(codec.encode(filtered, format), format);
-    }
-
-    // ---------------------------------------------------------------------------------------------------------
-    // Writes
-    // ---------------------------------------------------------------------------------------------------------
 
     @PostMapping("/apps/{appId}")
-    public ResponseEntity<Void> register(
+    public ResponseEntity<String> register(
         @PathVariable String appId,
         @RequestBody String payload,
-        @Nullable @RequestHeader(value = "x-netflix-discovery-replication", required = false) String replication
+        @Nullable @RequestHeader(value = REPLICATION_HEADER, required = false) String replication
     ) {
-        ServiceInstance instance = codec.decodeInstance(payload);
-        registry.register(instance, isReplication(replication) ? RegistrationKind.REPLICATED : RegistrationKind.DYNAMIC);
-        // 204, not 200: Eureka's register returns no content, and clients treat a body here as unexpected.
-        return ResponseEntity.noContent().build();
+        return toResponse(endpoints.register(payload, RegistryEndpoints.isReplication(replication)));
     }
 
     @PutMapping("/apps/{appId}/{instanceId}")
-    public ResponseEntity<Void> renew(
+    public ResponseEntity<String> renew(
         @PathVariable String appId,
         @PathVariable String instanceId,
-        @Nullable @RequestHeader(value = "x-netflix-discovery-replication", required = false) String replication
+        @Nullable @RequestHeader(value = REPLICATION_HEADER, required = false) String replication
     ) {
-        return registry.renew(appId, instanceId, isReplication(replication))
-            ? ResponseEntity.ok().build()
-            : emptyNotFound();
+        return toResponse(endpoints.renew(appId, instanceId, RegistryEndpoints.isReplication(replication)));
     }
 
     @DeleteMapping("/apps/{appId}/{instanceId}")
-    public ResponseEntity<Void> cancel(
+    public ResponseEntity<String> cancel(
         @PathVariable String appId,
         @PathVariable String instanceId,
-        @Nullable @RequestHeader(value = "x-netflix-discovery-replication", required = false) String replication
+        @Nullable @RequestHeader(value = REPLICATION_HEADER, required = false) String replication
     ) {
-        return registry.cancel(appId, instanceId, isReplication(replication))
-            ? ResponseEntity.ok().build()
-            : emptyNotFound();
+        return toResponse(endpoints.cancel(appId, instanceId, RegistryEndpoints.isReplication(replication)));
     }
 
     @PutMapping("/apps/{appId}/{instanceId}/status")
-    public ResponseEntity<Void> overrideStatus(
+    public ResponseEntity<String> overrideStatus(
         @PathVariable String appId,
         @PathVariable String instanceId,
         @RequestParam("value") String value,
         @Nullable @RequestParam(value = "lastDirtyTimestamp", required = false) Long lastDirtyTimestamp,
-        @Nullable @RequestHeader(value = "x-netflix-discovery-replication", required = false) String replication
+        @Nullable @RequestHeader(value = REPLICATION_HEADER, required = false) String replication
     ) {
-        return registry.overrideStatus(appId, instanceId, InstanceStatus.fromWire(value), isReplication(replication))
-            ? ResponseEntity.ok().build()
-            : emptyNotFound();
+        return toResponse(
+            endpoints.overrideStatus(appId, instanceId, value, RegistryEndpoints.isReplication(replication)));
     }
 
     @DeleteMapping("/apps/{appId}/{instanceId}/status")
-    public ResponseEntity<Void> clearStatusOverride(
+    public ResponseEntity<String> clearStatusOverride(
         @PathVariable String appId,
         @PathVariable String instanceId,
         @Nullable @RequestParam(value = "value", required = false) String value,
-        @Nullable @RequestHeader(value = "x-netflix-discovery-replication", required = false) String replication
+        @Nullable @RequestHeader(value = REPLICATION_HEADER, required = false) String replication
     ) {
-        InstanceStatus revertTo = value == null ? InstanceStatus.UP : InstanceStatus.fromWire(value);
-        return registry.clearStatusOverride(appId, instanceId, revertTo, isReplication(replication))
-            ? ResponseEntity.ok().build()
-            : emptyNotFound();
+        return toResponse(
+            endpoints.clearStatusOverride(appId, instanceId, value, RegistryEndpoints.isReplication(replication)));
     }
 
-    /**
-     * Metadata update by query parameter, e.g. {@code ?apiml.externalUrl=https://…}.
-     * <p>
-     * Kept because it is in use: the integration suite drives it, and it is how the domain allow-list is
-     * exercised (see DiscoverableClientIntegrationTest).
-     */
     @PutMapping("/apps/{appId}/{instanceId}/metadata")
-    public ResponseEntity<Void> updateMetadata(
+    public ResponseEntity<String> updateMetadata(
         @PathVariable String appId,
         @PathVariable String instanceId,
         @RequestParam Map<String, String> metadata
     ) {
-        return registry.updateMetadata(appId, instanceId, metadata)
-            ? ResponseEntity.ok().build()
-            : emptyNotFound();
+        return toResponse(endpoints.updateMetadata(appId, instanceId, metadata));
     }
 
-    // ---------------------------------------------------------------------------------------------------------
-    // Peer replication
-    // ---------------------------------------------------------------------------------------------------------
+    @GetMapping({"/status", "/lastn"})
+    public ResponseEntity<String> status() {
+        return toResponse(endpoints.status(System.currentTimeMillis()));
+    }
 
     @PostMapping({"/peerreplication/batch", "/peerreplication/batch/"})
     public ResponseEntity<String> replicate(@RequestBody String payload) {
-        ReplicationBatch batch = codec.decodeReplicationBatch(payload);
-        List<ReplicationResponse.Item> results = new ArrayList<>(batch.size());
-
-        for (ReplicationItem item : batch.items()) {
-            results.add(new ReplicationResponse.Item(apply(item), null));
-        }
-        String encoded = codec.encode(new ReplicationResponse(results));
-        return ResponseEntity.ok()
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(encoded);
-    }
-
-    /**
-     * Applies one replicated change and reports the peer-visible status.
-     * <p>
-     * The 404 on an unknown heartbeat is the important one: it is how this node tells the sender "I have never
-     * seen that instance, send me the full registration". Answering 200 instead leaves the instance permanently
-     * absent from this node's registry after a partition.
-     */
-    private int apply(ReplicationItem item) {
-        ReplicationAction action = item.action();
-        if (action == null) {
-            return HttpStatus.BAD_REQUEST.value();
-        }
-        boolean applied = switch (action) {
-            case Register -> {
-                if (item.instance() == null) {
-                    yield false;
-                }
-                registry.register(item.instance(), RegistrationKind.REPLICATED);
-                yield true;
-            }
-            case Heartbeat -> registry.renew(item.appName(), item.id(), true);
-            case Cancel -> registry.cancel(item.appName(), item.id(), true);
-            case StatusUpdate -> registry.overrideStatus(
-                item.appName(), item.id(), InstanceStatus.fromWire(item.status()), true);
-            case DeleteStatusOverride -> registry.clearStatusOverride(
-                item.appName(), item.id(), InstanceStatus.fromWire(item.status()), true);
-        };
-        return applied ? HttpStatus.OK.value() : HttpStatus.NOT_FOUND.value();
-    }
-
-    // ---------------------------------------------------------------------------------------------------------
-    // Helpers
-    // ---------------------------------------------------------------------------------------------------------
-
-    private static boolean isReplication(String header) {
-        return Boolean.parseBoolean(header);
-    }
-
-    private static ResponseEntity<String> body(String payload, WireFormat format) {
-        return ResponseEntity.ok()
-            .contentType(RegistryRepresentation.contentTypeFor(format))
-            .body(payload);
-    }
-
-    /**
-     * A miss: 404, no body, no Content-Type.
-     * <p>
-     * Spring would happily add a Content-Type for a null body, so the header is not set at all here. That
-     * emptiness is contractual - see the class comment.
-     */
-    private static ResponseEntity<String> notFound() {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
-
-    private static ResponseEntity<Void> emptyNotFound() {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-    }
-
-    /** Exposed so tests can assert the read path without a servlet container. */
-    Optional<ServiceInstance> lookup(String appName, String instanceId) {
-        return registry.instance(appName, instanceId);
+        return toResponse(endpoints.replicate(payload));
     }
 
 }

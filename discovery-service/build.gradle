@@ -61,9 +61,13 @@ dependencies {
 
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.web
-    implementation libs.spring.cloud.starter.eureka.server
+    // Previously arrived transitively through spring-cloud-starter-netflix-eureka-server. Declared explicitly
+    // now that the starter is gone, so the module states what it actually uses.
+    implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.cloud.commons
 
     implementation libs.apache.commons.lang3
+    implementation libs.http.client5
     implementation libs.jackson.dataformat.yaml
     implementation libs.caffeine
 
@@ -71,6 +75,10 @@ dependencies {
 
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.rest.assured
+    // Test scope only: the Phase 0 wire-contract capture tests drive Eureka's own codecs to prove our
+    // encoder still matches. Deliberately not on the runtime classpath - that is the point of this work.
+    testImplementation libs.eureka.core
+    testImplementation libs.eureka.jersey.client
     testImplementation libs.netflix.servo
 
     compileOnly libs.lombok

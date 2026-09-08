@@ -40,8 +40,8 @@ final class WireMapper {
     static ServiceInstance toInstance(WireNode node) {
         ServiceInstance.Builder builder = ServiceInstance.builder()
             .instanceId(node.string("instanceId"))
-            .appName(node.string("app", "appName"))
-            .appGroupName(node.string("appGroupName"))
+            .appNameFromWire(node.string("app", "appName"))
+            .appGroupNameFromWire(node.string("appGroupName"))
             .hostName(node.string("hostName"))
             .ipAddr(node.string("ipAddr"))
             .homePageUrl(node.string("homePageUrl"))

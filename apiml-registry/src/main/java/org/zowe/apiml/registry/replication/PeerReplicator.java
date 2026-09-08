@@ -93,6 +93,18 @@ public final class PeerReplicator implements RegistryListener {
         return registry.instance(appName, instanceId);
     }
 
+    /**
+     * Replicates a heartbeat for an instance that never sends one.
+     * <p>
+     * The core services in the modulith are registered locally with a permanent lease, so they produce no renewal
+     * events and nothing would otherwise keep their leases alive on the <em>peers</em>, whose copies are ordinary
+     * renewable registrations. Without this a peer evicts the Gateway it is supposed to be routing to. The
+     * Eureka-based implementation did the same thing by calling {@code peerAwareHeartbeat} from a timer.
+     */
+    public void replicateHeartbeat(ServiceInstance instance) {
+        broadcast(ReplicationItem.heartbeat(instance));
+    }
+
     private void broadcast(ReplicationItem item) {
         for (PeerNode peer : peers) {
             peer.enqueue(item);

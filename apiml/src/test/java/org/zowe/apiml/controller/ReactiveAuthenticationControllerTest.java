@@ -11,8 +11,7 @@
 package org.zowe.apiml.controller;
 
 import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
+import org.zowe.apiml.discovery.registry.EurekaApplicationAdapter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -36,6 +35,7 @@ import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -46,7 +46,7 @@ class ReactiveAuthenticationControllerTest {
 
     private static final String BEARER = "Bearer ";
     @Mock private AuthenticationService authenticationService;
-    @Mock private PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
+    @Mock private EurekaApplicationAdapter eurekaApplicationAdapter;
     @Mock private HttpUtils httpUtils;
 
     @Mock private SecurityContext securityContext;
@@ -86,10 +86,8 @@ class ReactiveAuthenticationControllerTest {
     @Test
     void invalidateJwtToken_success() {
         String jwtToInvalidate = "some.jwt.token";
-        Applications mockApplications = mock(Applications.class);
         Application mockApplication = mock(Application.class);
-        when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
-        when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
+        when(eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(true);
 
         var result = controller.invalidateJwtToken(BEARER + jwtToInvalidate);
@@ -102,10 +100,8 @@ class ReactiveAuthenticationControllerTest {
     @Test
     void invalidateJwtToken_serviceUnavailable() {
         String jwtToInvalidate = "some.jwt.token";
-        Applications mockApplications = mock(Applications.class);
         Application mockApplication = mock(Application.class);
-        when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
-        when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
+        when(eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class))).thenReturn(false);
 
         var result = controller.invalidateJwtToken(BEARER + jwtToInvalidate);
@@ -118,10 +114,8 @@ class ReactiveAuthenticationControllerTest {
     @Test
     void invalidateJwtToken_tokenNotValidException() {
         String jwtToInvalidate = "invalid.jwt.token";
-        Applications mockApplications = mock(Applications.class);
         Application mockApplication = mock(Application.class);
-        when(peerAwareInstanceRegistry.getApplications()).thenReturn(mockApplications);
-        when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
+        when(eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId())).thenReturn(mockApplication);
         when(authenticationService.invalidateJwtTokenGateway(eq(jwtToInvalidate), eq(false), any(Application.class)))
             .thenThrow(new TokenNotValidException("Token is not valid"));
 

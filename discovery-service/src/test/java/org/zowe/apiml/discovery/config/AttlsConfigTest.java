@@ -10,14 +10,7 @@
 
 package org.zowe.apiml.discovery.config;
 
-import com.netflix.eureka.cluster.PeerEurekaNode;
-import com.netflix.eureka.cluster.PeerEurekaNodes;
-import jakarta.ws.rs.client.Client;
 import org.apache.http.HttpStatus;
-import org.apache.http.config.Registry;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.glassfish.jersey.apache.connector.ApacheClientProperties;
-import org.glassfish.jersey.client.ClientConfig;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -26,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import java.io.IOException;
@@ -46,41 +38,9 @@ class AttlsConfigTest {
     @Nested
     class GivenAttlsModeEnabled extends DiscoveryFunctionalTest {
 
-        @Autowired
-        private PeerEurekaNodes peerEurekaNodes;
-
         @Override
         protected String getProtocol() {
             return protocol;
-        }
-
-        @Test
-        void whenAttlsClientEnabled_thenHttpSocketFactoryIsRegistered() {
-            assertInstanceOf(RefreshablePeerEurekaNodes.class, peerEurekaNodes, "The injected bean must be instance of RefreshablePeerEurekaNodes");
-
-            var refreshableNodes = (RefreshablePeerEurekaNodes) peerEurekaNodes;
-            var testPeerNode = refreshableNodes.createPeerEurekaNode("http://localhost:10011/eureka/");
-
-            Client apacheClient = getClient(testPeerNode);
-
-            ClientConfig clientConfigObj = (ClientConfig) apacheClient.getConfiguration();
-            var cm = (PoolingHttpClientConnectionManager) clientConfigObj.getProperty(ApacheClientProperties.CONNECTION_MANAGER);
-
-            Object connectionOperator = ReflectionTestUtils.getField(cm, "connectionOperator");
-
-            assertNotNull(connectionOperator);
-            var registry = (Registry<?>) ReflectionTestUtils.getField(connectionOperator, "socketFactoryRegistry");
-            assertNotNull(registry);
-
-            assertNotNull(registry.lookup("http"));
-            assertNotNull(registry.lookup("https"));
-        }
-
-        private static Client getClient(PeerEurekaNode testPeerNode) {
-            Object replicationClient = ReflectionTestUtils.getField(testPeerNode, "replicationClient");
-            assertNotNull(replicationClient);
-
-            return (Client) ReflectionTestUtils.getField(replicationClient, "jerseyClient");
         }
 
         @Test

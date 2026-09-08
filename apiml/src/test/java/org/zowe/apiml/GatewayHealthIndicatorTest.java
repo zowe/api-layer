@@ -11,7 +11,6 @@
 package org.zowe.apiml;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.eureka.EurekaServerConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -23,8 +22,8 @@ import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
+import org.zowe.apiml.discovery.registry.event.RegistryInstanceRegisteredEvent;
+import org.zowe.apiml.discovery.registry.event.RegistryAvailableEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
@@ -72,7 +71,7 @@ class GatewayHealthIndicatorTest {
 
         @BeforeEach
         void setUp() {
-            healthIndicator.onApplicationEvent(new EurekaRegistryAvailableEvent(mock(EurekaServerConfig.class)));
+            healthIndicator.onApplicationEvent(new RegistryAvailableEvent(new Object()));
             healthIndicator.onApplicationEvent(new ZaasServiceAvailableEvent("dummy"));
             healthIndicator.onApplicationEvent(new ApiCatalogServiceAvailableEvent(new Object()));
         }
@@ -129,7 +128,7 @@ class GatewayHealthIndicatorTest {
 
         @BeforeEach
         void setUp() {
-            healthIndicator.onApplicationEvent(new EurekaRegistryAvailableEvent(mock(EurekaServerConfig.class)));
+            healthIndicator.onApplicationEvent(new RegistryAvailableEvent(new Object()));
         }
 
         @Test
@@ -173,7 +172,7 @@ class GatewayHealthIndicatorTest {
 
         @BeforeEach
         void setUp() {
-            healthIndicator.onApplicationEvent(new EurekaRegistryAvailableEvent(mock(EurekaServerConfig.class)));
+            healthIndicator.onApplicationEvent(new RegistryAvailableEvent(new Object()));
             healthIndicator.onApplicationEvent(new ZaasServiceAvailableEvent("dummy"));
         }
 
@@ -197,11 +196,10 @@ class GatewayHealthIndicatorTest {
 
         @Test
         void whenBothEvents_thenOneMessage() {
-            var registeredEvent = mock(EurekaInstanceRegisteredEvent.class);
+            var registeredEvent = mock(RegistryInstanceRegisteredEvent.class);
 
-            var instanceInfo = mock(InstanceInfo.class);
-            when(registeredEvent.getInstanceInfo()).thenReturn(instanceInfo);
-            when(instanceInfo.getAppName()).thenReturn("apicatalog");
+            when(registeredEvent.getInstance()).thenReturn(
+                org.zowe.apiml.registry.model.ServiceInstance.builder().appName("apicatalog").build());
 
             doNothing().when(serviceStartupEventHandler).onServiceStartup("API Catalog Service", 5);
 
@@ -213,11 +211,10 @@ class GatewayHealthIndicatorTest {
 
         @Test
         void whenBothEventsReverse_thenOneMessage() {
-            var registeredEvent = mock(EurekaInstanceRegisteredEvent.class);
+            var registeredEvent = mock(RegistryInstanceRegisteredEvent.class);
 
-            var instanceInfo = mock(InstanceInfo.class);
-            when(registeredEvent.getInstanceInfo()).thenReturn(instanceInfo);
-            when(instanceInfo.getAppName()).thenReturn("apicatalog");
+            when(registeredEvent.getInstance()).thenReturn(
+                org.zowe.apiml.registry.model.ServiceInstance.builder().appName("apicatalog").build());
 
             doNothing().when(serviceStartupEventHandler).onServiceStartup("API Catalog Service", 5);
 
