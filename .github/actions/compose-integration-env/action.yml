@@ -1,0 +1,37 @@
+name: "Start a docker compose integration-test environment"
+description: >
+    Adds the loopback hostname aliases the compose stack's services use, then
+    pulls and starts the stack. Used instead of GitHub Actions' native
+    container/services orchestration so the exact same compose file, and the
+    exact same troubleshooting commands (docker compose logs/ps/exec), work
+    both in CI and on a developer machine.
+
+inputs:
+    compose-file:
+        description: "Path to the docker-compose.yml for this test job"
+        required: true
+    hosts:
+        description: "Space-separated hostnames to alias to 127.0.0.1"
+        required: true
+    image-tag:
+        description: "Tag to pull/run for every service image (APIML_TAG)"
+        required: true
+    image-prefix:
+        description: "Registry/namespace prefix for every service image (APIML_IMAGE_PREFIX)"
+        default: "ghcr.io/balhar-jakub"
+
+runs:
+    using: "composite"
+    steps:
+        -   name: Add compose stack hostname aliases
+            shell: bash
+            run: ./docker/integration-tests/setup-hosts.sh add ${{ inputs.hosts }}
+
+        -   name: Pull and start the compose stack
+            shell: bash
+            env:
+                APIML_TAG: ${{ inputs.image-tag }}
+                APIML_IMAGE_PREFIX: ${{ inputs.image-prefix }}
+            run: |
+                docker compose -f "${{ inputs.compose-file }}" pull
+                docker compose -f "${{ inputs.compose-file }}" up -d

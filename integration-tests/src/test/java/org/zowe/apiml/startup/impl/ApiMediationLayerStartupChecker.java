@@ -99,13 +99,20 @@ public class ApiMediationLayerStartupChecker {
         private final String hostname;
         private final String serviceId;
         private final int port;
+        // The port the checker actually connects on. Normally the same as "port", which is
+        // also the identity port other services see this instance register under in eureka.
+        // They can differ for an additional discovery host (additionalPort): the container's
+        // real/identity port never changes, but a host-based test runner may only be able to
+        // reach it via a different published host port (see DiscoveryServiceConfiguration).
+        private final int connectPort;
         private final ServiceConfiguration serviceConfiguration;
 
-        private Instance(String hostname, ServiceConfiguration serviceConfiguration) {
+        private Instance(String hostname, int connectPort, ServiceConfiguration serviceConfiguration) {
             this.scheme = serviceConfiguration.getScheme();
             this.hostname = hostname;
             this.serviceId = serviceConfiguration.getServiceId();
             this.port = serviceConfiguration.getPort();
+            this.connectPort = connectPort;
             this.serviceConfiguration = serviceConfiguration;
         }
 
@@ -114,21 +121,32 @@ public class ApiMediationLayerStartupChecker {
             this.hostname = instance.getHostname();
             this.serviceId = serviceId;
             this.port = instance.getPort();
+            this.connectPort = instance.getConnectPort();
             this.serviceConfiguration = instance.getServiceConfiguration();
         }
 
-        private static List<String> getAllHosts(ServiceConfiguration serviceConfiguration) {
-            List<String> hosts = new ArrayList<>();
+        private record HostAddress(String host, int connectPort) {
+        }
+
+        private static List<HostAddress> getAllHosts(ServiceConfiguration serviceConfiguration) {
+            List<HostAddress> hosts = new ArrayList<>();
             if (serviceConfiguration == null) {
                 return hosts;
             }
             if (StringUtils.isNotBlank(serviceConfiguration.getHost())) {
-                hosts.addAll(Arrays.asList(serviceConfiguration.getHost().split("[,;]")));
+                for (String host : serviceConfiguration.getHost().split("[,;]")) {
+                    hosts.add(new HostAddress(host, serviceConfiguration.getPort()));
+                }
             }
             if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration) {
                 String additionalHost = discoveryServiceConfiguration.getAdditionalHost();
                 if (StringUtils.isNotBlank(additionalHost)) {
-                    hosts.addAll(Arrays.asList(additionalHost.split("[,;]")));
+                    int additionalPort = discoveryServiceConfiguration.getAdditionalPort() > 0
+                        ? discoveryServiceConfiguration.getAdditionalPort()
+                        : serviceConfiguration.getPort();
+                    for (String host : additionalHost.split("[,;]")) {
+                        hosts.add(new HostAddress(host, additionalPort));
+                    }
                 }
             }
             return hosts;
@@ -140,10 +158,8 @@ public class ApiMediationLayerStartupChecker {
 
         private static List<Instance> of(ServiceConfiguration serviceConfiguration) {
             return getAllHosts(serviceConfiguration).stream()
-                .filter(StringUtils::isNotBlank)
-                .map(String::trim)
-                .map(String::toLowerCase)
-                .map(host -> new Instance(host, serviceConfiguration))
+                .filter(ha -> StringUtils.isNotBlank(ha.host()))
+                .map(ha -> new Instance(ha.host().trim().toLowerCase(), ha.connectPort(), serviceConfiguration))
                 .toList();
         }
 
@@ -168,7 +184,7 @@ public class ApiMediationLayerStartupChecker {
             return new DefaultUriBuilderFactory().builder()
                 .scheme("https")
                 .host(this.hostname)
-                .port(this.port)
+                .port(this.connectPort)
                 .path(this.serviceConfiguration.getServletContext() + basePath)
                 .toUriString();
         }
@@ -324,7 +340,7 @@ public class ApiMediationLayerStartupChecker {
                     ? authHeader(ds.getServiceConfiguration().isBasicAuthenticationSupported())
                     : EUREKA_CREDENTIALS_HEADER;
                 var documentContext = getDocumentAsContext(HttpRequestUtils.getUri(
-                    ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps"
+                    ds.getScheme(), ds.getHostname(), ds.getConnectPort(), "/eureka/apps"
                 ), header);
                 if (documentContext == null || !areAllInstanceOnInEureka(ds, documentContext)) {
                     return false;
@@ -435,9 +451,9 @@ public class ApiMediationLayerStartupChecker {
         private boolean areDiscoveryPortsReachable() {
             for (var ds : get(CoreService.DISCOVERY)) {
                 try (var socket = new java.net.Socket()) {
-                    socket.connect(new java.net.InetSocketAddress(ds.getHostname(), ds.getPort()), 5000);
+                    socket.connect(new java.net.InetSocketAddress(ds.getHostname(), ds.getConnectPort()), 5000);
                 } catch (IOException e) {
-                    log.debug("Discovery service {}:{} is not yet reachable: {}", ds.getHostname(), ds.getPort(), e.getMessage());
+                    log.debug("Discovery service {}:{} is not yet reachable: {}", ds.getHostname(), ds.getConnectPort(), e.getMessage());
                     return false;
                 }
             }
