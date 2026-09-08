@@ -26,11 +26,13 @@ import java.util.TreeMap;
 /**
  * The wire-contract corpus, rebuilt against our own model.
  * <p>
+ * Public so the replication tests reuse the same instance rather than inventing a second one.
+ * <p>
  * Deliberately a mirror of {@code org.zowe.apiml.discovery.contract.WireContractCorpus} rather than a shared
  * class: that one is expressed in Netflix types and this one is not, and the whole point is to prove the two
  * independent representations serialise identically. Values are fixed so the comparison is byte-stable.
  */
-final class CorpusFixtures {
+public final class CorpusFixtures {
 
     static final long T_REGISTERED = 1_700_000_000_000L;
     static final long T_RENEWED = 1_700_000_030_000L;
@@ -68,7 +70,7 @@ final class CorpusFixtures {
         return metadata;
     }
 
-    static ServiceInstance apimlService() {
+    public static ServiceInstance apimlService() {
         return ServiceInstance.builder()
             .instanceId("localhost:discoverableclient:10012")
             .appName("DISCOVERABLECLIENT")
@@ -92,7 +94,7 @@ final class CorpusFixtures {
             .build();
     }
 
-    static ServiceInstance staticService() {
+    public static ServiceInstance staticService() {
         Map<String, String> metadata = new TreeMap<>();
         metadata.put("apiml.routes.api-v1.gatewayUrl", "/api/v1");
         metadata.put("apiml.routes.api-v1.serviceUrl", "/staticclient/api/v1");
@@ -121,7 +123,7 @@ final class CorpusFixtures {
             .build();
     }
 
-    static ServiceInstance minimalInstance() {
+    public static ServiceInstance minimalInstance() {
         return ServiceInstance.builder()
             .instanceId("localhost:minimal:10099")
             .appName("MINIMAL")
@@ -140,7 +142,7 @@ final class CorpusFixtures {
             .build();
     }
 
-    static ServiceInstance overriddenDownInstance() {
+    public static ServiceInstance overriddenDownInstance() {
         return apimlService().toBuilder()
             .instanceId("localhost:discoverableclient:10014")
             .status(InstanceStatus.DOWN)
@@ -148,7 +150,7 @@ final class CorpusFixtures {
             .build();
     }
 
-    static ServiceInstance allFieldsInstance() {
+    public static ServiceInstance allFieldsInstance() {
         Map<String, String> metadata = new TreeMap<>();
         metadata.put("apiml.service.title", "Everything Set");
 
@@ -173,11 +175,11 @@ final class CorpusFixtures {
             .build();
     }
 
-    static Application singleApplication() {
+    public static Application singleApplication() {
         return new Application("DISCOVERABLECLIENT", List.of(apimlService()));
     }
 
-    static Applications registry() {
+    public static Applications registry() {
         return new Applications(
             List.of(
                 new Application("DISCOVERABLECLIENT", List.of(apimlService(), overriddenDownInstance())),
@@ -188,7 +190,7 @@ final class CorpusFixtures {
         );
     }
 
-    static Applications delta() {
+    public static Applications delta() {
         return new Applications(
             List.of(
                 new Application("DISCOVERABLECLIENT",
@@ -201,11 +203,11 @@ final class CorpusFixtures {
         );
     }
 
-    static Applications emptyRegistry() {
+    public static Applications emptyRegistry() {
         return new Applications(List.of(), 1L, "");
     }
 
-    static Applications mixedStatusRegistry() {
+    public static Applications mixedStatusRegistry() {
         ServiceInstance template = apimlService();
         Application app = new Application("MIXED", List.of(
             template.toBuilder().instanceId("localhost:mixed:1").appName("MIXED").status(InstanceStatus.UP).build(),
