@@ -56,10 +56,18 @@ class MetadataFilterServiceTest {
 
     private MetadataFilterService metadataFilterService;
 
+    /**
+     * These cases are written against Netflix InstanceInfo objects, which the service itself no longer knows
+     * about - the allow-list logic now takes a MetadataFilterService.Candidate. Driving them through the adapter
+     * keeps the original coverage intact and exercises the adapter's field mapping at the same time.
+     */
+    private EurekaMetadataFilterAdapter adapter;
+
     @BeforeEach
     void setUp() {
         metadataFilterService = new MetadataFilterService();
         ReflectionTestUtils.setField(metadataFilterService, "apimlLogger", apimlLogger);
+        adapter = new EurekaMetadataFilterAdapter(metadataFilterService);
     }
 
     @Nested
@@ -101,10 +109,10 @@ class MetadataFilterServiceTest {
             lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
             if (isAllowed) {
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                adapter.verifyAllowedDomains(instanceInfo);
                 verify(apimlLogger, never()).log(anyString(), eq(metadataKey), eq(metadataValue), anyString());
             } else {
-                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+                assertThrows(MetadataValidationException.class, () -> adapter.verifyAllowedDomains(instanceInfo));
                 verify(apimlLogger).log(eq(expectedLogKey), eq(metadataKey), eq(metadataValue), anyString());
             }
         }
@@ -125,11 +133,11 @@ class MetadataFilterServiceTest {
             lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
             if (isAllowed) {
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                adapter.verifyAllowedDomains(instanceInfo);
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname), anyString());
             } else {
                 assertThrows(MetadataValidationException.class, () -> {
-                    metadataFilterService.verifyAllowedDomains(instanceInfo);
+                    adapter.verifyAllowedDomains(instanceInfo);
                 });
                 verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname), anyString());
             }
@@ -184,7 +192,7 @@ class MetadataFilterServiceTest {
                 metadata.put("apiml.corsAllowedOrigins", "*");
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                adapter.verifyAllowedDomains(instanceInfo);
 
                 verify(apimlLogger).log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), anyString(), anyString(), anyString());
@@ -196,7 +204,7 @@ class MetadataFilterServiceTest {
                 metadata.put("apiml.corsAllowedOrigins", "https://localhost:3000");
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                adapter.verifyAllowedDomains(instanceInfo);
 
                 verify(apimlLogger, never()).log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), anyString(), anyString(), anyString());
@@ -209,7 +217,7 @@ class MetadataFilterServiceTest {
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
                 when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
-                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+                assertThrows(MetadataValidationException.class, () -> adapter.verifyAllowedDomains(instanceInfo));
 
                 verify(apimlLogger).log("org.zowe.apiml.common.urlNotAllowed", "API ML CORS Allowed Origin", "https://invalid.org:3000", "test-instance");
             }
@@ -222,7 +230,7 @@ class MetadataFilterServiceTest {
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
                 when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
-                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+                assertThrows(MetadataValidationException.class, () -> adapter.verifyAllowedDomains(instanceInfo));
 
                 verify(apimlLogger).log("org.zowe.apiml.common.schemeNotAllowed", "API ML CORS Allowed Origin", "http://localhost:3000", "test-instance");
             }
@@ -238,7 +246,7 @@ class MetadataFilterServiceTest {
                 when(instanceInfo.getHomePageUrl()).thenReturn("http://localhost:8080");
                 when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
-                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+                assertThrows(MetadataValidationException.class, () -> adapter.verifyAllowedDomains(instanceInfo));
 
                 verify(apimlLogger).log("org.zowe.apiml.common.schemeNotAllowed", "Home Page URL", "http://localhost:8080", "test-instance");
             }
@@ -248,7 +256,7 @@ class MetadataFilterServiceTest {
                 ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", true);
                 when(instanceInfo.getHomePageUrl()).thenReturn("http://localhost:8080");
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                adapter.verifyAllowedDomains(instanceInfo);
 
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.schemeNotAllowed"), anyString(), anyString(), anyString());
             }
@@ -258,7 +266,7 @@ class MetadataFilterServiceTest {
                 ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", false);
                 when(instanceInfo.getHomePageUrl()).thenReturn("https://localhost:8080");
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                adapter.verifyAllowedDomains(instanceInfo);
 
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.schemeNotAllowed"), anyString(), anyString(), anyString());
             }
@@ -281,7 +289,7 @@ class MetadataFilterServiceTest {
                     .setHostName("localhost")
                     .build();
 
-                ii = metadataFilterService.verifyAllowedDomains(ii);
+                ii = adapter.verifyAllowedDomains(ii);
                 if (isAllowed) {
                     verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 } else {
@@ -302,7 +310,7 @@ class MetadataFilterServiceTest {
                     .setInstanceId("test-instance")
                     .build();
 
-                metadataFilterService.verifyAllowedDomains(ii);
+                adapter.verifyAllowedDomains(ii);
                 verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
             }
 
@@ -332,7 +340,7 @@ class MetadataFilterServiceTest {
                     .setHostName("localhost")
                     .build();
 
-                ii = metadataFilterService.verifyAllowedDomains(ii);
+                ii = adapter.verifyAllowedDomains(ii);
                 assertEquals("127.0.0.1", ii.getIPAddr());
                 assertEquals("localhost", ii.getHostName());
             }

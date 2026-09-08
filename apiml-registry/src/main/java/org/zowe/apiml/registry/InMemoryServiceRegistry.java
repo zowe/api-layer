@@ -58,7 +58,7 @@ public class InMemoryServiceRegistry implements ServiceRegistry {
 
     private static final long RENEWAL_WINDOW_MS = 60_000L;
 
-    private final RegistryConfig config;
+    private final RegistrySettings config;
     private final StatusOverridePolicy statusPolicy;
     private final SelfPreservation selfPreservation;
     private final List<RegistrationInterceptor> interceptors;
@@ -85,12 +85,12 @@ public class InMemoryServiceRegistry implements ServiceRegistry {
     private record Change(long at, String appName, String instanceId) {
     }
 
-    public InMemoryServiceRegistry(RegistryConfig config) {
+    public InMemoryServiceRegistry(RegistrySettings config) {
         this(config, List.of(), System::currentTimeMillis);
     }
 
     public InMemoryServiceRegistry(
-        RegistryConfig config,
+        RegistrySettings config,
         List<RegistrationInterceptor> interceptors,
         LongSupplier clock
     ) {
@@ -111,8 +111,10 @@ public class InMemoryServiceRegistry implements ServiceRegistry {
     @Override
     public void register(ServiceInstance instance, RegistrationKind kind) {
         ServiceInstance incoming = instance;
-        for (RegistrationInterceptor interceptor : interceptors) {
-            incoming = interceptor.intercept(incoming);
+        if (kind.subjectToInterceptors()) {
+            for (RegistrationInterceptor interceptor : interceptors) {
+                incoming = interceptor.intercept(incoming);
+            }
         }
 
         long now = clock.getAsLong();

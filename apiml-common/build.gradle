@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    api project(':apiml-registry')
     api project(':apiml-utility')
 
     implementation libs.spring.boot.starter.actuator
@@ -15,7 +16,6 @@ dependencies {
     implementation libs.guava
 
     compileOnly libs.netty.reactor.http
-    implementation libs.eureka.core
 
     implementation libs.apache.commons.lang3
     implementation libs.janino

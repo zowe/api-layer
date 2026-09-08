@@ -31,14 +31,33 @@ public enum RegistrationKind {
     STATIC,
 
     /** Arrived from a peer node. Counts as a real client but must not be replicated onward. */
-    REPLICATED;
+    REPLICATED,
+
+    /**
+     * This node registering its own identity.
+     * <p>
+     * Distinct from {@link #STATIC} because it is not third-party input. The registration interceptors - notably
+     * the domain allow list - exist to police what other services claim about themselves; applying them to our
+     * own identity is both pointless and actively harmful. The allow list rejects {@code http://} URLs unless
+     * AT-TLS is on, so a Discovery Service configured without TLS would refuse to register itself, and because
+     * that now happens synchronously at startup it would fail to start at all.
+     * <p>
+     * Like {@link #STATIC} it gets a permanent lease and is excluded from the renew threshold - it does not
+     * heartbeat to itself.
+     */
+    SELF;
 
     public boolean countsTowardsRenewThreshold() {
-        return this != STATIC;
+        return this != STATIC && this != SELF;
     }
 
     public boolean permanentLease() {
-        return this == STATIC;
+        return this == STATIC || this == SELF;
+    }
+
+    /** Whether the registration interceptors apply. See {@link #SELF}. */
+    public boolean subjectToInterceptors() {
+        return this != SELF;
     }
 
     public boolean fromPeer() {

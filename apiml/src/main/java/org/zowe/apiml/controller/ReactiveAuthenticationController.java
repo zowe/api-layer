@@ -11,7 +11,7 @@
 package org.zowe.apiml.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
+import org.zowe.apiml.discovery.registry.EurekaApplicationAdapter;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -62,7 +62,7 @@ import static org.apache.http.HttpStatus.*;
 public class ReactiveAuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final PeerAwareInstanceRegistryImpl peerAwareInstanceRegistry;
+    private final EurekaApplicationAdapter eurekaApplicationAdapter;
     private final HttpUtils httpUtils;
     private final CompoundAuthProvider compoundAuthProvider;
     private final ObjectMapper objectMapper;
@@ -235,7 +235,7 @@ public class ReactiveAuthenticationController {
     @DeleteMapping(path = "/invalidate")
     public Mono<ResponseEntity<Void>> invalidateJwtToken(@RequestHeader("Authorization") String authHeader) {
         try {
-            var app = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
+            var app = eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId());
             if (!authHeader.startsWith("Bearer ")) {
                 return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
             }
@@ -301,7 +301,7 @@ public class ReactiveAuthenticationController {
             .filter(TokenAuthentication.class::isInstance)
             .map(TokenAuthentication.class::cast)
             .map(tokenAuthentication -> {
-                var gateway = peerAwareInstanceRegistry.getApplications().getRegisteredApplications(CoreService.GATEWAY.getServiceId());
+                var gateway = eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId());
                 authenticationService.invalidateJwtTokenGateway(tokenAuthentication.getCredentials(), true, gateway);
                 var newToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuthentication.getPrincipal());
                 exchange.getResponse().addCookie(httpUtils.createResponseCookie(newToken));

@@ -10,7 +10,7 @@
 
 package org.zowe.apiml;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
@@ -38,7 +38,7 @@ public class StaticDefinitionsRefreshRestController {
     private final StaticServicesRegistrationService registrationService;
 
     @GetMapping(produces = "application/json")
-    public Mono<ResponseEntity<List<InstanceInfo>>> list() {
+    public Mono<ResponseEntity<List<ServiceInstance>>> list() {
         return Mono.just(
             ResponseEntity.ok()
                 .body(registrationService.getStaticInstances()));

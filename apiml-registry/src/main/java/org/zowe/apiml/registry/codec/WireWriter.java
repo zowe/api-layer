@@ -72,11 +72,24 @@ interface WireWriter extends AutoCloseable {
     /** JSON, via Jackson's streaming generator. */
     final class Json implements WireWriter {
 
-        private final StringWriter out = new StringWriter();
+        private final StringWriter out;
         private final JsonGenerator generator;
 
         Json(com.fasterxml.jackson.core.JsonFactory factory) throws IOException {
+            this.out = new StringWriter();
             this.generator = factory.createGenerator(out);
+        }
+
+        /**
+         * Writes into a generator someone else owns.
+         * <p>
+         * Used by the Jackson module, so that a {@code ServiceInstance} nested inside an unrelated response body
+         * is encoded by this codec rather than by Jackson's bean introspection - which cannot see the model's
+         * accessors and would otherwise emit an empty object.
+         */
+        Json(JsonGenerator generator) {
+            this.out = null;
+            this.generator = generator;
         }
 
         @Override
@@ -167,13 +180,19 @@ interface WireWriter extends AutoCloseable {
 
         @Override
         public String result() throws IOException {
+            if (out == null) {
+                throw new IllegalStateException("This writer wraps a caller-owned generator and produces no string");
+            }
             generator.flush();
             return out.toString();
         }
 
         @Override
         public void close() throws IOException {
-            generator.close();
+            // Only close a generator we created; closing a borrowed one would truncate the caller's document.
+            if (out != null) {
+                generator.close();
+            }
         }
 
     }

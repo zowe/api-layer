@@ -28,7 +28,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
@@ -106,7 +105,6 @@ class ActuatorConfigTest {
     @SpringBootTest(
         classes = {
             ApimlApplication.class,
-            FreeMarkerConfigurer.class,
             TestConfig.class
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -191,7 +189,6 @@ class ActuatorConfigTest {
     @SpringBootTest(
         classes = {
             ApimlApplication.class,
-            FreeMarkerConfigurer.class,
             TestConfig.class
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -289,7 +286,6 @@ class ActuatorConfigTest {
     @SpringBootTest(
         classes = {
             ApimlApplication.class,
-            FreeMarkerConfigurer.class,
             TestConfig.class
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT

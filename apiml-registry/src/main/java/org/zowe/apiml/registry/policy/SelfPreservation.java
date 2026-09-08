@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.registry.policy;
 
-import org.zowe.apiml.registry.RegistryConfig;
+import org.zowe.apiml.registry.RegistrySettings;
 
 /**
  * The circuit breaker that stops the registry emptying itself during a network partition.
@@ -25,9 +25,9 @@ import org.zowe.apiml.registry.RegistryConfig;
  */
 public final class SelfPreservation {
 
-    private final RegistryConfig config;
+    private final RegistrySettings config;
 
-    public SelfPreservation(RegistryConfig config) {
+    public SelfPreservation(RegistrySettings config) {
         this.config = config;
     }
 

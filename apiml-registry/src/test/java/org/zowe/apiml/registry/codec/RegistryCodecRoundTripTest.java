@@ -150,6 +150,34 @@ class RegistryCodecRoundTripTest {
     }
 
     @Test
+    void upperCasesAnAppNameSetProgrammaticallyButNotOneReadOffTheWire() {
+        // Netflix's InstanceInfo.Builder.setAppName upper-cased (Locale.ROOT) while setAppNameForDeser did not,
+        // and both behaviours matter. The static-definition processor passes a lower-case service id and expects
+        // the upper-case form to be stored and published, because `app` is upper-case on the wire. The decoder
+        // must instead round-trip exactly what arrived, or decode(encode(x)) stops being identity.
+        //
+        // The wire-contract corpus cannot catch this: every case in it passes an already-upper-case name.
+        ServiceInstance built = ServiceInstance.builder()
+            .instanceId("localhost:mixedcase:1")
+            .appName("MixedCase")
+            .build();
+        assertEquals("MIXEDCASE", built.appName());
+
+        ServiceInstance decoded = codec.decodeInstance("""
+            {"instance":{"instanceId":"localhost:mixedcase:1","app":"MixedCase"}}""");
+        assertEquals("MixedCase", decoded.appName(), "a decoder must not normalise what the sender sent");
+
+        // And toBuilder must not re-normalise a decoded instance on the way through.
+        assertEquals("MixedCase", decoded.toBuilder().hostName("h").build().appName());
+    }
+
+    @Test
+    void upperCasesAppGroupNameTheSameWay() {
+        assertEquals("ZOWE_GROUP", ServiceInstance.builder()
+            .instanceId("h:s:1").appName("S").appGroupName("zowe_group").build().appGroupName());
+    }
+
+    @Test
     void rejectsAnExternalEntityInsteadOfResolvingIt() {
         // Registration payloads are untrusted, and Zowe documents POSTing XML to /eureka/apps directly, so the
         // reader must not resolve entities. DTD support is disabled outright, so this is refused at parse time

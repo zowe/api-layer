@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.registry.InMemoryServiceRegistry;
 import org.zowe.apiml.registry.RegistrationKind;
-import org.zowe.apiml.registry.RegistryConfig;
+import org.zowe.apiml.registry.RegistrySettings;
 import org.zowe.apiml.registry.model.InstanceStatus;
 import org.zowe.apiml.registry.model.Lease;
 import org.zowe.apiml.registry.model.ServiceInstance;
@@ -82,7 +82,7 @@ class PeerReplicationTest {
     void setUp() {
         now = NOW;
         transport = new StubTransport();
-        registry = new InMemoryServiceRegistry(RegistryConfig.defaults(), List.of(), () -> now);
+        registry = new InMemoryServiceRegistry(RegistrySettings.defaults(), List.of(), () -> now);
         peer = new PeerNode("https://peer:10011/eureka/", transport, 3, 250,
             (app, id) -> registry.instance(app, id).orElse(null), () -> now);
         replicator = new PeerReplicator(List.of(peer), registry);
@@ -137,7 +137,7 @@ class PeerReplicationTest {
     @DisplayName("an eviction is replicated, so the peer stops routing to it too")
     void replicatesEvictions() {
         InMemoryServiceRegistry evicting = new InMemoryServiceRegistry(
-            RegistryConfig.defaults().withSelfPreservation(false), List.of(), () -> now);
+            RegistrySettings.defaults().withSelfPreservation(false), List.of(), () -> now);
         PeerNode evictingPeer = new PeerNode("https://peer:10011/eureka/", transport, 3, 250,
             (app, id) -> evicting.instance(app, id).orElse(null), () -> now);
         evicting.addListener(new PeerReplicator(List.of(evictingPeer), evicting));

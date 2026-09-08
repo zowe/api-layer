@@ -19,8 +19,8 @@ import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
+import org.zowe.apiml.discovery.registry.event.RegistryInstanceRegisteredEvent;
+import org.zowe.apiml.discovery.registry.event.RegistryAvailableEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -114,7 +114,7 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     }
 
     @EventListener
-    public void onApplicationEvent(EurekaRegistryAvailableEvent event) {
+    public void onApplicationEvent(RegistryAvailableEvent event) {
         discoveryAvailable.set(true);
         if (isFullyUp()) {
             onFullyUp();
@@ -122,9 +122,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     }
 
     @EventListener
-    public void onApplicationEvent(EurekaInstanceRegisteredEvent event) {
-        var instanceInfo = event.getInstanceInfo();
-        if (String.valueOf(instanceInfo.getAppName()).equalsIgnoreCase(apiCatalogServiceId) && catalogAvailable.compareAndSet(false, true)) {
+    public void onApplicationEvent(RegistryInstanceRegisteredEvent event) {
+        var instance = event.getInstance();
+        if (String.valueOf(instance.appName()).equalsIgnoreCase(apiCatalogServiceId) && catalogAvailable.compareAndSet(false, true)) {
             serviceStartupEventHandler.onServiceStartup("API Catalog Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
         }
         if (isFullyUp()) {

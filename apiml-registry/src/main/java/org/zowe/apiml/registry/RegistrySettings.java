@@ -13,6 +13,11 @@ package org.zowe.apiml.registry;
 /**
  * Registry tunables.
  * <p>
+ * Named Settings rather than Config deliberately: gateway-service already has an
+ * {@code org.zowe.apiml.gateway.config.RegistryConfig} {@code @Configuration} class, and in the modulith - where
+ * both are on the same context - two beans called {@code registryConfig} collide. Spring picks one and then fails
+ * obscurely when it tries to invoke the other's factory methods on it.
+ * <p>
  * The defaults are Eureka's, verified against {@code DefaultEurekaServerConfig} and Spring Cloud's
  * {@code EurekaServerConfigBean} 4.3.3, because an existing deployment that does not set these must keep behaving
  * as it does today. Changing a default here changes eviction timing on every upgraded system.
@@ -24,7 +29,7 @@ package org.zowe.apiml.registry;
  * @param defaultLeaseDurationSecs      lease duration used when a registrant does not supply one
  * @param defaultRenewalIntervalSecs    renewal interval used when a registrant does not supply one
  */
-public record RegistryConfig(
+public record RegistrySettings(
     boolean selfPreservationEnabled,
     double renewalPercentThreshold,
     int expectedClientRenewalIntervalSeconds,
@@ -39,8 +44,8 @@ public record RegistryConfig(
     public static final int DEFAULT_LEASE_DURATION_SECS = 90;
     public static final int DEFAULT_RENEWAL_INTERVAL_SECS = 30;
 
-    public static RegistryConfig defaults() {
-        return new RegistryConfig(
+    public static RegistrySettings defaults() {
+        return new RegistrySettings(
             true,
             DEFAULT_RENEWAL_PERCENT_THRESHOLD,
             DEFAULT_EXPECTED_CLIENT_RENEWAL_INTERVAL_SECONDS,
@@ -50,13 +55,13 @@ public record RegistryConfig(
         );
     }
 
-    public RegistryConfig withSelfPreservation(boolean enabled) {
-        return new RegistryConfig(enabled, renewalPercentThreshold, expectedClientRenewalIntervalSeconds,
+    public RegistrySettings withSelfPreservation(boolean enabled) {
+        return new RegistrySettings(enabled, renewalPercentThreshold, expectedClientRenewalIntervalSeconds,
             deltaRetentionMs, defaultLeaseDurationSecs, defaultRenewalIntervalSecs);
     }
 
-    public RegistryConfig withDeltaRetentionMs(long retentionMs) {
-        return new RegistryConfig(selfPreservationEnabled, renewalPercentThreshold,
+    public RegistrySettings withDeltaRetentionMs(long retentionMs) {
+        return new RegistrySettings(selfPreservationEnabled, renewalPercentThreshold,
             expectedClientRenewalIntervalSeconds, retentionMs, defaultLeaseDurationSecs, defaultRenewalIntervalSecs);
     }
 

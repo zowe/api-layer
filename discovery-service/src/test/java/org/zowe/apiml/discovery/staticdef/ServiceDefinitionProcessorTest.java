@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.discovery.staticdef;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -84,20 +84,20 @@ class ServiceDefinitionProcessorTest {
                 "        - gatewayUrl: api/v2\n" +
                 "          serviceRelativeUrl: api/v2\n";
             StaticRegistrationResult result = processServicesData(routedServiceYaml);
-            List<InstanceInfo> instances = result.getInstances();
+            List<ServiceInstance> instances = result.getInstances();
             assertEquals(1, instances.size());
-            assertEquals(10019, instances.get(0).getSecurePort());
-            assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
-            assertEquals("https://localhost:10019/casamplerestapiservice/api/v1/pets", instances.get(0).getHomePageUrl());
+            assertEquals(10019, instances.get(0).securePort().port());
+            assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).appName());
+            assertEquals("https://localhost:10019/casamplerestapiservice/api/v1/pets", instances.get(0).homePageUrl());
             assertEquals("https://localhost:10019/casamplerestapiservice/actuator/health",
-                instances.get(0).getSecureHealthCheckUrl());
+                instances.get(0).secureHealthCheckUrl());
             assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
-                instances.get(0).getStatusPageUrl());
-            assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
-            assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
+                instances.get(0).statusPageUrl());
+            assertEquals("api/v1", instances.get(0).metadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
+            assertEquals("api/v2", instances.get(0).metadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
             assertEquals("/casamplerestapiservice/api/v1",
-                instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
-            assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
+                instances.get(0).metadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
+            assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).instanceId());
             assertEquals(0, result.getErrors().size());
         }
 
@@ -114,19 +114,19 @@ class ServiceDefinitionProcessorTest {
                 "        - gatewayUrl: api/v1\n" +
                 "          serviceRelativeUrl:\n";
             StaticRegistrationResult result = processServicesData(routedServiceYamlEmptyRelativeUrls);
-            List<InstanceInfo> instances = result.getInstances();
+            List<ServiceInstance> instances = result.getInstances();
             assertEquals(1, instances.size());
-            assertEquals(10019, instances.get(0).getSecurePort());
-            assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
-            assertEquals("https://localhost:10019/casamplerestapiservice/", instances.get(0).getHomePageUrl());
+            assertEquals(10019, instances.get(0).securePort().port());
+            assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).appName());
+            assertEquals("https://localhost:10019/casamplerestapiservice/", instances.get(0).homePageUrl());
             assertEquals("https://localhost:10019/casamplerestapiservice/actuator/health",
-                instances.get(0).getSecureHealthCheckUrl());
+                instances.get(0).secureHealthCheckUrl());
             assertEquals("https://localhost:10019/casamplerestapiservice/actuator/info",
-                instances.get(0).getStatusPageUrl());
-            assertEquals("api/v1", instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
+                instances.get(0).statusPageUrl());
+            assertEquals("api/v1", instances.get(0).metadata().get(ROUTES + ".api-v1." + ROUTES_GATEWAY_URL));
             assertEquals("/casamplerestapiservice/",
-                instances.get(0).getMetadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
-            assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
+                instances.get(0).metadata().get(ROUTES + ".api-v1." + ROUTES_SERVICE_URL));
+            assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).instanceId());
             assertEquals(0, result.getErrors().size());
         }
 
@@ -146,9 +146,9 @@ class ServiceDefinitionProcessorTest {
                     "        description: Tile Description\n";
 
             StaticRegistrationResult result = processServicesData(yaml);
-            List<InstanceInfo> instances = result.getInstances();
+            List<ServiceInstance> instances = result.getInstances();
             assertEquals(1, instances.size());
-            assertEquals(7, result.getInstances().get(0).getMetadata().size());
+            assertEquals(7, result.getInstances().get(0).metadata().size());
         }
 
         @Test
@@ -178,14 +178,14 @@ class ServiceDefinitionProcessorTest {
                     "        description: Tile Description\n";
 
             StaticRegistrationResult result = processServicesData(yaml);
-            List<InstanceInfo> instances = result.getInstances();
+            List<ServiceInstance> instances = result.getInstances();
             assertEquals(1, instances.size());
-            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("key", "value"));
-            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key1", "value1"));
-            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key2", "value2"));
-            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key3", "value3"));
-            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.key4", "value4"));
-            assertThat(result.getInstances().get(0).getMetadata(), hasEntry("customService.evenmorelevels.key5.key6.key7", "value7"));
+            assertThat(result.getInstances().get(0).metadata(), hasEntry("key", "value"));
+            assertThat(result.getInstances().get(0).metadata(), hasEntry("customService.key1", "value1"));
+            assertThat(result.getInstances().get(0).metadata(), hasEntry("customService.key2", "value2"));
+            assertThat(result.getInstances().get(0).metadata(), hasEntry("customService.key3", "value3"));
+            assertThat(result.getInstances().get(0).metadata(), hasEntry("customService.key4", "value4"));
+            assertThat(result.getInstances().get(0).metadata(), hasEntry("customService.evenmorelevels.key5.key6.key7", "value7"));
         }
     }
 
@@ -330,7 +330,7 @@ class ServiceDefinitionProcessorTest {
      *   each case.
      */
     private void assertThatNoInstanceIsCreatedAndCorrectMessageIsProduced(StaticRegistrationResult result, String specificMessage) {
-        List<InstanceInfo> instances = result.getInstances();
+        List<ServiceInstance> instances = result.getInstances();
         List<Message> errors = result.getErrors();
 
         assertThat(instances, hasSize(0));
@@ -372,7 +372,7 @@ class ServiceDefinitionProcessorTest {
                 "        description: Tile Description\n";
 
         StaticRegistrationResult result = processServicesData(yaml);
-        List<InstanceInfo> instances = result.getInstances();
+        List<ServiceInstance> instances = result.getInstances();
         List<Message> errors = result.getErrors();
 
         assertThat(instances.size(), is(2));
@@ -426,7 +426,7 @@ class ServiceDefinitionProcessorTest {
         ymlSources.put("yaml1", yaml2);
         ymlSources.put("yaml2", yaml3);
         StaticRegistrationResult result = processServicesData(ymlSources);
-        List<InstanceInfo> instances = result.getInstances();
+        List<ServiceInstance> instances = result.getInstances();
         assertThat(instances.size(), is(2));
 
         final Message errorMsg = result.getErrors().get(0);
@@ -449,12 +449,12 @@ class ServiceDefinitionProcessorTest {
             "          serviceRelativeUrl: api/v2\n";
 
         StaticRegistrationResult result = processServicesData(routedServiceYaml);
-        List<InstanceInfo> instances = result.getInstances();
+        List<ServiceInstance> instances = result.getInstances();
         assertThat(instances.size(), is(1));
-        assertFalse(instances.get(0).isPortEnabled(InstanceInfo.PortType.SECURE));
-        assertTrue(instances.get(0).isPortEnabled(InstanceInfo.PortType.UNSECURE));
-        assertEquals(10019, instances.get(0).getPort());
-        assertEquals(0, instances.get(0).getSecurePort());
+        assertFalse(instances.get(0).securePort().enabled());
+        assertTrue(instances.get(0).port().enabled());
+        assertEquals(10019, instances.get(0).port().port());
+        assertEquals(0, instances.get(0).securePort().port());
 
     }
 
@@ -482,20 +482,20 @@ class ServiceDefinitionProcessorTest {
             "        description: Services which demonstrate how to make an API service discoverable in the APIML ecosystem using YAML definitions\n";
 
         StaticRegistrationResult result = processServicesData(routedServiceYaml);
-        List<InstanceInfo> instances = result.getInstances();
+        List<ServiceInstance> instances = result.getInstances();
         assertEquals(1, instances.size());
-        assertEquals(0, instances.get(0).getSecurePort());
-        assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).getAppName());
-        assertEquals("api/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
-        assertEquals("/v2", instances.get(0).getMetadata().get(ROUTES + ".api-v2." + ROUTES_SERVICE_URL));
-        assertEquals("static", instances.get(0).getMetadata().get(CATALOG_ID));
-        assertEquals("Petstore Sample API Service", instances.get(0).getMetadata().get(SERVICE_TITLE));
-        assertEquals("2.0.0", instances.get(0).getMetadata().get(API_INFO + ".api-v2." + API_INFO_VERSION));
-        assertEquals("1.0.0", instances.get(0).getMetadata().get(CATALOG_VERSION));
-        assertEquals("Static API Services", instances.get(0).getMetadata().get(CATALOG_TITLE));
-        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).getMetadata().get(API_INFO + ".api-v2." + API_INFO_SWAGGER_URL));
-        assertEquals("This is a sample server Petstore REST API service", instances.get(0).getMetadata().get(SERVICE_DESCRIPTION));
-        assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).getInstanceId());
+        assertEquals(0, instances.get(0).securePort().port());
+        assertEquals("CASAMPLERESTAPISERVICE", instances.get(0).appName());
+        assertEquals("api/v2", instances.get(0).metadata().get(ROUTES + ".api-v2." + ROUTES_GATEWAY_URL));
+        assertEquals("/v2", instances.get(0).metadata().get(ROUTES + ".api-v2." + ROUTES_SERVICE_URL));
+        assertEquals("static", instances.get(0).metadata().get(CATALOG_ID));
+        assertEquals("Petstore Sample API Service", instances.get(0).metadata().get(SERVICE_TITLE));
+        assertEquals("2.0.0", instances.get(0).metadata().get(API_INFO + ".api-v2." + API_INFO_VERSION));
+        assertEquals("1.0.0", instances.get(0).metadata().get(CATALOG_VERSION));
+        assertEquals("Static API Services", instances.get(0).metadata().get(CATALOG_TITLE));
+        assertEquals("http://localhost:8080/v2/swagger.json", instances.get(0).metadata().get(API_INFO + ".api-v2." + API_INFO_SWAGGER_URL));
+        assertEquals("This is a sample server Petstore REST API service", instances.get(0).metadata().get(SERVICE_DESCRIPTION));
+        assertEquals("STATIC-localhost:casamplerestapiservice:10019", instances.get(0).instanceId());
         assertEquals(0, result.getErrors().size());
     }
 
@@ -564,10 +564,10 @@ class ServiceDefinitionProcessorTest {
             "        applid: TSTAPPL\n";
         StaticRegistrationResult result = processServicesData(routedServiceYaml);
         assertEquals(new ArrayList<>(), result.getErrors());
-        List<InstanceInfo> instances = result.getInstances();
+        List<ServiceInstance> instances = result.getInstances();
         assertEquals(1, instances.size());
-        assertEquals("httpBasicPassTicket", instances.get(0).getMetadata().get(AUTHENTICATION_SCHEME));
-        assertEquals("TSTAPPL", instances.get(0).getMetadata().get(AUTHENTICATION_APPLID));
+        assertEquals("httpBasicPassTicket", instances.get(0).metadata().get(AUTHENTICATION_SCHEME));
+        assertEquals("TSTAPPL", instances.get(0).metadata().get(AUTHENTICATION_APPLID));
     }
 
     @Test
@@ -580,7 +580,7 @@ class ServiceDefinitionProcessorTest {
             "        scheme: bad\n";
         StaticRegistrationResult result = processServicesData(routedServiceYaml);
         assertEquals(1, result.getErrors().size());
-        List<InstanceInfo> instances = result.getInstances();
+        List<ServiceInstance> instances = result.getInstances();
         assertEquals(0, instances.size());
     }
 

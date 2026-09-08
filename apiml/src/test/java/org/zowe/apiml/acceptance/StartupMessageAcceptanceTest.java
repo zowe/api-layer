@@ -11,7 +11,6 @@
 package org.zowe.apiml.acceptance;
 
 import com.netflix.appinfo.InstanceInfo;
-import com.netflix.eureka.EurekaServerConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,12 +21,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
+import org.zowe.apiml.discovery.registry.event.RegistryInstanceRegisteredEvent;
+import org.zowe.apiml.discovery.registry.event.RegistryAvailableEvent;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
 import org.zowe.apiml.zaas.ZaasServiceAvailableEvent;
 import org.zowe.commons.attls.AttlsContext;
@@ -56,12 +54,19 @@ class StartupMessageAcceptanceTest {
 
         @BeforeEach
         void setUp() {
-            lenient().when(instanceInfo.getInstanceId()).thenReturn("apicatalog:localhost:1000");
-            lenient().when(instanceInfo.getAppName()).thenReturn("APICATALOG");
 
             applicationEventPublisher.publishEvent(new ZaasServiceAvailableEvent("dummy"));
-            applicationEventPublisher.publishEvent(new EurekaRegistryAvailableEvent(mock(EurekaServerConfig.class)));
-            applicationEventPublisher.publishEvent(new EurekaInstanceRegisteredEvent(new Object(), instanceInfo, DISCOVERY_PORT, false));
+            applicationEventPublisher.publishEvent(new RegistryAvailableEvent(new Object()));
+            applicationEventPublisher.publishEvent(new RegistryInstanceRegisteredEvent(new Object(), catalogInstance(), false));
+        }
+
+        /** A minimal API Catalog registration - the health indicator only reads the app name. */
+        private org.zowe.apiml.registry.model.ServiceInstance catalogInstance() {
+            return org.zowe.apiml.registry.model.ServiceInstance.builder()
+                .instanceId("apicatalog:localhost:1000")
+                .appName("APICATALOG")
+                .hostName("localhost")
+                .build();
         }
 
         void verifyStartupMessage(CapturedOutput output) {
@@ -122,8 +127,6 @@ class StartupMessageAcceptanceTest {
 
         @MockitoBean
         private ApimlTomcatCustomizer apimlTomcatCustomizer;
-        @MockitoBean
-        private ApimlInstanceRegistry apimlInstanceRegistry;
         @Mock
         private AttlsContext attlsContext;
         @Mock
@@ -132,7 +135,6 @@ class StartupMessageAcceptanceTest {
         @Test
         void whenFullyStartedUp_thenEmitMessage(CapturedOutput output) throws IoctlCallException, UnknownEnumValueException {
             // Prevent use of native code
-            when(apimlInstanceRegistry.getApplications()).thenReturn(applicationRegistry.getApplications());
             doNothing().when(apimlTomcatCustomizer).customize(any());
             ReflectionTestUtils.setField(InboundAttls.class, "contexts", threadLocal);
             lenient().when(threadLocal.get()).thenReturn(attlsContext);

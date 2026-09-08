@@ -64,6 +64,20 @@ public final class RegistryCodec {
         });
     }
 
+    /**
+     * Writes an instance's fields into a generator the caller owns, without the {@code instance} root wrapper.
+     * <p>
+     * Exists for {@link RegistryJacksonModule}: it lets a {@code ServiceInstance} appearing inside some other
+     * response body be encoded in the registry's own format, in the correct field order, rather than by Jackson
+     * bean introspection.
+     */
+    public void writeInstanceFields(com.fasterxml.jackson.core.JsonGenerator generator, ServiceInstance instance)
+        throws IOException {
+
+        WireWriter writer = new WireWriter.Json(generator);
+        writeInstanceFields(writer, instance, WireFormat.JSON_FULL);
+    }
+
     // ---------------------------------------------------------------------------------------------------------
     // Peer replication
     // ---------------------------------------------------------------------------------------------------------
