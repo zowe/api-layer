@@ -57,6 +57,7 @@ dependencies {
     api project(':apiml-tomcat-common')
     api project(':apiml-common')
     api project(':security-service-client-spring')
+    api project(':apiml-registry')
 
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.web
