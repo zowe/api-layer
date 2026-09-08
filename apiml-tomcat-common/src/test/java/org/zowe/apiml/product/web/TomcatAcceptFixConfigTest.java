@@ -24,7 +24,7 @@ import org.apache.tomcat.util.net.SocketWrapperBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import com.ibm.net.NetworkRecycledException;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 
 import java.io.IOException;
@@ -279,16 +279,10 @@ class TomcatAcceptFixConfigTest {
 
         @Test
         void givenNetworkRecycledException_whenIsRecycledClass_thenReturnTrue() {
-            // Verify that isRecycledClass matches the exact class name
-            // We can't instantiate com.ibm.net.NetworkRecycledException directly,
-            // but we verify that isTcpStackRestarted calls isRecycledClass via cause chain
-            try (MockedStatic<TomcatAcceptFixConfig> mocked = mockStatic(TomcatAcceptFixConfig.class, CALLS_REAL_METHODS)) {
-                mocked.when(() -> TomcatAcceptFixConfig.isRecycledClass(any())).thenReturn(true);
+            Exception e = new NetworkRecycledException();
+            e = new RuntimeException("Wrapper", e);
 
-                Exception e = new IllegalArgumentException("Tested exception");
-                e = new RuntimeException("Wrapper", e);
-                assertTrue(TomcatAcceptFixConfig.isTcpStackRestarted(e));
-            }
+            assertTrue(TomcatAcceptFixConfig.isTcpStackRestarted(e));
         }
 
         @Test
