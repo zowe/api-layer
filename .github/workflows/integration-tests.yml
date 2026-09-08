@@ -152,42 +152,12 @@ jobs:
     CITestsModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container:
-            image: ubuntu:latest
-            options: "--hostname testrunner"
         timeout-minutes: 15
 
-        services:
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SECURITY_X509_ENABLED: true
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 3145728
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SERVICE_CORSENABLED: true
-                    APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
-
-                #The memory is constrained to test large file upload memory issues (#4265)
-                #If the container runs oom, it is hard killed without printing any reasonable message in the log
-                options: --memory 640m --memory-swap 640m
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
-                    SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
-                    SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+        # Services now run as a plain docker compose stack (docker/integration-tests/modulith)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -195,6 +165,12 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith/docker-compose.yml
+                    hosts: apiml discoverable-client mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -224,6 +200,11 @@ jobs:
                         results/**
                         integration-tests/build/test-results/runContainerModulithTests/binary/**
                         integration-tests/build/test-results/runStartUpCheck/binary/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -485,78 +466,12 @@ jobs:
     CITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container:
-            image: ubuntu:latest
-            options: "--hostname testrunner"
         timeout-minutes: 15
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
-                    SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 3145728
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS: 1
-                    EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: 1
-                    logbackService: ZWEAGW1
-                    APIML_SERVICE_CORSENABLED: true
-                    APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
-                options: --memory 640m --memory-swap 640m
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
-            # needs to run in isolation from another DS for multi-tenancy setup
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
-                    logbackService: ZWEADS2
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
-                    logbackService: ZWEAGW2
-                    APIML_SERVICE_CORSENABLED: true
-                    APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
-                options: --memory 640m --memory-swap 640m
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
-                    logbackService: ZWEAZS2
+        # Services now run as a plain docker compose stack (docker/integration-tests/split)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -564,6 +479,15 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/split/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services caching-service discoverable-client discovery-service
+                        gateway-service zaas-service mock-services
+                        discovery-service-2 gateway-service-2 zaas-service-2
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -591,6 +515,11 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/split/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 

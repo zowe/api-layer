@@ -1,0 +1,20 @@
+name: "Tear down a docker compose integration-test environment"
+description: "Dumps container logs for troubleshooting, then stops and removes the stack"
+
+inputs:
+    compose-file:
+        description: "Path to the docker-compose.yml for this test job"
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        -   name: Dump container logs
+            if: always()
+            shell: bash
+            run: docker compose -f "${{ inputs.compose-file }}" logs
+
+        -   name: Stop the compose stack
+            if: always()
+            shell: bash
+            run: docker compose -f "${{ inputs.compose-file }}" down -v

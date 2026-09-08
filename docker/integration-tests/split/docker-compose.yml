@@ -1,0 +1,121 @@
+services:
+
+    discovery-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service
+        ports:
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5121:5121"
+
+    gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service
+        mem_limit: 640m
+        memswap_limit: 640m
+        environment:
+            APIML_SERVICE_HOSTNAME: gateway-service
+            APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+            APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+            APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
+            SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: "16348"
+            SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: "3145728"
+            APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+            APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
+            APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+            EUREKA_CLIENT_INSTANCEINFOREPLICATIONINTERVALSECONDS: "1"
+            EUREKA_CLIENT_REGISTRYFETCHINTERVALSECONDS: "1"
+            logbackService: ZWEAGW1
+            APIML_SERVICE_CORSENABLED: "true"
+            APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6300:6300"
+        extra_hosts:
+            # A handful of tests make the gateway call back into the test runner
+            # (e.g. websocket tests), which now runs on the host instead of inside
+            # a job container. "host-gateway" is a Docker-provided alias for the
+            # host's own address and works the same way on Linux/macOS/Windows.
+            - "testrunner:host-gateway"
+
+    zaas-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service
+        environment:
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+        ports:
+            - "127.0.0.1:10023:10023"
+            - "127.0.0.1:5120:5120"
+            - "127.0.0.1:6301:6301"
+
+    api-catalog-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}
+        hostname: api-catalog-services
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            - "127.0.0.1:10014:10014"
+            - "127.0.0.1:5124:5124"
+            - "127.0.0.1:6304:6304"
+
+    caching-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/caching-service:${APIML_TAG:-local}
+        hostname: caching-service
+        ports:
+            - "127.0.0.1:10016:10016"
+            - "127.0.0.1:5126:5126"
+            - "127.0.0.1:6306:6306"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
+            SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"
+
+    # Second discovery/gateway/zaas trio used only by the multi-tenancy tests
+    # (reached indirectly through eureka, not called from the host directly -
+    # no published ports needed).
+    discovery-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service-2
+        environment:
+            APIML_SERVICE_HOSTNAME: discovery-service-2
+            APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
+            logbackService: ZWEADS2
+
+    gateway-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service-2
+        mem_limit: 640m
+        memswap_limit: 640m
+        environment:
+            APIML_SERVICE_HOSTNAME: gateway-service-2
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
+            logbackService: ZWEAGW2
+            APIML_SERVICE_CORSENABLED: "true"
+            APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
+
+    zaas-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service-2
+        environment:
+            APIML_SERVICE_HOSTNAME: zaas-service-2
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+            logbackService: ZWEAZS2
