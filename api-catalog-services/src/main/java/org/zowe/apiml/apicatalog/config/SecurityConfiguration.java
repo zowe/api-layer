@@ -210,10 +210,31 @@ public class SecurityConfiguration {
     }
 
     /**
-     * Default filter chain to protect all routes with MF credentials.
+     * Security filter chain specifically for API Catalog UI static resources and SPA routes.
      */
     @Bean
     @Order(6)
+    @ConditionalOnMissingBean(name = "modulithConfig")
+    SecurityWebFilterChain apiCatalogUiSecurityWebFilterChain(
+        ServerHttpSecurity http,
+        ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
+    ) {
+        return baseConfiguration(http, serverAuthenticationEntryPoint)
+            .securityMatcher(ServerWebExchangeMatchers.pathMatchers(HttpMethod.GET,
+                getFullUrls(
+                    "/ui/v1/",
+                    "/ui/v1/index.html"
+                )
+            ))
+            .authorizeExchange(authorizeExchangeSpec -> authorizeExchangeSpec.anyExchange().permitAll())
+            .build();
+    }
+
+    /**
+     * Default filter chain to protect all routes with MF credentials.
+     */
+    @Bean
+    @Order(7)
     SecurityWebFilterChain webSecurityCustomizer(
         ServerHttpSecurity http,
         ServerAuthenticationEntryPoint serverAuthenticationEntryPoint
@@ -251,7 +272,11 @@ public class SecurityConfiguration {
             .headers(httpSecurityHeadersConfigurer ->
                 httpSecurityHeadersConfigurer.hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
                     .writer(new CustomHstsServerHttpHeadersWriter())
-                    .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)))
+                    .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN))
+                    .contentSecurityPolicy(csp -> csp
+                        .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self';")
+                    )
+            )
             .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec
                 .authenticationEntryPoint((exchange, exception) -> {
                     String requestedPath = exchange.getRequest().getPath().toString();

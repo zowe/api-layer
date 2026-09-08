@@ -65,7 +65,7 @@ public abstract class AbstractAuthProviderFilter<T> {
     ) {
         Iterator<ServiceInstance> i = robinRound.getIterator(serviceInstances);
         if (!i.hasNext()) {
-            throw new ServiceNotAccessibleException("There are no instance of ZAAS available");
+            throw new ServiceNotAccessibleException("There are no instances of ZAAS available");
         }
 
         return requestWithHa(i, requestCreator);
