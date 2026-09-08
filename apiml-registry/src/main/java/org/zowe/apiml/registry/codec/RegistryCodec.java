@@ -14,11 +14,16 @@ import com.fasterxml.jackson.core.JsonFactory;
 import org.zowe.apiml.registry.model.Application;
 import org.zowe.apiml.registry.model.Applications;
 import org.zowe.apiml.registry.model.ServiceInstance;
+import org.zowe.apiml.registry.replication.ReplicationAction;
+import org.zowe.apiml.registry.replication.ReplicationBatch;
+import org.zowe.apiml.registry.replication.ReplicationItem;
+import org.zowe.apiml.registry.replication.ReplicationResponse;
 
 import javax.xml.stream.XMLStreamException;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -57,6 +62,100 @@ public final class RegistryCodec {
             writeApplications(writer, applications, format);
             writer.endObject(null);
         });
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // Peer replication
+    // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Encodes an outbound replication batch.
+     * <p>
+     * JSON only - the replication client has always used the full JSON codec, so there is no XML form of this to
+     * stay compatible with. The nested instance uses exactly the same encoder as a registry response, which is the
+     * subtlety worth knowing: serialising these DTOs with a plain Jackson mapper looks like it works but drops the
+     * port wrapper, and a peer would then register the instance with no usable port.
+     */
+    public String encode(ReplicationBatch batch) {
+        return write(WireFormat.JSON_FULL, writer -> {
+            writer.beginObject(null);
+            writer.beginArray("replicationList");
+            for (ReplicationItem item : batch.items()) {
+                writer.beginArrayElement("replicationList");
+                writeReplicationItem(writer, item);
+                writer.endArrayElement("replicationList");
+            }
+            writer.endArray();
+            writer.endObject(null);
+        });
+    }
+
+    private void writeReplicationItem(WireWriter writer, ReplicationItem item) throws IOException {
+        writer.optionalString("appName", item.appName());
+        writer.optionalString("id", item.id());
+        if (item.lastDirtyTimestamp() != null) {
+            writer.number("lastDirtyTimestamp", item.lastDirtyTimestamp());
+        }
+        writer.optionalString("overriddenStatus", item.overriddenStatus());
+        writer.optionalString("status", item.status());
+        // Absent rather than null for everything except a registration - the codec omits nulls, and a peer
+        // distinguishes "no body" from "empty body".
+        if (item.instance() != null) {
+            writer.beginObject("instanceInfo");
+            writeInstanceFields(writer, item.instance(), WireFormat.JSON_FULL);
+            writer.endObject("instanceInfo");
+        }
+        writer.optionalString("action", item.action() == null ? null : item.action().name());
+    }
+
+    public String encode(ReplicationResponse response) {
+        return write(WireFormat.JSON_FULL, writer -> {
+            writer.beginObject(null);
+            writer.beginArray("responseList");
+            for (ReplicationResponse.Item item : response.items()) {
+                writer.beginArrayElement("responseList");
+                writer.number("statusCode", item.statusCode());
+                if (item.responseEntity() != null) {
+                    writer.beginObject("responseEntity");
+                    writeInstanceFields(writer, item.responseEntity(), WireFormat.JSON_FULL);
+                    writer.endObject("responseEntity");
+                }
+                writer.endArrayElement("responseList");
+            }
+            writer.endArray();
+            writer.endObject(null);
+        });
+    }
+
+    public ReplicationBatch decodeReplicationBatch(String payload) {
+        WireNode root = parse(payload);
+        List<ReplicationItem> items = new ArrayList<>();
+        for (WireNode node : root.all("replicationList")) {
+            WireNode instance = node.child("instanceInfo");
+            items.add(new ReplicationItem(
+                ReplicationAction.fromWire(node.string("action")),
+                node.string("appName"),
+                node.string("id"),
+                node.child("lastDirtyTimestamp") == null ? null : node.number(0L, "lastDirtyTimestamp"),
+                node.string("status"),
+                node.string("overriddenStatus"),
+                instance == null ? null : WireMapper.toInstance(instance)
+            ));
+        }
+        return new ReplicationBatch(items);
+    }
+
+    public ReplicationResponse decodeReplicationResponse(String payload) {
+        WireNode root = parse(payload);
+        List<ReplicationResponse.Item> items = new ArrayList<>();
+        for (WireNode node : root.all("responseList")) {
+            WireNode entity = node.child("responseEntity");
+            items.add(new ReplicationResponse.Item(
+                (int) node.number(0L, "statusCode"),
+                entity == null ? null : WireMapper.toInstance(entity)
+            ));
+        }
+        return new ReplicationResponse(items);
     }
 
     // ---------------------------------------------------------------------------------------------------------
