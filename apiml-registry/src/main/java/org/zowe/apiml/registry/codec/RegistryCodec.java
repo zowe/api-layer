@@ -15,6 +15,8 @@ import org.zowe.apiml.registry.model.Application;
 import org.zowe.apiml.registry.model.Applications;
 import org.zowe.apiml.registry.model.ServiceInstance;
 
+import javax.xml.stream.XMLStreamException;
+
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.List;
@@ -31,6 +33,7 @@ import java.util.List;
 public final class RegistryCodec {
 
     private final JsonFactory jsonFactory = new JsonFactory();
+    private final WireParsers parsers = new WireParsers();
 
     public String encode(ServiceInstance instance, WireFormat format) {
         return write(format, writer -> {
@@ -54,6 +57,50 @@ public final class RegistryCodec {
             writeApplications(writer, applications, format);
             writer.endObject(null);
         });
+    }
+
+    // ---------------------------------------------------------------------------------------------------------
+    // Decoding
+    // ---------------------------------------------------------------------------------------------------------
+
+    /**
+     * Reads a single instance, as sent by an enabler registering itself.
+     * <p>
+     * The syntax is detected from the payload rather than taken from a Content-Type header, because the header is
+     * not reliable in practice - the Python enabler, for instance, labels its GETs {@code application/xml} while
+     * its POST body is JSON.
+     */
+    public ServiceInstance decodeInstance(String payload) {
+        WireNode root = parse(payload);
+        WireNode instance = root.child(WireConstants.ROOT_INSTANCE);
+        return WireMapper.toInstance(instance == null ? root : instance);
+    }
+
+    public Application decodeApplication(String payload) {
+        WireNode root = parse(payload);
+        WireNode application = root.child(WireConstants.ROOT_APPLICATION);
+        return WireMapper.toApplication(application == null ? root : application);
+    }
+
+    public Applications decodeApplications(String payload) {
+        WireNode root = parse(payload);
+        WireNode applications = root.child(WireConstants.ROOT_APPLICATIONS);
+        return WireMapper.toApplications(applications == null ? root : applications);
+    }
+
+    /** Sniffs the syntax: anything whose first non-whitespace character is '<' is XML, otherwise JSON. */
+    private WireNode parse(String payload) {
+        if (payload == null) {
+            throw new IllegalArgumentException("Cannot decode a null registry payload");
+        }
+        String trimmed = payload.stripLeading();
+        try {
+            return trimmed.startsWith("<") ? parsers.parseXml(payload) : parsers.parseJson(payload);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Malformed registry payload", e);
+        } catch (XMLStreamException e) {
+            throw new IllegalArgumentException("Malformed XML registry payload", e);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------------------
