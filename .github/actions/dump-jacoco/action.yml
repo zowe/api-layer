@@ -1,15 +1,56 @@
 name: "Dump jacoco result action"
-description: "Dump and store code coverage for all core services from jacoco agent running in containers"
+description: "Dump and store code coverage from the jacoco agent of the selected services running in containers"
+
+inputs:
+    services:
+        description: >
+            Comma (or whitespace) separated list of services to collect the dump from. Only the services the job
+            actually starts should be listed, dumping a service which is not running just waits for a connection
+            that never comes. Known services are gateway-service, zaas-service, discovery-service,
+            discoverable-client, api-catalog-services, mock-services, caching-service and apiml (modulith), each
+            optionally with an instance suffix, such as apiml-2. Defaults to every core service.
+        required: false
+        default: "zaas-service,gateway-service,caching-service,discovery-service,api-catalog-services,apiml"
 
 runs:
     using: "composite"
     steps:
         -   name: Dump jacoco result
             shell: bash
+            env:
+                SERVICES: ${{ inputs.services }}
             run: |
-                java -jar ./scripts/jacococli.jar dump --retry 1 --address zaas-service --port 6301 --destfile ./results/zaas-service.exec || echo "ZAAS is not available to obtain JaCoCo report at the moment"
-                java -jar ./scripts/jacococli.jar dump --retry 1 --address gateway-service --port 6300 --destfile ./results/gateway-service.exec || echo "Gateway is not available to obtain JaCoCo report at the moment"
-                java -jar ./scripts/jacococli.jar dump --retry 1 --address caching-service --port 6306 --destfile ./results/caching-service.exec || echo "Caching service is not available to obtain JaCoCo report at the moment"
-                java -jar ./scripts/jacococli.jar dump --retry 1 --address discovery-service --port 6302 --destfile ./results/discovery-service.exec || echo "Discovery service is not available to obtain JaCoCo report at the moment"
-                java -jar ./scripts/jacococli.jar dump --retry 1 --address api-catalog-services --port 6304 --destfile ./results/api-catalog-services.exec || echo "API Catalog is not available to obtain JaCoCo report at the moment"
-                java -jar ./scripts/jacococli.jar dump --retry 1 --address apiml --port 6310 --destfile ./results/apiml.exec || echo "API ML (Modulith) is not available to obtain JaCoCo report at the moment"
+                agent_port() {
+                    case "$1" in
+                        gateway-service)      echo 6300 ;;
+                        zaas-service)         echo 6301 ;;
+                        discovery-service)    echo 6302 ;;
+                        discoverable-client)  echo 6303 ;;
+                        api-catalog-services) echo 6304 ;;
+                        mock-services)        echo 6305 ;;
+                        caching-service)      echo 6306 ;;
+                        apiml)                echo 6310 ;;
+                        *)                    return 1 ;;
+                    esac
+                }
+
+                services=( $(echo "$SERVICES" | tr ',' ' ') )
+                if [ ${#services[@]} -eq 0 ]; then
+                    echo "::error::No service to dump the JaCoCo report from was selected"
+                    exit 1
+                fi
+
+                ports=()
+                for service in "${services[@]}"; do
+                    if ! port=$(agent_port "${service%-[0-9]}"); then
+                        echo "::error::Unknown service '$service', no JaCoCo agent port is defined for it"
+                        exit 1
+                    fi
+                    ports+=("$port")
+                done
+
+                for i in "${!services[@]}"; do
+                    service="${services[$i]}"
+                    java -jar ./scripts/jacococli.jar dump --retry 1 --address "$service" --port "${ports[$i]}" --destfile "./results/$service.exec" \
+                        || echo "$service is not available to obtain JaCoCo report at the moment"
+                done

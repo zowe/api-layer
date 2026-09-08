@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnMissingBean(name = "modulithConfig")
+@ConditionalOnMissingBean(name = {"modulithConfig", "gatewayMessageServiceConfiguration", "zaasMessageServiceConfiguration"})
 public class MessageServiceConfig {
 
     @Bean
