@@ -13,6 +13,7 @@ package org.zowe.apiml.product.eureka.web;
 import com.netflix.appinfo.InstanceInfo;
 import org.assertj.core.util.Arrays;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -97,6 +98,12 @@ class MetadataValidatorTest {
     void givenAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed, boolean validatePort) {
         ReflectionTestUtils.setField(metadataValidator,"allowedDomainsSet", new HashSet<>(Arrays.asList(allowList.split(","))));
         assertEquals(isAllowed, metadataValidator.isAllowedDomain(domain, validatePort));
+    }
+
+    @Test
+    void test() {
+        var port = metadataValidator.extractPort("https://www.zowe.org");
+        assertEquals("443", port);
     }
 
 }

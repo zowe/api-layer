@@ -235,13 +235,13 @@ public class MetadataValidator {
         }
     }
 
-    private String extractPort(String input) {
+    String extractPort(String input) {
         try {
             var port = new URL(Strings.CI.startsWithAny(input, HTTP, HTTPS) ? input : HTTPS + input).getPort();
             if (port > 0) {
                 return String.valueOf(port);
             }
-            return null;
+            return "443";
         } catch (MalformedURLException e) {
             return null;
         }

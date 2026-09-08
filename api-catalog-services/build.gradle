@@ -132,6 +132,10 @@ tasks.register('copyUi', Sync) {
     into uiStaticDir.map { it.dir('static') }
 }
 
+tasks.named('processResources') {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 bootRun {
     if (project.hasProperty('args')) {
         args project.args.split(',')
