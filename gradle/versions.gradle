@@ -75,7 +75,7 @@ dependencyResolutionManagement {
             version('junitJupiter', '5.14.4')
             version('junitPlatform', '1.14.4')
             version('jxpath', '1.4.0')
-            version('kotlinStdlib', '2.4.10')
+            version('kotlinStdlib', '2.4.20')
             version('lettuce', '6.8.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.26.1')
