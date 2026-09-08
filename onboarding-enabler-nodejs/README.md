@@ -194,8 +194,10 @@ All timeout and interval values shown here are **milliseconds**.
   request middleware; custom resolvers and middleware must invoke their callbacks.
 - In CLOSED state, consecutive failures use exponential retry delays starting at
   `backoffTimeout`, capped at `backoffMax`. An explicit zero `backoffTimeout`
-  is preserved. After `maxFailures`, OPEN suspends managed requests for
-  `cooldownTime`. Failed HALF_OPEN probes double subsequent OPEN cooldowns up to
+  is preserved. `maxFailures` is the number of failures allowed while CLOSED;
+  the following failure opens the circuit and suspends managed requests for
+  `cooldownTime`. For example, `maxFailures: 5` opens on the sixth failure.
+  Failed HALF_OPEN probes double subsequent OPEN cooldowns up to
   `backoffMax`; successful probes close and reset the breaker. Only one HALF_OPEN
   probe is allowed across the managed loops. A successful operation resets the
   consecutive failure count.

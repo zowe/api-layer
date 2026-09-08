@@ -71,7 +71,7 @@ export default {
     preferIpAddress: false,
     circuitBreaker: {
       enabled: true, // Set false to retain legacy setInterval scheduling.
-      maxFailures: 5, // Consecutive failures before opening the circuit.
+      maxFailures: 5, // Failures allowed; the following failure opens the circuit.
       cooldownTime: 60000, // Base delay in ms; first OPEN cycle uses this value.
       backoffTimeout: 1000, // Base delay in ms for retries while the circuit is CLOSED.
       backoffMax: 300000, // OPEN cooldown and CLOSED retry backoff cap here.

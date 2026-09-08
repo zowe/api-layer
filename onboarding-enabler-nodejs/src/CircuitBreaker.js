@@ -22,7 +22,7 @@ const STATES = {
  *
  * Three states: CLOSED (normal), OPEN (failing, no requests), HALF_OPEN (probing).
  * Transitions:
- *   CLOSED → OPEN when failureCount >= maxFailures
+ *   CLOSED → OPEN when failureCount > maxFailures
  *   OPEN  → HALF_OPEN when cooldown expires (checked via allowRequest())
  *   HALF_OPEN → CLOSED on recordSuccess()
  *   HALF_OPEN → OPEN  on recordFailure()
@@ -35,7 +35,8 @@ const STATES = {
 export default class CircuitBreaker extends EventEmitter {
   /**
    * @param {Object} options
-   * @param {number} [options.maxFailures=5] Consecutive failures before circuit opens
+   * @param {number} [options.maxFailures=5] Failures allowed while CLOSED; the next failure
+   *   opens the circuit
    * @param {number} [options.cooldownTime=60000] Base OPEN-circuit cooldown time in ms
    * @param {number} [options.backoffTimeout=1000] Base CLOSED-state retry backoff in ms
    * @param {number} [options.backoffMax=300000] Maximum backoff cap in ms
@@ -112,7 +113,7 @@ export default class CircuitBreaker extends EventEmitter {
 
   /**
    * Record a failed request. Increments failureCount.
-   * May transition to OPEN if threshold reached.
+   * May transition to OPEN if the allowed failure count is exceeded.
    * OPEN delay returned is the exponential cooldown .
    *
    * @returns {{ transition: string|null, delay: number }}
@@ -129,13 +130,13 @@ export default class CircuitBreaker extends EventEmitter {
       return { transition: STATES.OPEN, delay: this._computeOpenCooldown() };
     }
 
-    // CLOSED + threshold reached → open circuit with exponential delay
-    if (prevState === STATES.CLOSED && this.failureCount >= this.maxFailures) {
+    // CLOSED + allowed failures exceeded → open circuit with exponential delay
+    if (prevState === STATES.CLOSED && this.failureCount > this.maxFailures) {
       this._transitionTo(STATES.OPEN);
       return { transition: STATES.OPEN, delay: this._computeOpenCooldown() };
     }
 
-    // Still CLOSED, below threshold — return exponential backoff delay
+    // Still CLOSED, within the allowed failure count — return exponential backoff delay
     return { transition: null, delay: this.getNextCooldown() };
   }
 

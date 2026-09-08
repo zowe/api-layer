@@ -502,7 +502,7 @@ describe('Eureka client', () => {
         requestTimeout: 50, heartbeatInterval: 10, registryFetchInterval: 10,
         maxRetries: 3, requestRetryDelay: 10,
         serviceUrls: { default: ['https://serverA/', 'https://serverB/'] },
-        circuitBreaker: { maxFailures: 1, cooldownTime: 20, backoffTimeout: 10 },
+        circuitBreaker: { maxFailures: 0, cooldownTime: 20, backoffTimeout: 10 },
       } }));
       sinon.stub(client, 'deregister').yields();
       request = sinon.stub(https, 'request').callsFake((options, callback) => {
@@ -999,7 +999,7 @@ describe('Eureka client', () => {
           fetchRegistry: false,
           circuitBreaker: {
             enabled: true,
-            maxFailures: 2,
+            maxFailures: 1,
             cooldownTime: 100,
             backoffTimeout: 100,
             backoffMax: 1000,
@@ -1022,7 +1022,7 @@ describe('Eureka client', () => {
       expect(registerSpy).to.have.been.calledOnce;
       expect(registerSpy).to.have.been.calledWithExactly(sinon.match.func);
 
-      clock.tick(100); // Second failure opens the circuit.
+      clock.tick(100); // Second failure exceeds the one allowed failure and opens the circuit.
       expect(registerSpy).to.have.been.calledTwice;
       expect(client.circuitBreaker.state).to.equal('OPEN');
 
@@ -2214,19 +2214,19 @@ describe('Eureka client', () => {
       requestSpy.restore();
     });
 
-    // AC2: Circuit opens after N consecutive failures, WARN logged
-    it('should open circuit after maxFailures and log WARN (AC2)', () => {
+    // AC2: Circuit opens when consecutive failures exceed maxFailures, WARN logged
+    it('should open circuit after maxFailures is exceeded and log WARN (AC2)', () => {
       const warnSpy = sinon.spy(client.logger, 'warn');
       sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
 
       client.startHeartbeats();
 
-      // Exponential backoff with cooldownTime=10000 base:
-      // Failure 1 after 5000ms initial, failure 2 after 10000ms backoff,
-      // failure 3 after 20000ms backoff → circuit opens.
+      // Failure 1 after 5000ms initial, then failures 2-4 after exponential backoff.
+      // The first three failures are allowed; failure 4 opens the circuit.
       clock.tick(5000); // failure 1
       clock.tick(10000); // failure 2
-      clock.tick(20000); // failure 3 → OPEN
+      clock.tick(20000); // failure 3: final allowed failure
+      clock.tick(40000); // failure 4 → OPEN
 
       expect(warnSpy).to.have.been.calledWithMatch(/Circuit breaker transition.*CLOSED.*OPEN/);
       expect(client.circuitBreaker.isOpen()).to.be.true;
@@ -2238,11 +2238,12 @@ describe('Eureka client', () => {
     it('should not make HTTP calls while circuit is OPEN (AC3)', () => {
       const renewSpy = sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
 
-      // Open the circuit by causing failures
+      // Open the circuit by exceeding the allowed failures.
       client.startHeartbeats();
       clock.tick(5000); // failure 1
       clock.tick(10000); // failure 2
-      clock.tick(20000); // failure 3 → OPEN
+      clock.tick(20000); // failure 3: final allowed failure
+      clock.tick(40000); // failure 4 → OPEN
 
       renewSpy.resetHistory();
 
@@ -2260,11 +2261,12 @@ describe('Eureka client', () => {
       client.circuitBreaker.on('circuitHalfOpen', halfOpenSpy);
       sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
 
-      // Open the circuit
+      // Open the circuit.
       client.startHeartbeats();
       clock.tick(5000); // failure 1
       clock.tick(10000); // failure 2
-      clock.tick(20000); // failure 3 → OPEN
+      clock.tick(20000); // failure 3: final allowed failure
+      clock.tick(40000); // failure 4 → OPEN
 
       expect(client.circuitBreaker.isOpen()).to.be.true;
 
@@ -2281,12 +2283,13 @@ describe('Eureka client', () => {
 
     // AC5: Probe success → CLOSED, 'circuitClose' emitted
     it('should close circuit on probe success and emit circuitClose (AC5)', () => {
-      // Open the circuit first with failures
+      // Open the circuit first by exceeding the allowed failures.
       sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
       client.startHeartbeats();
       clock.tick(5000);
       clock.tick(10000);
-      clock.tick(20000); // OPEN
+      clock.tick(20000); // failure 3: final allowed failure
+      clock.tick(40000); // failure 4 → OPEN
       client.renew.restore();
 
       expect(client.circuitBreaker.isOpen()).to.be.true;
@@ -2308,12 +2311,13 @@ describe('Eureka client', () => {
 
     // AC6: Probe failure → re-OPEN, cooldown restarts
     it('should re-open circuit on probe failure (AC6)', () => {
-      // Open the circuit first
+      // Open the circuit first by exceeding the allowed failures.
       sinon.stub(client, 'renew').callsFake((cb) => { if (cb) cb(new Error('fail')); });
       client.startHeartbeats();
       clock.tick(5000);
       clock.tick(10000);
-      clock.tick(20000); // OPEN
+      clock.tick(20000); // failure 3: final allowed failure
+      clock.tick(40000); // failure 4 → OPEN
 
       expect(client.circuitBreaker.isOpen()).to.be.true;
 
@@ -2340,8 +2344,13 @@ describe('Eureka client', () => {
       expect(client.circuitBreaker.failureCount).to.equal(2);
       expect(client.circuitBreaker.getNextCooldown()).to.equal(20000);
 
-      // After 3 failures: circuit opens, openCycleCount=1, cooldown = 10000
+      // After 3 failures: final allowed failure, still CLOSED with backoff = 40000
       clock.tick(20000);
+      expect(client.circuitBreaker.isOpen()).to.be.false;
+      expect(client.circuitBreaker.getNextCooldown()).to.equal(40000);
+
+      // After 4 failures: maxFailures is exceeded, so the circuit opens.
+      clock.tick(40000);
       expect(client.circuitBreaker.isOpen()).to.be.true;
       expect(client.circuitBreaker.getNextCooldown()).to.equal(client.config.eureka.circuitBreaker.cooldownTime);
 
@@ -2440,7 +2449,9 @@ describe('Eureka client', () => {
     it('should skip registry fetch while a HALF_OPEN probe is in flight', () => {
       const fetchSpy = sinon.stub(client, 'fetchRegistry').callsFake((cb) => { if (cb) cb(null); });
 
-      for (let i = 0; i < 3; i += 1) client.circuitBreaker.recordFailure();
+      for (let failure = 0; failure <= client.circuitBreaker.maxFailures; failure += 1) {
+        client.circuitBreaker.recordFailure();
+      }
       clock.tick(client.config.eureka.circuitBreaker.cooldownTime + 1);
       expect(client.circuitBreaker.allowRequest()).to.be.true;
       expect(client.circuitBreaker.state).to.equal('HALF_OPEN');

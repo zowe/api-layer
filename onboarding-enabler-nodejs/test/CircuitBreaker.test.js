@@ -24,6 +24,12 @@ describe('CircuitBreaker', () => {
   let breaker;
   let clock;
 
+  function openCircuit(target = breaker) {
+    for (let failure = 0; failure <= target.maxFailures; failure += 1) {
+      target.recordFailure();
+    }
+  }
+
   beforeEach(() => {
     clock = sinon.useFakeTimers();
     breaker = new CircuitBreaker({
@@ -70,12 +76,12 @@ describe('CircuitBreaker', () => {
     });
 
     it('should return true when OPEN', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker.isOpen()).to.be.true;
     });
 
     it('should return false when HALF_OPEN', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       breaker.allowRequest(); // transitions to HALF_OPEN
       expect(breaker.isOpen()).to.be.false;
@@ -88,13 +94,13 @@ describe('CircuitBreaker', () => {
     });
 
     it('should return false when OPEN and cooldown has not expired', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker.state).to.equal('OPEN');
       expect(breaker.allowRequest()).to.be.false;
     });
 
     it('should transition OPEN → HALF_OPEN when cooldown has expired', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker.state).to.equal('OPEN');
       clock.tick(10001);
       expect(breaker.allowRequest()).to.be.true;
@@ -102,7 +108,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should allow only one probe while HALF_OPEN', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       expect(breaker.allowRequest()).to.be.true;
       expect(breaker.allowRequest()).to.be.false;
@@ -110,7 +116,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should allow another request after a successful HALF_OPEN probe', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       expect(breaker.allowRequest()).to.be.true;
       breaker.recordSuccess();
@@ -119,7 +125,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should not transition OPEN → HALF_OPEN before cooldown expires', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(9999); // 1ms short of cooldown
       expect(breaker.allowRequest()).to.be.false;
       expect(breaker.state).to.equal('OPEN');
@@ -136,7 +142,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should transition HALF_OPEN → CLOSED and reset openCycleCount', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker._openCycleCount).to.equal(1);
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
@@ -163,18 +169,18 @@ describe('CircuitBreaker', () => {
 
   describe('recordFailure()', () => {
     [1, 5].forEach((maxFailures) => {
-      it(`should open on exactly failure ${maxFailures} when maxFailures is ${maxFailures}`, () => {
+      it(`should allow ${maxFailures} failures and open on the next failure`, () => {
         const configuredBreaker = new CircuitBreaker({ maxFailures });
         expect(configuredBreaker.state).to.equal('CLOSED');
-        for (let failure = 1; failure < maxFailures; failure += 1) {
+        for (let failure = 1; failure <= maxFailures; failure += 1) {
           expect(configuredBreaker.recordFailure().transition).to.be.null;
           expect(configuredBreaker.state).to.equal('CLOSED');
         }
-        expect(configuredBreaker.failureCount).to.equal(maxFailures - 1);
+        expect(configuredBreaker.failureCount).to.equal(maxFailures);
         expect(configuredBreaker.allowRequest()).to.be.true;
 
         expect(configuredBreaker.recordFailure().transition).to.equal('OPEN');
-        expect(configuredBreaker.failureCount).to.equal(maxFailures);
+        expect(configuredBreaker.failureCount).to.equal(maxFailures + 1);
         expect(configuredBreaker.state).to.equal('OPEN');
         expect(configuredBreaker.allowRequest()).to.be.false;
       });
@@ -187,12 +193,14 @@ describe('CircuitBreaker', () => {
       expect(breaker.failureCount).to.equal(2);
     });
 
-    it('should transition CLOSED → OPEN when failureCount reaches maxFailures', () => {
+    it('should transition CLOSED → OPEN when failureCount exceeds maxFailures', () => {
       breaker.recordFailure(); // 1
       expect(breaker.state).to.equal('CLOSED');
       breaker.recordFailure(); // 2
       expect(breaker.state).to.equal('CLOSED');
-      const result = breaker.recordFailure(); // 3 → OPEN
+      breaker.recordFailure(); // 3: final allowed failure
+      expect(breaker.state).to.equal('CLOSED');
+      const result = breaker.recordFailure(); // 4 → OPEN
       expect(result.transition).to.equal('OPEN');
       expect(result.delay).to.equal(10000); // cooldownTime (first open cycle)
       expect(breaker.state).to.equal('OPEN');
@@ -205,7 +213,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should transition HALF_OPEN → OPEN on probe failure with exponential delay', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       // First open: openCycleCount=1, cooldown=10000
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
@@ -228,7 +236,7 @@ describe('CircuitBreaker', () => {
         backoffMax: 25000,
       });
 
-      configuredBreaker.recordFailure();
+      openCircuit(configuredBreaker);
       [10000, 20000, 25000, 25000].forEach((expectedCooldown) => {
         expect(configuredBreaker.state).to.equal('OPEN');
         expect(configuredBreaker.getNextCooldown()).to.equal(expectedCooldown);
@@ -251,6 +259,7 @@ describe('CircuitBreaker', () => {
 
       expect(configuredBreaker.recordFailure().delay).to.equal(1000);
       expect(configuredBreaker.recordFailure().delay).to.equal(2000);
+      expect(configuredBreaker.recordFailure().delay).to.equal(4000);
       expect(configuredBreaker.recordFailure().delay).to.equal(10000);
     });
 
@@ -265,7 +274,7 @@ describe('CircuitBreaker', () => {
       breaker.recordFailure(); // 2 failures → 10000 × 2^1 = 20000
       expect(breaker.getNextCooldown()).to.equal(20000);
 
-      // 3rd failure would open circuit, test with maxFailures=10 instead
+      // 4th failure would open this circuit, so use maxFailures=10 instead.
       const bigBreaker = new CircuitBreaker({ maxFailures: 10, cooldownTime: 1000, backoffMax: 60000 });
       for (let i = 0; i < 5; i += 1) bigBreaker.recordFailure();
       // 5 failures → 1000 × 2^(5-1) = 1000 × 16 = 16000
@@ -286,7 +295,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should return exponential cooldown when OPEN (AC6)', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker.state).to.equal('OPEN');
       expect(breaker._openCycleCount).to.equal(1);
       expect(breaker.getNextCooldown()).to.equal(10000); // cooldownTime × 2^0
@@ -300,7 +309,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should cap OPEN cooldown at backoffMax', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       breaker._openCycleCount = 10; // 10000 × 2^9 = 5120000 > backoffMax(60000)
       expect(breaker.getNextCooldown()).to.equal(60000); // capped
     });
@@ -317,7 +326,7 @@ describe('CircuitBreaker', () => {
   describe('OPEN cooldown — exponential backoff (AC5+AC6)', () => {
     it('should use monotonic time rather than Date.now for cooldown expiration', () => {
       const dateNow = sinon.stub(Date, 'now').returns(0);
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
 
       clock.tick(10001);
 
@@ -326,14 +335,14 @@ describe('CircuitBreaker', () => {
     });
 
     it('should use cooldownTime for first OPEN cycle', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker._openCycleCount).to.equal(1);
       expect(breaker.getNextCooldown()).to.equal(10000);
     });
 
     it('should double cooldown on second OPEN cycle', () => {
       // First OPEN
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
       breaker.recordFailure(); // → OPEN again, openCycleCount=2
@@ -343,7 +352,7 @@ describe('CircuitBreaker', () => {
 
     it('should double cooldown again on third OPEN cycle', () => {
       // First OPEN
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       breaker.allowRequest();
       breaker.recordFailure(); // openCycleCount=2
@@ -355,7 +364,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should reset openCycleCount on successful HALF_OPEN probe', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker._openCycleCount).to.equal(1);
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
@@ -364,7 +373,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should use longer cooldown after multiple OPEN cycles', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       // openCycleCount=1, cooldown=10000
       expect(breaker._cooldownExpired()).to.be.false;
       clock.tick(5000);
@@ -378,7 +387,7 @@ describe('CircuitBreaker', () => {
     it('should emit "circuitOpen" on CLOSED → OPEN', () => {
       const spy = sinon.spy();
       breaker.on('circuitOpen', spy);
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(spy).to.have.been.calledOnce;
       expect(spy).to.have.been.calledWith({ from: 'CLOSED', to: 'OPEN' });
     });
@@ -386,7 +395,7 @@ describe('CircuitBreaker', () => {
     it('should emit "circuitHalfOpen" on OPEN → HALF_OPEN', () => {
       const spy = sinon.spy();
       breaker.on('circuitHalfOpen', spy);
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       breaker.allowRequest();
       expect(spy).to.have.been.calledOnce;
@@ -396,7 +405,7 @@ describe('CircuitBreaker', () => {
     it('should emit "circuitClose" on HALF_OPEN → CLOSED', () => {
       const spy = sinon.spy();
       breaker.on('circuitClose', spy);
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
       breaker.recordSuccess(); // → CLOSED
@@ -407,7 +416,7 @@ describe('CircuitBreaker', () => {
     it('should emit "circuitOpen" on HALF_OPEN → OPEN (probe fail)', () => {
       const spy = sinon.spy();
       breaker.on('circuitOpen', spy);
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
       breaker.recordFailure(); // → OPEN
@@ -419,9 +428,9 @@ describe('CircuitBreaker', () => {
 
   describe('reset()', () => {
     it('should reset to CLOSED with failureCount=0 and openCycleCount=0', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker.state).to.equal('OPEN');
-      expect(breaker.failureCount).to.equal(3);
+      expect(breaker.failureCount).to.equal(4);
       expect(breaker._openCycleCount).to.equal(1);
       breaker.reset();
       expect(breaker.state).to.equal('CLOSED');
@@ -430,7 +439,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should reset from HALF_OPEN to CLOSED', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
       breaker.reset();
@@ -442,8 +451,8 @@ describe('CircuitBreaker', () => {
 
   describe('complete lifecycle', () => {
     it('should cycle through CLOSED → OPEN → HALF_OPEN → CLOSED', () => {
-      // CLOSED → OPEN (3 failures)
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      // CLOSED → OPEN (3 allowed failures, then the 4th opens)
+      openCircuit();
       expect(breaker.state).to.equal('OPEN');
 
       // OPEN → HALF_OPEN (cooldown passes)
@@ -459,7 +468,7 @@ describe('CircuitBreaker', () => {
 
     it('should cycle through CLOSED → OPEN → HALF_OPEN → OPEN (probe fails)', () => {
       // CLOSED → OPEN
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker.state).to.equal('OPEN');
 
       // OPEN → HALF_OPEN
@@ -486,7 +495,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should handle rapid success after many failures', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure(); // OPEN
+      openCircuit(); // OPEN
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
       const result = breaker.recordSuccess(); // CLOSED
@@ -511,7 +520,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should keep same OPEN timestamp on repeated failures while OPEN', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       const firstOpenAt = breaker._openedAt;
 
       // Additional recordFailure while OPEN shouldn't reset the clock
@@ -521,17 +530,17 @@ describe('CircuitBreaker', () => {
     });
 
     it('should reset failureCount in HALF_OPEN after success', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
-      breaker.allowRequest(); // HALF_OPEN, failureCount still 3
-      expect(breaker.failureCount).to.equal(3);
+      breaker.allowRequest(); // HALF_OPEN, failureCount still 4
+      expect(breaker.failureCount).to.equal(4);
       breaker.recordSuccess(); // → CLOSED
       expect(breaker.failureCount).to.equal(0);
     });
 
     it('should allow new failure count to accumulate after circuit closes', () => {
       // Open circuit
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       clock.tick(10001);
       breaker.allowRequest(); // HALF_OPEN
       breaker.recordSuccess(); // CLOSED, failureCount=0
@@ -545,7 +554,7 @@ describe('CircuitBreaker', () => {
     });
 
     it('should increment openCycleCount only once per CLOSED→OPEN transition', () => {
-      for (let i = 0; i < 3; i += 1) breaker.recordFailure();
+      openCircuit();
       expect(breaker._openCycleCount).to.equal(1);
 
       // HALF_OPEN→OPEN should increment again
