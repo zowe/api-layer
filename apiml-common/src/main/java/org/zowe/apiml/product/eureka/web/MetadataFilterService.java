@@ -16,6 +16,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
@@ -99,14 +100,18 @@ public class MetadataFilterService implements InitializingBean {
     }
 
     private boolean validateMetadataEntry(String key, String value, MetadataValidator validator) {
-        if (!key.startsWith("apiml.")) return true;
+        if (!key.startsWith(EurekaMetadataDefinition.API_INFO)) {
+            return true;
+        }
         var segments = key.split("\\.", -1);   // -1 keeps the empty trailing segment
-        return Arrays.stream(segments)
-            .map(segment -> METADATA_URL_KEYS_TO_VERIFY.entrySet().stream()
-                .filter(e -> e.getKey().equals(segment))
-                .findFirst())
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+        if (segments.length < 4) {
+            return true;
+        }
+
+        var segmentKey = segments[3];
+
+        return METADATA_URL_KEYS_TO_VERIFY.entrySet().stream()
+            .filter(e -> e.getKey().equals(segmentKey))
             .findFirst()
             .map(entry -> validator.validateEntry(key, value, entry.getValue()))
             .orElse(true);
