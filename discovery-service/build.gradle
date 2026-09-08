@@ -80,6 +80,12 @@ dependencies {
 }
 
 
+test {
+    // Phase 0 wire-contract capture: forwarded so `-Dwire.contract.regenerate=true` on the Gradle
+    // command line reaches the forked test JVM, where EurekaWireContractCaptureTest reads it.
+    systemProperty 'wire.contract.regenerate', System.getProperty('wire.contract.regenerate', 'false')
+}
+
 bootJar {
     archiveFileName = "discovery-service.jar"
     manifest {
