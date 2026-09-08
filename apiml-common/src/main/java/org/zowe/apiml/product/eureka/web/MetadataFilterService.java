@@ -157,7 +157,7 @@ public class MetadataFilterService implements InitializingBean {
             }
         } else if (!isClientAttlsEnabled && !validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName() + ":" + instanceInfo.getSecurePort(), true)) {
             result.set(false);
-        } else if (!validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName() + ":" + instanceInfo.getPort(), true)) {
+        } else if (isClientAttlsEnabled && !validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName() + ":" + instanceInfo.getPort(), true)) {
             result.set(false);
         }
 

@@ -184,6 +184,10 @@ public class MetadataValidator {
 
     private boolean isAllowedPort(String input, String allowedDomainPort) {
         var port = extractPort(input);
+        if (StringUtils.isBlank(port)) {
+            return false;
+        }
+
         if ("*".equals(allowedDomainPort) || Objects.equal(port, allowedDomainPort)) {
             return true;
         }

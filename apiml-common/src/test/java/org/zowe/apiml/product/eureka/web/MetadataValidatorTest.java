@@ -41,7 +41,7 @@ class MetadataValidatorTest {
 
     @ParameterizedTest
     @CsvSource(delimiterString = "|", value = {
-        "localhost,192.168.0.2:*,example.com|192.168.0.2|true|true",
+        "localhost,192.168.0.2:*,example.com|192.168.0.2:8080|true|true",
         "localhost,192.168.0.2,example.com|192.168.0.1|false|false",
         "localhost:8080|127.0.0.1:8080|true|true",
         "localhost|invalid#1|false|true",
