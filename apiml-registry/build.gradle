@@ -1,0 +1,16 @@
+dependencies {
+    implementation libs.jackson.annotations
+    implementation libs.jackson.core
+    implementation libs.jackson.databind
+    implementation libs.jackson.dataformat.xml
+
+    implementation libs.apache.commons.lang3
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testImplementation libs.spring.boot.starter.test
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+}

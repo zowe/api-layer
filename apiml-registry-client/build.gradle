@@ -1,0 +1,13 @@
+dependencies {
+    api project(':apiml-registry')
+
+    implementation libs.jackson.databind
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testImplementation libs.spring.boot.starter.test
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+}
