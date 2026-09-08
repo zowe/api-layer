@@ -106,7 +106,28 @@ class TomcatAcceptFixConfigTest {
         }).when(serverSocket).accept();
 
         assertSame(socketChannel, testEndpoint.serverSocketAccept());
-        verify(staleConnection).close();
+        verify(staleConnection, times(1)).close();
+        verify(serverSocket, times(1)).implCloseSelectableChannel();
+        verify(testEndpoint, times(1)).bind();
+    }
+
+    @Test
+    void givenOneConnectionCannotBeClosed_whenTcpipIsRestarted_thenCloseRemainingConnectionsAndRebind() throws Exception {
+        AtomicInteger counter = new AtomicInteger(0);
+        SocketWrapperBase<?> failingConnection = mock(SocketWrapperBase.class);
+        SocketWrapperBase<?> staleConnection = mock(SocketWrapperBase.class);
+        doReturn(Set.of(failingConnection, staleConnection)).when(testEndpoint).getConnections();
+        doThrow(new IllegalStateException("already closed")).when(failingConnection).close();
+        doAnswer(invocation -> {
+            if (counter.getAndIncrement() == 0) {
+                throw new IOException("EDC5122I");
+            }
+            return socketChannel;
+        }).when(serverSocket).accept();
+
+        assertSame(socketChannel, testEndpoint.serverSocketAccept());
+        verify(failingConnection, times(1)).close();
+        verify(staleConnection, times(1)).close();
         verify(serverSocket, times(1)).implCloseSelectableChannel();
         verify(testEndpoint, times(1)).bind();
     }
@@ -276,8 +297,6 @@ class TomcatAcceptFixConfigTest {
         }
 
     }
-
-
     private static class TestEndpoint extends NioEndpoint {
 
         public TestEndpoint(ServerSocketChannel serverSocket) {
