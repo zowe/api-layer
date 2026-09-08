@@ -245,17 +245,18 @@ public class TomcatAcceptFixConfig {
         }
 
         private void closeConnectionsAfterTcpStackRestart() {
-            SocketWrapperBase<?>[] connections = abstractEndpoint.getConnections().toArray(SocketWrapperBase<?>[]::new);
             int closed = 0;
-            for (SocketWrapperBase<?> connection : connections) {
+            int failed = 0;
+            for (SocketWrapperBase<?> connection : abstractEndpoint.getConnections()) {
                 try {
                     connection.close();
                     closed++;
                 } catch (RuntimeException e) {
+                    failed++;
                     log.debug("Unable to close a stale client connection after TCP/IP stack restart", e);
                 }
             }
-            log.info("Closed {} client connection(s) after TCP/IP stack restart", closed);
+            log.info("Closed {} client connection(s) after TCP/IP stack restart; {} could not be closed", closed, failed);
         }
 
         /**
@@ -285,10 +286,6 @@ public class TomcatAcceptFixConfig {
                     throw new IOException("Cannot rebind the port", e);
                 }
             }
-        }
-
-        boolean isTcpStackRestarted(Throwable t) {
-            return TomcatAcceptFixConfig.isTcpStackRestarted(t);
         }
 
         public SocketChannel accept() throws IOException {
