@@ -1,19 +1,18 @@
-def getModulesJarNames() {
-    def output = []
-    rootProject.subprojects.findAll({
-        def jarTask = it.properties.jar
-        if (!jarTask) return
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 
-        def fileName = jarTask.property('archiveFileName')
-        if (!fileName) return
-
-        output += fileName.get()
-    })
-    return output
+static def isNestedModule(Project project) {
+    return new File(project.projectDir, 'src/main/resources/application.yml').exists()
 }
 
-def getModulesJarFilters() {
-    return getModulesJarNames().stream().map({i -> "**/" + i}).collect()
+def getNestedModulesJarNames() {
+    def nestedModulePaths = rootProject.subprojects.findAll { isNestedModule(it) }*.path as Set
+    def runtimeArtifacts = configurations.runtimeClasspath.incoming.artifacts
+    return { ->
+        runtimeArtifacts.artifacts.findAll {
+            def id = it.id.componentIdentifier
+            id instanceof ProjectComponentIdentifier && nestedModulePaths.contains(id.projectPath)
+        }.collect { it.file.name } as Set
+    }.memoize()
 }
 
 static def verifySpringBootApp(File input) {
@@ -57,7 +56,6 @@ def getBaseNameLite() {
 
 ext {
     getBaseNameLite = this.&getBaseNameLite
-    getModulesJarNames = this.&getModulesJarNames
+    getNestedModulesJarNames = this.&getNestedModulesJarNames
     getSpringBootApp = this.&getSpringBootApp
-    getModulesJarFilters = this.&getModulesJarFilters
 }
