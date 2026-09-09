@@ -75,7 +75,7 @@ dependencyResolutionManagement {
             version('junitJupiter', '5.14.4')
             version('junitPlatform', '1.14.4')
             version('jxpath', '1.4.0')
-            version('kotlinStdlib', '2.4.10')
+            version('kotlinStdlib', '2.4.20')
             version('lettuce', '6.8.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.26.1')
@@ -100,7 +100,7 @@ dependencyResolutionManagement {
             version('tomcat', '10.1.59')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.2')
-            version('jgit', '7.7.1.202607240634-r')
+            version('jgit', '7.8.0.202609011348-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.5.0.8588')
             version('gradleRelease', '3.1.0')

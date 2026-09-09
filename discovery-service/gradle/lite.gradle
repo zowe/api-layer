@@ -2,8 +2,10 @@ import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 /**
  * This gradle file extends task `build` to create thin JAR files:
- * <baseName>-lite.jar - contains base SpringBoot part to be executable and built submodules
- * <baseName>-lite-lib.jar - contains all external libraries (except modules)
+ * <baseName>-lite.jar - contains base SpringBoot part to be executable and the jars of
+ *     nested modules, i.e. runnable Spring Boot modules that own classpath-root resources
+ * <baseName>-lite-lib.jar - contains all shared libraries: the external dependencies and
+ *     the API ML support modules, published once through apiml-common-lib-package
  *
  * To run application with thin and library file use:
  * java -Dloader.path=<baseName>-lite-lib-<version>.jar -jar <basename>-lite-<version>.jar
@@ -22,17 +24,18 @@ buildscript {
 
 apply from: "$rootDir/gradle/lite-project.gradle"
 
-task liteJar(type: BootJar) {
+tasks.register('liteJar', BootJar) {
     //Do not allow duplicates by ignoring subsequent items to be created at the same path.
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     targetJavaVersion = JavaVersion.VERSION_17
+    includeTools = false
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
     }
-    def modulesJar = getModulesJarNames()
+    def nestedJars = getNestedModulesJarNames()
     archiveFileName = getBaseNameLite() + ".jar"
     mainClass = getSpringBootApp()
-    exclude { details -> details.file && details.file.name.endsWith('.jar') && !modulesJar.contains(details.file.name) }
+    exclude { details -> details.file && details.file.name.endsWith('.jar') && !nestedJars().contains(details.file.name) }
     with bootJar
 
     archiveClassifier = "lite"
@@ -47,12 +50,13 @@ artifacts {
         builtBy(liteJar)
     }
 }
-task liteLibJar(type: Jar) {
+tasks.register('liteLibJar', Jar) {
     archiveFileName = getBaseNameLite() + "-lib.jar"
     entryCompression = ZipEntryCompression.STORED
-    from {configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }}
+    def nestedJars = getNestedModulesJarNames()
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     include '*.jar'
-    exclude getModulesJarFilters()
+    exclude { details -> details.file && nestedJars().contains(details.file.name) }
     with bootJar
 
     archiveClassifier = "lite-lib"
