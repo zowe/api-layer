@@ -115,21 +115,21 @@ jar {
 }
 
 def uiModule = "${project(':api-catalog-ui').projectDir}"
+def uiStaticDir = layout.buildDirectory.dir('uiStatic')
+
+sourceSets.main.resources.srcDir uiStaticDir
 
 processResources {
     dependsOn "copyUi"
 }
 
-task copyUi(type: Copy) {
+tasks.register('copyUi', Sync) {
     group = "ui"
 
     dependsOn ":api-catalog-ui:build"
 
-    inputs.dir(uiModule + '/frontend/build')
-    outputs.dir('src/main/resources/static')
-
     from uiModule + '/frontend/build'
-    into 'src/main/resources/static'
+    into uiStaticDir.map { it.dir('static') }
 }
 
 bootRun {
