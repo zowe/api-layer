@@ -10,10 +10,9 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.PortType;
 import org.junit.jupiter.api.Test;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 
@@ -41,10 +40,10 @@ class SubstituteSwaggerGeneratorTest {
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
 
-        InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName(APP_NAME).setHostName(HOST_NAME)
-            .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
+        ServiceInstance service = new DefaultServiceInstance(
+            APP_NAME + ":" + HOST_NAME + ":8080", APP_NAME, HOST_NAME, 8080, true, metadata);
 
-        String result = swaggerGenerator.generateSubstituteSwaggerForService(new EurekaServiceInstance(service),
+        String result = swaggerGenerator.generateSubstituteSwaggerForService(service,
             info.get(0), GATEWAY_SCHEME, GATEWAY_HOST);
         assertTrue(result.contains(DOC_URL));
     }
@@ -57,10 +56,10 @@ class SubstituteSwaggerGeneratorTest {
 
         List<ApiInfo> info = new EurekaMetadataParser().parseApiInfo(metadata);
 
-        InstanceInfo service = InstanceInfo.Builder.newBuilder().setAppName(APP_NAME).setHostName(HOST_NAME)
-            .setSecurePort(8080).enablePort(PortType.SECURE, true).setMetadata(metadata).build();
+        ServiceInstance service = new DefaultServiceInstance(
+            APP_NAME + ":" + HOST_NAME + ":8080", APP_NAME, HOST_NAME, 8080, true, metadata);
 
-        String result = swaggerGenerator.generateSubstituteSwaggerForService(new EurekaServiceInstance(service),
+        String result = swaggerGenerator.generateSubstituteSwaggerForService(service,
             info.get(0), GATEWAY_SCHEME, GATEWAY_HOST);
         assertTrue(result.contains(DOC_URL));
     }

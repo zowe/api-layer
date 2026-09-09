@@ -302,6 +302,29 @@ public class MetadataFilterService implements InitializingBean {
         String secureHealthCheckUrl,
         Map<String, String> metadata
     ) {
+
+        /**
+         * Builds a candidate from an instance discovered through Spring Cloud.
+         * <p>
+         * Spring's {@code ServiceInstance} carries no home-page, health-check or status-page URL, so those are
+         * left unset - {@code validateEntry} treats a blank value as allowed. That is not a hole: an instance's
+         * own URLs are checked when it registers, by the allow-list interceptor in the Discovery Service. What a
+         * consumer needs re-checked here is the <em>metadata</em> - swaggerUrl, graphqlUrl, documentationUrl,
+         * externalUrl - because that is what it is about to dereference, and those are all present.
+         */
+        public static Candidate of(org.springframework.cloud.client.ServiceInstance instance) {
+            return new Candidate(
+                instance.getInstanceId(),
+                null,
+                instance.getHost(),
+                null,
+                null,
+                null,
+                null,
+                instance.getMetadata()
+            );
+        }
+
     }
 
     /**

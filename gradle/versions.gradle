@@ -152,6 +152,7 @@ dependencyResolutionManagement {
             library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway-server-webflux').versionRef('springCloudGateway')
             library('spring_cloud_gateway_server', 'org.springframework.cloud', 'spring-cloud-gateway-server').versionRef('springCloudGateway')
             library('spring_cloud_commons', 'org.springframework.cloud', 'spring-cloud-commons').versionRef('springCloudCommons')
+            library('spring_cloud_context', 'org.springframework.cloud', 'spring-cloud-context').versionRef('springCloudCommons')
             library('spring_cloud_circuit_breaker', 'org.springframework.cloud', 'spring-cloud-starter-circuitbreaker-reactor-resilience4j').versionRef('springCloudCB')
 
             library('spring_retry', 'org.springframework.retry', 'spring-retry').versionRef('springRetry')

@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.apicatalog.controllers.api;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +19,10 @@ import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurity
 import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.zowe.apiml.registry.model.DiscoveryMetadata;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -117,8 +118,9 @@ class ServicesControllerTests {
 
             @Test
             void ifExistingInstanceThenReturnOk() {
-                var instance = InstanceInfo.Builder.newBuilder().setAppName(SERVICE_ID).setInstanceId("instance1").setMetadata(Map.of(CATALOG_ID, SERVICE_ID)).build();
-                doReturn(Collections.singletonList(new EurekaServiceInstance(instance))).when(discoveryClient).getInstances(SERVICE_ID);
+                var instance = new DefaultServiceInstance("instance1", SERVICE_ID, "localhost", 10014, true,
+                    Map.of(CATALOG_ID, SERVICE_ID));
+                doReturn(Collections.singletonList(instance)).when(discoveryClient).getInstances(SERVICE_ID);
                 doReturn(Collections.singletonList(SERVICE_ID)).when(discoveryClient).getServices();
                 doReturn(Mono.empty()).when(apiDocService).retrieveDefaultApiDoc(SERVICE_ID);
 
@@ -141,8 +143,6 @@ class ServicesControllerTests {
     @Nested
     class GivenMultipleValidContainers {
 
-        Application service1;
-        Application service2;
         List<String> apiVersions;
 
         @BeforeEach
@@ -150,13 +150,13 @@ class ServicesControllerTests {
             apiVersions = Arrays.asList("1.0.0", "2.0.0");
 
             given(discoveryClient.getInstances("service1")).willReturn(
-                Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service1", InstanceInfo.InstanceStatus.UP)))
+                Collections.singletonList(getStandardInstance("service1", InstanceStatus.UP))
             );
             given(apiDocService.retrieveDefaultApiDoc("service1")).willReturn(Mono.just("service1"));
             given(apiDocService.retrieveApiVersions("service1")).willReturn(apiVersions);
 
             given(discoveryClient.getInstances("service2")).willReturn(
-                Collections.singletonList(new EurekaServiceInstance(getStandardInstance("service2", InstanceInfo.InstanceStatus.DOWN)))
+                Collections.singletonList(getStandardInstance("service2", InstanceStatus.DOWN))
             );
             given(apiDocService.retrieveDefaultApiDoc("service2")).willReturn(Mono.just("service2"));
             given(apiDocService.retrieveApiVersions("service2")).willReturn(apiVersions);
@@ -353,10 +353,13 @@ class ServicesControllerTests {
         return Arrays.asList(container, container1);
     }
 
-    private InstanceInfo getStandardInstance(String serviceId, InstanceInfo.InstanceStatus status) {
-        return new InstanceInfo(serviceId, null, null, "192.168.0.1", null, new InstanceInfo.PortWrapper(true, 9090),
-            null, null, null, null, null, null, null, 0, null, "hostname", status, null, null, null, null, null,
-            null, null, null, null);
+    /**
+     * Status travels in the reserved metadata key the registry adapters populate, since Spring Cloud's
+     * ServiceInstance has no status field. See DiscoveryMetadata.
+     */
+    private ServiceInstance getStandardInstance(String serviceId, InstanceStatus status) {
+        return new DefaultServiceInstance(serviceId, serviceId, "hostname", 9090, true,
+            Map.of(DiscoveryMetadata.INSTANCE_STATUS, status.name()));
     }
 
     @TestConfiguration
