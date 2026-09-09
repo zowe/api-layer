@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.product.gateway;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.springframework.cloud.client.ServiceInstance;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -41,11 +41,18 @@ public class GatewayInstanceInitializer {
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
-    private ServiceAddress process(InstanceInfo instanceInfo) {
+    /**
+     * Derives the Gateway's address from the discovered instance.
+     * <p>
+     * Uses {@link ServiceInstance#getUri()} rather than parsing the Eureka {@code homePageUrl}. This method only
+     * ever took the scheme, host and port out of that URL, and {@code getUri()} is exactly those three - so the
+     * result is unchanged while the Netflix type disappears. It also no longer depends on a registrant having set
+     * a home-page URL at all.
+     */
+    private ServiceAddress process(ServiceInstance instance) {
         try {
-            String gatewayHomePage = instanceInfo.getHomePageUrl();
-            URI uri = new URI(gatewayHomePage);
-            log.debug("Gateway homePageUrl: " + gatewayHomePage);
+            URI uri = instance.getUri();
+            log.debug("Gateway instance URI: {}", uri);
             return ServiceAddress.builder()
                 .scheme(uri.getScheme())
                 .hostname(uri.getHost() + ":" + uri.getPort())
