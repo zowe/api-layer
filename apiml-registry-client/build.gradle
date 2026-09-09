@@ -2,6 +2,11 @@ dependencies {
     api project(':apiml-registry')
 
     implementation libs.jackson.databind
+    // For the Spring Cloud DiscoveryClient adapter, which is how the Gateway keeps consuming the registry
+    // without any change to route building.
+    implementation libs.spring.cloud.commons
+    implementation libs.spring.context
+    implementation libs.http.client5
 
     compileOnly libs.lombok
     annotationProcessor libs.lombok
