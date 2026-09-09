@@ -10,9 +10,6 @@
 
 package org.zowe.apiml.zaas.security.service;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
@@ -23,8 +20,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
-import org.jose4j.jwk.JsonWebKey;
+import org.apache.commons.lang3.StringUtils;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
@@ -33,6 +29,8 @@ import org.jose4j.lang.UncheckedJoseException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
@@ -42,17 +40,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.*;
+import org.zowe.apiml.registry.SelfRegistration;
 import org.zowe.apiml.util.CacheUtils;
-import org.zowe.apiml.util.EurekaInstanceUrls;
 import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
@@ -62,7 +56,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
-import static org.zowe.apiml.security.common.util.JwtUtils.describeJwtForLogging;
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
@@ -89,16 +82,14 @@ public class AuthenticationService {
     private final AuthConfigurationProperties authConfigurationProperties;
     private final JwtSecurity jwtSecurityInitializer;
     private final ZosmfService zosmfService;
-    private final EurekaClient eurekaClient;
+    private final DiscoveryClient discoveryClient;
+    private final SelfRegistration selfRegistration;
     private final RestTemplate restTemplate;
     private final CacheManager cacheManager;
     private final CacheUtils cacheUtils;
     private boolean isModulithMode;
     private final AtomicReference<Cache> validatedJwtTokensCache = new AtomicReference<>();
     private final AtomicReference<Cache> invalidatedJwtTokensCache = new AtomicReference<>();
-
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -172,7 +163,7 @@ public class AuthenticationService {
             jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            apimlLog.log(MessageType.DEBUG, "JWT ({}) created with kid: {}, last chars of signature: ...{}", issuer, kid, StringUtils.right(token, 15));
+            log.debug("JWT created with kid ...{}, last chars of signature: ...{}", StringUtils.right(kid, 15), StringUtils.right(token, 15));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
@@ -203,15 +194,17 @@ public class AuthenticationService {
             return Boolean.TRUE;
         }
 
-        Application app = isModulithMode
-            ? eurekaClient.getApplication(CoreService.GATEWAY.getServiceId())
-            : eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+        // In the modulith one process is the Gateway and ZAAS both, so the authentication services to notify
+        // are the Gateway's instances.
+        var peers = discoveryClient.getInstances(isModulithMode
+            ? CoreService.GATEWAY.getServiceId()
+            : CoreService.ZAAS.getServiceId());
 
-        return doInvalidateAndUpdateCaches(jwtToken, distribute, app);
+        return doInvalidateAndUpdateCaches(jwtToken, distribute, peers);
     }
 
-    private Boolean doInvalidateAndUpdateCaches(String jwtToken, boolean distribute, Application app) {
-        Boolean result = doInvalidate(jwtToken, distribute, app);
+    private Boolean doInvalidateAndUpdateCaches(String jwtToken, boolean distribute, List<ServiceInstance> peers) {
+        Boolean result = doInvalidate(jwtToken, distribute, peers);
 
         if (Boolean.TRUE.equals(result) && jwtToken != null) {
             evictValidationCache(jwtToken);
@@ -221,10 +214,10 @@ public class AuthenticationService {
         return result;
     }
 
-    private Boolean doInvalidate(String jwtToken, boolean distribute, Application app) {
+    private Boolean doInvalidate(String jwtToken, boolean distribute, List<ServiceInstance> peers) {
         boolean isInvalidatedOnAnotherInstance = false;
         if (distribute) {
-            isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken, app);
+            isInvalidatedOnAnotherInstance = invalidateTokenOnAnotherInstance(jwtToken, peers);
             if (!isInvalidatedOnAnotherInstance) {
                 return Boolean.FALSE;
             }
@@ -275,38 +268,38 @@ public class AuthenticationService {
      * @param distribute distribute invalidation to another instances?
      * @return state of invalidate (true - token was invalidated)
      */
-    public Boolean invalidateJwtTokenGateway(String jwtToken, boolean distribute, Application app) {
+    public Boolean invalidateJwtTokenGateway(String jwtToken, boolean distribute, List<ServiceInstance> peers) {
         if (jwtToken != null && isInvalidated(jwtToken)) {
             return Boolean.TRUE;
         }
 
-        return doInvalidateAndUpdateCaches(jwtToken, distribute, app);
+        return doInvalidateAndUpdateCaches(jwtToken, distribute, peers);
     }
 
     /**
      * Obtain URL to use to invalidate a JWT
      *
-     * @param instanceInfo Registration data for the authentication service used
+     * @param instance Registration data for the authentication service used
      * @return the URL
      */
-    protected String getInvalidateUrl(InstanceInfo instanceInfo) {
-        return EurekaInstanceUrls.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
+    protected String getInvalidateUrl(ServiceInstance instance) {
+        return instance.getUri() + AuthController.CONTROLLER_PATH + "/invalidate";
     }
 
-    private boolean invalidateTokenOnAnotherInstance(String jwtToken, Application application) {
-        if (application == null) {
+    private boolean invalidateTokenOnAnotherInstance(String jwtToken, List<ServiceInstance> peers) {
+        if (peers == null || peers.isEmpty()) {
             return Boolean.FALSE;
         }
 
-        final String myInstanceId = eurekaClient.getApplicationInfoManager().getInfo().getInstanceId();
+        final String myInstanceId = selfRegistration.instanceId();
         boolean returnValue = Boolean.TRUE;
 
-        for (final InstanceInfo instanceInfo : application.getInstances()) {
-            if (StringUtils.equals(myInstanceId, instanceInfo.getInstanceId())) {
+        for (final ServiceInstance instance : peers) {
+            if (StringUtils.equals(myInstanceId, instance.getInstanceId())) {
                 continue;
             }
 
-            final String url = getInvalidateUrl(instanceInfo);
+            final String url = getInvalidateUrl(instance);
             try {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set(AUTHORIZATION, "Bearer " + jwtToken);
@@ -317,8 +310,8 @@ public class AuthenticationService {
                     requestEntity,
                     Void.class
                 );
-            } catch (HttpClientErrorException | ResourceAccessException e) {
-                log.warn("Problem invalidating token on another instance url {}", url, e);
+            } catch (HttpClientErrorException e) {
+                log.debug("Problem invalidating token on another instance url {}", url, e);
                 returnValue = Boolean.FALSE;
             }
 
@@ -347,16 +340,13 @@ public class AuthenticationService {
         try {
             var parsedJwt = tokenAuthentication.getJwt();
             if (parsedJwt instanceof SignedJWT signedJwt) {
-                String activeKid = jwtSecurityInitializer.getJwkPublicKey().map(JsonWebKey::getKeyId).orElse("unknown");
-                if (isVerified(signedJwt, activeKid)) {
+                if (signedJwt.verify(jwtSecurityInitializer.getJwtVerifier())) {
                     if (tokenAuthentication.isExpired()) {
                         throw new ExpiredJWTException("Token expired on %s".formatted(tokenAuthentication.getExpiration()));
                     }
                     return;
                 }
-                apimlLog.log(MessageType.DEBUG, "JWT signature verification failed for token [{}], currently active signing key kid={}. " +
-                        "If the token's kid does not match the active kid, this instance does not hold the key that signed the token.",
-                    describeJwtForLogging(signedJwt), activeKid);
+                log.debug("JWT signature verification failed, last chars of signature: ...{}", StringUtils.right(tokenAuthentication.getJwt().getParsedString(), 15));
                 throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get());
             } else {
                 throw new BadJWTException("Token is not signed");
@@ -365,17 +355,6 @@ public class AuthenticationService {
             throw handleJwtParserException(exception);
         }
     }
-
-    private boolean isVerified(SignedJWT signedJwt, String activeKid) throws JOSEException {
-        try {
-            return signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
-        } catch (JOSEException exception) {
-            apimlLog.log(MessageType.DEBUG, "JWT signature verification threw an exception for token [{}], currently active signing key kid={}: {}",
-                describeJwtForLogging(signedJwt), activeKid, exception.getMessage());
-            throw exception;
-        }
-    }
-
 
     /**
      * Method validate if jwtToken is valid or not. This method contains two types of verification:
@@ -456,14 +435,13 @@ public class AuthenticationService {
      * @return true if all token were sent, otherwise false
      */
     public boolean distributeInvalidate(String toInstanceId) {
-        var zaas = eurekaClient.getApplication(CoreService.ZAAS.getServiceId());
+        var target = discoveryClient.getInstances(CoreService.ZAAS.getServiceId()).stream()
+            .filter(instance -> StringUtils.equals(toInstanceId, instance.getInstanceId()))
+            .findFirst();
 
-        if (zaas == null) return false;
+        if (target.isEmpty()) return false;
 
-        final InstanceInfo instanceInfo = zaas.getByInstanceId(toInstanceId);
-        if (instanceInfo == null) return false;
-
-        var url = EurekaInstanceUrls.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
+        var url = getInvalidateUrl(target.get());
 
         final Collection<String> invalidated = cacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {

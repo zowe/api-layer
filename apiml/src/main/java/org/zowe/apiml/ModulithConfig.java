@@ -13,7 +13,6 @@ package org.zowe.apiml;
 import com.netflix.appinfo.DataCenterInfo;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.appinfo.LeaseInfo;
-import com.netflix.discovery.CacheRefreshedEvent;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.discovery.shared.Application;
 import com.netflix.discovery.shared.Applications;
@@ -60,6 +59,7 @@ import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.registry.RegistrationKind;
+import org.zowe.apiml.registry.SelfRegistration;
 import org.zowe.apiml.registry.ServiceRegistry;
 import org.zowe.apiml.registry.replication.PeerReplicator;
 import org.zowe.apiml.filter.PreFluxFilter;
@@ -263,7 +263,9 @@ public class ModulithConfig {
         var jwtSec = applicationContext.getBean(JwtSecurity.class);
         var providers = applicationContext.getBean(Providers.class);
         if (providers.isZosfmUsed() && !jwtSec.getZosmfListener().isZosmfReady()) {
-            jwtSec.getZosmfListener().getZosmfRegisteredListener().onEvent(new CacheRefreshedEvent());
+            // The registry client is disabled here - the registry is a bean in this JVM - so nothing
+            // publishes RegistryCacheRefreshedEvent and this timer is what drives the check.
+            jwtSec.getZosmfListener().onRegistryRefreshed();
         }
     }
 
@@ -295,6 +297,35 @@ public class ModulithConfig {
     @Bean
     DiscoveryClient registryDiscoveryClient(ServiceRegistry serviceRegistry) {
         return new org.zowe.apiml.discovery.registry.RegistryDiscoveryClient(serviceRegistry);
+    }
+
+    /**
+     * What this process counts as, when code needs to recognise its own registration.
+     * <p>
+     * The Gateway, because in the modulith one process is the Gateway, the Discovery Service, ZAAS, the
+     * Caching Service and the API Catalog at once, and the Gateway is the registration the others are reached
+     * through. The registry client's own {@code SelfRegistration} is not available here - the client is
+     * disabled, see {@code eureka.client.enabled} in application.yml - so this supplies it.
+     * <p>
+     * Computed the same way as the registered instance rather than read from {@link #instances}, which is only
+     * populated once the application is ready and would make this bean's value depend on startup order.
+     */
+    @Bean
+    SelfRegistration selfRegistration() {
+        var gateway = getInstanceInfo(CoreService.GATEWAY.getServiceId());
+        return new SelfRegistration() {
+
+            @Override
+            public String instanceId() {
+                return gateway.instanceId();
+            }
+
+            @Override
+            public String serviceId() {
+                return gateway.serviceId();
+            }
+
+        };
     }
 
     @Bean

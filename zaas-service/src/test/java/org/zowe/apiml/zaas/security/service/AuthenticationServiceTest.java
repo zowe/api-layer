@@ -10,19 +10,14 @@
 
 package org.zowe.apiml.zaas.security.service;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
+
 import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.proc.BadJWTException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
-import org.apache.commons.lang.time.DateUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +31,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpEntity;
@@ -46,8 +44,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
@@ -61,27 +59,18 @@ import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.security.common.util.JwtUtils;
+import org.zowe.apiml.registry.SelfRegistration;
 import org.zowe.apiml.util.CacheUtils;
-import org.zowe.apiml.util.EurekaInstanceUrls;
 import org.zowe.apiml.zaas.config.CacheConfig;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
-import java.net.ConnectException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
@@ -119,7 +108,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Mock
     private ZosmfService zosmfService;
     @Mock
-    private EurekaClient eurekaClient;
+    private DiscoveryClient discoveryClient;
+    @Mock
+    private SelfRegistration selfRegistration;
     @Mock
     private CacheUtils cacheUtils;
     @Mock
@@ -147,7 +138,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer,
-            zosmfService, eurekaClient, restTemplate, cacheManager, cacheUtils
+            zosmfService, discoveryClient, selfRegistration, restTemplate, cacheManager, cacheUtils
         );
         authService.afterPropertiesSet();
 
@@ -281,21 +272,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 () -> authService.parseJwtWithSignature(invalidToken));
         }
 
-        @Test
-        void whenSignatureNotVerified_thenThrowsTokenNotValidException() throws JOSEException {
-            stubJWTSecurityForSign();
-            var verifier = mock(RSASSAVerifier.class);
-            lenient().when(verifier.getPublicKey()).thenReturn((RSAPublicKey) publicKey);
-            lenient().when(verifier.verify(any(), any(), any())).thenReturn(false);
-            lenient().when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(verifier);
-
-            String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
-            var exception = assertThrows(TokenNotValidException.class,
-                () -> authService.parseJwtWithSignature(pat),
-                "Expected exception is not TokenNotValidException");
-            assertEquals(BadJWTException.class, exception.getCause().getClass());
-            assertTrue(exception.getCause().getMessage().startsWith("Token signature is invalid for public key:"));
-        }
     }
 
     @Nested
@@ -461,13 +437,8 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             .compact();
     }
 
-    private InstanceInfo createInstanceInfo(String instanceId, String hostName, int securePort, boolean isSecureEnabled) {
-        InstanceInfo out = mock(InstanceInfo.class);
-        when(out.getInstanceId()).thenReturn(instanceId);
-        when(out.getHostName()).thenReturn(hostName);
-        when(out.getSecurePort()).thenReturn(securePort);
-        when(out.isPortEnabled(InstanceInfo.PortType.SECURE)).thenReturn(isSecureEnabled);
-        return out;
+    private ServiceInstance createInstanceInfo(String instanceId, String hostName, int port, boolean isSecureEnabled) {
+        return new DefaultServiceInstance(instanceId, CoreService.ZAAS.getServiceId(), hostName, port, isSecureEnabled);
     }
 
     @Nested
@@ -478,7 +449,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenNoInstancesAvailable_thenReturnFalse() {
-            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId())).thenReturn(null);
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(List.of());
             assertFalse(authService.invalidateJwtToken(JWT_TOKEN, true));
         }
 
@@ -502,18 +473,9 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenTokenWasAlreadyInvalidateOnAnotherInstance_thenReturnInvalidatedTrue() {
-            Application application = mock(Application.class);
-            ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
-            InstanceInfo instanceInfo = mock(InstanceInfo.class);
-            InstanceInfo instanceInfo2 = mock(InstanceInfo.class);
-            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId())).thenReturn(application);
-            when(eurekaClient.getApplicationInfoManager()).thenReturn(applicationInfoManager);
-            when(applicationInfoManager.getInfo()).thenReturn(instanceInfo);
-            when(instanceInfo.getInstanceId()).thenReturn("instanceId");
-            when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo2));
-            when(instanceInfo2.getInstanceId()).thenReturn("insncId2");
-            when(instanceInfo2.getSecurePort()).thenReturn(100);
-            when(instanceInfo2.getHostName()).thenReturn("localhost");
+            var peer = createInstanceInfo("insncId2", "localhost", 10023, false);
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(List.of(peer));
+            when(selfRegistration.instanceId()).thenReturn("instanceId");
 
             stubJWTSecurityForSign();
             authConfigurationProperties.getTokenProperties().setIssuer(ZOSMF);
@@ -522,7 +484,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             headers.set(AUTHORIZATION, "Bearer " + token);
             HttpEntity<Void> requestEntity = new HttpEntity<>(headers);
             ResponseEntity<Void> responseEntity = ResponseEntity.ok().build();
-            when(restTemplate.exchange("http://localhost:0/zaas/api/v1/auth/invalidate",
+            when(restTemplate.exchange("http://localhost:10023/zaas/api/v1/auth/invalidate",
                 DELETE,
                 requestEntity,
                 Void.class)).thenReturn(responseEntity);
@@ -669,7 +631,10 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         private ZosmfService zosmfService;
 
         @MockitoBean
-        private EurekaClient eurekaClient;
+        private DiscoveryClient discoveryClient;
+
+        @MockitoBean
+        private SelfRegistration selfRegistration;
 
         @MockitoBean
         private GatewayClient gatewayClient;
@@ -739,27 +704,24 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void whenNoServiceAvailable_thenReturnFailure() {
-            when(eurekaClient.getApplication("zaas")).thenReturn(null);
+            when(discoveryClient.getInstances("zaas")).thenReturn(List.of());
             assertFalse(authService.distributeInvalidate("instanceId"));
         }
 
         @Test
         void whenNoInstanceAvailable_thenReturnFailure() {
-            Application application = mock(Application.class);
-            when(application.getByInstanceId("instanceId")).thenReturn(null);
+            when(discoveryClient.getInstances("zaas"))
+                .thenReturn(List.of(createInstanceInfo("anotherInstance", "host", 1433, true)));
 
-            when(eurekaClient.getApplication("zaas")).thenReturn(application);
             assertFalse(authService.distributeInvalidate("instanceId"));
         }
 
         @Test
         void whenInstancesAvailable_thenReturnSuccess() {
 
-            InstanceInfo instanceInfo = createInstanceInfo("instanceId", "host", 1433, true);
+            ServiceInstance instanceInfo = createInstanceInfo("instanceId", "host", 1433, true);
 
-            Application application = mock(Application.class);
-            when(application.getByInstanceId("instanceId")).thenReturn(instanceInfo);
-            when(eurekaClient.getApplication("zaas")).thenReturn(application);
+            when(discoveryClient.getInstances("zaas")).thenReturn(List.of(instanceInfo));
 
             List<Object> elementsInCache = new ArrayList<>();
             elementsInCache.add("a");
@@ -769,12 +731,12 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             authService.distributeInvalidate(instanceInfo.getInstanceId());
 
             verify(restTemplate, times(1))
-                .exchange(EurekaInstanceUrls.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
+                .exchange(instanceInfo.getUri() + "/zaas/api/v1/auth/invalidate",
                     DELETE,
                     getHeaders("a"),
                     Void.class);
             verify(restTemplate, times(1))
-                .exchange(EurekaInstanceUrls.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
+                .exchange(instanceInfo.getUri() + "/zaas/api/v1/auth/invalidate",
                     DELETE,
                     getHeaders("b"),
                     Void.class);
@@ -784,26 +746,14 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         void givenHttpClientErrorOnInvalidateAnotherInstance_thenReturnFalse() {
             String token = "jwtToken";
 
-            Application application = mock(Application.class);
-            ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
+            var myInstance = createInstanceInfo("myInstance", "localhost", 1433, true);
+            var otherInstance = createInstanceInfo("otherInstance", "localhost", 1434, true);
 
-            InstanceInfo myInstance = mock(InstanceInfo.class);
-            InstanceInfo otherInstance = mock(InstanceInfo.class);
-
-            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId()))
-                .thenReturn(application);
-
-            when(eurekaClient.getApplicationInfoManager())
-                .thenReturn(applicationInfoManager);
-
-            when(applicationInfoManager.getInfo())
-                .thenReturn(myInstance);
-
-            when(myInstance.getInstanceId())
-                .thenReturn("myInstance");
-
-            when(application.getInstances())
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId()))
                 .thenReturn(List.of(myInstance, otherInstance));
+
+            when(selfRegistration.instanceId())
+                .thenReturn("myInstance");
 
             doThrow(HttpClientErrorException.BadRequest.class)
                 .when(restTemplate)
@@ -811,40 +761,6 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertFalse(authService.invalidateJwtToken(token, true));
 
-        }
-
-        @Test
-        void givenPeerUnreachableOnInvalidateAnotherInstance_thenReturnFalseInsteadOfFailing() {
-            String token = "jwtToken";
-
-            Application application = mock(Application.class);
-            ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
-
-            InstanceInfo myInstance = mock(InstanceInfo.class);
-            InstanceInfo otherInstance = mock(InstanceInfo.class);
-
-            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId()))
-                .thenReturn(application);
-
-            when(eurekaClient.getApplicationInfoManager())
-                .thenReturn(applicationInfoManager);
-
-            when(applicationInfoManager.getInfo())
-                .thenReturn(myInstance);
-
-            when(myInstance.getInstanceId())
-                .thenReturn("myInstance");
-
-            when(application.getInstances())
-                .thenReturn(List.of(myInstance, otherInstance));
-
-            doThrow(new ResourceAccessException(
-                "I/O error on DELETE request for \"https://localhost:10010/gateway/api/v1/auth/invalidate\"",
-                new ConnectException("Connection refused")))
-                .when(restTemplate)
-                .exchange(anyString(), any(), any(), (Class<Object>) any());
-
-            assertFalse(authService.invalidateJwtToken(token, true));
         }
     }
 

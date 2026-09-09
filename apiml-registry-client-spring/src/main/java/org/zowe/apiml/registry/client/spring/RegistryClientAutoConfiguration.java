@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -46,9 +47,10 @@ import java.util.List;
  * {@code apiml-registry-client-spring} - no annotation, no starter - and keeps consuming Spring Cloud's
  * {@code DiscoveryClient}, so route building, load balancing and the API Catalog are untouched.
  * <p>
- * Turn it off with {@code eureka.client.enabled: false}. The modulith does exactly that: the registry is a
- * bean in the same JVM there, so it supplies its own {@code DiscoveryClient} over the registry directly
- * instead of a client polling its own port over HTTP.
+ * Turn it off with {@code eureka.client.enabled: false}, or leave a service neither registering nor fetching
+ * - {@code registerWithEureka: false} and {@code fetchRegistry: false} - and no client is built at all. The
+ * modulith is the second case: the registry is a bean in the same JVM there, so it supplies its own
+ * {@code DiscoveryClient} over the registry directly rather than have a client poll its own port over HTTP.
  */
 @Slf4j
 @AutoConfiguration
@@ -95,66 +97,80 @@ public class RegistryClientAutoConfiguration {
     }
 
     /**
-     * @param secureSslContext   the keystore-bearing context from {@code HttpConfig}, injected by bean name so
-     *                           this module needs no dependency on {@code apiml-common}
-     * @param verifyCertificates when off, the Discovery Service certificate's host name is not checked - the
-     *                           same {@code apiml.security.ssl.verifySslCertificatesOfServices} switch that
-     *                           governed the Eureka client
+     * The client and everything that drives it.
+     * <p>
+     * Absent when a service neither registers nor fetches, so that the modulith - which does both through the
+     * in-JVM registry instead - does not build an HTTP client, a connection pool and a scheduler thread that
+     * nothing would ever use.
      */
-    @Bean
-    @ConditionalOnMissingBean
-    RegistryTransport registryTransport(
-        RegistryFetchProperties clientConfig,
-        @Qualifier("secureSslContext") ObjectProvider<SSLContext> secureSslContext,
-        @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}") boolean verifyCertificates,
-        @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}") boolean nonStrictVerify,
-        @Value("${apiml.service.discoveryServiceUserid:eureka}") String userid,
-        @Value("${apiml.service.discoveryServicePassword:password}") String password
-    ) {
-        List<String> urls = clientConfig.discoveryServiceUrls();
-        if (urls.isEmpty()) {
-            throw new IllegalStateException("eureka.client.serviceUrl.defaultZone is not set, so this service "
-                + "has no Discovery Service to register with");
+    @Configuration(proxyBeanMethods = false)
+    @ConditionalOnExpression(
+        "${eureka.client.registerWithEureka:true} or ${eureka.client.fetchRegistry:true}")
+    static class ActiveClientConfiguration {
+
+        /**
+         * @param secureSslContext   the keystore-bearing context from {@code HttpConfig}, injected by bean name so
+         *                           this module needs no dependency on {@code apiml-common}
+         * @param verifyCertificates when off, the Discovery Service certificate's host name is not checked - the
+         *                           same {@code apiml.security.ssl.verifySslCertificatesOfServices} switch that
+         *                           governed the Eureka client
+         */
+        @Bean
+        @ConditionalOnMissingBean
+        RegistryTransport registryTransport(
+            RegistryFetchProperties clientConfig,
+            @Qualifier("secureSslContext") ObjectProvider<SSLContext> secureSslContext,
+            @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}") boolean verifyCertificates,
+            @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}") boolean nonStrictVerify,
+            @Value("${apiml.service.discoveryServiceUserid:eureka}") String userid,
+            @Value("${apiml.service.discoveryServicePassword:password}") String password
+        ) {
+            List<String> urls = clientConfig.discoveryServiceUrls();
+            if (urls.isEmpty()) {
+                throw new IllegalStateException("eureka.client.serviceUrl.defaultZone is not set, so this service "
+                    + "has no Discovery Service to register with");
+            }
+            return new HttpRegistryTransport(
+                urls,
+                secureSslContext.getIfAvailable(),
+                new RegistryCodec(),
+                verifyCertificates && !nonStrictVerify,
+                clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,
+                clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,
+                userid,
+                password
+            );
         }
-        return new HttpRegistryTransport(
-            urls,
-            secureSslContext.getIfAvailable(),
-            new RegistryCodec(),
-            verifyCertificates && !nonStrictVerify,
-            clientConfig.getEurekaServerConnectTimeoutSeconds() * 1000,
-            clientConfig.getEurekaServerReadTimeoutSeconds() * 1000,
-            userid,
-            password
-        );
-    }
 
-    @Bean
-    @ConditionalOnMissingBean
-    RegistryClient registryClient(
-        RegistryTransport transport,
-        RegistryFetchProperties clientConfig,
-        ServiceInstance selfServiceInstance
-    ) {
-        return clientConfig.isRegisterWithEureka()
-            ? new RegistryClient(transport, selfServiceInstance)
-            : new RegistryClient(transport);
-    }
+        @Bean
+        @ConditionalOnMissingBean
+        RegistryClient registryClient(
+            RegistryTransport transport,
+            RegistryFetchProperties clientConfig,
+            ServiceInstance selfServiceInstance
+        ) {
+            return clientConfig.isRegisterWithEureka()
+                ? new RegistryClient(transport, selfServiceInstance)
+                : new RegistryClient(transport);
+        }
 
-    @Bean
-    @ConditionalOnMissingBean(org.springframework.cloud.client.discovery.DiscoveryClient.class)
-    CachedRegistryDiscoveryClient registryDiscoveryClient(RegistryClient registryClient) {
-        return new CachedRegistryDiscoveryClient(registryClient);
-    }
+        @Bean
+        @ConditionalOnMissingBean(org.springframework.cloud.client.discovery.DiscoveryClient.class)
+        CachedRegistryDiscoveryClient registryDiscoveryClient(RegistryClient registryClient) {
+            return new CachedRegistryDiscoveryClient(registryClient);
+        }
 
-    @Bean
-    RegistryClientLifecycle registryClientLifecycle(
-        RegistryClient registryClient,
-        RegistryFetchProperties clientConfig,
-        ApplicationEventPublisher publisher,
-        ObjectProvider<HealthStatusSource> healthStatusSource
-    ) {
-        return new RegistryClientLifecycle(
-            registryClient, clientConfig, publisher, healthStatusSource.getIfAvailable());
+        @Bean
+        RegistryClientLifecycle registryClientLifecycle(
+            RegistryClient registryClient,
+            RegistryFetchProperties clientConfig,
+            ApplicationEventPublisher publisher,
+            ObjectProvider<HealthStatusSource> healthStatusSource
+        ) {
+            return new RegistryClientLifecycle(
+                registryClient, clientConfig, publisher, healthStatusSource.getIfAvailable());
+        }
+
     }
 
     /**

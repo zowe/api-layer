@@ -11,7 +11,6 @@
 package org.zowe.apiml.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.zowe.apiml.discovery.registry.EurekaApplicationAdapter;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -37,6 +36,7 @@ import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -62,7 +62,7 @@ import static org.apache.http.HttpStatus.*;
 public class ReactiveAuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final EurekaApplicationAdapter eurekaApplicationAdapter;
+    private final DiscoveryClient discoveryClient;
     private final HttpUtils httpUtils;
     private final CompoundAuthProvider compoundAuthProvider;
     private final ObjectMapper objectMapper;
@@ -235,7 +235,7 @@ public class ReactiveAuthenticationController {
     @DeleteMapping(path = "/invalidate")
     public Mono<ResponseEntity<Void>> invalidateJwtToken(@RequestHeader("Authorization") String authHeader) {
         try {
-            var app = eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId());
+            var app = discoveryClient.getInstances(CoreService.GATEWAY.getServiceId());
             if (!authHeader.startsWith("Bearer ")) {
                 return Mono.just(ResponseEntity.status(SC_BAD_REQUEST).build());
             }
@@ -301,7 +301,7 @@ public class ReactiveAuthenticationController {
             .filter(TokenAuthentication.class::isInstance)
             .map(TokenAuthentication.class::cast)
             .map(tokenAuthentication -> {
-                var gateway = eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId());
+                var gateway = discoveryClient.getInstances(CoreService.GATEWAY.getServiceId());
                 authenticationService.invalidateJwtTokenGateway(tokenAuthentication.getCredentials(), true, gateway);
                 var newToken = tokenCreationService.createJwtTokenWithoutCredentials(tokenAuthentication.getPrincipal());
                 exchange.getResponse().addCookie(httpUtils.createResponseCookie(newToken));

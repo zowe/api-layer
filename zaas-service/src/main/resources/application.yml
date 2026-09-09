@@ -8,7 +8,6 @@ logbackServiceName: ZWEAZS1
 logging:
     level:
         org.springframework.cloud.client.discovery.DiscoveryClient: OFF
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
 
 apiml:
     service:
@@ -195,9 +194,6 @@ spring.config.activate.on-profile: info
 logging:
     level:
         ROOT: INFO
-        com.netflix: WARN
-        com.netflix.discovery: ERROR
-        com.netflix.config: ERROR
         javax.net.ssl: ERROR
         org.apache: WARN  #org.apache.catalina, org.apache.coyote, org.apache.tomcat
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
@@ -226,8 +222,7 @@ management:
 logging:
     level:
         ROOT: INFO
-        com.netflix: DEBUG
-        com.netflix.config: ERROR
+        org.zowe.apiml.registry: DEBUG
         javax.net.ssl: ERROR
         org.apache.http: DEBUG
         org.apache.tomcat.util.net: DEBUG
@@ -235,7 +230,6 @@ logging:
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.ehcache: DEBUG
-        org.springframework.cloud.netflix.zuul.filters.post.SendErrorFilter: INFO
         org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
         org.springframework.security: DEBUG

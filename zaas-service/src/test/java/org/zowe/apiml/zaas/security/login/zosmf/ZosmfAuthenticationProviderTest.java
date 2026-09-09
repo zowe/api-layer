@@ -11,9 +11,6 @@
 package org.zowe.apiml.zaas.security.login.zosmf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.EurekaClientConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,8 +19,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.stubbing.Answer;
-import org.springframework.cloud.client.discovery.composite.CompositeDiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaDiscoveryClient;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -74,9 +72,8 @@ class ZosmfAuthenticationProviderTest {
     private static final String INVALID_RESPONSE = "{\"saf_realm\": \"" + DOMAIN + "\"}";
     private static final String ZOSMF_TOKEN = JWTTestUtils.createDummyZOSMFToken(USERNAME);
 
-    @Mock private EurekaClientConfig clientConfig;
 
-    @Mock private EurekaClient eurekaClient;
+    @Mock private DiscoveryClient discoveryClient;
 
     @Mock private AuthenticationService authenticationService;
 
@@ -86,7 +83,7 @@ class ZosmfAuthenticationProviderTest {
 
     private UsernamePasswordAuthenticationToken usernamePasswordAuthentication;
     private AuthConfigurationProperties authConfigurationProperties;
-    private InstanceInfo zosmfInstance;
+    private ServiceInstance zosmfInstance;
     private final ObjectMapper securityObjectMapper = new ObjectMapper();
 
     private ZosmfService.ZosmfInfo getZosmfResponse() {
@@ -96,11 +93,8 @@ class ZosmfAuthenticationProviderTest {
         return info;
     }
 
-    private InstanceInfo createInstanceInfo(String host, int port) {
-        InstanceInfo out = mock(InstanceInfo.class);
-        lenient().when(out.getHostName()).thenReturn(host);
-        lenient().when(out.getPort()).thenReturn(port);
-        return out;
+    private ServiceInstance createInstanceInfo(String host, int port) {
+        return new DefaultServiceInstance(host + ":" + ZOSMF + ":" + port, ZOSMF, host, port, false);
     }
 
     private ZosmfService createZosmfService() {
@@ -113,7 +107,7 @@ class ZosmfAuthenticationProviderTest {
             new ArrayList<>(),
             null);
         ReflectionTestUtils.setField(zosmfService, "meAsProxy", zosmfService);
-        ReflectionTestUtils.setField(zosmfService, "discovery", new CompositeDiscoveryClient(Collections.singletonList(new EurekaDiscoveryClient(eurekaClient, clientConfig))));
+        ReflectionTestUtils.setField(zosmfService, "discovery", discoveryClient);
         ReflectionTestUtils.setField(zosmfService, "tokenCreationService", tokenCreationService);
 
         return spy(zosmfService);
@@ -143,7 +137,7 @@ class ZosmfAuthenticationProviderTest {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
         authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         HttpHeaders headers = new HttpHeaders();
@@ -170,7 +164,7 @@ class ZosmfAuthenticationProviderTest {
     void loginWithBadUser() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         when(restTemplate.exchange(eq("http://localhost:0/zosmf/info"),
@@ -193,7 +187,7 @@ class ZosmfAuthenticationProviderTest {
     void noZosmfInstance() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.emptyList());
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.emptyList());
 
         ZosmfService zosmfService = createZosmfService();
         ZosmfAuthenticationProvider zosmfAuthenticationProvider =
@@ -221,7 +215,7 @@ class ZosmfAuthenticationProviderTest {
     void notValidZosmfResponse() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         HttpHeaders headers = new HttpHeaders();
@@ -247,7 +241,7 @@ class ZosmfAuthenticationProviderTest {
     void noDomainInResponse() throws IOException {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.singletonList(zosmfInstance));
 
         ZosmfService.ZosmfInfo zosmfInfoNoDomain =
             securityObjectMapper.reader().forType(ZosmfService.ZosmfInfo.class).readValue(INVALID_RESPONSE);
@@ -278,7 +272,7 @@ class ZosmfAuthenticationProviderTest {
 
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         HttpHeaders headers = new HttpHeaders();
@@ -305,7 +299,7 @@ class ZosmfAuthenticationProviderTest {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
         authConfigurationProperties.getZosmf().setJwtAutoconfiguration(LTPA);
 
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         HttpHeaders headers = new HttpHeaders();
@@ -330,7 +324,7 @@ class ZosmfAuthenticationProviderTest {
     void shouldThrowNewExceptionIfRestClientException() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         when(restTemplate.exchange(eq("http://localhost:0/zosmf/info"),
@@ -352,7 +346,7 @@ class ZosmfAuthenticationProviderTest {
     void shouldThrowNewExceptionIfResourceAccessException() {
         authConfigurationProperties.getZosmf().setServiceId(ZOSMF);
 
-        when(eurekaClient.getInstancesByVipAddress(ZOSMF, false)).thenReturn(Collections.singletonList(zosmfInstance));
+        when(discoveryClient.getInstances(ZOSMF)).thenReturn(Collections.singletonList(zosmfInstance));
 
         mockZosmfAuthenticationRestCallResponse();
         when(restTemplate.exchange(eq("http://localhost:0/zosmf/info"),
