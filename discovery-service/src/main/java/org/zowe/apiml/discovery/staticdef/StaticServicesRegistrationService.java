@@ -32,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * Registers statically defined APIs into the registry and keeps their status current.
  * <p>
- * Driven by {@link org.zowe.apiml.discovery.registry.RegistryLifecycleListener}, which calls
+ * Driven by {@link org.zowe.apiml.discovery.registry.RegistryLifecycle}, which calls
  * {@link #registerServices()} once the registry reports itself available - the same trigger point the
  * Eureka-based implementation used, just without reaching through a static server-context holder.
  */

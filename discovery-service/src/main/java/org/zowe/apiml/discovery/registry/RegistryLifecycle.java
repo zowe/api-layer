@@ -14,8 +14,8 @@ import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -44,19 +44,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
 public class RegistryLifecycle implements ApplicationListener<ApplicationReadyEvent> {
 
-    /*
-     * Servlet only, i.e. the standalone Discovery Service.
-     *
-     * The modulith runs its own equivalent in ModulithConfig.onApplicationStart(), which registers the Gateway,
-     * Discovery, Caching and Catalog instances itself. Letting this class run there as well registered a second,
-     * competing `discovery` instance and re-ran static-definition loading - both nodes of the same registry
-     * disagreeing about what is present. It is component-scanned from org.zowe.apiml, so without this condition
-     * the modulith picks it up simply because it lives under that package.
-     */
-
+    private final ApplicationContext applicationContext;
     private final ServiceRegistry registry;
     private final StaticServicesRegistrationService staticServicesRegistrationService;
     private final ServiceStartupEventHandler startupEventHandler;
@@ -93,18 +83,28 @@ public class RegistryLifecycle implements ApplicationListener<ApplicationReadyEv
 
     @Override
     public void onApplicationEvent(@Nonnull ApplicationReadyEvent event) {
-        try {
-            registerSelf();
-        } catch (RuntimeException e) {
-            // Never fatal. The registry's job is to serve other services; not appearing in its own registry is a
-            // degradation, not a reason to refuse to start. Under Eureka this was implicitly the case because
-            // self-registration went over HTTP asynchronously and its failures were only logged.
-            log.error("The Discovery Service could not register itself; it will still serve other services", e);
+        // Inside the modulith one process is the Discovery Service and four other services at once, and
+        // ModulithConfig.onApplicationStart() puts all five into the registry itself. Registering here as well
+        // produced a second, competing `discovery` instance - one SELF, one STATIC - so that the two nodes of
+        // the same registry disagreed about what was present.
+        //
+        // Everything else below has to happen in both deployments, which is what this class originally got
+        // wrong: it was gated to servlet applications wholesale, leaving the modulith with no RegistryAvailable
+        // event, no static service definitions and, worst of all, no lease eviction at all.
+        if (!applicationContext.containsBean("modulithConfig")) {
+            try {
+                registerSelf();
+            } catch (RuntimeException e) {
+                // Never fatal. The registry's job is to serve other services; not appearing in its own registry
+                // is a degradation, not a reason to refuse to start. Under Eureka this was implicitly the case
+                // because self-registration went over HTTP asynchronously and its failures were only logged.
+                log.error("The Discovery Service could not register itself; it will still serve other services", e);
+            }
         }
 
         // Opening for traffic publishes RegistryAvailable, which is what drives static registration - the same
         // ordering the Eureka-based implementation had, where static services were loaded from
-        // EurekaRegistryAvailableEvent.
+        // EurekaRegistryAvailableEvent, published by Spring Cloud's server initializer in both deployments.
         registry.openForTraffic(expectedClientsSendingRenews);
         staticServicesRegistrationService.registerServices();
 
