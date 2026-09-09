@@ -161,7 +161,7 @@ class ApiDocServiceTest {
                 var responseBody = "api-doc body";
                 var instance = getStandardInstance(getStandardMetadata(), true);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(singletonList(instance));
 
                 doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
@@ -180,7 +180,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
                 assertEquals(0L, elapsed.toSeconds());
             }
 
@@ -197,7 +197,7 @@ class ApiDocServiceTest {
                 void givenServerErrorWhenRequestingSwaggerUrl() {
                     var instance = getStandardInstance(getStandardMetadata(), true);
 
-                    when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                    when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                     when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(singletonList(instance));
 
                     doReturn(HttpStatusCode.valueOf(SC_INTERNAL_SERVER_ERROR)).when(clientResponse).statusCode();
@@ -205,7 +205,7 @@ class ApiDocServiceTest {
                     Mono<String> apiDocMono = apiDocService.retrieveApiDoc(SERVICE_ID, SERVICE_VERSION_V);
                     Exception exception = assertThrows(ApiDocNotFoundException.class, apiDocMono::block);
 
-                    verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                    verify(metadataFilterService).verifyAllowedDomains(instance);
                     assertEquals("No API Documentation was retrieved due to " + SERVICE_ID + " server error: 500", exception.getMessage());
                 }
 
@@ -247,7 +247,7 @@ class ApiDocServiceTest {
                 var responseBody = "api-doc body";
                 var instance = getStandardInstance(getMetadataWithoutSwaggerUrl(), true);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(singletonList(instance));
 
                 doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
@@ -266,7 +266,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
                 assertEquals(0L, elapsed.toSeconds());
             }
 
@@ -276,7 +276,7 @@ class ApiDocServiceTest {
 
                 var instance = getStandardInstance(getMetadataWithoutApiInfo(), true);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(singletonList(instance));
 
@@ -290,7 +290,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
                 assertEquals(0L, elapsed.toSeconds());
             }
 
@@ -300,7 +300,7 @@ class ApiDocServiceTest {
 
                 var instance = getStandardInstance(getMetadataWithoutApiInfo(), false);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(singletonList(instance));
 
                 doReturn(HttpStatusCode.valueOf(SC_OK)).when(clientResponse).statusCode();
@@ -313,7 +313,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
                 assertEquals(0L, elapsed.toSeconds());
             }
 
@@ -321,7 +321,7 @@ class ApiDocServiceTest {
             void givenServerCommunicationErrorWhenRequestingSwaggerUrl_thenLogCustomError() {
                 var instance = getStandardInstance(getStandardMetadata(), true);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(singletonList(instance));
 
                 var exception = new IOException("Unable to reach the host");
@@ -337,7 +337,7 @@ class ApiDocServiceTest {
                 assertEquals(SERVICE_VERSION, lastApiInfo.get().getVersion());
                 assertEquals(SWAGGER_URL, lastApiInfo.get().getSwaggerUrl());
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
                 verify(apimlLogger, times(1)).log("org.zowe.apiml.apicatalog.apiDocHostCommunication", SERVICE_ID, exception.getMessage());
             }
 
@@ -352,7 +352,7 @@ class ApiDocServiceTest {
                 var metadata = getMetadataWithMultipleApiInfo();
                 var instance = getStandardInstance(metadata, true);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(singletonList(instance));
 
@@ -372,7 +372,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
 
                 assertEquals(0L, elapsed.toSeconds());
             }
@@ -385,7 +385,7 @@ class ApiDocServiceTest {
 
                 var instance = getStandardInstance(metadata, true);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(singletonList(instance));
 
@@ -405,7 +405,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
                 assertEquals(0L, elapsed.toSeconds());
             }
 
@@ -415,7 +415,7 @@ class ApiDocServiceTest {
 
                 var instance = getStandardInstance(getMetadataWithMultipleApiInfoWithDifferentVersionFormat(), true);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(singletonList(instance));
 
@@ -435,7 +435,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
                 assertEquals(0L, elapsed.toSeconds());
             }
 
@@ -445,7 +445,7 @@ class ApiDocServiceTest {
 
                 var instance = getStandardInstance(getMetadataWithoutApiInfo(), true);
 
-                when(metadataFilterService.verifyAllowedDomains(instance.getInstanceInfo())).thenReturn(instance.getInstanceInfo());
+                when(metadataFilterService.verifyAllowedDomains(instance)).thenReturn(instance);
                 when(discoveryClient.getInstances(SERVICE_ID))
                     .thenReturn(singletonList(instance));
 
@@ -459,7 +459,7 @@ class ApiDocServiceTest {
                     })
                     .verifyComplete();
 
-                verify(metadataFilterService).verifyAllowedDomains(instance.getInstanceInfo());
+                verify(metadataFilterService).verifyAllowedDomains(instance);
                 assertEquals(0L, elapsed.toSeconds());
             }
 
@@ -665,13 +665,13 @@ class ApiDocServiceTest {
 
         @Test
         void givenApiCatalogId_whenRetrieveApiDoc_thenCallLocally() {
-            when(metadataFilterService.verifyAllowedDomains(apiCatalogInstance.getInstanceInfo())).thenReturn(apiCatalogInstance.getInstanceInfo());
+            when(metadataFilterService.verifyAllowedDomains(apiCatalogInstance)).thenReturn(apiCatalogInstance);
 
             StepVerifier.create(apiDocService.retrieveApiDoc(CoreService.API_CATALOG.getServiceId(), "zowe.apiml.apicatalog v1.0.0"))
                 .expectNextMatches(apiDoc -> apiDoc.contains("/containers/{id}"))
                 .verifyComplete();
 
-            verify(metadataFilterService).verifyAllowedDomains(apiCatalogInstance.getInstanceInfo());
+            verify(metadataFilterService).verifyAllowedDomains(apiCatalogInstance);
             verify(apiDocRetrievalServiceLocal).retrieveApiDoc(any(), any());
         }
 

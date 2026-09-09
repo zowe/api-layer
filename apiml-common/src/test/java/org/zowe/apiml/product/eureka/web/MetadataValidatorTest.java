@@ -94,6 +94,8 @@ class MetadataValidatorTest {
         "localhost:7553|https://:7553/|false|false",
         "localhost:443|https://:443@/|false|true",
         "localhost:443|https://:443@/|false|false",
+        "localhost|https://:/|false|true",
+        "localhost|https://:/|false|false",
     })
     void givenAllowedList_whenIsAllowedDomain_thenDecide(String allowList, String domain, boolean isAllowed, boolean validatePort) {
         ReflectionTestUtils.setField(metadataValidator,"allowedDomainsSet", new HashSet<>(Arrays.asList(allowList.split(","))));

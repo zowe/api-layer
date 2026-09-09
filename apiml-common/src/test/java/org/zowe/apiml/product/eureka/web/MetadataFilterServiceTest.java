@@ -21,6 +21,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -100,10 +101,10 @@ class MetadataFilterServiceTest {
             lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
             if (isAllowed) {
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo));
                 verify(apimlLogger, never()).log(anyString(), eq(metadataKey), eq(metadataValue), anyString());
             } else {
-                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo)));
                 verify(apimlLogger).log(eq(expectedLogKey), eq(metadataKey), eq(metadataValue), anyString());
             }
         }
@@ -121,15 +122,16 @@ class MetadataFilterServiceTest {
         void shouldVerifyHostname(String hostname, int port, boolean isAllowed) {
             when(instanceInfo.getMetadata()).thenReturn(Collections.emptyMap());
             when(instanceInfo.getHostName()).thenReturn(hostname);
-            when(instanceInfo.getSecurePort()).thenReturn(port);
+            when(instanceInfo.getPort()).thenReturn(port);
+
             lenient().when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
             if (isAllowed) {
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo));
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname + ":" + port), anyString());
             } else {
                 assertThrows(MetadataValidationException.class, () -> {
-                    metadataFilterService.verifyAllowedDomains(instanceInfo);
+                    metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo));
                 });
                 verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("Instance Hostname"), eq(hostname + ":" + port), anyString());
             }
@@ -144,7 +146,7 @@ class MetadataFilterServiceTest {
                 metadata.put("apiml.corsAllowedOrigins", "*");
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo));
 
                 verify(apimlLogger).log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), anyString(), anyString(), anyString());
@@ -156,7 +158,7 @@ class MetadataFilterServiceTest {
                 metadata.put("apiml.corsAllowedOrigins", "https://localhost:3000");
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo));
 
                 verify(apimlLogger, never()).log("org.zowe.apiml.common.patternNotRecommendedInCorsAllowedOrigins");
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), anyString(), anyString(), anyString());
@@ -169,7 +171,7 @@ class MetadataFilterServiceTest {
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
                 when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
-                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo)));
 
                 verify(apimlLogger).log("org.zowe.apiml.common.urlNotAllowed", "API ML CORS Allowed Origin", "https://invalid.org:3000", "test-instance");
             }
@@ -182,7 +184,7 @@ class MetadataFilterServiceTest {
                 when(instanceInfo.getMetadata()).thenReturn(metadata);
                 when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
-                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo)));
 
                 verify(apimlLogger).log("org.zowe.apiml.common.schemeNotAllowed", "API ML CORS Allowed Origin", "http://localhost:3000", "test-instance");
             }
@@ -198,7 +200,7 @@ class MetadataFilterServiceTest {
                 when(instanceInfo.getHomePageUrl()).thenReturn("http://localhost:8080");
                 when(instanceInfo.getInstanceId()).thenReturn("test-instance");
 
-                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(instanceInfo));
+                assertThrows(MetadataValidationException.class, () -> metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo)));
 
                 verify(apimlLogger).log("org.zowe.apiml.common.schemeNotAllowed", "Home Page URL", "http://localhost:8080", "test-instance");
             }
@@ -209,7 +211,7 @@ class MetadataFilterServiceTest {
                 when(instanceInfo.getHomePageUrl()).thenReturn("http://localhost:8080");
                 when(instanceInfo.getPort()).thenReturn(8080);
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo));
 
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.schemeNotAllowed"), anyString(), anyString(), anyString());
             }
@@ -219,7 +221,7 @@ class MetadataFilterServiceTest {
                 ReflectionTestUtils.setField(metadataFilterService, "isClientAttlsEnabled", false);
                 when(instanceInfo.getHomePageUrl()).thenReturn("https://localhost:8080");
 
-                metadataFilterService.verifyAllowedDomains(instanceInfo);
+                metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(instanceInfo));
 
                 verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.schemeNotAllowed"), anyString(), anyString(), anyString());
             }
@@ -242,13 +244,13 @@ class MetadataFilterServiceTest {
                     .setHostName("localhost")
                     .build();
 
-                ii = metadataFilterService.verifyAllowedDomains(ii);
+                var result = metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(ii));
                 if (isAllowed) {
                     verify(apimlLogger, never()).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 } else {
                     verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
                 }
-                assertEquals("127.0.0.1", ii.getIPAddr());
+                assertEquals("127.0.0.1", result.getInstanceInfo().getIPAddr());
             }
 
             @ParameterizedTest(name = "Given local address {0} when validate then fail")
@@ -264,7 +266,7 @@ class MetadataFilterServiceTest {
                     .setHostName("non-local")
                     .build();
 
-                metadataFilterService.verifyAllowedDomains(ii);
+                metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(ii));
                 verify(apimlLogger).log(eq("org.zowe.apiml.common.urlNotAllowed"), eq("IP Address"), eq(ipAddress), anyString());
             }
 
@@ -284,9 +286,9 @@ class MetadataFilterServiceTest {
                     .setHostName("localhost")
                     .build();
 
-                ii = metadataFilterService.verifyAllowedDomains(ii);
-                assertEquals("127.0.0.1", ii.getIPAddr());
-                assertEquals("localhost", ii.getHostName());
+                var resultIi = metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(ii));
+                assertEquals("127.0.0.1", resultIi.getInstanceInfo().getIPAddr());
+                assertEquals("localhost", resultIi.getInstanceInfo().getHostName());
             }
 
         }

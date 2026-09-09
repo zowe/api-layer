@@ -339,7 +339,7 @@ public class ApiDocService {
     public Mono<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
         EurekaServiceInstance serviceInstance = (EurekaServiceInstance) getInstanceInfo(serviceId);
         try {
-            serviceInstance = new EurekaServiceInstance(metadataFilterService.verifyAllowedDomains(serviceInstance.getInstanceInfo()));
+            serviceInstance = metadataFilterService.verifyAllowedDomains(serviceInstance);
         } catch (MetadataValidationException e) {
             log.debug("Failure validating metadata against allowed domains", e);
             throw new ApiDocNotFoundException(e.getMessage());
@@ -365,7 +365,7 @@ public class ApiDocService {
     public Mono<String> retrieveDefaultApiDoc(@NonNull String serviceId) {
         EurekaServiceInstance serviceInstance = (EurekaServiceInstance) getInstanceInfo(serviceId);
         try {
-            serviceInstance = new EurekaServiceInstance(metadataFilterService.verifyAllowedDomains(serviceInstance.getInstanceInfo()));
+            serviceInstance = metadataFilterService.verifyAllowedDomains(serviceInstance);
         } catch (MetadataValidationException e) {
             log.debug("Failure validating metadata against allowed domains", e);
             throw new ApiDocNotFoundException(e.getMessage());

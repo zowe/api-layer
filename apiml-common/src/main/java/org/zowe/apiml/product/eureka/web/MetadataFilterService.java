@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.exception.MetadataValidationException;
@@ -136,57 +137,57 @@ public class MetadataFilterService implements InitializingBean {
 
     /**
      *
-     * @param instanceInfo InstanceInfo to validate
+     * @param instance InstanceInfo to validate
      * @return InstanceInfo, may be updated
      * @throws MetadataValidationException If one or more validations failed
      */
     @SuppressWarnings("java:S3776")
-    public InstanceInfo verifyAllowedDomains(InstanceInfo instanceInfo) throws MetadataValidationException {
+    public EurekaServiceInstance verifyAllowedDomains(EurekaServiceInstance instance) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
+        var resultInstance = instance;
+
         var validator = MetadataValidator.builder()
             .allowedDomainsSet(allowedDomainsSet)
             .apimlLogger(apimlLogger)
-            .instanceInfo(instanceInfo)
+            .instanceInfo(instance.getInstanceInfo())
             .isClientAttlsEnabled(isClientAttlsEnabled)
             .disablePortValidation(disablePortValidation)
             .build();
 
-        if (!validator.validateEntry("IP Address", instanceInfo.getIPAddr(), false)) {
-            log.debug("IP address {} is not allowed. It is removed from the registration data.", instanceInfo.getIPAddr());
+        if (!validator.validateEntry("IP Address", instance.getInstanceInfo().getIPAddr(), false)) {
+            log.debug("IP address {} is not allowed. It is removed from the registration data.", instance.getInstanceInfo().getIPAddr());
             // this is updating the same instance even it looks like creating a new instance of InstanceInfo
-            instanceInfo = new InstanceInfo.Builder(instanceInfo).setIPAddr(IPAddressUtil.getIpAddress(instanceInfo.getHostName())).build();
+            resultInstance = new EurekaServiceInstance(new InstanceInfo.Builder(instance.getInstanceInfo()).setIPAddr(IPAddressUtil.getIpAddress(instance.getHost())).build());
         }
         if (disablePortValidation) {
-            if (!validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName(), false)) {
+            if (!validator.validateEntry(INSTANCE_HOSTNAME, instance.getHost(), false)) {
                 result.set(false);
             }
-        } else if (!isClientAttlsEnabled && !validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName() + ":" + instanceInfo.getSecurePort(), true)) {
-            result.set(false);
-        } else if (isClientAttlsEnabled && !validator.validateEntry(INSTANCE_HOSTNAME, instanceInfo.getHostName() + ":" + instanceInfo.getPort(), true)) {
+        } else if (!validator.validateEntry(INSTANCE_HOSTNAME, instance.getHost() + ":" + instance.getPort(), true)) {
             result.set(false);
         }
 
-        if (!validator.validateEntry("Home Page URL", instanceInfo.getHomePageUrl(), true)) {
+        if (!validator.validateEntry("Home Page URL", instance.getInstanceInfo().getHomePageUrl(), true)) {
             result.set(false);
         }
-        if (!validator.validateEntry("HealthCheck URL", instanceInfo.getHealthCheckUrl(), true)) {
+        if (!validator.validateEntry("HealthCheck URL", instance.getInstanceInfo().getHealthCheckUrl(), true)) {
             result.set(false);
         }
-        if (!validator.validateEntry("Status Page URL", instanceInfo.getStatusPageUrl(), true)) {
+        if (!validator.validateEntry("Status Page URL", instance.getInstanceInfo().getStatusPageUrl(), true)) {
             result.set(false);
         }
-        if (!validator.validateEntry("Secure Health Check URL", instanceInfo.getSecureHealthCheckUrl(), true)) {
+        if (!validator.validateEntry("Secure Health Check URL", instance.getInstanceInfo().getSecureHealthCheckUrl(), true)) {
             result.set(false);
         }
 
-        if (instanceInfo.getMetadata().containsKey("apiml.corsAllowedOrigins")) {
-            var corsVerificationResult = verifyCorsAllowedOrigins(instanceInfo.getMetadata().get("apiml.corsAllowedOrigins"), validator);
+        if (instance.getMetadata().containsKey("apiml.corsAllowedOrigins")) {
+            var corsVerificationResult = verifyCorsAllowedOrigins(instance.getMetadata().get("apiml.corsAllowedOrigins"), validator);
             if (!corsVerificationResult) {
                 result.set(false);
             }
         }
 
-        for (Map.Entry<String, String> entry : instanceInfo.getMetadata().entrySet()) {
+        for (Map.Entry<String, String> entry : instance.getMetadata().entrySet()) {
             var metadataVerificationResult = validateMetadataEntry(entry.getKey(), entry.getValue(), validator);
             if (!metadataVerificationResult) {
                 result.set(false);
@@ -194,10 +195,10 @@ public class MetadataFilterService implements InitializingBean {
         }
 
         if (!result.get() && !onlyWarn) {
-            throw new DomainAllowListMetadataException("URLs not allowed found for instance " + instanceInfo.getInstanceId());
+            throw new DomainAllowListMetadataException("URLs not allowed found for instance " + instance.getInstanceId());
         }
 
-        return instanceInfo;
+        return resultInstance;
     }
 
 }
