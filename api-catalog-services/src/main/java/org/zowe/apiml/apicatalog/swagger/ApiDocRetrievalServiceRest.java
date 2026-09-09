@@ -76,7 +76,9 @@ public class ApiDocRetrievalServiceRest implements InitializingBean {
     private boolean verifySwaggerUrl(ServiceInstance serviceInstance, String apiDocUrl) {
         try {
             var url = new URL(apiDocUrl);
-            return url.getHost().equalsIgnoreCase(serviceInstance.getHost())
+            return StringUtils.isNotBlank(url.getHost())
+                && url.getPort() > 0
+                && url.getHost().equalsIgnoreCase(serviceInstance.getHost())
                 && url.getPort() == serviceInstance.getPort();
         } catch (MalformedURLException e) {
             return false;
