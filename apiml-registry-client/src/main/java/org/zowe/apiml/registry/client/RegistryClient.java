@@ -11,6 +11,7 @@
 package org.zowe.apiml.registry.client;
 
 import org.zowe.apiml.registry.model.Applications;
+import org.zowe.apiml.registry.model.InstanceStatus;
 import org.zowe.apiml.registry.model.ServiceInstance;
 
 import java.util.List;
@@ -60,6 +61,11 @@ public final class RegistryClient {
 
     public boolean registered() {
         return registered.get();
+    }
+
+    /** This service's own registration, or null when the client only reads the registry. */
+    public ServiceInstance self() {
+        return self;
     }
 
     public long consecutiveFetchFailures() {
@@ -153,6 +159,27 @@ public final class RegistryClient {
             return register();
         } catch (RegistryTransport.RegistryTransportException e) {
             registered.set(false);
+            return false;
+        }
+    }
+
+    /**
+     * Changes the status this service is registered under.
+     * <p>
+     * Used to advertise {@code UP} once the application reports healthy, and {@code DOWN} if it stops being
+     * healthy while still running - which is the difference between a service that is quietly broken and one
+     * that has been taken out of the routing table.
+     *
+     * @return true when the registry accepted the change
+     */
+    public boolean updateStatus(InstanceStatus status) {
+        if (self == null) {
+            return false;
+        }
+        try {
+            transport.updateStatus(self.appName(), self.instanceId(), status);
+            return true;
+        } catch (RegistryTransport.RegistryTransportException e) {
             return false;
         }
     }

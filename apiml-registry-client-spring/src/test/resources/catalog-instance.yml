@@ -1,0 +1,36 @@
+# From api-catalog-services/src/main/resources/application.yml. Kept because it exercises three things the
+# ZAAS configuration does not: the relative-path forms (statusPageUrlPath), a nested catalog tile in the
+# metadata map, and eureka.instance.port - which has never bound to anything.
+eureka:
+    instance:
+        instanceId: localhost:apicatalog:10014
+        hostname: localhost
+        statusPageUrlPath: /apicatalog/application/info
+        healthCheckUrlPath: /apicatalog/application/health
+        secureHealthCheckUrl: https://localhost:10014/apicatalog/application/health
+        homePageUrl: https://localhost:10014/apicatalog
+        port: 10014
+        securePort: 10014
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        metadata-map:
+            apiml:
+                catalog:
+                    tile:
+                        id: apimediationlayer
+                        title: API Mediation Layer API
+                        description: The API Mediation Layer for z/OS internal API services.
+                        version: 1.0.0
+                routes:
+                    ui-v1:
+                        gatewayUrl: "/ui/v1"
+                        serviceUrl: /apicatalog
+                apiInfo:
+                    - apiId: zowe.apiml.apicatalog
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                authentication:
+                    sso: true
+    client:
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/,https://localhost:10021/eureka/

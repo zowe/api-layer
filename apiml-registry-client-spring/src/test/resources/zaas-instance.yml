@@ -1,0 +1,41 @@
+# Copied verbatim from zaas-service/src/main/resources/application.yml so the comparison is against real
+# configuration rather than a convenient sample. Placeholders are resolved to concrete values because the
+# point of the test is the binding and the derivation, not property substitution.
+eureka:
+    instance:
+        instanceId: localhost:zaas:10023
+        hostname: localhost
+        securePortEnabled: true
+        preferIpAddress: false
+        homePageUrl: https://localhost:10023/
+        statusPageUrl: https://localhost:10023/application/info
+        healthCheckUrl: https://localhost:10023/application/health
+        secureHealthCheckUrl: https://localhost:10023/application/health
+        securePort: 10023
+        nonSecurePort: 10023
+        metadata-map:
+            apiml:
+                routes:
+                    api_v1:
+                        gatewayUrl: /api/v1
+                        serviceUrl: /zaas
+                apiInfo:
+                    - apiId: zowe.apiml.zaas
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://localhost:10023/v3/api-docs
+                      documentationUrl: https://zowe.github.io/docs-site/
+                service:
+                    title: ZAAS
+                    description: Zowe Authentication and Authorization Service.
+                    supportClientCertForwarding: true
+                authentication:
+                    sso: true
+    client:
+        fetchRegistry: true
+        registerWithEureka: true
+        region: default
+        serviceUrl:
+            defaultZone: https://localhost:10011/eureka/
+        healthcheck:
+            enabled: true

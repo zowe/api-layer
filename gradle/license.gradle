@@ -7,6 +7,7 @@ ext.projectsNeedLicense = [
     'apiml-common',
     'apiml-registry',
     'apiml-registry-client',
+    'apiml-registry-client-spring',
     'apiml-eureka-compat',
     'apiml-security-common',
     'caching-service',

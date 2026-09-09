@@ -133,6 +133,9 @@ dependencyResolutionManagement {
             library('modulith_test', 'org.springframework.modulith', 'spring-modulith-starter-test').versionRef('modulith')
             library('jmolecules', 'org.jmolecules', 'jmolecules-bom').versionRef('jmolecules')
 
+            library('slf4j_api', 'org.slf4j', 'slf4j-api').versionRef('slf4j')
+            library('spring_boot', 'org.springframework.boot', 'spring-boot').versionRef('springBoot')
+            library('spring_boot_autoconfigure', 'org.springframework.boot', 'spring-boot-autoconfigure').versionRef('springBoot')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
             library('spring_boot_dependencies', 'org.springframework.boot', 'spring-boot-dependencies').versionRef('springBoot')
             library('spring_boot_starter', 'org.springframework.boot', 'spring-boot-starter').versionRef('springBoot')
@@ -303,6 +306,7 @@ dependencyResolutionManagement {
 
             // Pure Java dependencies - do not use in Spring unless really necessary
             version('logback', '1.6.3')
+            version('slf4j', '2.0.18')
             version('mockitoCore', '5.23.0')
             version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')
