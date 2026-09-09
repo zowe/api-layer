@@ -23,7 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.util.CacheUtils;
-import org.zowe.apiml.util.EurekaUtils;
+import org.zowe.apiml.util.EurekaInstanceUrls;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
 @Slf4j
@@ -43,7 +43,7 @@ public class ModulithAuthenticationService extends AuthenticationService {
 
     @Override
     protected String getInvalidateUrl(InstanceInfo instanceInfo) {
-        return EurekaUtils.getUrl(instanceInfo) + "/gateway/api/v1/auth/invalidate";
+        return EurekaInstanceUrls.getUrl(instanceInfo) + "/gateway/api/v1/auth/invalidate";
     }
 
 }

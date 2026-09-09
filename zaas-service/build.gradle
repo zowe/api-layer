@@ -55,6 +55,8 @@ gitProperties {
 }
 
 dependencies {
+    // Still a Eureka client; see apiml-eureka-compat. Deleted when the Phase 5 cutover finishes.
+    api project(':apiml-eureka-compat')
     api project(':apiml-security-common')
     api project(':apiml-tomcat-common')
     api project(':apiml-extension-loader')

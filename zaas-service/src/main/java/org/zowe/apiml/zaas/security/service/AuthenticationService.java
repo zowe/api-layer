@@ -52,7 +52,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
-import org.zowe.apiml.util.EurekaUtils;
+import org.zowe.apiml.util.EurekaInstanceUrls;
 import org.zowe.apiml.zaas.controllers.AuthController;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
@@ -290,7 +290,7 @@ public class AuthenticationService {
      * @return the URL
      */
     protected String getInvalidateUrl(InstanceInfo instanceInfo) {
-        return EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
+        return EurekaInstanceUrls.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
     }
 
     private boolean invalidateTokenOnAnotherInstance(String jwtToken, Application application) {
@@ -463,7 +463,7 @@ public class AuthenticationService {
         final InstanceInfo instanceInfo = zaas.getByInstanceId(toInstanceId);
         if (instanceInfo == null) return false;
 
-        var url = EurekaUtils.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
+        var url = EurekaInstanceUrls.getUrl(instanceInfo) + AuthController.CONTROLLER_PATH + "/invalidate";
 
         final Collection<String> invalidated = cacheUtils.getAllRecords(cacheManager, CACHE_INVALIDATED_JWT_TOKENS);
         for (final String invalidatedToken : invalidated) {

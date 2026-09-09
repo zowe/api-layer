@@ -18,10 +18,16 @@ import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.message.BasicHeaderElementIterator;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.util.TimeValue;
-import org.apache.http.protocol.HTTP;
 
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
+
+    /**
+     * Was {@code org.apache.http.protocol.HTTP.CONN_KEEP_ALIVE} - the only HttpClient 4 reference in an otherwise
+     * HttpClient 5 class, compiling only because Eureka put HttpClient 4 on the classpath. The value is just the
+     * header name; HttpClient 5 has no equivalent constant.
+     */
+    private static final String KEEP_ALIVE_HEADER = "Keep-Alive";
 
     private static final int KEEPALIVE_TIMOUT_MILLIS = 2000;
 
@@ -30,7 +36,7 @@ public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
     @Override
     public TimeValue getKeepAliveDuration(HttpResponse response, HttpContext context) {
         BasicHeaderElementIterator it = new BasicHeaderElementIterator
-            (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+            (response.headerIterator(KEEP_ALIVE_HEADER));
         while (it.hasNext()) {
             HeaderElement he = it.next();
             String param = he.getName();

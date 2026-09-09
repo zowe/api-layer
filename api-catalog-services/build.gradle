@@ -62,6 +62,9 @@ gitProperties {
 }
 
 dependencies {
+    // Still a Eureka client; holds the classes moved out of apiml-common so modules that no longer use
+    // Eureka do not carry its dependency tail. Deleted when the Phase 5 cutover finishes.
+    api project(':apiml-eureka-compat')
     api project(':apiml-tomcat-common')
     api project(':security-service-client-spring')
 

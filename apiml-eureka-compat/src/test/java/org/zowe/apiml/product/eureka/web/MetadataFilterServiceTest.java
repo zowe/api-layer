@@ -47,6 +47,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+/*
+ * Lives in apiml-eureka-compat rather than apiml-common because these cases are written against Netflix
+ * InstanceInfo objects and are driven through EurekaMetadataFilterAdapter. MetadataFilterService itself is
+ * Netflix-free and stayed in apiml-common, which no longer has a Eureka dependency at all.
+ */
 class MetadataFilterServiceTest {
 
     @Mock

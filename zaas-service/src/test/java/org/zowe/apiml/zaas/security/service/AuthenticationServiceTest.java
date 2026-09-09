@@ -62,7 +62,7 @@ import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.util.JWTTestUtils;
 import org.zowe.apiml.security.common.util.JwtUtils;
 import org.zowe.apiml.util.CacheUtils;
-import org.zowe.apiml.util.EurekaUtils;
+import org.zowe.apiml.util.EurekaInstanceUrls;
 import org.zowe.apiml.zaas.config.CacheConfig;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
@@ -769,12 +769,12 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             authService.distributeInvalidate(instanceInfo.getInstanceId());
 
             verify(restTemplate, times(1))
-                .exchange(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
+                .exchange(EurekaInstanceUrls.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
                     DELETE,
                     getHeaders("a"),
                     Void.class);
             verify(restTemplate, times(1))
-                .exchange(EurekaUtils.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
+                .exchange(EurekaInstanceUrls.getUrl(instanceInfo) + "/zaas/api/v1/auth/invalidate",
                     DELETE,
                     getHeaders("b"),
                     Void.class);

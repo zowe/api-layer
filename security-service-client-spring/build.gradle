@@ -2,7 +2,12 @@ dependencies {
     api project(':apiml-security-common')
 
     implementation libs.spring.boot.starter.security
-    implementation libs.spring.cloud.starter.eureka.client
+    // Eureka is no longer used here: the only reason it was needed was InstanceLookupExecutor downcasting to
+    // EurekaServiceInstance, which now works against Spring Cloud's own ServiceInstance interface.
+    implementation libs.spring.cloud.commons
+    // Also arrived transitively through the Eureka starter; declared explicitly now.
+    implementation libs.http.client5
+    implementation libs.jackson.databind
 
     implementation libs.apache.commons.lang3
 
