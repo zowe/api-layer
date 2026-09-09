@@ -11,7 +11,6 @@
 package org.zowe.apiml.apicatalog.swagger;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.netflix.appinfo.InstanceInfo;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
@@ -22,7 +21,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springdoc.webflux.api.OpenApiWebfluxResource;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.config.ApiInfo;
@@ -50,7 +50,7 @@ class ApiDocRetrievalServiceLocalTest {
 
     @Test
     void givenUnknownServiceId_whenGetApiDoc_thenThrowException() {
-        var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("unknownService").build());
+        var instance = new DefaultServiceInstance("unknownService:localhost:10010", "unknownService", "localhost", 10010, true);
         var apiInfo = ApiInfo.builder().build();
         var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(instance, apiInfo));
 
@@ -68,7 +68,7 @@ class ApiDocRetrievalServiceLocalTest {
         var apiDocResource = mockApiDocResource();
         doThrow(new JsonProcessingException("an error") {}).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
-        var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
+        var instance = new DefaultServiceInstance("service:localhost:10010", "service", "localhost", 10010, true);
         var apiInfo = ApiInfo.builder().build();
 
         var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(instance, apiInfo));
@@ -82,7 +82,7 @@ class ApiDocRetrievalServiceLocalTest {
         var apiDocResource = mockApiDocResource();
         doReturn(Mono.just("Api doc".getBytes(StandardCharsets.UTF_8))).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
-        var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
+        var instance = new DefaultServiceInstance("service:localhost:10010", "service", "localhost", 10010, true);
         var apiInfo = ApiInfo.builder().build();
 
         StepVerifier.create(service.retrieveApiDoc(instance, apiInfo))

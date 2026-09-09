@@ -17,6 +17,7 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.registry.ServiceRegistry;
 import org.zowe.apiml.registry.model.Application;
+import org.zowe.apiml.registry.model.DiscoveryMetadata;
 import org.zowe.apiml.registry.model.InstanceStatus;
 
 import java.util.List;
@@ -61,13 +62,21 @@ public class RegistryDiscoveryClient implements DiscoveryClient {
     private ServiceInstance toSpringInstance(org.zowe.apiml.registry.model.ServiceInstance instance) {
         boolean secure = instance.securePort() != null && instance.securePort().enabled();
         int port = secure ? instance.securePort().port() : instance.port().port();
+        // Carry the advertised home page through: Spring's ServiceInstance has nowhere to put it, and the API
+        // Catalog needs the full URL including its path. See DiscoveryMetadata.
+        var metadata = new java.util.LinkedHashMap<>(instance.metadata());
+        if (instance.homePageUrl() != null) {
+            metadata.put(DiscoveryMetadata.HOME_PAGE_URL, instance.homePageUrl());
+        }
+        metadata.put(DiscoveryMetadata.INSTANCE_STATUS, instance.effectiveStatus().name());
+
         return new DefaultServiceInstance(
             instance.instanceId(),
             instance.serviceId(),
             instance.hostName(),
             port,
             secure,
-            instance.metadata()
+            metadata
         );
     }
 
