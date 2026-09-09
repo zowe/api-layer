@@ -12,14 +12,14 @@ package org.zowe.apiml.services;
 
 
 import com.fasterxml.jackson.core.Version;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.ObjectUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.registry.RegistryView;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,27 +35,30 @@ import static org.zowe.apiml.services.ServiceInfoUtils.*;
  * Similar to {@link org.zowe.apiml.gateway.services.ServicesInfoService} service which does not depend on gateway-service components.
  * Following properties left blank:
  * {@link ServiceInfo.Service#homePageUrl} and {@link ServiceInfo.ApiInfoExtended#swaggerUrl}
+ * <p>
+ * Reads a {@link RegistryView} rather than a Eureka client. That removed a wart as well as the dependency: the
+ * modulith used to subclass this class anonymously, pass {@code null} for the Eureka client and override
+ * {@code getServicesInfo()} with a {@code DiscoveryClient} implementation, because the registry it needed to
+ * read was in its own JVM. Both deployments now supply a view and there is one implementation.
  */
 @RequiredArgsConstructor
 public class BasicInfoService {
 
-    private final EurekaClient eurekaClient;
+    private final RegistryView registry;
     private final EurekaMetadataParser eurekaMetadataParser;
 
     public List<ServiceInfo> getServicesInfo() {
-        return eurekaClient.getApplications().getRegisteredApplications()
-                .stream().map(this::getServiceInfo)
+        return registry.serviceIds().stream()
+                .map(this::getServiceInfo)
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    private ServiceInfo getServiceInfo(Application application) {
-        String serviceId = application.getName().toLowerCase();
-
-        List<InstanceInfo> appInstances = application.getInstances();
+    private ServiceInfo getServiceInfo(String serviceId) {
+        List<ServiceInstance> appInstances = registry.instances(serviceId);
         if (ObjectUtils.isEmpty(appInstances)) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
-                    .status(InstanceInfo.InstanceStatus.DOWN)
+                    .status(InstanceStatus.DOWN)
                     .build();
         }
 
@@ -72,7 +75,7 @@ public class BasicInfoService {
      * - getApiInfos
      * - getApiInfos
      */
-    public ServiceInfo.Apiml getApiml(List<InstanceInfo> appInstances) {
+    public ServiceInfo.Apiml getApiml(List<ServiceInstance> appInstances) {
         return ServiceInfo.Apiml.builder()
                 .apiInfo(getApiInfos(appInstances))
                 .service(getService(appInstances))
@@ -85,12 +88,12 @@ public class BasicInfoService {
      * simplified version, following part is excluded:
      * - homePageUrl
      */
-    private ServiceInfo.Service getService(List<InstanceInfo> appInstances) {
-        InstanceInfo instanceInfo = getInstanceWithHighestVersion(appInstances);
+    private ServiceInfo.Service getService(List<ServiceInstance> appInstances) {
+        ServiceInstance instanceInfo = getInstanceWithHighestVersion(appInstances);
 
         return ServiceInfo.Service.builder()
-                .title(instanceInfo.getMetadata().get(SERVICE_TITLE))
-                .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
+                .title(instanceInfo.metadata().get(SERVICE_TITLE))
+                .description(instanceInfo.metadata().get(SERVICE_DESCRIPTION))
                 .build();
     }
 
@@ -99,9 +102,9 @@ public class BasicInfoService {
      * - baseUrl
      * - swaggerUrl
      */
-    private List<ServiceInfo.ApiInfoExtended> getApiInfos(List<InstanceInfo> appInstances) {
+    private List<ServiceInfo.ApiInfoExtended> getApiInfos(List<ServiceInstance> appInstances) {
         return appInstances.stream()
-                .map(instanceInfo -> new AbstractMap.SimpleEntry<>(instanceInfo, eurekaMetadataParser.parseApiInfo(instanceInfo.getMetadata())))
+                .map(instance -> new AbstractMap.SimpleEntry<>(instance, eurekaMetadataParser.parseApiInfo(instance.metadata())))
                 .flatMap(entry -> entry.getValue().stream()
                         .map(apiInfo -> ApiInfoExtended.builder()
                                 .apiId(apiInfo.getApiId())
@@ -123,20 +126,20 @@ public class BasicInfoService {
                 .collect(Collectors.toList());
     }
 
-    private List<Authentication> getAuthentication(List<InstanceInfo> appInstances) {
+    private List<Authentication> getAuthentication(List<ServiceInstance> appInstances) {
         return appInstances.stream()
-                .map(instanceInfo -> eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata()))
+                .map(instance -> eurekaMetadataParser.parseAuthentication(instance.metadata()))
                 .filter(a -> !a.isEmpty())
                 .distinct()
             .toList();
     }
 
-    private InstanceInfo getInstanceWithHighestVersion(List<InstanceInfo> appInstances) {
-        InstanceInfo instanceInfo = appInstances.get(0);
+    private ServiceInstance getInstanceWithHighestVersion(List<ServiceInstance> appInstances) {
+        ServiceInstance instanceInfo = appInstances.get(0);
         Version highestVersion = Version.unknownVersion();
 
-        for (InstanceInfo currentInfo : appInstances) {
-            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(currentInfo.getMetadata());
+        for (ServiceInstance currentInfo : appInstances) {
+            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(currentInfo.metadata());
             for (ApiInfo apiInfo : apiInfoList) {
                 Version version = getVersion(apiInfo.getVersion());
                 if (version.compareTo(highestVersion) > 0) {

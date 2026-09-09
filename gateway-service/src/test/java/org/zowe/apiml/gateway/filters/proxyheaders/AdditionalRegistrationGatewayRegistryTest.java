@@ -10,19 +10,23 @@
 
 package org.zowe.apiml.gateway.filters.proxyheaders;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.CacheRefreshedEvent;
-import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.Application;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.registry.client.RegistryCache;
+import org.zowe.apiml.registry.client.RegistryClient;
+import org.zowe.apiml.registry.client.RegistryTransport;
+import org.zowe.apiml.registry.model.Application;
+import org.zowe.apiml.registry.model.Applications;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.PortInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -34,12 +38,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AdditionalRegistrationGatewayRegistryTest {
 
-    private DiscoveryClient discoveryClientMock;
     private AdditionalRegistrationGatewayRegistry gatewayRegistry;
 
     // Gateway with single IP address
@@ -47,15 +49,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
     private final String GW1_IP_ADDRESS = "2.2.2.2";
     private final String GW1_HOSTNAME = "gw1-hostname";
 
-    private final InstanceInfo GW1_INSTANCE_INFO = InstanceInfo.Builder.newBuilder()
-        .setAppName(CoreService.GATEWAY.getServiceId())
-        .setInstanceId(GW1_INSTANCE_ID)
-        .setHostName(GW1_HOSTNAME)
-        .setIPAddr(GW1_IP_ADDRESS)
-        .build();
-
-    private final Application GW1_APPLICATION =
-        new Application(CoreService.GATEWAY.getServiceId(), List.of(GW1_INSTANCE_INFO));
+    private final ServiceInstance GW1_INSTANCE = gateway(GW1_INSTANCE_ID, GW1_HOSTNAME, GW1_IP_ADDRESS);
 
     // Gateway resolved to multiple ip addresses
     private final String GW2_INSTANCE_ID = "gw2-instance-id";
@@ -63,48 +57,57 @@ public class AdditionalRegistrationGatewayRegistryTest {
     private final String GW2_IP_ADDRESS_FROM_DNS = "4.4.4.4";
     private final String GW2_HOSTNAME = "gw2-hostname";
 
-    private final InstanceInfo GW2_INSTANCE_INFO =
-        InstanceInfo.Builder.newBuilder()
-            .setAppName(CoreService.GATEWAY.getServiceId())
-            .setInstanceId(GW2_INSTANCE_ID)
-            .setHostName(GW2_HOSTNAME)
-            .setIPAddr(GW2_IP_ADDRESS)
+    private final ServiceInstance GW2_INSTANCE = gateway(GW2_INSTANCE_ID, GW2_HOSTNAME, GW2_IP_ADDRESS);
+
+    private static ServiceInstance gateway(String instanceId, String hostname, String ipAddress) {
+        return ServiceInstance.builder()
+            .appName(CoreService.GATEWAY.getServiceId())
+            .instanceId(instanceId)
+            .hostName(hostname)
+            .ipAddr(ipAddress)
+            .port(new PortInfo(10010, true))
+            .securePort(new PortInfo(10010, false))
+            .status(InstanceStatus.UP)
             .build();
+    }
 
-    private final Application GW2_APPLICATION =
-        new Application(CoreService.GATEWAY.getServiceId(), List.of(GW2_INSTANCE_INFO));
-
-    // Application with both gateways
-    private Application ALL_GW_APPLICATION =
-        new Application(CoreService.GATEWAY.getServiceId(), List.of(GW1_INSTANCE_INFO, GW2_INSTANCE_INFO));
+    /** The view an additional registration's client would have after a refresh. */
+    private static RegistryCache viewOf(ServiceInstance... instances) {
+        RegistryCache cache = new RegistryCache();
+        List<Application> applications = instances.length == 0
+            ? List.of()
+            : List.of(new Application(CoreService.GATEWAY.getServiceId().toUpperCase(), List.of(instances)));
+        cache.replace(new Applications(applications, 1L, Applications.computeHashCode(applications)));
+        return cache;
+    }
 
     @BeforeEach
     @SneakyThrows
     void setup() {
-        discoveryClientMock = Mockito.mock(DiscoveryClient.class);
         gatewayRegistry = new AdditionalRegistrationGatewayRegistry();
         gatewayRegistry.registryExpiration = Duration.ofSeconds(300);
         gatewayRegistry.init();
     }
 
+    /**
+     * Previously asserted by verifying {@code registerEventListener} was called on a mocked Eureka client. The
+     * listener is now an ordinary callback, so this drives the real path instead: subscribe, refresh, and check
+     * the addresses arrived.
+     */
     @Test
-    void eventListenerRegistered() {
-        EurekaClientConfig mockEurekaClientConfig = Mockito.mock(EurekaClientConfig.class);
-        when(discoveryClientMock.getEurekaClientConfig()).thenReturn(mockEurekaClientConfig);
-        when(mockEurekaClientConfig.getEurekaServerServiceUrls(any()))
-            .thenReturn(List.of("dummy"));
+    @DisplayName("Then subscribing to a client means a refresh reaches the registry")
+    void listenerIsSubscribedToTheClient() {
+        var client = new RegistryClient(new FixedTransport(viewOf(GW1_INSTANCE).applications()));
 
-        gatewayRegistry.registerCacheRefreshEventListener(discoveryClientMock);
+        gatewayRegistry.watch(client);
+        client.refresh();
 
-        verify(discoveryClientMock, times(1))
-            .registerEventListener(any());
+        assertTrue(gatewayRegistry.getAdditionalGatewayIpAddressesReference().get().contains(GW1_IP_ADDRESS));
     }
 
     @Test
     void whenGateway_thenAddIpToRegistry() {
-        when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(GW1_APPLICATION);
-
-        gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
+        gatewayRegistry.onRefresh(viewOf(GW1_INSTANCE));
 
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(1));
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(List.of(GW1_IP_ADDRESS)));
@@ -115,8 +118,6 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
     @Test
     void whenGatewayWithDNSResolution_thenAddIpToRegistry() throws UnknownHostException {
-        when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(GW2_APPLICATION);
-
         InetAddress[] resolvedGw2Hostname = new InetAddress[]{InetAddress.getByName(GW2_IP_ADDRESS_FROM_DNS)};
         InetAddress[] resolvedGw2IpAddress = new InetAddress[]{InetAddress.getByName(GW2_IP_ADDRESS)};
 
@@ -125,7 +126,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
             inetAddressMocked.when(() -> InetAddress.getAllByName(GW2_IP_ADDRESS)).thenReturn(resolvedGw2IpAddress);
             inetAddressMocked.when(() -> InetAddress.getAllByName(GW2_HOSTNAME)).thenReturn(resolvedGw2Hostname);
 
-            gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
+            gatewayRegistry.onRefresh(viewOf(GW2_INSTANCE));
         }
 
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(1));
@@ -138,8 +139,6 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
     @Test
     void whenGatewayWithDNSResolutionFailed_thenAddIpToRegistry() throws UnknownHostException {
-        when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(GW2_APPLICATION);
-
         InetAddress[] resolvedGw2IpAddress = new InetAddress[]{InetAddress.getByName(GW2_IP_ADDRESS)};
 
         try (MockedStatic<InetAddress> inetAddressMocked = Mockito.mockStatic(InetAddress.class)) {
@@ -147,7 +146,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
             inetAddressMocked.when(() -> InetAddress.getAllByName(GW2_IP_ADDRESS)).thenReturn(resolvedGw2IpAddress);
             inetAddressMocked.when(() -> InetAddress.getAllByName(GW2_HOSTNAME)).thenThrow(new UnknownHostException());
 
-            gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
+            gatewayRegistry.onRefresh(viewOf(GW2_INSTANCE));
         }
 
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(1));
@@ -160,9 +159,7 @@ public class AdditionalRegistrationGatewayRegistryTest {
 
     @Test
     void whenMultipleGateways_thenAddIpToRegistry() {
-        when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(ALL_GW_APPLICATION);
-
-        gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
+        gatewayRegistry.onRefresh(viewOf(GW1_INSTANCE, GW2_INSTANCE));
 
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().size(), is(2));
         assertThat(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID), is(List.of(GW1_IP_ADDRESS)));
@@ -185,10 +182,45 @@ public class AdditionalRegistrationGatewayRegistryTest {
             assertNull(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID))
         );
 
-        when(discoveryClientMock.getApplication(CoreService.GATEWAY.getServiceId())).thenReturn(null);
+        gatewayRegistry.onRefresh(viewOf());
 
-        gatewayRegistry.cacheRefreshEventHandler(new CacheRefreshedEvent(), discoveryClientMock);
         assertNull(gatewayRegistry.knownAdditionalGateways.asMap().get(GW1_INSTANCE_ID));
         assertThat(gatewayRegistry.additionalGatewayIpAddressesReference.get().size(), is(0));
     }
+
+    /** Serves one fixed view, so {@link RegistryClient#refresh()} can be driven without a Discovery Service. */
+    private record FixedTransport(Applications applications) implements RegistryTransport {
+
+        @Override
+        public Applications fetchApplications() {
+            return applications;
+        }
+
+        @Override
+        public Applications fetchDelta() {
+            return null;
+        }
+
+        @Override
+        public void register(ServiceInstance instance) {
+            // read-only in these cases
+        }
+
+        @Override
+        public boolean renew(String appName, String instanceId) {
+            return true;
+        }
+
+        @Override
+        public void cancel(String appName, String instanceId) {
+            // read-only in these cases
+        }
+
+        @Override
+        public void updateStatus(String appName, String instanceId, InstanceStatus status) {
+            // read-only in these cases
+        }
+
+    }
+
 }

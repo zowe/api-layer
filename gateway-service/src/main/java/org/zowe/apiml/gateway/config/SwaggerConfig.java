@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -24,13 +22,14 @@ import io.swagger.v3.parser.OpenAPIV3Parser;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.zowe.apiml.registry.client.RegistryClient;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
 
 import java.net.URI;
@@ -71,31 +70,30 @@ public class SwaggerConfig {
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsenabled;
 
-    private final EurekaClient eurekaClient;
+    private final RegistryClient registryClient;
     private final WebClient webClient;
 
     private URI zaasUri;
 
     @PostConstruct
-    void initEurekaListener() {
-        eurekaClient.registerEventListener(event -> {
-            Optional.ofNullable(eurekaClient.getApplication(ZAAS.getServiceId()))
-                .map(apps -> apps.getInstances())
-                .filter(apps -> !apps.isEmpty())
-                .map(apps -> apps.get(0))
-                .ifPresent(app -> {
-                    try {
-                        zaasUri = new URIBuilder()
-                            .setScheme(app.isPortEnabled(InstanceInfo.PortType.SECURE) && !isClientAttlsenabled ? "https" : "http")
-                            .setHost(app.getHostName())
-                            .setPort(app.isPortEnabled(InstanceInfo.PortType.SECURE) ? app.getSecurePort() : app.getPort())
-                            .setPath("/v3/api-docs/auth")
-                            .build();
-                    } catch (URISyntaxException e) {
-                        log.error("Cannot construct Swagger URL on ZAAS", e);
-                    }
-                });
-        });
+    void initRegistryListener() {
+        registryClient.addListener(cache -> cache.upInstances(ZAAS.getServiceId()).stream()
+            .findFirst()
+            .ifPresent(this::rememberZaasUri));
+    }
+
+    private void rememberZaasUri(org.zowe.apiml.registry.model.ServiceInstance zaas) {
+        boolean secure = zaas.securePort() != null && zaas.securePort().enabled();
+        try {
+            zaasUri = new URIBuilder()
+                .setScheme(secure && !isClientAttlsenabled ? "https" : "http")
+                .setHost(zaas.hostName())
+                .setPort(secure ? zaas.securePort().port() : zaas.port().port())
+                .setPath("/v3/api-docs/auth")
+                .build();
+        } catch (URISyntaxException e) {
+            log.error("Cannot construct Swagger URL on ZAAS", e);
+        }
     }
 
     private String updateUrlFromZaas(String zaasUrl) {

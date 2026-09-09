@@ -15,11 +15,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.netflix.discovery.EurekaClient;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -36,23 +36,24 @@ public class LoadBalancerCache {
 
     private final Map<String, LoadBalancerCacheRecord> localCache;
     private final CachingServiceClient remoteCache;
-    private final EurekaClient eurekaClient;
+    private final DiscoveryClient discoveryClient;
     private final ObjectMapper mapper = new ObjectMapper();
 
     public static final String LOAD_BALANCER_KEY_PREFIX = "lb.";
 
     public LoadBalancerCache(
-        EurekaClient eurekaClient,
+        DiscoveryClient discoveryClient,
         CachingServiceClient cachingServiceClient) {
         this.remoteCache = cachingServiceClient;
-        this.eurekaClient = eurekaClient;
+        this.discoveryClient = discoveryClient;
         localCache = new ConcurrentHashMap<>();
         mapper.registerModule(new JavaTimeModule());
     }
 
     private Mono<Boolean> cachingServiceAvailability() {
-        return Mono.fromCallable(() -> eurekaClient.getApplication(CACHING_SERVICE_ID))
-            .map(app -> !app.getInstances().isEmpty())
+        // A routing decision, so the DiscoveryClient's UP-only view is exactly right here.
+        return Mono.fromCallable(() -> discoveryClient.getInstances(CACHING_SERVICE_ID))
+            .map(instances -> !instances.isEmpty())
             .switchIfEmpty(Mono.just(false));
     }
 

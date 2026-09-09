@@ -11,11 +11,12 @@
 package org.zowe.apiml.services;
 
 import com.fasterxml.jackson.core.Version;
-import com.netflix.appinfo.InstanceInfo;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.config.ApiInfo;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
 import java.util.List;
 import java.util.Map;
@@ -29,41 +30,43 @@ import java.util.stream.Collectors;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ServiceInfoUtils {
 
-    public static Map<String, ServiceInfo.Instances> getInstances(List<InstanceInfo> appInstances) {
+    public static Map<String, ServiceInfo.Instances> getInstances(List<ServiceInstance> appInstances) {
         return appInstances.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toMap(
-                        InstanceInfo::getInstanceId,
-                        instanceInfo -> ServiceInfo.Instances.builder()
-                                .status(instanceInfo.getStatus())
-                                .hostname(instanceInfo.getHostName())
-                                .ipAddr(instanceInfo.getIPAddr())
-                                .protocol(getProtocol(instanceInfo))
-                                .port(getPort(instanceInfo))
-                                .homePageUrl(instanceInfo.getHomePageUrl())
-                                .healthCheckUrl(getHealthCheckUrl(instanceInfo))
-                                .statusPageUrl(instanceInfo.getStatusPageUrl())
-                                .customMetadata(getCustomMetadata(instanceInfo.getMetadata()))
+                        ServiceInstance::instanceId,
+                        instance -> ServiceInfo.Instances.builder()
+                                .status(instance.status())
+                                .hostname(instance.hostName())
+                                .ipAddr(instance.ipAddr())
+                                .protocol(getProtocol(instance))
+                                .port(getPort(instance))
+                                .homePageUrl(instance.homePageUrl())
+                                .healthCheckUrl(getHealthCheckUrl(instance))
+                                .statusPageUrl(instance.statusPageUrl())
+                                .customMetadata(getCustomMetadata(instance.metadata()))
                                 .build()
                 ));
     }
 
-    public static String getBasePath(ApiInfo apiInfo, InstanceInfo instanceInfo) {
-        return String.format("/%s/%s", instanceInfo.getAppName().toLowerCase(), apiInfo.getGatewayUrl());
+    public static String getBasePath(ApiInfo apiInfo, ServiceInstance instance) {
+        return String.format("/%s/%s", instance.serviceId(), apiInfo.getGatewayUrl());
     }
 
-    private static String getHealthCheckUrl(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ?
-                instanceInfo.getSecureHealthCheckUrl() : instanceInfo.getHealthCheckUrl();
+    private static String getHealthCheckUrl(ServiceInstance instance) {
+        return isSecure(instance) ? instance.secureHealthCheckUrl() : instance.healthCheckUrl();
     }
 
-    private static int getPort(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ?
-                instanceInfo.getSecurePort() : instanceInfo.getPort();
+    private static int getPort(ServiceInstance instance) {
+        return isSecure(instance) ? instance.securePort().port() : instance.port().port();
     }
 
-    private static String getProtocol(InstanceInfo instanceInfo) {
-        return instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE) ? "https" : "http";
+    private static String getProtocol(ServiceInstance instance) {
+        return isSecure(instance) ? "https" : "http";
+    }
+
+    private static boolean isSecure(ServiceInstance instance) {
+        return instance.securePort() != null && instance.securePort().enabled();
     }
 
     public static int getMajorVersion(ServiceInfo.ApiInfoExtended apiInfo) {
@@ -95,11 +98,11 @@ public class ServiceInfoUtils {
         return new Version(major, minor, patch, null, null, null);
     }
 
-    public static InstanceInfo.InstanceStatus getStatus(List<InstanceInfo> instances) {
-        if (instances.stream().anyMatch(instance -> instance.getStatus().equals(InstanceInfo.InstanceStatus.UP))) {
-            return InstanceInfo.InstanceStatus.UP;
+    public static InstanceStatus getStatus(List<ServiceInstance> instances) {
+        if (instances.stream().anyMatch(instance -> instance.effectiveStatus() == InstanceStatus.UP)) {
+            return InstanceStatus.UP;
         } else {
-            return InstanceInfo.InstanceStatus.DOWN;
+            return InstanceStatus.DOWN;
         }
     }
 }

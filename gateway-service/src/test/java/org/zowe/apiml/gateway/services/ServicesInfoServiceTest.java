@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway.services;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,12 +18,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
+import org.zowe.apiml.registry.RegistryView;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.PortInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.zowe.apiml.constants.EurekaMetadataDefinition.RegistrationType;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -102,7 +102,7 @@ class ServicesInfoServiceTest {
     private static final String SERVICE_API_VERSION = "version";
 
     @Mock
-    private DiscoveryClient discoveryClient;
+    private RegistryView registry;
 
     private final ServiceAddress zaasAddress = ServiceAddress.builder()
             .scheme(GW_SCHEME).hostname(GW_HOSTNAME + ":" + GW_PORT).build();
@@ -115,17 +115,17 @@ class ServicesInfoServiceTest {
 
     @BeforeEach
     void setUp() {
-        servicesInfoService = new ServicesInfoService(discoveryClient, eurekaMetadataParser, gatewayClient, transformService);
+        servicesInfoService = new ServicesInfoService(registry, eurekaMetadataParser, gatewayClient, transformService);
     }
 
     @Test
     void whenListingAllServices_thenReturnList() {
         String clientServiceId2 = "testclient2";
 
-        when(discoveryClient.getServices())
+        when(registry.serviceIds())
             .thenReturn(List.of(CLIENT_SERVICE_ID, clientServiceId2));
 
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of(createBasicTestInstance()));
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(List.of(createBasicTestInstance()));
 
         List<ServiceInfo> servicesInfo = servicesInfoService.getServicesInfo();
         List<ServiceInfo> servicesInfo2 = servicesInfoService.getServicesInfo(null);
@@ -140,10 +140,10 @@ class ServicesInfoServiceTest {
 
     @Test
     void whenListingServicesByApiId_thenReturnList() {
-        when(discoveryClient.getServices())
+        when(registry.serviceIds())
             .thenReturn(List.of(CLIENT_SERVICE_ID, "testclient2"));
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of(createFullTestInstance()));
-        when(discoveryClient.getInstances("testclient2")).thenReturn(List.of());
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(List.of(createFullTestInstance()));
+        when(registry.instances("testclient2")).thenReturn(List.of());
 
         List<ServiceInfo> servicesInfo = servicesInfoService.getServicesInfo(CLIENT_API_ID);
 
@@ -154,13 +154,13 @@ class ServicesInfoServiceTest {
     @SuppressWarnings({"java:S5961"})
     @Test
     void whenInstanceProvidesFullInfo_thenReturnAllDetails() {
-        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of(createFullTestInstance()));
+        when(registry.serviceIds()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(List.of(createFullTestInstance()));
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
         assertEquals(CLIENT_SERVICE_ID, serviceInfo.getServiceId());
-        assertEquals(InstanceInfo.InstanceStatus.UP, serviceInfo.getStatus());
+        assertEquals(InstanceStatus.UP, serviceInfo.getStatus());
 
         assertEquals(CLIENT_API_ID, serviceInfo.getApiml().getApiInfo().get(0).getApiId());
         assertEquals(CLIENT_API_VERSION, serviceInfo.getApiml().getApiInfo().get(0).getVersion());
@@ -181,7 +181,7 @@ class ServicesInfoServiceTest {
 
         String instanceId = serviceInfo.getInstances().entrySet().stream().iterator().next().getKey();
         assertTrue(instanceId.contains(CLIENT_INSTANCE_ID));
-        assertEquals(InstanceInfo.InstanceStatus.UP, serviceInfo.getInstances().get(instanceId).getStatus());
+        assertEquals(InstanceStatus.UP, serviceInfo.getInstances().get(instanceId).getStatus());
         assertEquals(CLIENT_HOSTNAME, serviceInfo.getInstances().get(instanceId).getHostname());
         assertEquals(CLIENT_IP, serviceInfo.getInstances().get(instanceId).getIpAddr());
         assertEquals(CLIENT_PORT, serviceInfo.getInstances().get(instanceId).getPort());
@@ -195,71 +195,71 @@ class ServicesInfoServiceTest {
 
     @Test
     void whenInstanceProvidesLittleInfo_thenStillReturnUp() {
-        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of(createBasicTestInstance()));
+        when(registry.serviceIds()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(List.of(createBasicTestInstance()));
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
-        assertEquals(InstanceInfo.InstanceStatus.UP, serviceInfo.getStatus());
+        assertEquals(InstanceStatus.UP, serviceInfo.getStatus());
     }
 
     @Test
     void whenNoInstances_thenReturnServiceDown() {
-        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(List.of());
+        when(registry.serviceIds()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(List.of());
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
         assertEquals(CLIENT_SERVICE_ID, serviceInfo.getServiceId());
-        assertEquals(InstanceInfo.InstanceStatus.DOWN, serviceInfo.getStatus());
+        assertEquals(InstanceStatus.DOWN, serviceInfo.getStatus());
         assertNull(serviceInfo.getInstances());
         assertNull(serviceInfo.getApiml());
     }
 
     @Test
     void whenServiceNeverRegistered_thenReturnServiceUnknown() {
-        when(discoveryClient.getServices()).thenReturn(List.of());
+        when(registry.serviceIds()).thenReturn(List.of());
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
         assertEquals(CLIENT_SERVICE_ID, serviceInfo.getServiceId());
-        assertEquals(InstanceInfo.InstanceStatus.UNKNOWN, serviceInfo.getStatus());
+        assertEquals(InstanceStatus.UNKNOWN, serviceInfo.getStatus());
         assertNull(serviceInfo.getInstances());
         assertNull(serviceInfo.getApiml());
     }
 
     @Test
     void whenOneInstanceIsUpAndOthersNot_ReturnUp() {
-        var instance1 = createBasicTestInstance(InstanceInfo.InstanceStatus.STARTING);
-        var instance2 = createBasicTestInstance(InstanceInfo.InstanceStatus.UNKNOWN);
-        var instance3 = createBasicTestInstance(InstanceInfo.InstanceStatus.DOWN);
-        var instance4 = createBasicTestInstance(InstanceInfo.InstanceStatus.UP);
+        var instance1 = createBasicTestInstance(InstanceStatus.STARTING);
+        var instance2 = createBasicTestInstance(InstanceStatus.UNKNOWN);
+        var instance3 = createBasicTestInstance(InstanceStatus.DOWN);
+        var instance4 = createBasicTestInstance(InstanceStatus.UP);
         List<ServiceInstance> instances = Arrays.asList(instance1, instance2, instance3, instance4);
 
-        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(instances);
+        when(registry.serviceIds()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(instances);
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
         assertEquals(CLIENT_SERVICE_ID, serviceInfo.getServiceId());
-        assertEquals(InstanceInfo.InstanceStatus.UP, serviceInfo.getStatus());
+        assertEquals(InstanceStatus.UP, serviceInfo.getStatus());
     }
 
     @Test
     void whenNoInstanceIsUp_ReturnDown() {
-        var instance1 = createBasicTestInstance(InstanceInfo.InstanceStatus.STARTING);
-        var instance2 = createBasicTestInstance(InstanceInfo.InstanceStatus.UNKNOWN);
-        var instance3 = createBasicTestInstance(InstanceInfo.InstanceStatus.DOWN);
-        var instance4 = createBasicTestInstance(InstanceInfo.InstanceStatus.OUT_OF_SERVICE);
+        var instance1 = createBasicTestInstance(InstanceStatus.STARTING);
+        var instance2 = createBasicTestInstance(InstanceStatus.UNKNOWN);
+        var instance3 = createBasicTestInstance(InstanceStatus.DOWN);
+        var instance4 = createBasicTestInstance(InstanceStatus.OUT_OF_SERVICE);
         List<ServiceInstance> instances = Arrays.asList(instance1, instance2, instance3, instance4);
 
-        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(instances);
+        when(registry.serviceIds()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(instances);
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
         assertEquals(CLIENT_SERVICE_ID, serviceInfo.getServiceId());
-        assertEquals(InstanceInfo.InstanceStatus.DOWN, serviceInfo.getStatus());
+        assertEquals(InstanceStatus.DOWN, serviceInfo.getStatus());
     }
 
 
@@ -284,8 +284,8 @@ class ServicesInfoServiceTest {
                 new ImmutablePair<>("api1", "1.0-99")));
         List<ServiceInstance> instances = Arrays.asList(instance1, instance2, instance3);
 
-        when(discoveryClient.getServices()).thenReturn(List.of(CLIENT_SERVICE_ID));
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID)).thenReturn(instances);
+        when(registry.serviceIds()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(instances);
 
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(CLIENT_SERVICE_ID);
 
@@ -341,24 +341,24 @@ class ServicesInfoServiceTest {
     }
 
     private ServiceInstance createBasicTestInstance() {
-        return createBasicTestInstance(InstanceInfo.InstanceStatus.UP, Collections.emptyMap());
+        return createBasicTestInstance(InstanceStatus.UP, Collections.emptyMap());
     }
 
     private ServiceInstance createBasicTestInstance(Map<String, String> metadata) {
-        return createBasicTestInstance(InstanceInfo.InstanceStatus.UP, metadata);
+        return createBasicTestInstance(InstanceStatus.UP, metadata);
     }
 
-    private ServiceInstance createBasicTestInstance(InstanceInfo.InstanceStatus status) {
+    private ServiceInstance createBasicTestInstance(InstanceStatus status) {
         return createBasicTestInstance(status, Collections.emptyMap());
     }
 
-    private ServiceInstance createBasicTestInstance(InstanceInfo.InstanceStatus status, Map<String, String> metadata) {
-        return new EurekaServiceInstance(InstanceInfo.Builder.newBuilder()
-                .setAppName(CLIENT_SERVICE_ID)
-                .setInstanceId(CLIENT_INSTANCE_ID + Math.random())
-                .setStatus(status)
-                .setMetadata(metadata)
-                .build());
+    private ServiceInstance createBasicTestInstance(InstanceStatus status, Map<String, String> metadata) {
+        return ServiceInstance.builder()
+                .appName(CLIENT_SERVICE_ID)
+                .instanceId(CLIENT_INSTANCE_ID + Math.random())
+                .status(status)
+                .metadata(metadata)
+                .build();
     }
 
     private ServiceInstance createFullTestInstance() {
@@ -379,47 +379,44 @@ class ServicesInfoServiceTest {
         metadata.put(AUTHENTICATION_APPLID, CLIENT_AUTHENTICATION_APPLID);
         metadata.put(CLIENT_CUSTOM_METADATA_KEY, CLIENT_CUSTOM_METADATA_VALUE);
 
-        return new EurekaServiceInstance(InstanceInfo.Builder.newBuilder()
-                .setAppName(CLIENT_SERVICE_ID)
-                .setInstanceId(CLIENT_INSTANCE_ID + Math.random())
-                .setHostName(CLIENT_HOSTNAME)
-                .setIPAddr(CLIENT_IP)
-                .enablePort(InstanceInfo.PortType.SECURE, true)
-                .setSecurePort(CLIENT_PORT)
-                .setHomePageUrl(null, CLIENT_HOMEPAGE)
-                .setHealthCheckUrls(CLIENT_RELATIVE_HEALTH_URL, null, null)
-                .setStatusPageUrl(null, CLIENT_STATUS_URL)
-                .setMetadata(metadata)
-                .build());
+        return ServiceInstance.builder()
+                .appName(CLIENT_SERVICE_ID)
+                .instanceId(CLIENT_INSTANCE_ID + Math.random())
+                .hostName(CLIENT_HOSTNAME)
+                .ipAddr(CLIENT_IP)
+                .status(InstanceStatus.UP)
+                .port(new PortInfo(CLIENT_PORT, false))
+                .securePort(new PortInfo(CLIENT_PORT, true))
+                .homePageUrl(CLIENT_HOMEPAGE)
+                .secureHealthCheckUrl(CLIENT_HOMEPAGE + CLIENT_RELATIVE_HEALTH_URL)
+                .statusPageUrl(CLIENT_STATUS_URL)
+                .metadata(metadata)
+                .build();
     }
 
     @Nested
     class Multitenancy {
 
-        private static final InstanceInfo PRIMARY_WITH_METADATA = InstanceInfo.Builder.newBuilder()
-            .setInstanceId("primary-with-metadata")
-            .setAppName("primary-with-metadata")
-            .setMetadata(Collections.singletonMap(EurekaMetadataDefinition.REGISTRATION_TYPE, RegistrationType.PRIMARY.getValue()))
+        private static final ServiceInstance PRIMARY_WITH_METADATA = ServiceInstance.builder()
+            .instanceId("primary-with-metadata")
+            .appName("primary-with-metadata")
+            .metadata(Collections.singletonMap(EurekaMetadataDefinition.REGISTRATION_TYPE, RegistrationType.PRIMARY.getValue()))
             .build();
-        private static final InstanceInfo PRIMARY_WITHOUT_METADATA = InstanceInfo.Builder.newBuilder()
-            .setInstanceId("primary-without-metadata")
-            .setAppName("primary-without-metadata")
+        private static final ServiceInstance PRIMARY_WITHOUT_METADATA = ServiceInstance.builder()
+            .instanceId("primary-without-metadata")
+            .appName("primary-without-metadata")
             .build();
-        private static final InstanceInfo ADDITIONAL = InstanceInfo.Builder.newBuilder()
-            .setInstanceId("additional")
-            .setAppName("additional")
-            .setMetadata(Collections.singletonMap(EurekaMetadataDefinition.REGISTRATION_TYPE, RegistrationType.ADDITIONAL.getValue()))
+        private static final ServiceInstance ADDITIONAL = ServiceInstance.builder()
+            .instanceId("additional")
+            .appName("additional")
+            .metadata(Collections.singletonMap(EurekaMetadataDefinition.REGISTRATION_TYPE, RegistrationType.ADDITIONAL.getValue()))
             .build();
 
         @Test
         void givenApplication_whenGetPrimaryInstances_thenAdditionalWereRemoved() {
-            Application application = new Application("test");
-            application.setName("test");
-            application.addInstance(PRIMARY_WITH_METADATA);
-            application.addInstance(PRIMARY_WITHOUT_METADATA);
-            application.addInstance(ADDITIONAL);
+            List<ServiceInstance> instances = ServicesInfoService.getPrimaryInstances(
+                List.of(PRIMARY_WITH_METADATA, PRIMARY_WITHOUT_METADATA, ADDITIONAL));
 
-            List<InstanceInfo> instances = ServicesInfoService.getPrimaryInstances(application);
             assertEquals(2, instances.size());
             assertSame(PRIMARY_WITH_METADATA, instances.get(0));
             assertSame(PRIMARY_WITHOUT_METADATA, instances.get(1));

@@ -14,6 +14,8 @@ import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.cloud.commons.util.InetUtils;
@@ -31,6 +33,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -220,6 +223,74 @@ class RegistryInstancePropertiesContractTest {
             config.setSecurePort(10023);
 
             assertEquals("localhost:zaas:10023", SelfInstanceFactory.create(config, 1L).instanceId());
+        }
+
+    }
+
+    /**
+     * The Gateway advertises {@code apiml.service.externalUrl} rather than the address it binds to. Netflix's
+     * factory could not do that, so ConnectionsConfig carried its own 90-line copy of
+     * {@code InstanceInfoFactory.create} to override the host, the port and every URL. This asserts the
+     * replacement produces the same registration that copy did, so the copy can be deleted.
+     */
+    @Nested
+    class GivenAnExternalUrl {
+
+        private ServiceInstance advertised() throws IOException {
+            RegistryInstanceProperties config = ourConfig(binderFor("gateway-instance.yml"));
+            RegistryInstanceDefaults.apply(config, "gateway", new InetUtils(new InetUtilsProperties()));
+            return SelfInstanceFactory.create(config, 1_700_000_000_000L, "https://apiml.example.com:443");
+        }
+
+        @Test
+        void thenHostPortAndUrlsAllComeFromIt() throws IOException {
+            ServiceInstance instance = advertised();
+
+            assertEquals("apiml.example.com", instance.hostName());
+            assertEquals(443, instance.port().port());
+            assertEquals(443, instance.securePort().port());
+            assertEquals("https://apiml.example.com:443/", instance.homePageUrl());
+            assertEquals("https://apiml.example.com:443/application/info", instance.statusPageUrl());
+            assertEquals("https://apiml.example.com:443/application/health", instance.secureHealthCheckUrl());
+            // The non-secure port is disabled for the Gateway, so no plain health-check URL is advertised
+            assertNull(instance.healthCheckUrl());
+        }
+
+        @Test
+        @DisplayName("Then metadata URLs pointing at the bound address are rewritten")
+        void thenMetadataIsRewritten() throws IOException {
+            ServiceInstance instance = advertised();
+
+            assertEquals(
+                "https://apiml.example.com:443/gateway/api-docs",
+                instance.metadata().get("apiml.apiInfo.0.swaggerUrl"),
+                "A swaggerUrl on an address clients cannot reach is a broken API Catalog entry");
+            // Not rewritten, and deliberately so: the replacement is of the home page URL *with* its trailing
+            // slash, which is what Netflix's factory replaced, and this value has none. It matters little in
+            // practice - when an operator sets apiml.service.externalUrl the metadata already holds the
+            // external address - but a substring rule that fired here would also fire inside longer URLs.
+            assertEquals("https://localhost:10010", instance.metadata().get("apiml.service.externalUrl"));
+            // Values that are not URLs are untouched
+            assertEquals("primary", instance.metadata().get("apiml.registrationType"));
+            assertEquals("/gateway/api/v1", instance.metadata().get("apiml.apiBasePath"));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"invalidUrl", "localhost:10010", "https://apiml.example.com", "/relative"})
+        @DisplayName("Then anything that is not a full URL is rejected rather than registered")
+        void thenAMalformedExternalUrlIsRejected(String externalUrl) throws IOException {
+            RegistryInstanceProperties config = ourConfig(binderFor("gateway-instance.yml"));
+            RegistryInstanceDefaults.apply(config, "gateway", new InetUtils(new InetUtilsProperties()));
+
+            var e = assertThrows(IllegalArgumentException.class,
+                () -> SelfInstanceFactory.create(config, 1L, externalUrl));
+            assertTrue(e.getMessage().contains("apiml.service.externalUrl"));
+        }
+
+        @Test
+        void thenTheInstanceIdIsLeftAlone() throws IOException {
+            // It identifies the registration, not the address; changing it would orphan the previous lease.
+            assertEquals("localhost:gateway:10010", advertised().instanceId());
         }
 
     }

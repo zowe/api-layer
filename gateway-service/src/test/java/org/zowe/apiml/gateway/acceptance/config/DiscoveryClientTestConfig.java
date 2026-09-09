@@ -10,48 +10,94 @@
 
 package org.zowe.apiml.gateway.acceptance.config;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.discovery.EurekaClientConfig;
 import lombok.RequiredArgsConstructor;
-import org.springframework.aop.support.AopUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
-import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
-import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
-import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
-import org.springframework.cloud.util.ProxyUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.web.client.RestClient;
-import org.zowe.apiml.gateway.ApimlDiscoveryClientStub;
 import org.zowe.apiml.gateway.ApplicationRegistry;
+import org.zowe.apiml.registry.RegistryView;
+import org.zowe.apiml.registry.SelfRegistration;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 /**
- * This configuration provides the bean for the ApplicationRegistry and overrides bean CloudEurekaClient with custom ApimlDiscoveryClient. This bean mocks Eureka Client to allow virtual services registration.
+ * Serves the acceptance tests' mock services as if they were registered.
  * <p>
- * Configuration also add listeners to call other beans waiting for fetch new registry. It speeds up distribution of
- * changes in whole central gateway.
+ * Three views of the same {@link ApplicationRegistry}, because the Gateway consumes discovery three ways: a
+ * reactive client for route building, a blocking one for the components that ask directly, and a
+ * {@link RegistryView} for the parts that report on registrations in full.
+ * <p>
+ * This used to be one bean - {@code ApimlDiscoveryClientStub}, a subclass of Netflix's
+ * {@code CloudEurekaClient} that had to be handed an {@code ApplicationInfoManager}, an
+ * {@code EurekaClientConfig}, a request-factory supplier, a transport-factories object and a
+ * {@code HealthCheckHandler} before it would serve a single mock instance. None of that had anything to do
+ * with the test.
  */
 @TestConfiguration
 @RequiredArgsConstructor
 @Profile("!ApimlModulithAcceptanceTest")
 public class DiscoveryClientTestConfig {
 
-    private final ApplicationContext context;
-
     @Bean
     @Primary
     ApplicationRegistry registry() {
         return new ApplicationRegistry();
+    }
+
+    @Bean
+    @Primary
+    RegistryView registryView(ApplicationRegistry applicationRegistry) {
+        return applicationRegistry;
+    }
+
+    @Bean
+    @Primary
+    SelfRegistration selfRegistration() {
+        return new SelfRegistration() {
+
+            @Override
+            public String instanceId() {
+                return "localhost:gateway:10010";
+            }
+
+            @Override
+            public String serviceId() {
+                return "gateway";
+            }
+
+        };
+    }
+
+    /**
+     * Not {@code @Primary}: Spring Cloud's {@code CompositeDiscoveryClient} is the primary one and aggregates
+     * every other {@code DiscoveryClient} bean, so marking this one primary as well leaves two primaries and
+     * nothing injectable.
+     */
+    @Bean
+    DiscoveryClient mockServicesDiscoveryClient(ApplicationRegistry applicationRegistry) {
+        return new DiscoveryClient() {
+
+            @Override
+            public String description() {
+                return "mocked services";
+            }
+
+            @Override
+            public List<ServiceInstance> getInstances(String serviceId) {
+                return applicationRegistry.getServiceInstance(serviceId);
+            }
+
+            @Override
+            public List<String> getServices() {
+                return applicationRegistry.serviceIds();
+            }
+
+        };
     }
 
     @Bean
@@ -65,45 +111,15 @@ public class DiscoveryClientTestConfig {
 
             @Override
             public Flux<ServiceInstance> getInstances(String serviceId) {
-                return Flux.just(applicationRegistry.getServiceInstance(serviceId).toArray(new ServiceInstance[0]));
+                return Flux.fromIterable(applicationRegistry.getServiceInstance(serviceId));
             }
 
             @Override
             public Flux<String> getServices() {
-                return Flux.just(applicationRegistry.getInstances().stream()
-                    .map(a -> a.getId())
-                    .distinct()
-                    .toArray(String[]::new));
+                return Flux.fromIterable(applicationRegistry.serviceIds());
             }
+
         };
-    }
-
-    @Bean(destroyMethod = "shutdown", name = "test")
-    @Primary
-    @RefreshScope
-    ApimlDiscoveryClientStub eurekaClient(ApplicationInfoManager manager,
-                                                 EurekaClientConfig config,
-                                                 EurekaInstanceConfig instance,
-                                                 @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-                                                 ApplicationRegistry applicationRegistry
-    ) {
-        ApplicationInfoManager appManager;
-        if (AopUtils.isAopProxy(manager)) {
-            appManager = ProxyUtils.getTargetObject(manager);
-        } else {
-            appManager = manager;
-        }
-
-
-        var factorySupplier = new DefaultEurekaClientHttpRequestFactorySupplier(new RestClientTimeoutProperties());
-        var args1 = new RestClientDiscoveryClientOptionalArgs(factorySupplier, RestClient::builder);
-        var factories = new RestClientTransportClientFactories(args1);
-        final var discoveryClient = new ApimlDiscoveryClientStub(appManager, config, this.context, applicationRegistry, factories, args1);
-        discoveryClient.registerHealthCheck(healthCheckHandler);
-
-        discoveryClient.registerEventListener(event -> {
-        });
-        return discoveryClient;
     }
 
 }

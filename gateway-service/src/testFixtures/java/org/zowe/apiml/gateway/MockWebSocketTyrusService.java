@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.PortType;
 import jakarta.websocket.DeploymentException;
 import jakarta.websocket.OnMessage;
 import jakarta.websocket.Session;
@@ -96,16 +94,21 @@ public class MockWebSocketTyrusService extends MockWebSocketService {
     }
 
     @Override
-    public InstanceInfo.Builder getInstanceInfo() {
-        return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(getInstanceId())
-            .setHostName(hostname)
-            .setPort(port)
-            .enablePort(PortType.UNSECURE, true)
-            .setAppName(serviceId)
-            .setVIPAddress(vipAddress != null ? vipAddress : serviceId)
-            .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setMetadata(getMetadata());
+    public org.zowe.apiml.registry.model.ServiceInstance getInstanceInfo() {
+        return org.zowe.apiml.registry.model.ServiceInstance.builder()
+            .instanceId(getInstanceId())
+            .hostName(hostname)
+            .ipAddr("127.0.0.1")
+            .port(new org.zowe.apiml.registry.model.PortInfo(port, true))
+            .securePort(new org.zowe.apiml.registry.model.PortInfo(port, false))
+            .appName(serviceId)
+            .vipAddress(vipAddress != null ? vipAddress : serviceId)
+            .secureVipAddress(vipAddress != null ? vipAddress : serviceId)
+            .status(org.zowe.apiml.registry.model.InstanceStatus.UP)
+            .dataCenterInfo(org.zowe.apiml.registry.model.DataCenterInfo.MY_OWN)
+            .lease(org.zowe.apiml.registry.model.Lease.renewable(30, 90, System.currentTimeMillis()))
+            .metadata(getMetadata())
+            .build();
     }
 
     public static class MockWsTyrusServiceBuilder {
