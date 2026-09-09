@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.filter;
 
-import org.zowe.apiml.discovery.registry.EurekaApplicationAdapter;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationContext;
@@ -21,6 +20,7 @@ import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutHandler;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.zowe.apiml.handler.FailedAuthenticationWebHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.token.TokenFormatNotValidException;
@@ -38,7 +38,7 @@ public class LogoutHandler implements ServerLogoutHandler {
 
     private final AuthenticationService authenticationService;
     private final FailedAuthenticationWebHandler failure;
-    private final EurekaApplicationAdapter eurekaApplicationAdapter;
+    private final DiscoveryClient discoveryClient;
     private final HttpUtils httpUtils;
     private final ApplicationContext applicationContext;
 
@@ -65,7 +65,7 @@ public class LogoutHandler implements ServerLogoutHandler {
             return failure.onAuthenticationFailure(exchange, new TokenNotValidException("The token you are trying to logout is not valid"));
         } else {
             try {
-                var app = eurekaApplicationAdapter.application(CoreService.GATEWAY.getServiceId());
+                var app = discoveryClient.getInstances(CoreService.GATEWAY.getServiceId());
                 authenticationService.invalidateJwtTokenGateway(token, distribute, app);
             } catch (TokenNotValidException e) {
                 // TokenNotValidException thrown in cases where the format is not valid

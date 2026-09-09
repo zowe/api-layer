@@ -11,7 +11,6 @@
 package org.zowe.apiml.zaas.security.query;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.discovery.EurekaClient;
 import com.nimbusds.jose.JWSAlgorithm;
 
 import org.jose4j.jwk.JsonWebKey;
@@ -31,6 +30,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.SecurityUtils;
+import org.zowe.apiml.registry.SelfRegistration;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.util.CacheUtils;
@@ -73,10 +73,10 @@ class SuccessfulQueryHandlerTest {
     private RestTemplate restTemplate;
 
     @Mock
-    private EurekaClient eurekaClient;
+    private DiscoveryClient discoveryClient;
 
     @Mock
-    private DiscoveryClient discoveryClient;
+    private SelfRegistration selfRegistration;
 
     @Mock
     private CacheManager cacheManager;
@@ -112,7 +112,7 @@ class SuccessfulQueryHandlerTest {
 
         AuthenticationService authService = new AuthenticationService(
             applicationContext, authConfigurationProperties, jwtSecurityInitializer, zosmfService,
-            eurekaClient, restTemplate, cacheManager, new CacheUtils());
+            discoveryClient, selfRegistration, restTemplate, cacheManager, new CacheUtils());
         lenient().when(jwtSecurityInitializer.getSignatureAlgorithm()).thenReturn(algorithm);
         lenient().when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
         var jwk = mock(JsonWebKey.class);

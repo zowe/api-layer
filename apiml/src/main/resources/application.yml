@@ -3,6 +3,11 @@ eureka:
     dashboard:
         path: /eureka
     client:
+        # Neither registering nor fetching, because the registry is a bean in this same JVM: ModulithConfig
+        # registers the core services into it directly and supplies a DiscoveryClient over it. Under Eureka
+        # this arrangement still created a client that polled /eureka/apps on its own port - refused, because
+        # /eureka/** is gated to the internal Discovery port - and retried on a timer for the life of the
+        # process. With both flags off no client is built at all; see RegistryClientAutoConfiguration.
         fetchRegistry: false
         registerWithEureka: false
         instanceInfoReplicationIntervalSeconds: 30

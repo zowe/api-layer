@@ -55,8 +55,7 @@ gitProperties {
 }
 
 dependencies {
-    // Still a Eureka client; see apiml-eureka-compat. Deleted when the Phase 5 cutover finishes.
-    api project(':apiml-eureka-compat')
+    api project(':apiml-registry-client-spring')
     api project(':apiml-security-common')
     api project(':apiml-tomcat-common')
     api project(':apiml-extension-loader')
@@ -68,7 +67,6 @@ dependencies {
     implementation libs.spring.boot.starter.cache
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.boot.starter.security
-    implementation libs.spring.cloud.starter.eureka.client
     implementation libs.spring.retry
 
     implementation libs.jackson.annotations
@@ -82,6 +80,10 @@ dependencies {
     implementation libs.logback.classic
 
     implementation libs.apache.commons.lang3
+    // Previously arrived transitively through spring-cloud-starter-netflix-eureka-client. Declared now that
+    // the starter is gone, so the module states what it actually uses.
+    implementation libs.http.client5
+    implementation libs.bcprov
     implementation libs.commons.io
     implementation libs.spring.context
     implementation libs.spring.context.support
