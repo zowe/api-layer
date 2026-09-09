@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.service.model;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.InstanceStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -21,7 +21,7 @@ import java.util.Set;
 @Builder
 public class CentralServiceInfo {
 
-    private final InstanceInfo.InstanceStatus status;
+    private final InstanceStatus status;
     private final Map<String,String> customMetadata;
     private final Set<String> apiId;
     private final String serviceId;

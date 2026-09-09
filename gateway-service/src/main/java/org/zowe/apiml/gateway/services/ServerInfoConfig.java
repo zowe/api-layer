@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.gateway.services;
 
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.product.routing.transform.TransformService;
+import org.zowe.apiml.registry.RegistryView;
 
 @Configuration
 public class ServerInfoConfig {
@@ -27,11 +27,11 @@ public class ServerInfoConfig {
 
     @Bean
     public ServicesInfoService servicesInfoService(
-        DiscoveryClient discoveryClient,
+        RegistryView registry,
         EurekaMetadataParser eurekaMetadataParser,
         GatewayClient gatewayClient
     ) {
-        return new ServicesInfoService(discoveryClient, eurekaMetadataParser, gatewayClient, new TransformService(gatewayClient));
+        return new ServicesInfoService(registry, eurekaMetadataParser, gatewayClient, new TransformService(gatewayClient));
     }
 
 }

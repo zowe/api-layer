@@ -347,25 +347,11 @@ public class ModulithConfig {
     }
 
     @Bean
-    public BasicInfoService basicInfoService(DiscoveryClient discoveryClient, EurekaMetadataParser eurekaMetadataParser) {
-
-        return new BasicInfoService(null, eurekaMetadataParser) {
-            @Override
-            public List<ServiceInfo> getServicesInfo() {
-                var serviceInfos = new ArrayList<ServiceInfo>();
-                for (var serviceId : discoveryClient.getServices()) {
-                    var instances = discoveryClient.getInstances(serviceId);
-                    var instanceInfos = ServicesInfoService.extractInstanceInfo(instances);
-                    serviceInfos.add(ServiceInfo.builder()
-                        .serviceId(serviceId)
-                        .status(getStatus(instanceInfos))
-                        .apiml(getApiml(instanceInfos))
-                        .instances(getInstances(instanceInfos))
-                        .build());
-                }
-                return serviceInfos;
-            }
-        };
+    public BasicInfoService basicInfoService(ServiceRegistry serviceRegistry, EurekaMetadataParser eurekaMetadataParser) {
+        // The registry is a bean in this JVM, and ServiceRegistry is itself a RegistryView. This used to be an
+        // anonymous subclass that passed null for the Eureka client and reimplemented getServicesInfo() over a
+        // DiscoveryClient, because there was no way to hand it the registry it needed to read.
+        return new BasicInfoService(serviceRegistry, eurekaMetadataParser);
     }
 
     @Bean

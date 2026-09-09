@@ -10,9 +10,6 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.*;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.EurekaClientConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +34,6 @@ import org.springframework.cloud.client.circuitbreaker.Customizer;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.cloud.gateway.filter.headers.HttpHeadersFilter;
-import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
-import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
-import org.springframework.cloud.netflix.eureka.http.EurekaClientHttpRequestFactorySupplier;
-import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
-import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
 import org.springframework.cloud.util.ProxyUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -63,7 +55,6 @@ import org.zowe.apiml.gateway.filters.security.SecFetchSiteFilter;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.eureka.EurekaServiceUrlUtils;
-import org.zowe.apiml.product.web.DiscoveryRestTemplateConfig;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.security.common.util.ConnectionUtil;
@@ -76,7 +67,6 @@ import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 //TODO this configuration should be removed as redundancy of the HttpConfig in the apiml-common
@@ -176,135 +166,16 @@ public class ConnectionsConfig {
         };
     }
 
-    @Bean(destroyMethod = "shutdown", name = "eurekaClient")
-    @RefreshScope
-    @ConditionalOnMissingBean(EurekaClient.class)
-    CloudEurekaClient primaryEurekaClient(ApplicationInfoManager manager,
-                                        EurekaClientConfig config,
-                                        @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-                                        @Qualifier("discoveryRestTemplatePooledConnectionManager") HttpClientConnectionManager httpClientConnectionManager) {
-        ApplicationInfoManager appManager;
-        if (AopUtils.isAopProxy(manager)) {
-            appManager = ProxyUtils.getTargetObject(manager);
-        } else {
-            appManager = manager;
-        }
-        RestClientDiscoveryClientOptionalArgs args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier(httpClientConnectionManager));
-        RestClientTransportClientFactories factories = new RestClientTransportClientFactories(args1);
-        final CloudEurekaClient cloudEurekaClient = new CloudEurekaClient(appManager, config, factories, args1, this.context);
-        cloudEurekaClient.registerHealthCheck(healthCheckHandler);
-        return cloudEurekaClient;
-    }
-
-    public RestClientDiscoveryClientOptionalArgs defaultArgs(EurekaClientHttpRequestFactorySupplier factorySupplier) {
-        RestClientDiscoveryClientOptionalArgs clientArgs = new RestClientDiscoveryClientOptionalArgs(factorySupplier, RestClient::builder);
-
-        if (eurekaServerUrl.startsWith("http://")) {
-            apimlLog.log("org.zowe.apiml.common.insecureHttpWarning");
-        } else {
-            clientArgs.setSSLContext(config.httpsFactory().getSslContext());
-            clientArgs.setHostnameVerifier(config.httpsFactory().getHostnameVerifier());
-        }
-
-        return clientArgs;
-    }
-
+    /*
+     * The @DependsOn("discoveryClient") that used to be here named a Spring Cloud Netflix bean that no longer
+     * exists. It is not needed either: this bean only parses environment variables, and what consumes it -
+     * GatewayRegistrationConfig.additionalRegistrations - is a SmartLifecycle in the last startup phase.
+     */
     @Bean
-    @DependsOn("discoveryClient")
     List<AdditionalRegistration> additionalRegistration() {
         List<AdditionalRegistration> additionalRegistrations = new AdditionalRegistrationParser().extractAdditionalRegistrations(System.getenv());
         log.debug("Parsed {} additional registration: {}", additionalRegistrations.size(), additionalRegistrations);
         return additionalRegistrations;
-    }
-
-    @Bean(destroyMethod = "shutdown")
-    @Conditional(AdditionalRegistrationCondition.class)
-    @RefreshScope
-    AdditionalEurekaClientsHolder additionalEurekaClientsHolder(
-        ApplicationInfoManager applicationInfoManager,
-        EurekaClientConfig config,
-        List<AdditionalRegistration> additionalRegistrations,
-        EurekaFactory eurekaFactory,
-        @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-        AdditionalRegistrationGatewayRegistry additionalRegistrationGatewayRegistry,
-        Optional<X509AndGwAwareXForwardedHeadersFilter> x509awareXForwardedHeadersFilter,
-        @Qualifier("discoveryRestTemplatePooledConnectionManager") HttpClientConnectionManager httpClientConnectionManager
-    ) {
-        List<CloudEurekaClient> additionalClients = new ArrayList<>(additionalRegistrations.size());
-        for (var apimlRegistration : additionalRegistrations) {
-            var cloudEurekaClient = registerInTheApimlInstance(config, apimlRegistration, applicationInfoManager, httpClientConnectionManager, eurekaFactory);
-            additionalClients.add(cloudEurekaClient);
-            cloudEurekaClient.registerHealthCheck(healthCheckHandler);
-
-            x509awareXForwardedHeadersFilter
-                .ifPresent(__ ->
-                    additionalRegistrationGatewayRegistry.registerCacheRefreshEventListener(cloudEurekaClient));
-        }
-        return new AdditionalEurekaClientsHolder(additionalClients);
-    }
-
-    private CloudEurekaClient registerInTheApimlInstance(EurekaClientConfig config, AdditionalRegistration apimlRegistration, ApplicationInfoManager appManager, HttpClientConnectionManager httpClientConnectionManager, EurekaFactory eurekaFactory) {
-        log.debug("additional registration: {}", apimlRegistration.getDiscoveryServiceUrls());
-        Map<String, String> urls = new HashMap<>();
-        urls.put(DEFAULT_ZONE, withBasicAuthFallback(apimlRegistration.getDiscoveryServiceUrls()));
-
-        var configBean = new EurekaClientConfigBean();
-        BeanUtils.copyProperties(config, configBean);
-        configBean.setServiceUrl(urls);
-        configBean.setRegisterWithEureka(true);
-        configBean.setFetchRegistry(true);
-
-        var eurekaInstanceConfig = appManager.getEurekaInstanceConfig();
-        var newInstanceInfo = create(eurekaInstanceConfig);
-
-        updateMetadata(newInstanceInfo, apimlRegistration);
-
-        var args1 = defaultArgs(DiscoveryRestTemplateConfig.getDefaultEurekaClientHttpRequestFactorySupplier(httpClientConnectionManager));
-        var factories = new RestClientTransportClientFactories(args1);
-        return eurekaFactory.createCloudEurekaClient(new AdditionalEurekaConfiguration(eurekaInstanceConfig, newInstanceInfo), newInstanceInfo, configBean, context, factories, args1);
-    }
-
-    /**
-     * When TLS validation is disabled the client certificate cannot be trusted by the Discovery Service, so the
-     * additional registration falls back to basic authentication by embedding the configured Discovery Service
-     * credentials into the discovery service URLs. The primary registration is handled by
-     * {@link org.zowe.apiml.product.web.EurekaBasicAuthEnvironmentPostProcessor}.
-     */
-    private String withBasicAuthFallback(String discoveryServiceUrls) {
-        if (discoveryServiceUrls == null || config.isVerifySslCertificatesOfServices()) {
-            return discoveryServiceUrls;
-        }
-        String password = (discoveryPassword == null) ? null : new String(discoveryPassword);
-        return Arrays.stream(discoveryServiceUrls.split(","))
-            .map(url -> EurekaServiceUrlUtils.addCredentials(url.trim(), discoveryUserid, password))
-            .collect(Collectors.joining(","));
-    }
-
-    private boolean isRouteKey(String key) {
-        return Strings.CS.startsWith(key, ROUTES + ".") &&
-            (
-                Strings.CS.endsWith(key, "." + ROUTES_GATEWAY_URL) ||
-                    Strings.CS.endsWith(key, "." + ROUTES_SERVICE_URL)
-            );
-    }
-
-    private void updateMetadata(InstanceInfo instanceInfo, AdditionalRegistration additionalRegistration) {
-        var metadata = instanceInfo.getMetadata();
-        metadata.put(REGISTRATION_TYPE, EurekaMetadataDefinition.RegistrationType.ADDITIONAL.getValue());
-
-        // if routes were override replace them in the map, otherwise use the default from the primary registration
-        if (!CollectionUtils.isEmpty(additionalRegistration.getRoutes())) {
-            // remove current routes
-            var currentRoutes = metadata.keySet().stream().filter(this::isRouteKey).collect(Collectors.toSet());
-            currentRoutes.forEach(metadata::remove);
-
-            // generate new routes metadata
-            int index = 0;
-            for (var route : additionalRegistration.getRoutes()) {
-                metadata.put(String.format("apiml.routes.%d.gatewayUrl", index), route.getGatewayUrl());
-                metadata.put(String.format("apiml.routes.%d.serviceUrl", index++), route.getServiceUrl());
-            }
-        }
     }
 
     @Bean
@@ -353,131 +224,6 @@ public class ConnectionsConfig {
             safeNavigationModes,
             safeNavigationDestinations
         );
-    }
-
-    public InstanceInfo create(EurekaInstanceConfig config) {
-        LeaseInfo.Builder leaseInfoBuilder = LeaseInfo.Builder.newBuilder()
-            .setRenewalIntervalInSecs(config.getLeaseRenewalIntervalInSeconds())
-            .setDurationInSecs(config.getLeaseExpirationDurationInSeconds());
-
-        // Builder the instance information to be registered with eureka
-        // server
-        InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
-
-        String namespace = config.getNamespace();
-        if (!namespace.endsWith(".")) {
-            namespace = namespace + ".";
-        }
-        URL url;
-        try {
-            url = new URL(externalUrl);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-
-        builder
-            .setNamespace(namespace)
-            .setAppName(config.getAppname())
-            .setInstanceId(config.getInstanceId())
-            .setAppGroupName(config.getAppGroupName())
-            .setDataCenterInfo(config.getDataCenterInfo())
-            .setIPAddr(config.getIpAddress())
-            .setHostName(url.getHost())
-            .setPort(url.getPort())
-            .enablePort(InstanceInfo.PortType.UNSECURE, config.isNonSecurePortEnabled())
-            .setSecurePort(url.getPort())
-            .enablePort(InstanceInfo.PortType.SECURE, config.getSecurePortEnabled())
-            .setVIPAddress(config.getVirtualHostName())
-            .setSecureVIPAddress(config.getSecureVirtualHostName())
-            .setHomePageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getHomePageUrlPath()).toUriString())
-            .setStatusPageUrl(null, UriComponentsBuilder.fromUriString(externalUrl).path(config.getStatusPageUrlPath()).toUriString())
-            .setHealthCheckUrls(config.getHealthCheckUrlPath(), null, null)
-            .setASGName(config.getASGName());
-
-        // Start off with the STARTING state to avoid traffic
-        if (!config.isInstanceEnabledOnit()) {
-            InstanceInfo.InstanceStatus initialStatus = InstanceInfo.InstanceStatus.STARTING;
-            if (log.isInfoEnabled()) {
-                log.info("Setting initial instance status as: " + initialStatus);
-            }
-            builder.setStatus(initialStatus);
-        } else {
-            if (log.isInfoEnabled()) {
-                log.info("Setting initial instance status as: " + InstanceInfo.InstanceStatus.UP
-                    + ". This may be too early for the instance to advertise itself as available. "
-                    + "You would instead want to control this via a healthcheck handler.");
-            }
-        }
-
-        // Add any user-specific metadata information
-        var fromUrl = UriComponentsBuilder.fromUriString(config.getHomePageUrl()).path("/").toUriString();
-        var toUrl = UriComponentsBuilder.fromUriString(externalUrl).path("/").toUriString();
-        for (Map.Entry<String, String> mapEntry : config.getMetadataMap().entrySet()) {
-            String key = mapEntry.getKey();
-            String value = mapEntry.getValue();
-            // only add the metadata if the value is present
-            if (value != null && !value.isEmpty()) {
-                value = value.replace(fromUrl, toUrl);
-                builder.add(key, value);
-            }
-        }
-
-        InstanceInfo instanceInfo = builder.build();
-        instanceInfo.setLeaseInfo(leaseInfoBuilder.build());
-        return instanceInfo;
-    }
-
-    @RequiredArgsConstructor
-    static class AdditionalEurekaConfiguration implements EurekaInstanceConfig {
-
-        @Delegate(excludes = NonDelegated.class)
-        private final EurekaInstanceConfig eurekaInstanceConfig;
-
-        private final InstanceInfo instanceInfo;
-
-        @Override
-        public String getHostName(boolean refresh) {
-            eurekaInstanceConfig.getHostName(refresh);
-            return instanceInfo.getHostName();
-        }
-
-        @Override
-        public String getHealthCheckUrl() {
-            if (instanceInfo.isPortEnabled(InstanceInfo.PortType.UNSECURE)) {
-                return instanceInfo.getHealthCheckUrl();
-            }
-            return instanceInfo.getSecureHealthCheckUrl();
-        }
-
-        @Override
-        public String getSecureHealthCheckUrl() {
-            return instanceInfo.getSecureHealthCheckUrl();
-        }
-
-        @Override
-        public String getHomePageUrl() {
-            return instanceInfo.getHomePageUrl();
-        }
-
-        @Override
-        public String getStatusPageUrl() {
-            return instanceInfo.getStatusPageUrl();
-        }
-
-        interface NonDelegated {
-
-            String getHostName(boolean refresh);
-
-            String getHealthCheckUrl();
-
-            String getSecureHealthCheckUrl();
-
-            String getHomePageUrl();
-
-            String getStatusPageUrl();
-
-        }
-
     }
 
 }

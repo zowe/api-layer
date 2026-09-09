@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 /**
  * This class is a replacement for DiscoveryCompositeHealthContributor in spring-cloud-cloud-commons:2.2.9.RELEASE in order
- * to work with ApimlHealthCheckHandler more effectively.
+ * to work with the registry client's HealthStatusSource more effectively.
  * <p>
  * This code is copied from the 3.1.x version of spring-cloud-commons.
  * https://github.com/spring-cloud/spring-cloud-commons/blob/3.1.x/spring-cloud-commons/src/main/java/org/springframework/cloud/client/discovery/health/DiscoveryCompositeHealthContributor.java

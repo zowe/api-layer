@@ -15,6 +15,7 @@ import org.zowe.apiml.registry.model.Applications;
 import org.zowe.apiml.registry.model.InstanceStatus;
 import org.zowe.apiml.registry.model.ServiceInstance;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -26,7 +27,7 @@ import java.util.Optional;
  * {@code EurekaServerContextHolder.getInstance()}, a global singleton that made the modulith's wiring awkward and
  * the behaviour hard to test. Callers get this injected.
  */
-public interface ServiceRegistry {
+public interface ServiceRegistry extends RegistryView {
 
     /**
      * Add or replace an instance.
@@ -58,6 +59,21 @@ public interface ServiceRegistry {
     Applications delta();
 
     Optional<Application> application(String appName);
+
+    @Override
+    default List<String> serviceIds() {
+        return applications().applications().stream()
+            .map(Application::name)
+            .map(name -> name.toLowerCase(java.util.Locale.ROOT))
+            .toList();
+    }
+
+    @Override
+    default List<ServiceInstance> instances(String serviceId) {
+        return application(serviceId)
+            .map(Application::instances)
+            .orElseGet(List::of);
+    }
 
     Optional<ServiceInstance> instance(String appName, String instanceId);
 

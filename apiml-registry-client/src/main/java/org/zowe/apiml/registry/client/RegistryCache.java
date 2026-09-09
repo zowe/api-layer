@@ -12,6 +12,7 @@ package org.zowe.apiml.registry.client;
 
 import org.zowe.apiml.registry.model.ActionType;
 import org.zowe.apiml.registry.model.Application;
+import org.zowe.apiml.registry.RegistryView;
 import org.zowe.apiml.registry.model.Applications;
 import org.zowe.apiml.registry.model.InstanceStatus;
 import org.zowe.apiml.registry.model.ServiceInstance;
@@ -33,7 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * hash from its own contents and compares. A mismatch means "give up and do a full fetch" rather than "carry on
  * with a subtly wrong routing table".
  */
-public final class RegistryCache {
+public final class RegistryCache implements RegistryView {
 
     private final AtomicReference<Applications> current =
         new AtomicReference<>(new Applications(List.of(), 0L, ""));
@@ -113,6 +114,14 @@ public final class RegistryCache {
             .toList();
     }
 
+    @Override
+    public List<ServiceInstance> instances(String serviceId) {
+        return application(serviceId)
+            .map(Application::instances)
+            .orElseGet(List::of);
+    }
+
+    @Override
     public List<String> serviceIds() {
         return current.get().applications().stream()
             .map(Application::name)

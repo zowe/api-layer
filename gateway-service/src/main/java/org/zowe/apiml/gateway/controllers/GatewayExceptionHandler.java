@@ -46,7 +46,7 @@ import reactor.core.publisher.Mono;
 
 import javax.net.ssl.SSLException;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j

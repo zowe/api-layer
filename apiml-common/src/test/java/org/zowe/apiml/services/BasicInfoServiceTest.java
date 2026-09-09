@@ -11,16 +11,16 @@
 package org.zowe.apiml.services;
 
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.registry.RegistryView;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.PortInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 
@@ -73,7 +73,7 @@ class BasicInfoServiceTest {
     private static final String SERVICE_SERVICE_ID = "serviceId";
 
     @Mock
-    private EurekaClient eurekaClient;
+    private RegistryView registry;
 
     private final EurekaMetadataParser eurekaMetadataParser = new EurekaMetadataParser();
 
@@ -81,31 +81,30 @@ class BasicInfoServiceTest {
 
     @BeforeEach
     void setUp() {
-        basicInfoService = new BasicInfoService(eurekaClient, eurekaMetadataParser);
+        basicInfoService = new BasicInfoService(registry, eurekaMetadataParser);
     }
 
     @Test
     void whenListingAllServices_thenReturnList() {
         String clientServiceId2 = "testclient2";
 
-        List<Application> applications = Arrays.asList(
-                new Application(CLIENT_SERVICE_ID, Collections.singletonList(createFullTestInstance())),
-                new Application(clientServiceId2)
-        );
-        when(eurekaClient.getApplications())
-                .thenReturn(new Applications(null, 1L, applications));
+        when(registry.serviceIds()).thenReturn(Arrays.asList(CLIENT_SERVICE_ID, clientServiceId2));
+        when(registry.instances(CLIENT_SERVICE_ID))
+                .thenReturn(Collections.singletonList(createFullTestInstance()));
+        // Registered, but with no instances: still listed, and reported DOWN
+        when(registry.instances(clientServiceId2)).thenReturn(Collections.emptyList());
 
         List<ServiceInfo> servicesInfo = basicInfoService.getServicesInfo();
-
 
         assertEquals(2, servicesInfo.size());
         assertThat(servicesInfo, contains(
                 hasProperty(SERVICE_SERVICE_ID, is(CLIENT_SERVICE_ID)),
                 hasProperty(SERVICE_SERVICE_ID, is(clientServiceId2))
         ));
+        assertEquals(InstanceStatus.DOWN, servicesInfo.get(1).getStatus());
     }
 
-    private InstanceInfo createFullTestInstance() {
+    private ServiceInstance createFullTestInstance() {
         ApiInfo apiInfo = ApiInfo.builder()
                 .apiId(CLIENT_API_ID)
                 .version(CLIENT_API_VERSION)
@@ -123,17 +122,18 @@ class BasicInfoServiceTest {
         metadata.put(AUTHENTICATION_APPLID, CLIENT_AUTHENTICATION_APPLID);
         metadata.put(CLIENT_CUSTOM_METADATA_KEY, CLIENT_CUSTOM_METADATA_VALUE);
 
-        return InstanceInfo.Builder.newBuilder()
-                .setAppName(CLIENT_SERVICE_ID)
-                .setInstanceId(CLIENT_INSTANCE_ID + Math.random())
-                .setHostName(CLIENT_HOSTNAME)
-                .setIPAddr(CLIENT_IP)
-                .enablePort(InstanceInfo.PortType.SECURE, true)
-                .setSecurePort(CLIENT_PORT)
-                .setHomePageUrl(null, CLIENT_HOMEPAGE)
-                .setHealthCheckUrls(CLIENT_RELATIVE_HEALTH_URL, null, null)
-                .setStatusPageUrl(null, CLIENT_STATUS_URL)
-                .setMetadata(metadata)
+        return ServiceInstance.builder()
+                .appName(CLIENT_SERVICE_ID)
+                .instanceId(CLIENT_INSTANCE_ID + Math.random())
+                .hostName(CLIENT_HOSTNAME)
+                .ipAddr(CLIENT_IP)
+                .port(new PortInfo(CLIENT_PORT, false))
+                .securePort(new PortInfo(CLIENT_PORT, true))
+                .status(InstanceStatus.UP)
+                .homePageUrl(CLIENT_HOMEPAGE)
+                .secureHealthCheckUrl(CLIENT_HOMEPAGE + CLIENT_RELATIVE_HEALTH_URL)
+                .statusPageUrl(CLIENT_STATUS_URL)
+                .metadata(metadata)
                 .build();
     }
 }

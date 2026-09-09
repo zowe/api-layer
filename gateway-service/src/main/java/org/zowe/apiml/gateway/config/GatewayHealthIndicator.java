@@ -21,7 +21,6 @@ import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
@@ -32,7 +31,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
 
 /**
  * Gateway health information (/application/health)
- * This class contributes Gateway's information to {@link ApimlHealthCheckHandler}
+ * This class contributes Gateway's information to {@link org.zowe.apiml.registry.client.spring.HealthStatusSource}
  *
  */
 @Component

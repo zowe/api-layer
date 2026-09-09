@@ -11,7 +11,7 @@
 package org.zowe.apiml.services;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.InstanceStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -31,7 +31,7 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServiceInfo {
     private String serviceId;
-    private InstanceInfo.InstanceStatus status;
+    private InstanceStatus status;
     private Apiml apiml;
     private Map<String, Instances> instances;
 
@@ -52,7 +52,7 @@ public class ServiceInfo {
     @AllArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class Instances {
-        private InstanceInfo.InstanceStatus status;
+        private InstanceStatus status;
         private String hostname;
         private String ipAddr;
         private String protocol;

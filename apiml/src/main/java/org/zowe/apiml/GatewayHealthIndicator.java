@@ -26,7 +26,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
@@ -39,7 +38,7 @@ import static org.springframework.boot.actuate.health.Status.UP;
 
 /**
  * This class contributes the apiml component health indication to the main /application/health
- * controlled by class {@link ApimlHealthCheckHandler} in the common package.
+ * controlled by class {@link org.zowe.apiml.registry.client.spring.HealthStatusSource} in the common package.
  *
  * Note: Name is kept as GatewayHealthIndicator for backwards compatibility
  */
