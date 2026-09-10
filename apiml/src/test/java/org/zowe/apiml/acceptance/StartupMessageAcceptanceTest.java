@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.acceptance;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -42,15 +41,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class StartupMessageAcceptanceTest {
 
     abstract static class BaseStartupTest extends AcceptanceTestWithMockServices {
-
-        @Mock
-        private InstanceInfo instanceInfo;
 
         @BeforeEach
         void setUp() {

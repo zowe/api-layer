@@ -37,7 +37,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Optional;
 
 import static org.zowe.apiml.product.constants.CoreService.ZAAS;
 

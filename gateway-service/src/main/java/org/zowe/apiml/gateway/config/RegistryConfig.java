@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.registry.RegistryView;
@@ -43,6 +44,7 @@ public class RegistryConfig {
      * {@code @ConditionalOnMissingBean}, whose outcome here would depend on component-scan order.
      */
     @Bean
+    @Primary
     RegistryView registryView(ObjectProvider<ServiceRegistry> localRegistry, ObjectProvider<RegistryClient> client) {
         ServiceRegistry inThisJvm = localRegistry.getIfAvailable();
         if (inThisJvm != null) {

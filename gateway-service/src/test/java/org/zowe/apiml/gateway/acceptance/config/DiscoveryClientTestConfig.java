@@ -44,7 +44,6 @@ import java.util.List;
 public class DiscoveryClientTestConfig {
 
     @Bean
-    @Primary
     ApplicationRegistry registry() {
         return new ApplicationRegistry();
     }

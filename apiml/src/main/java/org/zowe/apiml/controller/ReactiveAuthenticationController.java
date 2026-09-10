@@ -51,7 +51,10 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.util.Objects;
 
-import static org.apache.http.HttpStatus.*;
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 
 

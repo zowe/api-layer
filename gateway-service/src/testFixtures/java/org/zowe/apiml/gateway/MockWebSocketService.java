@@ -117,7 +117,7 @@ public class MockWebSocketService extends MockService {
 
     @Override
     public org.springframework.cloud.client.ServiceInstance getServiceInstance() {
-        return new org.springframework.cloud.client.DefaultServiceInstance(
+        return new org.zowe.apiml.registry.client.RegistryServiceInstance(
             getInstanceId(), serviceId, hostname, port, sslContext != null, getMetadata());
     }
 

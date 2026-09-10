@@ -336,4 +336,16 @@ class RegistryClientTest {
         assertTrue(springInstance.isSecure());
     }
 
+    @Test
+    void springInstancesExposeTheirTransportScheme() {
+        var secure = instance("secure", 10010, InstanceStatus.UP);
+        var nonSecure = instance("nonsecure", 10011, InstanceStatus.UP).toBuilder()
+            .port(10011, true)
+            .securePort(10011, false)
+            .build();
+
+        assertEquals("https", CachedRegistryDiscoveryClient.toSpringInstance(secure).getScheme());
+        assertEquals("http", CachedRegistryDiscoveryClient.toSpringInstance(nonSecure).getScheme());
+    }
+
 }

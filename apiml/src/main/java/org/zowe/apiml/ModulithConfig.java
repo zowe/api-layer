@@ -10,12 +10,6 @@
 
 package org.zowe.apiml;
 
-import com.netflix.appinfo.DataCenterInfo;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.LeaseInfo;
-import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -41,7 +35,6 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.commons.util.InetUtils;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
@@ -61,23 +54,19 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
 import org.zowe.apiml.registry.RegistrationKind;
 import org.zowe.apiml.registry.SelfRegistration;
 import org.zowe.apiml.registry.ServiceRegistry;
+import org.zowe.apiml.registry.client.spring.RegistryFetchProperties;
 import org.zowe.apiml.registry.replication.PeerReplicator;
 import org.zowe.apiml.filter.PreFluxFilter;
-import org.zowe.apiml.gateway.services.ServicesInfoService;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.services.BasicInfoService;
-import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.zaas.security.login.Providers;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import reactor.core.publisher.Flux;
 
 import java.io.IOException;
 import java.util.*;
-
-import static org.zowe.apiml.services.ServiceInfoUtils.getInstances;
-import static org.zowe.apiml.services.ServiceInfoUtils.getStatus;
 
 @EnableScheduling
 @EnableRetry
@@ -109,7 +98,7 @@ public class ModulithConfig {
     private final Map<String, org.zowe.apiml.registry.model.ServiceInstance> instances = new HashMap<>();
     private final GatewayEurekaInstanceConfigBean eurekaInstanceGw;
     private final CatalogEurekaInstanceConfigBean catalogEurekaInstanceConfigBean;
-    private final EurekaClientConfig eurekaConfig;
+    private final RegistryFetchProperties registryConfig;
     private final CachingServiceEurekaInstanceConfigBean cachingServiceEurekaInstanceConfigBean;
     private final ApplicationEventPublisher eventPublisher;
     private final InetUtils inetUtils;
@@ -254,7 +243,8 @@ public class ModulithConfig {
                 }
             }
 
-        }, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L, eurekaConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
+        }, registryConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L,
+            registryConfig.getInstanceInfoReplicationIntervalSeconds() * 1000L);
 
     }
 

@@ -11,22 +11,16 @@
 package org.zowe.apiml.gateway.config;
 
 import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -44,7 +38,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -53,19 +46,14 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
@@ -75,7 +63,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -334,37 +321,6 @@ class ConnectionsConfigTest {
 
         }
 
-    }
-
-    @Nested
-    class AdditionalRegistrationBasicAuthFallback {
-
-        private String withBasicAuthFallback(boolean verify, String url) {
-            HttpConfig httpConfig = mock(HttpConfig.class);
-            doReturn(verify).when(httpConfig).isVerifySslCertificatesOfServices();
-            var connectionsConfig = new ConnectionsConfig(null, httpConfig, Collections.emptyList());
-            ReflectionTestUtils.setField(connectionsConfig, "discoveryUserid", "eureka");
-            ReflectionTestUtils.setField(connectionsConfig, "discoveryPassword", "password".toCharArray());
-            return ReflectionTestUtils.invokeMethod(connectionsConfig, "withBasicAuthFallback", url);
-        }
-
-        @Test
-        void givenVerificationDisabled_thenCredentialsAreEmbedded() {
-            assertEquals("https://eureka:password@localhost:10011/eureka/",
-                withBasicAuthFallback(false, "https://localhost:10011/eureka/"));
-        }
-
-        @Test
-        void givenVerificationDisabledAndMultipleUrls_thenAllAreRewritten() {
-            assertEquals("https://eureka:password@host1:10011/eureka/,https://eureka:password@host2:10011/eureka/",
-                withBasicAuthFallback(false, "https://host1:10011/eureka/,https://host2:10011/eureka/"));
-        }
-
-        @Test
-        void givenVerificationEnabled_thenUrlIsUnchanged() {
-            assertEquals("https://localhost:10011/eureka/",
-                withBasicAuthFallback(true, "https://localhost:10011/eureka/"));
-        }
     }
 
 }
