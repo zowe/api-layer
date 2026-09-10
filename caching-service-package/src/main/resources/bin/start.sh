@@ -142,11 +142,13 @@ if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
   ZWE_configs_server_ssl_enabled="false"
 fi
 
+internalProtocol="https"
 # Verify discovery service URL in case AT-TLS is enabled, assumes outgoing rules are in place
 ZWE_DISCOVERY_SERVICES_LIST=${ZWE_DISCOVERY_SERVICES_LIST:-"https://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_discovery_port:-7553}/eureka/"}
 if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
     add_profile "attlsClient"
     ZWE_DISCOVERY_SERVICES_LIST=$(echo "${ZWE_DISCOVERY_SERVICES_LIST=}" | sed -e 's|https://|http://|g')
+    internalProtocol="http"
 fi
 
 get_enabled_protocol_limit() {
