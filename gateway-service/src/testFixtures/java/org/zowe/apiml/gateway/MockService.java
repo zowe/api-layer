@@ -27,10 +27,10 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.assertj.core.error.MultipleAssertionsError;
-import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.registry.client.RegistryServiceInstance;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -342,7 +342,7 @@ public class MockService implements AutoCloseable {
      * @return ServiceInstance with all related data
      */
     public ServiceInstance getServiceInstance() {
-        return new DefaultServiceInstance(
+        return new RegistryServiceInstance(
             getInstanceId(), serviceId, hostname, port, false, getMetadata());
     }
 

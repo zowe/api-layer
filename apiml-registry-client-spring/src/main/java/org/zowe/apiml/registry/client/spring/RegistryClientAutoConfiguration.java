@@ -35,7 +35,6 @@ import org.zowe.apiml.registry.client.RegistryTransport;
 import org.zowe.apiml.registry.codec.RegistryCodec;
 import org.zowe.apiml.registry.model.ServiceInstance;
 
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import java.util.List;

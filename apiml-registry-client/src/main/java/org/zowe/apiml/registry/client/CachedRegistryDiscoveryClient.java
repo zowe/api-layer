@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.registry.client;
 
-import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.zowe.apiml.registry.model.DiscoveryMetadata;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -60,7 +59,7 @@ public class CachedRegistryDiscoveryClient implements DiscoveryClient {
         }
         metadata.put(DiscoveryMetadata.INSTANCE_STATUS, instance.effectiveStatus().name());
 
-        return new DefaultServiceInstance(
+        return new RegistryServiceInstance(
             instance.instanceId(),
             instance.serviceId(),
             instance.hostName(),

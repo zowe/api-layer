@@ -15,7 +15,6 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
-import com.netflix.discovery.shared.Applications;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,9 +52,9 @@ import java.util.Base64;
 import java.util.Map;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.hc.core5.http.HttpStatus.SC_PERMANENT_REDIRECT;
-import static org.apache.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.http.HttpStatus.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static org.springframework.http.HttpStatus.PERMANENT_REDIRECT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -308,7 +307,7 @@ class AttlsConfigTest {
             .when()
                 .post(getGatewayUrlWithPath(hostname, port, "http", "apicatalog/api/v1/auth/login"))
             .then()
-                .statusCode(is(SC_PERMANENT_REDIRECT));
+                .statusCode(is(PERMANENT_REDIRECT.value()));
             //@formatter:on
         }
 
@@ -324,7 +323,7 @@ class AttlsConfigTest {
             .when()
                 .post(getGatewayUrlWithPath(hostname, port, "http", "apicatalog/api/v1/auth/login"))
             .then()
-                .statusCode(is(SC_PERMANENT_REDIRECT));
+                .statusCode(is(PERMANENT_REDIRECT.value()));
             //@formatter:on
         }
 

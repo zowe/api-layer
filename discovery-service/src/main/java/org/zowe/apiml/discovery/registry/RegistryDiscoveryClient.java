@@ -21,6 +21,7 @@ import org.zowe.apiml.registry.model.DiscoveryMetadata;
 import org.zowe.apiml.registry.model.InstanceStatus;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Exposes the local registry as a Spring Cloud {@link DiscoveryClient}.
@@ -70,7 +71,7 @@ public class RegistryDiscoveryClient implements DiscoveryClient {
         }
         metadata.put(DiscoveryMetadata.INSTANCE_STATUS, instance.effectiveStatus().name());
 
-        return new DefaultServiceInstance(
+        return new SchemeAwareServiceInstance(
             instance.instanceId(),
             instance.serviceId(),
             instance.hostName(),
@@ -78,6 +79,27 @@ public class RegistryDiscoveryClient implements DiscoveryClient {
             secure,
             metadata
         );
+    }
+
+    /** DefaultServiceInstance leaves ServiceInstance.getScheme() as null; Eureka's adapter did not. */
+    private static final class SchemeAwareServiceInstance extends DefaultServiceInstance {
+
+        private SchemeAwareServiceInstance(
+            String instanceId,
+            String serviceId,
+            String host,
+            int port,
+            boolean secure,
+            Map<String, String> metadata
+        ) {
+            super(instanceId, serviceId, host, port, secure, metadata);
+        }
+
+        @Override
+        public String getScheme() {
+            return isSecure() ? "https" : "http";
+        }
+
     }
 
 }

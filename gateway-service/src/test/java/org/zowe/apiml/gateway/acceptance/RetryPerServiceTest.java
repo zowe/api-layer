@@ -17,7 +17,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -25,9 +24,11 @@ import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.registry.client.RegistryServiceInstance;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -253,8 +254,8 @@ class RetryPerServiceTest {
         }
 
         private ServiceInstance buildZaasInfo(int port) {
-            return new DefaultServiceInstance(
-                "localhost:zaas:" + port, "zaas", zaasService.getHostname(), port, false);
+            return new RegistryServiceInstance(
+                "localhost:zaas:" + port, "zaas", zaasService.getHostname(), port, false, Map.of());
         }
 
     }
