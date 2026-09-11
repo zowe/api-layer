@@ -129,6 +129,11 @@ class AttlsConfigTest {
     @ActiveProfiles({ "attlsServer", "attlsClient" })
     class GivenSslDisabled extends DiscoveryFunctionalTest {
 
+        @Override
+        protected String getProtocol() {
+            return "http";
+        }
+
         @Test
         void whenNoKeystore_thenStartupSuccess() {
             protocol = "http";

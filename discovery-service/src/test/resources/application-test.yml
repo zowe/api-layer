@@ -25,9 +25,6 @@ logging:
     level:
         org.springframework: DEBUG
 
----
-spring.config.activate.on-profile: https
-
 server:
     ssl:
         protocol: TLSv1.2

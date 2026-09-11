@@ -79,11 +79,6 @@ if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
     ZWE_configs_server_ssl_enabled="false"
 fi
 
-# HTTPS profile for SSL
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" ]; then
-    add_profile "https"
-fi
-
 # AT-TLS client profile
 if [ "${ATTLS_CLIENT_ENABLED}" = "true" ]; then
     add_profile "attlsClient"

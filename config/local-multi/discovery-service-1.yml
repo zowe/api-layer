@@ -3,6 +3,9 @@ spring.profiles.include: diag
 eureka:
     instance:
         ipAddress: 127.0.0.1
+    client:
+        instanceInfoReplicationIntervalSeconds: 30
+        registryFetchIntervalSeconds: 30
 
 apiml:
     service:
@@ -10,7 +13,7 @@ apiml:
         port: 10011
     discovery:
         staticApiDefinitionsDirectories: config/local/api-defs
-        allPeersUrls: http://localhost:10011/eureka,http://localhost2:10021/eureka
+        allPeersUrls: https://localhost:10011/eureka,https://localhost2:10021/eureka
     security:
         ssl:
             verifySslCertificatesOfServices: true
@@ -22,13 +25,6 @@ spring:
         ansi:
             enabled: always
 
----
-spring.config.activate.on-profile: https
-eureka:
-    client:
-        instanceInfoReplicationIntervalSeconds: 30
-        registryFetchIntervalSeconds: 30
-
 server:
     ssl:
         keyAlias: localhost
@@ -39,7 +35,3 @@ server:
         trustStoreType: PKCS12
         trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
-
-apiml:
-    discovery:
-        allPeersUrls: https://localhost:10011/eureka,https://localhost2:10021/eureka

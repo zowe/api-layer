@@ -39,9 +39,6 @@ management:
         shutdown:
             access: unrestricted
 
----
-spring.config.activate.on-profile: https
-
 server:
     address: 0.0.0.0
     ssl:
