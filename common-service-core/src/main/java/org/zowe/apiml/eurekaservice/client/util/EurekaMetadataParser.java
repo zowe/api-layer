@@ -27,6 +27,7 @@ import java.util.*;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
 public class EurekaMetadataParser {
+
     private static final String THREE_STRING_MERGE_FORMAT = "%s.%s.%s";
     private static final String FIVE_STRING_MERGE_FORMAT = "%s.%s.%s.%s.%s";
 
