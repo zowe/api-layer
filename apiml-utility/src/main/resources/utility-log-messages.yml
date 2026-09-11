@@ -14,7 +14,14 @@ messages:
       number: ZWEAM001
       type: INFO
       text: "API Mediation Layer started"
-      reason: "All key API Mediation Layer services started."
+      reason: "All key API Mediation Layer services started. At least one instance of API ML is available"
+      action: "No action required."
+
+    - key: org.zowe.apiml.common.mediationLayerStartedHA
+      number: ZWEAM002
+      type: INFO
+      text: "High Availability initialization complete"
+      reason: "All key API Mediation Layer services started. Full configured redundancy achieved"
       action: "No action required."
 
     - key: org.zowe.apiml.cache.errorOpeningCachingFiles
