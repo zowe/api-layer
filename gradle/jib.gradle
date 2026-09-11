@@ -5,6 +5,26 @@ def setJib(componentName, javaAgentPort, debugPort, applicationPorts) {
     def addOpensOptions = ['--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED', '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.util.concurrent=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED', '--add-opens=java.base/javax.net.ssl=ALL-UNNAMED']
 
     jib.from.image = 'ibm-semeru-runtimes:open-17.0.14_7-jre-jammy'
+
+    // jibDockerBuild loads a single-platform image straight into the local Docker
+    // daemon (unlike jib/jibBuildTar, which publish a multi-arch manifest to a
+    // registry). Jib defaults to amd64 regardless of host, so on Apple Silicon the
+    // resulting image only runs under qemu emulation - Spring Boot startup goes
+    // from ~20s to several minutes. Building for the host's own architecture
+    // instead gives a native image for local development. This only affects
+    // jibDockerBuild: CI always publishes from x86_64 runners via jib/jibBuildTar,
+    // which keep Jib's amd64 default untouched.
+    def isJibDockerBuild = gradle.startParameter.taskNames.any { it.contains('jibDockerBuild') }
+    def hostArch = System.getProperty('os.arch')
+    if (isJibDockerBuild && (hostArch == 'aarch64' || hostArch == 'arm64')) {
+        jib.from.platforms {
+            platform {
+                architecture = 'arm64'
+                os = 'linux'
+            }
+        }
+    }
+
     jib.to.image = imageName
     jib.to.auth.username = project.hasProperty("zowe.docker.username") ? project.getProperty("zowe.docker.username") : ""
     jib.to.auth.password = project.hasProperty("zowe.docker.password") ? project.getProperty("zowe.docker.password") : ""
