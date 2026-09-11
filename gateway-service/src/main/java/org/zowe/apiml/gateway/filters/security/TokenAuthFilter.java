@@ -11,7 +11,7 @@
 package org.zowe.apiml.gateway.filters.security;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.ConnectException;
 
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
 
 @RequiredArgsConstructor

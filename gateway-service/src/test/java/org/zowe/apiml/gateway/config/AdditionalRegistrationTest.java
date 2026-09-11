@@ -10,159 +10,241 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClientConfig;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
-import org.apache.hc.core5.ssl.SSLContexts;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cloud.netflix.eureka.CloudEurekaClient;
-import org.springframework.cloud.netflix.eureka.EurekaClientConfigBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.config.AdditionalRegistration;
-import org.zowe.apiml.product.web.HttpConfig;
-import org.zowe.apiml.security.HttpsFactory;
+import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGatewayRegistry;
+import org.zowe.apiml.registry.client.RegistryTransport;
+import org.zowe.apiml.registry.client.spring.RegistryFetchProperties;
+import org.zowe.apiml.registry.model.Applications;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.PortInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
-import java.util.AbstractMap;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.cloud.netflix.eureka.EurekaClientConfigBean.DEFAULT_ZONE;
 
+/**
+ * Registering this Gateway into other API ML instances.
+ * <p>
+ * The Eureka version of these cases needed an {@code ApplicationInfoManager}, an {@code EurekaClientConfig}, a
+ * request-factory supplier, transport factories, a {@code HealthCheckHandler} and a spy on the configuration
+ * class before it could assert anything. What they were actually about - one client per registration, at the
+ * configured address, advertising itself as an additional registration with the right routes - is what is
+ * asserted here.
+ */
 @ExtendWith(MockitoExtension.class)
-public class AdditionalRegistrationTest {
+class AdditionalRegistrationTest {
 
-    private ConnectionsConfig connectionsConfig;
-    @Mock
-    private CloudEurekaClient additionalClientOne;
-    @Mock
-    private CloudEurekaClient additionalClientTwo;
-    @Mock
-    private EurekaFactory eurekaFactory;
-    @Mock
-    private ApplicationContext context;
-    @Mock
-    private HttpConfig config;
+    private final List<AdditionalRegistration.Route> routes =
+        singletonList(new AdditionalRegistration.Route("/", "/"));
+
+    private final AdditionalRegistration registration = AdditionalRegistration.builder()
+        .discoveryServiceUrls("https://another-apiml-1:10011/eureka")
+        .routes(routes)
+        .build();
+
+    private ServiceInstance primary;
 
     @BeforeEach
     void setUp() {
-        connectionsConfig = new ConnectionsConfig(context, config, Arrays.asList("/gateway/**", "/apicatalog/**"));
+        Map<String, String> metadata = new HashMap<>();
+        metadata.put("apiml.routes.0.gatewayUrl", "/api/v1");
+        metadata.put("apiml.routes.0.serviceUrl", "/service/api/v1");
+        metadata.put("apiml.service.title", "API Gateway");
+
+        primary = ServiceInstance.builder()
+            .instanceId("localhost:gateway:10010")
+            .appName("gateway")
+            .hostName("localhost")
+            .port(new PortInfo(10010, false))
+            .securePort(new PortInfo(10010, true))
+            .status(InstanceStatus.UP)
+            .metadata(metadata)
+            .build();
     }
 
-    @ExtendWith(MockitoExtension.class)
     @Nested
-    class WhenInitializingAdditionalRegistrations {
+    class WhenBuildingTheRegistration {
 
-        private ConnectionsConfig configSpy;
-        @Mock
-        private ApplicationInfoManager manager;
-        @Mock
-        private EurekaClientConfig clientConfig;
-        @Mock
-        private HealthCheckHandler healthCheckHandler;
-        @Mock
-        private HttpsFactory httpsFactory;
-        @Mock
-        private HttpClientConnectionManager httpClientConnectionManager;
+        @Test
+        @DisplayName("Then it is marked additional, so the receiving API ML knows it is not one of its own")
+        void thenItIsMarkedAdditional() {
+            var additional = GatewayRegistrationConfig.forAdditionalRegistration(primary, registration);
 
-        private InstanceInfo instanceInfo;
-
-        @Captor
-        private ArgumentCaptor<EurekaClientConfigBean> clientConfigCaptor;
-
-        private List<AdditionalRegistration.Route> routes = Arrays.asList(new AdditionalRegistration.Route("/", "/"));
-        private final AdditionalRegistration registration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-1").routes(routes).build();
-
-        @BeforeEach
-        public void setUp() throws Exception {
-            ReflectionTestUtils.setField(connectionsConfig, "eurekaServerUrl", "https://host:2222");
-            configSpy = Mockito.spy(connectionsConfig);
-            lenient().when(config.httpsFactory()).thenReturn(httpsFactory);
-            lenient().when(httpsFactory.getSslContext()).thenReturn(SSLContexts.custom().build());
-            lenient().when(httpsFactory.getHostnameVerifier()).thenReturn(new NoopHostnameVerifier());
-            lenient().when(eurekaFactory.createCloudEurekaClient(any(), any(), clientConfigCaptor.capture(), any(), any(), any())).thenReturn(additionalClientOne, additionalClientTwo);
-
-            var metadata = new HashMap<String, String>();
-            metadata.put("apiml.routes.0.gatewayUrl", "/api/v1");
-            metadata.put("apiml.routes.0.serviceUrl", "/service/api/v1");
-            instanceInfo = InstanceInfo.Builder.newBuilder().setAppName("service1").setMetadata(metadata).build();
-            lenient().doReturn(instanceInfo).when(configSpy).create(any());
+            assertThat(additional.metadata().get("apiml.registrationType")).isEqualTo("additional");
         }
 
         @Test
-        void shouldCreateEurekaClientForAdditionalDiscoveryUrl() {
-            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, singletonList(registration), eurekaFactory, healthCheckHandler, null, Optional.empty(), httpClientConnectionManager);
+        @DisplayName("Then overridden routes replace the primary's, rather than adding to them")
+        void thenRoutesAreReplaced() {
+            var additional = GatewayRegistrationConfig.forAdditionalRegistration(primary, registration);
 
-            assertThat(holder.getDiscoveryClients()).hasSize(1);
-            EurekaClientConfigBean eurekaClientConfigBean = clientConfigCaptor.getValue();
-            assertThat(eurekaClientConfigBean.getServiceUrl()).containsOnly(new AbstractMap.SimpleEntry<String, String>(DEFAULT_ZONE, "https://another-eureka-1"));
+            assertThat(additional.metadata().get("apiml.routes.0.gatewayUrl")).isEqualTo("/");
+            assertThat(additional.metadata().get("apiml.routes.0.serviceUrl")).isEqualTo("/");
+            // Everything that is not a route is carried over
+            assertThat(additional.metadata().get("apiml.service.title")).isEqualTo("API Gateway");
         }
 
         @Test
-        void shouldCreateTwoAdditionalRegistrations() {
-            AdditionalRegistration secondRegistration = AdditionalRegistration.builder().discoveryServiceUrls("https://another-eureka-2").build();
-            AdditionalEurekaClientsHolder holder = configSpy.additionalEurekaClientsHolder(manager, clientConfig, asList(registration, secondRegistration), eurekaFactory, healthCheckHandler, null, Optional.empty(), httpClientConnectionManager);
+        void thenTheRoutesOfThePrimaryAreLeftAlone() {
+            GatewayRegistrationConfig.forAdditionalRegistration(primary, registration);
 
-            assertThat(holder.getDiscoveryClients()).hasSize(2);
-            verify(additionalClientOne).registerHealthCheck(healthCheckHandler);
-            verify(additionalClientTwo).registerHealthCheck(healthCheckHandler);
-
-            assertThat(instanceInfo.getMetadata().get("apiml.routes.0.gatewayUrl")).isEqualTo("/");
-            assertThat(instanceInfo.getMetadata().get("apiml.routes.0.serviceUrl")).isEqualTo("/");
+            assertThat(primary.metadata().get("apiml.routes.0.gatewayUrl")).isEqualTo("/api/v1");
         }
 
         @Test
-        void shouldCreateInstanceInfoFromEurekaConfig() {
-            EurekaInstanceConfig config = mock(EurekaInstanceConfig.class);
-            when(config.getNamespace()).thenReturn("");
-            when(config.getAppname()).thenReturn("gateway");
+        @DisplayName("Then a registration without routes keeps the primary's")
+        void thenAbsentRoutesAreInherited() {
+            var noRoutes = AdditionalRegistration.builder().discoveryServiceUrls("https://another:10011").build();
 
-            InstanceInfo instanceInfo = new EurekaFactory().createInstanceInfo(config);
+            var additional = GatewayRegistrationConfig.forAdditionalRegistration(primary, noRoutes);
 
-            assertThat(instanceInfo.getAppName()).isEqualTo("GATEWAY");
+            assertThat(additional.metadata().get("apiml.routes.0.gatewayUrl")).isEqualTo("/api/v1");
         }
 
     }
 
     @Nested
-    class WhenClientHolderShutDown {
-        @Test
-        void shouldTriggerShutdownCallToWrappedClients() {
-            AdditionalEurekaClientsHolder holder = new AdditionalEurekaClientsHolder(asList(additionalClientOne, additionalClientTwo));
-            holder.shutdown();
+    class WhenResolvingDiscoveryUrls {
 
-            verify(additionalClientOne).shutdown();
-            verify(additionalClientTwo).shutdown();
+        @Test
+        void thenTheListIsSplitAndTrimmed() {
+            var urls = GatewayRegistrationConfig.discoveryUrls(
+                AdditionalRegistration.builder()
+                    .discoveryServiceUrls("https://one:10011/eureka, https://two:10011/eureka")
+                    .build(),
+                true, "eureka", "password");
+
+            assertThat(urls).containsExactly("https://one:10011/eureka", "https://two:10011/eureka");
+        }
+
+        /**
+         * With TLS validation off, this Gateway's client certificate cannot be trusted by the other API ML, so
+         * the credentials go into the URL and it authenticates with basic auth instead.
+         */
+        @Test
+        void thenCredentialsAreEmbeddedWhenCertificatesAreNotVerified() {
+            var urls = GatewayRegistrationConfig.discoveryUrls(registration, false, "eureka", "password");
+
+            assertThat(urls).containsExactly("https://eureka:password@another-apiml-1:10011/eureka");
         }
 
         @Test
-        void shouldHandleNullsOnShutdownCall() {
-            AdditionalEurekaClientsHolder holder = new AdditionalEurekaClientsHolder(null);
-            holder.shutdown();
-
-            assertThat(holder.getDiscoveryClients()).isNull();
+        void thenNoUrlsMeansNoRegistration() {
+            assertThat(GatewayRegistrationConfig.discoveryUrls(
+                AdditionalRegistration.builder().build(), true, "eureka", "password")).isEmpty();
+            assertThat(GatewayRegistrationConfig.discoveryUrls(
+                AdditionalRegistration.builder().discoveryServiceUrls("  ").build(), true, "eureka", "password")).isEmpty();
         }
+
     }
+
+    @Nested
+    class WhenTheRegistrationsAreDriven {
+
+        private final RecordingTransport transportOne = new RecordingTransport();
+        private final RecordingTransport transportTwo = new RecordingTransport();
+        private final AdditionalRegistrationGatewayRegistry gatewayRegistry = new AdditionalRegistrationGatewayRegistry();
+
+        private GatewayRegistrationConfig.AdditionalRegistrations registrations(RecordingTransport... transports) {
+            org.springframework.test.util.ReflectionTestUtils.setField(
+                gatewayRegistry, "registryExpiration", java.time.Duration.ofMinutes(5));
+            gatewayRegistry.init();
+
+            var config = new RegistryFetchProperties();
+            config.setRegistryFetchIntervalSeconds(3600);
+            config.setInstanceInfoReplicationIntervalSeconds(3600);
+
+            var lifecycles = new ArrayList<org.zowe.apiml.registry.client.spring.RegistryClientLifecycle>();
+            for (RecordingTransport transport : transports) {
+                lifecycles.add(GatewayRegistrationConfig.newAdditionalRegistration(
+                    transport, primary, registration, config, gatewayRegistry, event -> { }, null));
+            }
+            return new GatewayRegistrationConfig.AdditionalRegistrations(lifecycles);
+        }
+
+        @Test
+        @DisplayName("Then nothing is registered until the container starts them")
+        void thenConstructionHasNoSideEffects() {
+            registrations(transportOne);
+
+            assertThat(transportOne.registrations).isEmpty();
+        }
+
+        @Test
+        void thenEachRegistrationRegistersItself() {
+            var holder = registrations(transportOne, transportTwo);
+
+            holder.start();
+
+            assertThat(holder.count()).isEqualTo(2);
+            assertThat(holder.isRunning()).isTrue();
+            assertThat(transportOne.registrations).hasSize(1);
+            assertThat(transportTwo.registrations).hasSize(1);
+            assertThat(transportOne.registrations.get(0).metadata().get("apiml.registrationType"))
+                .isEqualTo("additional");
+        }
+
+        @Test
+        @DisplayName("Then shutting down cancels every lease, rather than leaving peers to expire them")
+        void thenShutdownCancelsAll() {
+            var holder = registrations(transportOne, transportTwo);
+            holder.start();
+
+            holder.stop();
+
+            assertThat(holder.isRunning()).isFalse();
+            assertThat(transportOne.cancellations).hasSize(1);
+            assertThat(transportTwo.cancellations).hasSize(1);
+        }
+
+    }
+
+    private static class RecordingTransport implements RegistryTransport {
+
+        private final List<ServiceInstance> registrations = new ArrayList<>();
+        private final List<String> cancellations = new ArrayList<>();
+
+        @Override
+        public Applications fetchApplications() {
+            return new Applications(List.of(), 1L, Applications.computeHashCode(List.of()));
+        }
+
+        @Override
+        public Applications fetchDelta() {
+            return null;
+        }
+
+        @Override
+        public void register(ServiceInstance instance) {
+            registrations.add(instance);
+        }
+
+        @Override
+        public boolean renew(String appName, String instanceId) {
+            return true;
+        }
+
+        @Override
+        public void cancel(String appName, String instanceId) {
+            cancellations.add(appName + "/" + instanceId);
+        }
+
+        @Override
+        public void updateStatus(String appName, String instanceId, InstanceStatus status) {
+            // recorded elsewhere; not what these cases are about
+        }
+
+    }
+
 }

@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -19,7 +18,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.zowe.apiml.registry.model.DiscoveryMetadata;
+import org.zowe.apiml.registry.model.InstanceStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.model.APIContainer;
 import org.zowe.apiml.apicatalog.model.APIService;
@@ -104,8 +105,8 @@ class ContainerServiceTest {
 
                 @Test
                 void containerStatusIsDown() {
-                    ((EurekaServiceInstance) serviceInstance1).getInstanceInfo().setStatus(InstanceInfo.InstanceStatus.DOWN);
-                    ((EurekaServiceInstance) serviceInstance2).getInstanceInfo().setStatus(InstanceInfo.InstanceStatus.DOWN);
+                    serviceInstance1.getMetadata().put(DiscoveryMetadata.INSTANCE_STATUS, InstanceStatus.DOWN.name());
+                    serviceInstance2.getMetadata().put(DiscoveryMetadata.INSTANCE_STATUS, InstanceStatus.DOWN.name());
 
                     APIContainer container = containerService.getContainerById("demoapp");
                     assertNotNull(container);
@@ -119,7 +120,7 @@ class ContainerServiceTest {
             class GivenSomeServicesAreDown {
                 @Test
                 void containerStatusIsWarning() {
-                    ((EurekaServiceInstance) serviceInstance2).getInstanceInfo().setStatus(InstanceInfo.InstanceStatus.DOWN);
+                    serviceInstance2.getMetadata().put(DiscoveryMetadata.INSTANCE_STATUS, InstanceStatus.DOWN.name());
 
                     APIContainer container = containerService.getContainerById("demoapp");
                     assertNotNull(container);
@@ -247,11 +248,9 @@ class ContainerServiceTest {
             metadata.put(APIML_ID, "apimlId");
             metadata.put(SERVICE_TITLE, "title");
             metadata.put(REGISTRATION_TYPE, registrationType.getValue());
-            var service = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder()
-                .setAppName(CoreService.GATEWAY.getServiceId())
-                .setMetadata(metadata)
-                .build()
-            );
+            var service = new DefaultServiceInstance(
+                CoreService.GATEWAY.getServiceId() + ":localhost:10010",
+                CoreService.GATEWAY.getServiceId(), "localhost", 10010, true, metadata);
             return containerService.createAPIServiceFromInstance(service);
         }
 

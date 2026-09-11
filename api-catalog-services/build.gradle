@@ -70,7 +70,12 @@ dependencies {
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.webflux
-    implementation libs.spring.cloud.starter.eureka.client
+    // No longer a Eureka client: ContainerService and ApiDocService work against Spring Cloud's own
+    // ServiceInstance rather than downcasting to EurekaServiceInstance.
+    implementation libs.spring.cloud.commons
+    implementation libs.spring.cloud.context
+    // Also arrived transitively through the Eureka starter.
+    implementation libs.http.client5
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
     implementation libs.spring.cloud.gateway.server

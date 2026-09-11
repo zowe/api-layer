@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.discovery.metadata;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.auth.AuthenticationScheme;
 

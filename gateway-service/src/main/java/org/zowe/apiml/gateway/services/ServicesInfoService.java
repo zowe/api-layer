@@ -11,13 +11,8 @@
 package org.zowe.apiml.gateway.services;
 
 import com.fasterxml.jackson.core.Version;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
@@ -28,6 +23,9 @@ import org.zowe.apiml.product.routing.RoutedServices;
 import org.zowe.apiml.product.routing.ServiceType;
 import org.zowe.apiml.product.routing.transform.TransformService;
 import org.zowe.apiml.product.routing.transform.URLTransformationException;
+import org.zowe.apiml.registry.RegistryView;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.zowe.apiml.services.ServiceInfo;
 import org.zowe.apiml.services.ServiceInfoUtils;
 
@@ -53,13 +51,22 @@ public class ServicesInfoService {
     public static final String VERSION_HEADER = "Content-Version";
     public static final String CURRENT_VERSION = "1";
 
-    private final DiscoveryClient discoveryClient;
+    /**
+     * The registry in its own terms, not through Spring Cloud's {@code DiscoveryClient}.
+     * <p>
+     * This class reports on the state of the mediation layer, so it needs the whole registration - IP address,
+     * status page, health-check URL, effective status - and it needs to see instances that are <em>not</em> up.
+     * Every one of those used to come from casting Spring's {@code ServiceInstance} to
+     * {@code EurekaServiceInstance} and unwrapping the {@code InstanceInfo} inside; there were five such casts
+     * in this file, and each silently dropped any instance that came from a different discovery client.
+     */
+    private final RegistryView registry;
     private final EurekaMetadataParser eurekaMetadataParser;
     private final GatewayClient gatewayClient;
     private final TransformService transformService;
 
     public List<ServiceInfo> getServicesInfo() {
-        return discoveryClient.getServices()
+        return registry.serviceIds()
             .stream()
             .map(this::getServiceInfo)
             .toList();
@@ -80,42 +87,41 @@ public class ServicesInfoService {
     }
 
     public ServiceInfo getServiceInfo(String serviceId) {
-        var knownServices = discoveryClient.getServices();
+        var knownServices = registry.serviceIds();
         if (knownServices.stream().anyMatch(id -> id.equalsIgnoreCase(serviceId))) {
-            return getServiceInfo(serviceId, discoveryClient.getInstances(serviceId));
+            return getServiceInfo(serviceId, registry.instances(serviceId));
         }
         return ServiceInfo.builder()
                     .serviceId(serviceId)
-                    .status(InstanceInfo.InstanceStatus.UNKNOWN)
+                    .status(InstanceStatus.UNKNOWN)
                     .build();
     }
 
-    private String getBaseUrl(ApiInfo apiInfo, InstanceInfo instanceInfo) {
+    private String getBaseUrl(ApiInfo apiInfo, ServiceInstance instanceInfo) {
         ServiceAddress gatewayAddress = gatewayClient.getGatewayConfigProperties();
         return String.format("%s://%s%s",
                 gatewayAddress.getScheme(), gatewayAddress.getHostname(), getBasePath(apiInfo, instanceInfo));
     }
 
-    static List<InstanceInfo> getPrimaryInstances(Application application) {
-        return application.getInstances()
-            .stream()
-            .filter(instanceInfo -> EurekaMetadataDefinition.RegistrationType.of(instanceInfo.getMetadata()).isPrimary())
-            .toList();
-    }
-
+    /**
+     * Only the primary registrations.
+     * <p>
+     * A Gateway that has joined several API MLs registers into each of them, and the extra registrations are
+     * marked {@code additional}. Reporting them here would list the same Gateway several times.
+     */
     static List<ServiceInstance> getPrimaryInstances(List<ServiceInstance> serviceInstances) {
         return serviceInstances.stream()
-            .filter(serviceInstance -> EurekaMetadataDefinition.RegistrationType.of(serviceInstance.getMetadata()).isPrimary())
+            .filter(instance -> EurekaMetadataDefinition.RegistrationType.of(instance.metadata()).isPrimary())
             .toList();
     }
 
     private ServiceInfo getServiceInfo(String serviceId, List<ServiceInstance> serviceInstances) {
-        serviceId = serviceInstances.stream().findFirst().map(ServiceInstance::getServiceId).map(String::toLowerCase).orElse(serviceId);
+        serviceId = serviceInstances.stream().findFirst().map(ServiceInstance::serviceId).orElse(serviceId);
         var primaryInstances = getPrimaryInstances(serviceInstances);
         if (primaryInstances.isEmpty()) {
             return ServiceInfo.builder()
                     .serviceId(serviceId)
-                    .status(InstanceInfo.InstanceStatus.DOWN)
+                    .status(InstanceStatus.DOWN)
                     .build();
         }
 
@@ -123,15 +129,7 @@ public class ServicesInfoService {
                 .serviceId(serviceId)
                 .status(getStatus(primaryInstances))
                 .apiml(getApiml(primaryInstances))
-                .instances(
-                    getInstances(
-                        primaryInstances.stream()
-                            .filter(EurekaServiceInstance.class::isInstance)
-                            .map(EurekaServiceInstance.class::cast)
-                            .map(EurekaServiceInstance::getInstanceInfo)
-                            .toList()
-                        )
-                    )
+                .instances(getInstances(primaryInstances))
                 .build();
     }
 
@@ -143,20 +141,11 @@ public class ServicesInfoService {
                 .build();
     }
 
-    public static List<InstanceInfo> extractInstanceInfo(List<ServiceInstance> serviceInstances) {
-        return serviceInstances.stream()
-        .filter(EurekaServiceInstance.class::isInstance)
-        .map(EurekaServiceInstance.class::cast)
-        .map(EurekaServiceInstance::getInstanceInfo)
-        .toList();
-    }
-
     private List<ServiceInfo.ApiInfoExtended> getApiInfos(List<ServiceInstance> serviceInstances) {
         List<ServiceInfo.ApiInfoExtended> completeList = new ArrayList<>();
-        var appInstances = extractInstanceInfo(serviceInstances);
 
-        for (InstanceInfo instanceInfo : appInstances) {
-            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(instanceInfo.getMetadata());
+        for (ServiceInstance instanceInfo : serviceInstances) {
+            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(instanceInfo.metadata());
             completeList.addAll(apiInfoList.stream()
                     .map(apiInfo -> ServiceInfo.ApiInfoExtended.builder()
                             .apiId(apiInfo.getApiId())
@@ -165,9 +154,9 @@ public class ServicesInfoService {
                             .gatewayUrl(apiInfo.getGatewayUrl())
                             .swaggerUrl(getGatewayUrl(
                                     apiInfo.getSwaggerUrl(),
-                                    instanceInfo.getAppName().toLowerCase(),
+                                    instanceInfo.serviceId(),
                                     ServiceType.API,
-                                    eurekaMetadataParser.parseRoutes(instanceInfo.getMetadata())
+                                    eurekaMetadataParser.parseRoutes(instanceInfo.metadata())
                             ))
                             .documentationUrl(apiInfo.getDocumentationUrl())
                             .version(apiInfo.getVersion())
@@ -189,21 +178,20 @@ public class ServicesInfoService {
     }
 
     private ServiceInfo.Service getService(List<ServiceInstance> serviceInstances) {
-        InstanceInfo instanceInfo = getInstanceWithHighestVersion(serviceInstances);
-        RoutedServices routes = eurekaMetadataParser.parseRoutes(getInstanceWithHighestVersion(serviceInstances).getMetadata());
+        ServiceInstance instanceInfo = getInstanceWithHighestVersion(serviceInstances);
+        RoutedServices routes = eurekaMetadataParser.parseRoutes(instanceInfo.metadata());
 
         return ServiceInfo.Service.builder()
-                .title(instanceInfo.getMetadata().get(SERVICE_TITLE))
-                .description(instanceInfo.getMetadata().get(SERVICE_DESCRIPTION))
-                .homePageUrl(getGatewayUrl(instanceInfo.getHomePageUrl(), instanceInfo.getAppName().toLowerCase(), ServiceType.UI, routes))
+                .title(instanceInfo.metadata().get(SERVICE_TITLE))
+                .description(instanceInfo.metadata().get(SERVICE_DESCRIPTION))
+                .homePageUrl(getGatewayUrl(instanceInfo.homePageUrl(), instanceInfo.serviceId(), ServiceType.UI, routes))
                 .build();
     }
 
     private List<Authentication> getAuthentication(List<ServiceInstance> serviceInstances) {
-        var appInstances = extractInstanceInfo(serviceInstances);
-        return appInstances.stream()
+        return serviceInstances.stream()
                 .map(instanceInfo -> {
-                    Authentication authentication = eurekaMetadataParser.parseAuthentication(instanceInfo.getMetadata());
+                    Authentication authentication = eurekaMetadataParser.parseAuthentication(instanceInfo.metadata());
                     return authentication.isEmpty() ? null : authentication;
                 })
                 .filter(Objects::nonNull)
@@ -226,25 +214,21 @@ public class ServicesInfoService {
         }
     }
 
-    private InstanceInfo.InstanceStatus getStatus(List<ServiceInstance> instances) {
-        if (instances.stream()
-            .filter(EurekaServiceInstance.class::isInstance)
-            .map(EurekaServiceInstance.class::cast)
-            .anyMatch(instance ->  instance.getInstanceInfo().getStatus().equals(InstanceInfo.InstanceStatus.UP))) {
-            return InstanceInfo.InstanceStatus.UP;
+    private InstanceStatus getStatus(List<ServiceInstance> instances) {
+        if (instances.stream().anyMatch(instance -> instance.effectiveStatus() == InstanceStatus.UP)) {
+            return InstanceStatus.UP;
         } else if (instances.isEmpty()) {
-            return InstanceInfo.InstanceStatus.UNKNOWN;
+            return InstanceStatus.UNKNOWN;
         }
-        return InstanceInfo.InstanceStatus.DOWN;
+        return InstanceStatus.DOWN;
     }
 
-    private InstanceInfo getInstanceWithHighestVersion(List<ServiceInstance> serviceInstances) {
-        var appInstances = extractInstanceInfo(serviceInstances);
-        InstanceInfo instanceInfo = appInstances.get(0);
+    private ServiceInstance getInstanceWithHighestVersion(List<ServiceInstance> serviceInstances) {
+        ServiceInstance instanceInfo = serviceInstances.get(0);
         Version highestVersion = Version.unknownVersion();
 
-        for (InstanceInfo currentInfo : appInstances) {
-            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(currentInfo.getMetadata());
+        for (ServiceInstance currentInfo : serviceInstances) {
+            List<ApiInfo> apiInfoList = eurekaMetadataParser.parseApiInfo(currentInfo.metadata());
             for (ApiInfo apiInfo : apiInfoList) {
                 Version version = getVersion(apiInfo.getVersion());
                 if (version.compareTo(highestVersion) > 0) {

@@ -15,9 +15,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.eureka.EurekaServerContext;
-import com.netflix.eureka.EurekaServerContextHolder;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -29,7 +27,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.discovery.ApimlInstanceRegistry;
+import org.zowe.apiml.registry.RegistrationKind;
+import org.zowe.apiml.registry.ServiceRegistry;
 import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -51,15 +50,10 @@ import static org.mockito.Mockito.*;
 class StaticServicesRegistrationServiceTest {
 
     @Mock(strictness = Mock.Strictness.LENIENT)
-    private ApimlInstanceRegistry mockRegistry;
-
-    @Mock(strictness = Mock.Strictness.LENIENT)
-    EurekaServerContext mockEurekaServerContext;
+    private ServiceRegistry mockRegistry;
 
     @BeforeEach
     void setUp() {
-        when(mockEurekaServerContext.getRegistry()).thenReturn(mockRegistry);
-        EurekaServerContextHolder.initialize(mockEurekaServerContext);
     }
 
     @Nested
@@ -67,10 +61,9 @@ class StaticServicesRegistrationServiceTest {
 
         @Test
         void testFindServicesInDirectoryNoFiles() throws URISyntaxException {
-            EurekaServerContextHolder.initialize(mockEurekaServerContext);
             ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
-            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
             String apiDefsDirectory = Paths.get(ClassLoader.getSystemResource("api-defs-empty/").toURI()).toAbsolutePath().toString();
             StaticRegistrationResult result = registrationService.registerServices(apiDefsDirectory);
             assertEquals(0, result.getInstances().size());
@@ -80,7 +73,7 @@ class StaticServicesRegistrationServiceTest {
         void testFindServicesInDirectoryOneFile() throws URISyntaxException {
             ServiceDefinitionProcessor serviceDefinitionProcessor = new ServiceDefinitionProcessor();
 
-            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
             String apiDefsDirectory = Paths.get(ClassLoader.getSystemResource("api-defs/").toURI()).toAbsolutePath().toString();
             StaticRegistrationResult result = registrationService.registerServices(apiDefsDirectory);
 
@@ -92,7 +85,7 @@ class StaticServicesRegistrationServiceTest {
     @Nested
     class Registration {
 
-        private StaticRegistrationResult createResult(InstanceInfo... instances) {
+        private StaticRegistrationResult createResult(ServiceInstance... instances) {
             StaticRegistrationResult out = new StaticRegistrationResult();
             out.getInstances().addAll(Arrays.asList(instances));
             return out;
@@ -101,9 +94,9 @@ class StaticServicesRegistrationServiceTest {
         @Test
         void testGetStaticInstances() {
             ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
-            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
 
-            List<InstanceInfo> instances = registrationService.getStaticInstances();
+            List<ServiceInstance> instances = registrationService.getStaticInstances();
 
             assertEquals(0, instances.size());
             verify(serviceDefinitionProcessor, times(0)).findStaticServicesData(any(String.class));
@@ -115,14 +108,14 @@ class StaticServicesRegistrationServiceTest {
             String service = "service";
             ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
             when(serviceDefinitionProcessor.findStaticServicesData(directory)).thenReturn(createResult(
-                InstanceInfo.Builder.newBuilder().setAppName(service).build()));
+                ServiceInstance.builder().appName(service).build()));
 
-            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
             registrationService.registerServices(directory);
-            List<InstanceInfo> instances = registrationService.getStaticInstances();
+            List<ServiceInstance> instances = registrationService.getStaticInstances();
 
             assertEquals(1, instances.size());
-            assertEquals(service.toUpperCase(), instances.get(0).getAppName());
+            assertEquals(service.toUpperCase(), instances.get(0).appName());
             verify(serviceDefinitionProcessor, times(1)).findStaticServicesData(directory);
         }
 
@@ -130,19 +123,19 @@ class StaticServicesRegistrationServiceTest {
         void testReloadServicesWithUnregisteringService() {
             String service = "service";
             ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
-            InstanceInfo instance = InstanceInfo.Builder.newBuilder().setInstanceId(service).setAppName(service).build();
+            ServiceInstance instance = ServiceInstance.builder().instanceId(service).appName(service).build();
 
             when(serviceDefinitionProcessor.findStaticServicesData(null))
                 .thenReturn(createResult(instance))
                 .thenReturn(createResult());
 
-            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
             registrationService.reloadServices();
             StaticRegistrationResult result = registrationService.reloadServices();
 
             assertThat(result.getRegisteredServices().contains(service), is(false));
             verify(serviceDefinitionProcessor, times(2)).findStaticServicesData(null);
-            verify(mockRegistry, times(1)).cancel(instance.getAppName(), instance.getId(), false);
+            verify(mockRegistry, times(1)).cancel(instance.appName(), instance.instanceId(), false);
         }
 
         @Test
@@ -150,13 +143,13 @@ class StaticServicesRegistrationServiceTest {
             String serviceA = "serviceA";
             String serviceB = "serviceB";
             ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
-            InstanceInfo instanceA = InstanceInfo.Builder.newBuilder().setInstanceId(serviceA).setAppName(serviceA).build();
-            InstanceInfo instanceB = InstanceInfo.Builder.newBuilder().setInstanceId(serviceB).setAppName(serviceB).build();
+            ServiceInstance instanceA = ServiceInstance.builder().instanceId(serviceA).appName(serviceA).build();
+            ServiceInstance instanceB = ServiceInstance.builder().instanceId(serviceB).appName(serviceB).build();
             when(serviceDefinitionProcessor.findStaticServicesData(null))
                 .thenReturn(createResult(instanceA))
                 .thenReturn(createResult(instanceA, instanceB));
 
-            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
             registrationService.reloadServices();
             StaticRegistrationResult result = registrationService.reloadServices();
 
@@ -170,14 +163,14 @@ class StaticServicesRegistrationServiceTest {
         void testRenewInstances() {
             String directory = "directory";
             String service = "service";
-            InstanceInfo instance = InstanceInfo.Builder.newBuilder().setInstanceId(service).setAppName(service).build();
+            ServiceInstance instance = ServiceInstance.builder().instanceId(service).appName(service).build();
             ServiceDefinitionProcessor serviceDefinitionProcessor = mock(ServiceDefinitionProcessor.class);
             when(serviceDefinitionProcessor.findStaticServicesData(directory)).thenReturn(createResult(instance));
 
-            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+            StaticServicesRegistrationService registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
             registrationService.registerServices(directory);
 
-            verify(mockRegistry, times(1)).registerStatically(instance, false, false);
+            verify(mockRegistry, times(1)).register(instance, RegistrationKind.STATIC);
         }
 
     }
@@ -198,7 +191,7 @@ class StaticServicesRegistrationServiceTest {
 
         @BeforeEach
         void setUp() {
-            service = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+            service = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
             ReflectionTestUtils.setField(service, "apimlLog", apimlLogger);
         }
 
@@ -206,10 +199,10 @@ class StaticServicesRegistrationServiceTest {
         void givenError_whenRegister_thenStoreItInTheResult() {
             // simulate new findings
             var sourceSearchResult = new StaticRegistrationResult();
-            sourceSearchResult.getInstances().add(mock(InstanceInfo.class));
+            sourceSearchResult.getInstances().add(ServiceInstance.builder().appName("MOCK").instanceId("h:mock:1").build());
             doReturn(sourceSearchResult).when(serviceDefinitionProcessor).findStaticServicesData(any());
 
-            doThrow(new RuntimeException("CannotCancelRegistration")).when(mockRegistry).registerStatically(any(), anyBoolean(), anyBoolean());
+            doThrow(new RuntimeException("CannotCancelRegistration")).when(mockRegistry).register(any(), any());
             doReturn(testMessage).when(apimlLogger).log(eq("org.zowe.apiml.discovery.staticDefinitionRegistration"), any(), any());
 
             var result = service.registerServices(null);
@@ -219,7 +212,7 @@ class StaticServicesRegistrationServiceTest {
 
         @Test
         void givenError_whenCancel_thenStoreItInTheResult() {
-            service.getStaticInstances().add(mock(InstanceInfo.class)); // simulate a previous registration
+            service.getStaticInstances().add(ServiceInstance.builder().appName("MOCK").instanceId("h:mock:1").build()); // simulate a previous registration
 
             doReturn(testMessage).when(apimlLogger).log(eq("org.zowe.apiml.discovery.staticDefinitionRegistration"), any(), any());
             service = spy(service);
@@ -238,7 +231,7 @@ class StaticServicesRegistrationServiceTest {
 
         @Test
         void givenException_whenGetAllMessages_thenGenerateFullMessage() {
-            var service = new StaticServicesRegistrationService(new ServiceDefinitionProcessor(), new MetadataDefaultsService());
+            var service = new StaticServicesRegistrationService(new ServiceDefinitionProcessor(), new MetadataDefaultsService(), mockRegistry);
             var root = new Exception("root") {
                 @Override
                 public Throwable getCause() {
@@ -263,7 +256,7 @@ class StaticServicesRegistrationServiceTest {
 
             @Test
             void givenUnexpectedError_whenRegisterServices_thenStoreInContextAndReturn() {
-                var registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService());
+                var registrationService = new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry);
                 doThrow(new RuntimeException("UnexpectedError")).when(serviceDefinitionProcessor).findStaticServicesData(any());
                 var result = registrationService.registerServices(null);
                 assertFalse(result.getErrors().isEmpty());
@@ -292,7 +285,7 @@ class StaticServicesRegistrationServiceTest {
                 logger.addAppender(mockedAppender);
                 logger.setLevel(Level.TRACE);
 
-                registrationService = spy(new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService()));
+                registrationService = spy(new StaticServicesRegistrationService(serviceDefinitionProcessor, new MetadataDefaultsService(), mockRegistry));
             }
 
             @AfterEach

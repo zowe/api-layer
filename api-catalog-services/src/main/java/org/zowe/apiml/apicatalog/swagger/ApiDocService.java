@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -333,9 +332,11 @@ public class ApiDocService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public Mono<String> retrieveApiDoc(@NonNull String serviceId, String apiVersion) {
-        EurekaServiceInstance serviceInstance = (EurekaServiceInstance) getInstanceInfo(serviceId);
+        ServiceInstance serviceInstance = getInstanceInfo(serviceId);
         try {
-            serviceInstance = new EurekaServiceInstance(metadataFilterService.verifyAllowedDomains(serviceInstance.getInstanceInfo()));
+            // Re-checks the metadata URLs this service is about to dereference. No downcast to a
+            // registry-specific instance type is needed - see MetadataFilterService.Candidate.of.
+            metadataFilterService.verifyAllowedDomains(MetadataFilterService.Candidate.of(serviceInstance));
         } catch (MetadataValidationException e) {
             log.debug("Failure validating metadata against allowed domains", e);
             throw new ApiDocNotFoundException(e.getMessage());
@@ -359,9 +360,11 @@ public class ApiDocService {
      * @throws ApiDocNotFoundException if the response is error
      */
     public Mono<String> retrieveDefaultApiDoc(@NonNull String serviceId) {
-        EurekaServiceInstance serviceInstance = (EurekaServiceInstance) getInstanceInfo(serviceId);
+        ServiceInstance serviceInstance = getInstanceInfo(serviceId);
         try {
-            serviceInstance = new EurekaServiceInstance(metadataFilterService.verifyAllowedDomains(serviceInstance.getInstanceInfo()));
+            // Re-checks the metadata URLs this service is about to dereference. No downcast to a
+            // registry-specific instance type is needed - see MetadataFilterService.Candidate.of.
+            metadataFilterService.verifyAllowedDomains(MetadataFilterService.Candidate.of(serviceInstance));
         } catch (MetadataValidationException e) {
             log.debug("Failure validating metadata against allowed domains", e);
             throw new ApiDocNotFoundException(e.getMessage());

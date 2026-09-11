@@ -12,17 +12,15 @@ package org.zowe.apiml.gateway.filters.proxyheaders;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.CacheRefreshedEvent;
-import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.EurekaEvent;
-import com.netflix.discovery.shared.Application;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.registry.client.RegistryCache;
+import org.zowe.apiml.registry.client.RegistryClient;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -42,9 +40,8 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  * Registry for APIML gateways discovered through additional registrations.
  * <p>
  * This class maintains a cache of cloud (central) and standard APIML gateways obtained via additional
- * registration sources. The cache is automatically updated when the
- * {@code registerAdditionalRegistrationsGatewayRegistryRefresh} handler is registered with the
- * {@link DiscoveryClient} associated with the additional registration.
+ * registration sources. The cache is updated from {@link #watch(RegistryClient)}, which subscribes to the
+ * client belonging to an additional registration.
  * <p>
  * The primary purpose of this class is to retain the IP addresses of other APIML gateways, so they
  * can be used to evaluate trusted proxy headers.
@@ -67,26 +64,24 @@ public class AdditionalRegistrationGatewayRegistry {
         log.debug("AdditionalRegistrationGatewayRegistry initialized");
     }
 
-    public void registerCacheRefreshEventListener(DiscoveryClient additionalApimlRegistration) {
-        additionalApimlRegistration.registerEventListener(
-            event -> cacheRefreshEventHandler(event, additionalApimlRegistration));
-        log.debug("AdditionalRegistrationGatewayRegistry refresh registered for additional registration: {}",
-            additionalApimlRegistration.getEurekaClientConfig().getEurekaServerServiceUrls(null));
+    /**
+     * Follows an additional registration's view of the other API ML.
+     * <p>
+     * Where this used to hang a {@code CacheRefreshedEvent} listener off a Eureka client, it now registers a
+     * listener with the registry client directly - the type filtering the old handler had to do is the
+     * listener interface's job.
+     */
+    public void watch(RegistryClient additionalApimlRegistration) {
+        additionalApimlRegistration.addListener(this::onRefresh);
+        log.debug("AdditionalRegistrationGatewayRegistry refresh registered for an additional registration");
     }
 
-    void cacheRefreshEventHandler(EurekaEvent event, DiscoveryClient additionalApimlRegistration) {
-        if (event instanceof CacheRefreshedEvent) {
-            Set<String> additionalGateways = Stream.of(
-                    additionalApimlRegistration.getApplication(CoreService.GATEWAY.getServiceId())
-                )
-                .filter(Objects::nonNull)
-                .map(Application::getInstances)
-                .flatMap(List::stream)
-                .flatMap(this::processInstanceInfoForIpAddresses)
-                .collect(Collectors.toSet());
-            log.debug("Additional registrations gateway ip addresses resolved: {}", additionalGateways);
-            additionalGatewayIpAddressesReference.set(additionalGateways);
-        }
+    void onRefresh(RegistryCache cache) {
+        Set<String> additionalGateways = cache.upInstances(CoreService.GATEWAY.getServiceId()).stream()
+            .flatMap(this::processInstanceInfoForIpAddresses)
+            .collect(Collectors.toSet());
+        log.debug("Additional registrations gateway ip addresses resolved: {}", additionalGateways);
+        additionalGatewayIpAddressesReference.set(additionalGateways);
     }
 
     private InetAddress[] getInetAddressesByName(String instanceId, String networkName) {
@@ -98,24 +93,24 @@ public class AdditionalRegistrationGatewayRegistry {
         }
     }
 
-    private Stream<String> processInstanceInfoForIpAddresses(InstanceInfo instanceInfo) {
+    private Stream<String> processInstanceInfoForIpAddresses(ServiceInstance instance) {
         try {
-            return knownAdditionalGateways.get(instanceInfo.getInstanceId(), () -> {
+            return knownAdditionalGateways.get(instance.instanceId(), () -> {
                     List<String> addresses = Stream.of(
-                            getInetAddressesByName(instanceInfo.getInstanceId(), instanceInfo.getHostName()),
-                            getInetAddressesByName(instanceInfo.getInstanceId(), instanceInfo.getIPAddr())
+                            getInetAddressesByName(instance.instanceId(), instance.hostName()),
+                            getInetAddressesByName(instance.instanceId(), instance.ipAddr())
                         )
                         .filter(Objects::nonNull)
                         .flatMap(Stream::of)
                         .map(InetAddress::getHostAddress)
                         .distinct()
                         .collect(Collectors.toList());
-                    log.debug("Additional registrations gateway ip addresses for instance {} resolved: {}", instanceInfo.getInstanceId(), addresses);
+                    log.debug("Additional registrations gateway ip addresses for instance {} resolved: {}", instance.instanceId(), addresses);
                     return addresses;
                 }
             ).stream();
         } catch (ExecutionException e) {
-            log.debug("Unable to update additional gateway registry for instance {}.", instanceInfo, e);
+            log.debug("Unable to update additional gateway registry for instance {}.", instance, e);
             return Stream.empty();
         }
     }

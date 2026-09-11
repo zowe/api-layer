@@ -3,11 +3,15 @@ plugins {
 }
 
 dependencies {
+    // Previously arrived transitively through spring-cloud-starter-netflix-eureka-client. Declared explicitly
+    // now that the starter is gone, so this module states what it actually uses.
+    implementation libs.spring.cloud.commons
+    implementation libs.http.client5
+    api project(':apiml-registry')
     api project(':apiml-utility')
 
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.web
-    implementation libs.spring.cloud.starter.eureka.client
     implementation libs.opentelemetry.spring.boot.starter
     implementation libs.opentelemetry.exporter.common
     implementation libs.opentelemetry.exporter.sender.okhttp
@@ -15,7 +19,6 @@ dependencies {
     implementation libs.guava
 
     compileOnly libs.netty.reactor.http
-    implementation libs.eureka.core
 
     implementation libs.apache.commons.lang3
     implementation libs.janino

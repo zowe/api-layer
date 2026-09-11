@@ -1,0 +1,30 @@
+dependencies {
+    api project(':apiml-registry-client')
+
+    implementation libs.spring.boot
+    implementation libs.spring.boot.autoconfigure
+    implementation libs.spring.context
+    implementation libs.spring.cloud.commons
+    implementation libs.slf4j.api
+
+    // Optional: when actuator is present the instance status follows Spring Boot health, which is what
+    // eureka.client.healthcheck.enabled asked Eureka to do.
+    compileOnly libs.spring.boot.starter.actuator
+    // Only for the reactive health contributors' Mono return type; the code never subscribes off the
+    // registration thread. compileOnly because a servlet service must not gain a reactor dependency.
+    compileOnly libs.reactor
+
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+    annotationProcessor libs.spring.boot.configuration.processor
+
+    testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.actuator
+    // Test scope only. RegistryInstancePropertiesContractTest binds the same YAML into Netflix's
+    // EurekaInstanceConfigBean and into ours, and fails if they disagree. That is the only way to be sure the
+    // configuration contract survived the move; it is deliberately not on the runtime classpath.
+    testImplementation libs.spring.cloud.starter.eureka.client
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
+}

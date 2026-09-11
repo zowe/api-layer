@@ -30,6 +30,7 @@ dependencyResolutionManagement {
             version('commonsLogging', '1.4.0')
             version('commonsText', '1.15.0')
             version('commonsIo', '2.22.0')
+            version('commonsCodec', '1.20.0')
             version('ehCache', '3.12.0')
             version('eureka', '2.0.6')
             version('fileupload', '1.6.0')
@@ -46,6 +47,7 @@ dependencyResolutionManagement {
             version('jacksonCore', '2.22.2')
             version('jacksonDatabind', '2.22.2')
             version('jacksonDataformatYaml', '2.22.2')
+            version('jacksonDataformatXml', '2.22.2')
             version('janino', '3.1.12')
             version('jakartaValidation', '3.1.1')
             version('jakartaInject', '2.0.1')
@@ -131,6 +133,9 @@ dependencyResolutionManagement {
             library('modulith_test', 'org.springframework.modulith', 'spring-modulith-starter-test').versionRef('modulith')
             library('jmolecules', 'org.jmolecules', 'jmolecules-bom').versionRef('jmolecules')
 
+            library('slf4j_api', 'org.slf4j', 'slf4j-api').versionRef('slf4j')
+            library('spring_boot', 'org.springframework.boot', 'spring-boot').versionRef('springBoot')
+            library('spring_boot_autoconfigure', 'org.springframework.boot', 'spring-boot-autoconfigure').versionRef('springBoot')
             library('spring_boot_configuration_processor', 'org.springframework.boot', 'spring-boot-configuration-processor').versionRef('springBoot')
             library('spring_boot_dependencies', 'org.springframework.boot', 'spring-boot-dependencies').versionRef('springBoot')
             library('spring_boot_starter', 'org.springframework.boot', 'spring-boot-starter').versionRef('springBoot')
@@ -150,6 +155,8 @@ dependencyResolutionManagement {
             library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway-server-webflux').versionRef('springCloudGateway')
             library('spring_cloud_gateway_server', 'org.springframework.cloud', 'spring-cloud-gateway-server').versionRef('springCloudGateway')
             library('spring_cloud_commons', 'org.springframework.cloud', 'spring-cloud-commons').versionRef('springCloudCommons')
+            library('spring_cloud_context', 'org.springframework.cloud', 'spring-cloud-context').versionRef('springCloudCommons')
+            library('spring_cloud_loadbalancer', 'org.springframework.cloud', 'spring-cloud-loadbalancer').versionRef('springCloudCommons')
             library('spring_cloud_circuit_breaker', 'org.springframework.cloud', 'spring-cloud-starter-circuitbreaker-reactor-resilience4j').versionRef('springCloudCB')
 
             library('spring_retry', 'org.springframework.retry', 'spring-retry').versionRef('springRetry')
@@ -177,6 +184,7 @@ dependencyResolutionManagement {
             library('caffeine', 'com.github.ben-manes.caffeine', 'caffeine').versionRef('caffeine')
             library('checker_qual', 'org.checkerframework', 'checker-qual').versionRef('checkerQual')
             library('commons_io', 'commons-io', 'commons-io').versionRef('commonsIo')
+            library('commons_codec', 'commons-codec', 'commons-codec').versionRef('commonsCodec')
             library('eh_cache', 'org.ehcache', 'ehcache').versionRef('ehCache')
             library('eureka_jersey_client', 'com.netflix.eureka', 'eureka-client-jersey3').versionRef('eureka')
             library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
@@ -198,6 +206,7 @@ dependencyResolutionManagement {
             library('jackson_core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jacksonCore')
             library('jackson_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
             library('jackson_dataformat_yaml', 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-yaml').versionRef('jacksonDataformatYaml')
+            library('jackson_dataformat_xml', 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-xml').versionRef('jacksonDataformatXml')
             library('janino', 'org.codehaus.janino', 'janino').versionRef('janino')
             library('jakarta_validation', 'jakarta.validation', 'jakarta.validation-api').versionRef('jakartaValidation')
             library('jakarta_inject', 'jakarta.inject', 'jakarta.inject-api').versionRef('jakartaInject')
@@ -298,6 +307,7 @@ dependencyResolutionManagement {
 
             // Pure Java dependencies - do not use in Spring unless really necessary
             version('logback', '1.6.3')
+            version('slf4j', '2.0.18')
             version('mockitoCore', '5.23.0')
             version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')

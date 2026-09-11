@@ -1,0 +1,229 @@
+{
+  "_comment": [
+    "Captured 2026-09-08 from POST /discovery/api/v1/staticApi on the Eureka-based Discovery Service.",
+    "NOT part of the frozen /eureka contract - this is the static-definition refresh diagnostic, under /discovery.",
+    "Recorded because Phase 3b changes the element type of StaticRegistrationResult.instances.",
+    "Two pre-existing warts are visible: port and securePort are absent from every instance (Spring default",
+    "Jackson does not pick them up off InstanceInfo), and nulls are emitted for appGroupName, healthCheckUrl and",
+    "asgName. The API Catalog UI reads only success/error and a timestamp - see",
+    "api-catalog-ui/frontend/src/reducers/refresh-static-apis-reducer.jsx - so no consumer depends on the shape.",
+    "Note also the instanceId form: static instances are prefixed STATIC-."
+  ],
+  "response": {
+    "errors": [],
+    "instances": [
+      {
+        "instanceId": "STATIC-localhost:staticclient:10012",
+        "app": "STATICCLIENT",
+        "appGroupName": null,
+        "ipAddr": "127.0.0.1",
+        "sid": "na",
+        "homePageUrl": "https://localhost:10012/discoverableclient",
+        "statusPageUrl": "https://localhost:10012/discoverableclient/application/info",
+        "healthCheckUrl": null,
+        "secureHealthCheckUrl": "https://localhost:10012/discoverableclient/application/health",
+        "vipAddress": "staticclient",
+        "secureVipAddress": "staticclient",
+        "countryId": 1,
+        "dataCenterInfo": {
+          "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+          "name": "MyOwn"
+        },
+        "hostName": "localhost",
+        "status": "UP",
+        "overriddenStatus": "UNKNOWN",
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 0,
+          "lastRenewalTimestamp": 0,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 0
+        },
+        "isCoordinatingDiscoveryServer": false,
+        "metadata": {
+          "apiml.service.description": "Sample to demonstrate how to add an API service to API Catalog using a static YAML definition",
+          "apiml.routes.ws-v1.serviceUrl": "/discoverableclient/ws",
+          "apiml.catalog.tile.version": "1.0.0",
+          "apiml.routes.api-v1.gatewayUrl": "api/v1",
+          "apiml.service.title": "Staticaly Defined Service",
+          "apiml.catalog.tile.description": "Applications which demonstrate how to make an API service discoverable in the APIML ecosystem",
+          "version": "2.2.0",
+          "apiml.routes.ws-v1.gatewayUrl": "ws/v1",
+          "apiml.routes.ui-v1.gatewayUrl": "ui/v1",
+          "apiml.routes.api-doc.gatewayUrl": "api-doc",
+          "apiml.routes.ui-v1.serviceUrl": "/discoverableclient/",
+          "apiml.catalog.tile.id": "cademoapps",
+          "apiml.routes.api-v1.serviceUrl": "/discoverableclient/api/v1",
+          "apiml.catalog.tile.title": "Sample APIML applications",
+          "apiml.routes.api-doc.serviceUrl": "/discoverableclient/api-doc"
+        },
+        "lastUpdatedTimestamp": 1788868791651,
+        "lastDirtyTimestamp": 1788868791651,
+        "actionType": "ADDED",
+        "asgName": null
+      },
+      {
+        "instanceId": "STATIC-localhost:toaddauth:10012",
+        "app": "TOADDAUTH",
+        "appGroupName": null,
+        "ipAddr": "127.0.0.1",
+        "sid": "na",
+        "homePageUrl": "https://localhost:10012/discoverableclient",
+        "statusPageUrl": null,
+        "healthCheckUrl": null,
+        "secureHealthCheckUrl": null,
+        "vipAddress": "toaddauth",
+        "secureVipAddress": "toaddauth",
+        "countryId": 1,
+        "dataCenterInfo": {
+          "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+          "name": "MyOwn"
+        },
+        "hostName": "localhost",
+        "status": "UP",
+        "overriddenStatus": "UNKNOWN",
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 0,
+          "lastRenewalTimestamp": 0,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 0
+        },
+        "isCoordinatingDiscoveryServer": false,
+        "metadata": {
+          "apiml.service.description": null,
+          "apiml.authentication.applid": "TSTAPPL4",
+          "apiml.authentication.scheme": "httpBasicPassTicket",
+          "apiml.service.title": "Service to add auth info",
+          "version": "2.2.0"
+        },
+        "lastUpdatedTimestamp": 1788868791652,
+        "lastDirtyTimestamp": 1788868791651,
+        "actionType": "ADDED",
+        "asgName": null
+      },
+      {
+        "instanceId": "STATIC-localhost:toreplaceauth:10012",
+        "app": "TOREPLACEAUTH",
+        "appGroupName": null,
+        "ipAddr": "127.0.0.1",
+        "sid": "na",
+        "homePageUrl": "https://localhost:10012/discoverableclient",
+        "statusPageUrl": null,
+        "healthCheckUrl": null,
+        "secureHealthCheckUrl": null,
+        "vipAddress": "toreplaceauth",
+        "secureVipAddress": "toreplaceauth",
+        "countryId": 1,
+        "dataCenterInfo": {
+          "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+          "name": "MyOwn"
+        },
+        "hostName": "localhost",
+        "status": "UP",
+        "overriddenStatus": "UNKNOWN",
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 0,
+          "lastRenewalTimestamp": 0,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 0
+        },
+        "isCoordinatingDiscoveryServer": false,
+        "metadata": {
+          "apiml.service.description": null,
+          "apiml.authentication.applid": "TSTAPPL5",
+          "apiml.authentication.scheme": "httpBasicPassTicket",
+          "apiml.service.title": null,
+          "version": "2.2.0"
+        },
+        "lastUpdatedTimestamp": 1788868791652,
+        "lastDirtyTimestamp": 1788868791651,
+        "actionType": "ADDED",
+        "asgName": null
+      },
+      {
+        "instanceId": "STATIC-localhost:nowfixedauth:10012",
+        "app": "NOWFIXEDAUTH",
+        "appGroupName": null,
+        "ipAddr": "127.0.0.1",
+        "sid": "na",
+        "homePageUrl": "https://localhost:10012/discoverableclient",
+        "statusPageUrl": null,
+        "healthCheckUrl": null,
+        "secureHealthCheckUrl": null,
+        "vipAddress": "nowfixedauth",
+        "secureVipAddress": "nowfixedauth",
+        "countryId": 1,
+        "dataCenterInfo": {
+          "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo",
+          "name": "MyOwn"
+        },
+        "hostName": "localhost",
+        "status": "UP",
+        "overriddenStatus": "UNKNOWN",
+        "leaseInfo": {
+          "renewalIntervalInSecs": 30,
+          "durationInSecs": 90,
+          "registrationTimestamp": 0,
+          "lastRenewalTimestamp": 0,
+          "evictionTimestamp": 0,
+          "serviceUpTimestamp": 0
+        },
+        "isCoordinatingDiscoveryServer": false,
+        "metadata": {
+          "apiml.service.description": null,
+          "apiml.authentication.applid": "TSTAPPL3",
+          "apiml.authentication.scheme": "httpBasicPassTicket",
+          "apiml.service.title": "Service with temporary auth, althought auth is defined now",
+          "version": "2.2.0"
+        },
+        "lastUpdatedTimestamp": 1788868791653,
+        "lastDirtyTimestamp": 1788868791651,
+        "actionType": "ADDED",
+        "asgName": null
+      }
+    ],
+    "additionalServiceMetadata": {
+      "nowfixedauth": {
+        "mode": "UPDATE",
+        "metadata": {
+          "apiml.service.description": null,
+          "apiml.authentication.applid": "TSTAPPL6",
+          "apiml.authentication.scheme": "httpBasicPassTicket",
+          "apiml.service.title": null,
+          "version": "2.2.0"
+        }
+      },
+      "toaddauth": {
+        "mode": "UPDATE",
+        "metadata": {
+          "apiml.service.description": null,
+          "apiml.authentication.applid": "TSTAPPL4",
+          "apiml.authentication.scheme": "httpBasicPassTicket",
+          "apiml.service.title": null,
+          "version": "2.2.0"
+        }
+      },
+      "toreplaceauth": {
+        "mode": "FORCE_UPDATE",
+        "metadata": {
+          "apiml.service.description": null,
+          "apiml.authentication.applid": "TSTAPPL5",
+          "apiml.authentication.scheme": "httpBasicPassTicket",
+          "apiml.service.title": null,
+          "version": "2.2.0"
+        }
+      }
+    },
+    "registeredServices": [
+      "STATIC-localhost:staticclient:10012",
+      "STATIC-localhost:toaddauth:10012",
+      "STATIC-localhost:toreplaceauth:10012",
+      "STATIC-localhost:nowfixedauth:10012"
+    ]
+  }
+}

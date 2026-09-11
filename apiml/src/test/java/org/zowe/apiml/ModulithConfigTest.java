@@ -10,18 +10,17 @@
 
 package org.zowe.apiml;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.Test;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.commons.util.InetUtils;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.eurekaservice.client.util.EurekaMetadataParser;
+import org.zowe.apiml.registry.ServiceRegistry;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.zowe.apiml.services.ServiceInfo;
 
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,20 +40,22 @@ class ModulithConfigTest {
     @Test
     void givenServiceExistInDiscoveryClient_thenReturnServiceInfo() {
 
-        var discoveryClient = mock(DiscoveryClient.class);
+        var registry = mock(ServiceRegistry.class);
 
-        when(discoveryClient.getServices())
-            .thenReturn(Arrays.asList(CLIENT_SERVICE_ID));
-        var ii = new InstanceInfo(CLIENT_SERVICE_ID, null, null, "192.168.0.1", null, new InstanceInfo.PortWrapper(true, 9090),
-            null, null, null, null, null, null, null, 0, null, "hostname", InstanceInfo.InstanceStatus.UP, null, null, null, null, null,
-            null, null, null, null);
-        var serviceInstance = new EurekaServiceInstance(ii);
-        when(discoveryClient.getInstances(CLIENT_SERVICE_ID))
-            .thenReturn(Arrays.asList(serviceInstance));
+        when(registry.serviceIds()).thenReturn(List.of(CLIENT_SERVICE_ID));
+        var serviceInstance = ServiceInstance.builder()
+            .instanceId("hostname:" + CLIENT_SERVICE_ID + ":9090")
+            .appName(CLIENT_SERVICE_ID)
+            .hostName("hostname")
+            .ipAddr("192.168.0.1")
+            .port(9090, true)
+            .status(InstanceStatus.UP)
+            .build();
+        when(registry.instances(CLIENT_SERVICE_ID)).thenReturn(List.of(serviceInstance));
         ModulithConfig mc = new ModulithConfig(null, null, null, null, null, null, null);
         var eurekaParser = mock(EurekaMetadataParser.class);
         when(eurekaParser.parseAuthentication(any())).thenReturn(new Authentication(AuthenticationScheme.ZOWE_JWT, "appl"));
-        var basicInfoService = mc.basicInfoService(discoveryClient, eurekaParser);
+        var basicInfoService = mc.basicInfoService(registry, eurekaParser);
         List<ServiceInfo> servicesInfo = basicInfoService.getServicesInfo();
 
 
@@ -67,14 +68,13 @@ class ModulithConfigTest {
     @Test
     void givenNoServiceFoundInDiscoveryClient_thenReturnEmptyList() {
 
-        var discoveryClient = mock(DiscoveryClient.class);
+        var registry = mock(ServiceRegistry.class);
 
-        when(discoveryClient.getServices())
-            .thenReturn(Collections.emptyList());
+        when(registry.serviceIds()).thenReturn(Collections.emptyList());
 
         ModulithConfig mc = new ModulithConfig(null, null, null, null, null, null, null);
         var eurekaParser = mock(EurekaMetadataParser.class);
-        var basicInfoService = mc.basicInfoService(discoveryClient, eurekaParser);
+        var basicInfoService = mc.basicInfoService(registry, eurekaParser);
         List<ServiceInfo> servicesInfo = basicInfoService.getServicesInfo();
         assertThat(servicesInfo, emptyIterable());
     }

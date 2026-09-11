@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.gateway;
 
-import com.netflix.appinfo.InstanceInfo.PortType;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -105,14 +104,21 @@ public class MockWebSocketService extends MockService {
     }
 
     @Override
-    public com.netflix.appinfo.InstanceInfo.Builder getInstanceInfo() {
-        var builder = super.getInstanceInfo();
+    public org.zowe.apiml.registry.model.ServiceInstance getInstanceInfo() {
+        var instance = super.getInstanceInfo();
         if (sslContext != null) {
-            builder.setSecurePort(port);
-            builder.enablePort(PortType.SECURE, true);
-            builder.enablePort(PortType.UNSECURE, false);
+            return instance.toBuilder()
+                .port(new org.zowe.apiml.registry.model.PortInfo(port, false))
+                .securePort(new org.zowe.apiml.registry.model.PortInfo(port, true))
+                .build();
         }
-        return builder;
+        return instance;
+    }
+
+    @Override
+    public org.springframework.cloud.client.ServiceInstance getServiceInstance() {
+        return new org.zowe.apiml.registry.client.RegistryServiceInstance(
+            getInstanceId(), serviceId, hostname, port, sslContext != null, getMetadata());
     }
 
     @Override

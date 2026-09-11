@@ -1,0 +1,184 @@
+{
+  "_comment": [
+    "Phase 0: the HTTP-level contract of the Eureka-based Discovery Service, captured from a running",
+    "instance (discovery-service, https profile, client-certificate auth) on 2026-09-08.",
+    "This is the companion to the body-level fixtures in this directory: those pin what is in a response,",
+    "this pins the status code, the selected representation and whether the body is empty.",
+    "Two observations that are easy to get wrong and are load-bearing:",
+    "  1. XML is the DEFAULT representation. No Accept header, or 'Accept: */*', both yield application/xml.",
+    "     Only an explicit 'Accept: application/json' yields JSON. Any client that does not ask specifically",
+    "     - which includes most naive HTTP clients and customer curl scripts - is receiving XML today.",
+    "  2. A 404 carries a completely empty body and no Content-Type, for reads and writes alike. Returning a",
+    "     JSON error document instead breaks enabler reconnect (see api-layer commit 9f58010c6).",
+    "Not captured here: /eureka/status and /eureka/lastn. On this configuration /eureka/status returns 500 with",
+    "java.lang.NullPointerException 'Cannot invoke String.length() because text is null' from the Freemarker",
+    "status view - a pre-existing failure, unrelated to this work, and relevant to decision D4 in",
+    "TASK-Discovery-Native-Registry.md: the dashboard being replaced is already not serving here."
+  ],
+  "capturedFrom": "discovery-service 3.5.x, spring-cloud-netflix-eureka-server 4.3.3, eureka-core 2.0.6",
+  "cases": [
+    {
+      "method": "GET",
+      "path": "/eureka/apps",
+      "requestHeaders": [],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps/",
+      "requestHeaders": [],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps/delta",
+      "requestHeaders": [],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps/DISCOVERY",
+      "requestHeaders": [],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps/NOSUCHAPP",
+      "requestHeaders": [],
+      "status": 404,
+      "contentType": "",
+      "emptyBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps/DISCOVERY/localhost:discovery:10011",
+      "requestHeaders": [],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps/unknown-service-id/unknown-instance-id",
+      "requestHeaders": [],
+      "status": 404,
+      "contentType": "",
+      "emptyBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/eureka/apps/unknown-service-id/unknown-instance-id",
+      "requestHeaders": [],
+      "status": 404,
+      "contentType": "",
+      "emptyBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/eureka/apps/unknown-service-id/unknown-instance-id",
+      "requestHeaders": [],
+      "status": 404,
+      "contentType": "",
+      "emptyBody": true
+    },
+    {
+      "method": "PUT",
+      "path": "/eureka/apps/unknown-service-id/unknown-instance-id/status?value=OUT_OF_SERVICE",
+      "requestHeaders": [],
+      "status": 404,
+      "contentType": "",
+      "emptyBody": true
+    },
+    {
+      "method": "DELETE",
+      "path": "/eureka/apps/unknown-service-id/unknown-instance-id/status",
+      "requestHeaders": [],
+      "status": 404,
+      "contentType": "",
+      "emptyBody": true
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/vips/discovery",
+      "requestHeaders": [],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/svips/discovery",
+      "requestHeaders": [],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/instances/localhost:discovery:10011",
+      "requestHeaders": [],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps",
+      "requestHeaders": [
+        "Accept: application/json"
+      ],
+      "status": 200,
+      "contentType": "application/json",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps",
+      "requestHeaders": [
+        "Accept: application/xml"
+      ],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps",
+      "requestHeaders": [
+        "Accept: */*"
+      ],
+      "status": 200,
+      "contentType": "application/xml",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps",
+      "requestHeaders": [
+        "Accept: application/json",
+        "X-Eureka-Accept: compact"
+      ],
+      "status": 200,
+      "contentType": "application/json",
+      "emptyBody": false
+    },
+    {
+      "method": "GET",
+      "path": "/eureka/apps/delta",
+      "requestHeaders": [
+        "Accept: application/json"
+      ],
+      "status": 200,
+      "contentType": "application/json",
+      "emptyBody": false
+    }
+  ]
+}
