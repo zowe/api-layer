@@ -160,3 +160,78 @@ Alternatively, you can also pass the config as a json to the client:
   ```
 
 4. Start your Node.js service and verify that it registers to the Zowe API Mediation Layer.
+
+### Discovery retries and request deadlines
+
+The circuit breaker is enabled by default. Initial registration, heartbeats, and
+registry fetches (including the initial fetch and `waitForRegistry` polling) share
+one breaker. Each loop schedules its next attempt after the previous operation
+completes, so slow requests do not overlap within that loop. Startup waits for
+successful registration and, when enabled, the initial registry fetch; an outage
+keeps startup pending while the breaker retries rather than abandoning startup.
+
+Configure these properties under `eureka` in the client configuration:
+
+```yaml
+eureka:
+  requestTimeout: 10000
+  circuitBreaker:
+    enabled: true
+    maxFailures: 5
+    backoffTimeout: 1000
+    cooldownTime: 60000
+    backoffMax: 300000
+```
+
+All timeout and interval values shown here are **milliseconds**.
+
+- `requestTimeout` defaults to `10000` and must be a positive, finite number.
+  Each HTTPS attempt has an absolute deadline covering connection establishment,
+  TLS negotiation, and receipt of the response body. A hung connection or body
+  completes with an `ETIMEDOUT` error and its request is destroyed. Errors,
+  aborted responses, and late transport events cannot complete an attempt twice.
+  This deadline starts at the transport stage, after cluster resolution and
+  request middleware; custom resolvers and middleware must invoke their callbacks.
+- In CLOSED state, consecutive failures use exponential retry delays starting at
+  `backoffTimeout`, capped at `backoffMax`. An explicit zero `backoffTimeout`
+  is preserved. `maxFailures` is the number of failures allowed while CLOSED;
+  the following failure opens the circuit and suspends managed requests for
+  `cooldownTime`. For example, `maxFailures: 5` opens on the sixth failure.
+  Failed HALF_OPEN probes double subsequent OPEN cooldowns up to
+  `backoffMax`; successful probes close and reset the breaker. Only one HALF_OPEN
+  probe is allowed across the managed loops. A successful operation resets the
+  consecutive failure count.
+- With the breaker enabled, an operation does not also run the legacy transport
+  retry loop: `maxRetries` and `requestRetryDelay` do not multiply its attempts.
+  Transport errors and HTTP 5xx responses cause the next attempt to rotate to the
+  next configured Discovery endpoint. Direct calls to `register`, `renew`, or
+  `fetchRegistry` remain low-level operations; use `start()` for managed scheduling.
+- A heartbeat HTTP 404 triggers re-registration and waits for that POST to finish.
+  The composite operation counts once: the 404 alone is not a breaker failure,
+  but a failed re-registration is. Registration HTTP 400 is a failure, not success.
+- `waitForRegistry: true` polls at two-second intervals after successful empty
+  registry fetches until the instance VIP is present. Failed fetches follow the
+  same breaker policy as other managed operations.
+
+Set `eureka.circuitBreaker.enabled: false` to retain legacy interval scheduling
+and bounded transport retries. A transport error or HTTP 5xx permits at most
+`maxRetries` additional attempts, delayed by `requestRetryDelay`, then twice that
+value, then three times that value, and so on. The request deadline still applies
+to each attempt; resolver failures terminate without transport retries.
+
+`stop()` cancels scheduled work, retry timers, and in-flight transport deadlines,
+and resets the breaker. Late callbacks from the stopped lifecycle cannot emit
+registration/startup events, re-register on a stale 404, or restart scheduling,
+even if `start()` has subsequently begun a new lifecycle. Pending startup callbacks
+are discarded on stop. When registration is enabled, stop still makes the explicit
+deregistration request and invokes its supplied callback with that result.
+
+### Validation
+
+Run `npm test` for unit tests and lint checks. The legacy Gulp/Istanbul coverage
+summary may report `100% (0/0)` for ES modules; that is not meaningful coverage.
+Use a V8-aware coverage runner when measuring the ES module sources.
+`npm run integration` additionally requires a running Discovery Service and its TLS
+fixtures. The current integration entry point uses a directory import (`../src`)
+that Node.js ESM rejects with `ERR_UNSUPPORTED_DIR_IMPORT`; this must be resolved
+before that integration suite can exercise Discovery.
