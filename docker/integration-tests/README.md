@@ -9,12 +9,24 @@ This replaces GitHub Actions' native `container:`/`services:` orchestration, whi
 troubleshoot (no `logs`/`exec`/`ps`, containers vanish the moment the job ends). Everything here
 is driven with plain `docker compose`.
 
-| Directory   | CI job(s)                    | Topology                                             |
-|-------------|-------------------------------|-------------------------------------------------------|
-| `modulith/` | `CITestsModulith`             | Single `apiml` (gateway+discovery+catalog+caching+zaas bundled), `discoverable-client`, `mock-services` |
-| `split/`    | `CITests`                     | One container per service, plus a second discovery/gateway/zaas trio for multi-tenancy tests |
+| Directory                          | CI job(s)                          | Topology                                             |
+|------------------------------------|-------------------------------------|-------------------------------------------------------|
+| `modulith/`                        | `CITestsModulith`                   | Single `apiml` (gateway+discovery+catalog+caching+zaas bundled), `discoverable-client`, `mock-services` |
+| `split/`                           | `CITests`                           | One container per service, plus a second discovery/gateway/zaas trio for multi-tenancy tests |
+| `modulith-unknown-hostnames/`      | `CITestsModulithUnknownHostnames`   | Single `apiml` + a client/mock pair deliberately given hostnames outside the cert SAN, to test unknown-hostname handling |
+| `registration/`                    | `CITestsRegistration`               | Full split topology, no secondary instances |
+| `discovery-basic-auth/`            | `CITestsDiscoveryBasicAuth`         | Full split topology with Eureka basic-auth env vars on every service |
+| `zosmf-without-jwt/`               | `CITestsZosmfWithoutJwt`            | Full split topology, ZAAS configured for LTPA instead of JWT |
+| `zosmf-without-jwt-modulith/`      | `CITestsZosmfWithoutJwtModulith`    | Single `apiml`, ZAAS configured for LTPA instead of JWT |
+| `registration-modulith/`           | `CITestsRegistrationModulith`       | Single `apiml`, `mock-services`, `discoverable-client` |
+| `service-prefix-replacer/`         | `CITestsServicePrefixReplacer`      | Full split topology, discovery configured to rewrite service ID prefixes |
+| `with-infinispan/`                 | `CITestsWithInfinispan`             | Full split topology plus a second `caching-service` instance clustered via infinispan/JGroups (on its own real port, not a host/port collision) |
 
-More topologies (HA, SAF provider, chaotic, etc.) will be added the same way as they're migrated.
+More topologies (HA, SAF provider, chaotic, E2E, Node/Python sample apps) are still being migrated -
+several of them run two-or-three instances of the same service sharing one real port
+(`gatewayServiceConfiguration`/`zaasConfiguration`/`apiCatalogServiceConfiguration`/`cachingServiceConfiguration`/`discoverableClientConfiguration`
+all support a comma-separated `host` list under a single `port`), which needs the connect-port
+mechanism below extended beyond `discoveryServiceConfiguration` before those can move over safely.
 
 ## Running a test locally
 

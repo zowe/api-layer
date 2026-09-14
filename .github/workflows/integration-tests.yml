@@ -92,26 +92,12 @@ jobs:
     CITestsModulithUnknownHostnames:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
-                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
-                    APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /docker/api-defs-unknown-host
-            discoverable-client-unknown:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-unknown
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
-                    SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
-                    SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
-            mock-services-unknown:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/modulith-unknown-hostnames)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -119,6 +105,12 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith-unknown-hostnames/docker-compose.yml
+                    hosts: apiml discoverable-client-unknown mock-services-unknown
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -147,6 +139,10 @@ jobs:
                         results/**
                         integration-tests/build/test-results/runUnknownHostnamesTests/binary/**
                         integration-tests/build/test-results/runStartUpCheck/binary/**
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith-unknown-hostnames/docker-compose.yml
             -   uses: ./.github/actions/teardown
 
     CITestsModulith:
@@ -924,29 +920,12 @@ jobs:
     CITestsRegistration:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/registration)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -954,6 +933,14 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/registration/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services caching-service discoverable-client discovery-service
+                        gateway-service zaas-service mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -980,48 +967,22 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/registration/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     CITestsDiscoveryBasicAuth:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
-                    APIML_DISCOVERY_USERID: eureka
-                    APIML_DISCOVERY_PASSWORD: password
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
-                    APIML_DISCOVERY_USERID: eureka
-                    APIML_DISCOVERY_PASSWORD: password
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
-                    APIML_DISCOVERY_USERID: eureka
-                    APIML_DISCOVERY_PASSWORD: password
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
-                    APIML_DISCOVERY_USERID: eureka
-                    APIML_DISCOVERY_PASSWORD: password
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
-                    APIML_DISCOVERY_USERID: eureka
-                    APIML_DISCOVERY_PASSWORD: password
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/discovery-basic-auth)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1029,6 +990,14 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/discovery-basic-auth/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services discovery-service gateway-service zaas-service
+                        discoverable-client mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1051,6 +1020,11 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/discovery-basic-auth/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -1142,23 +1116,12 @@ jobs:
     CITestsRegistrationModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/registration-modulith)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1166,6 +1129,12 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/registration-modulith/docker-compose.yml
+                    hosts: apiml mock-services discoverable-client
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1192,6 +1161,11 @@ jobs:
                     path: |
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/registration-modulith/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -1294,38 +1268,12 @@ jobs:
     CITestsZosmfWithoutJwt:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-                    APIML_SECURITY_AUTH_ZOSMF_JWTAUTOCONFIGURATION: ltpa
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/zosmf-without-jwt)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1333,6 +1281,14 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/zosmf-without-jwt/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services caching-service discoverable-client discovery-service
+                        zaas-service gateway-service mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1358,34 +1314,22 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/zosmf-without-jwt/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     CITestsZosmfWithoutJwtModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://apiml:10010/gateway/certificates
-                    APIML_SECURITY_AUTH_ZOSMF_JWTAUTOCONFIGURATION: ltpa
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/zosmf-without-jwt-modulith)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1393,6 +1337,12 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/zosmf-without-jwt-modulith/docker-compose.yml
+                    hosts: apiml discoverable-client mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1418,6 +1368,11 @@ jobs:
                     path: |
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/zosmf-without-jwt-modulith/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -2372,51 +2327,12 @@ jobs:
     CITestsWithInfinispan:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    JGROUPS_BIND_PORT: "7600"
-                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
-                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
-                    CACHING_STORAGE_MODE: "infinispan"
-                    APIML_SERVICE_PORT: "10022"
-                    JGROUPS_BIND_ADDRESS: "caching-service"
-            caching-service-2:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    JGROUPS_BIND_PORT: "7600"
-                    SERVER_SSL_KEYSTORETYPE: "PKCS12"
-                    CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
-                    CACHING_STORAGE_MODE: "infinispan"
-                    JGROUPS_BIND_ADDRESS: "caching-service-2"
-                    APIML_SERVICE_HOSTNAME: "caching-service-2"
-                    logbackService: ZWEACS2
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+        # Services now run as a plain docker compose stack (docker/integration-tests/with-infinispan)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2424,6 +2340,14 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/with-infinispan/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services caching-service caching-service-2 discoverable-client
+                        discovery-service gateway-service zaas-service mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -2452,6 +2376,11 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/with-infinispan/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -2801,29 +2730,13 @@ jobs:
 
     CITestsServicePrefixReplacer:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable*,sample"
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+        # Services now run as a plain docker compose stack (docker/integration-tests/service-prefix-replacer)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2831,6 +2744,14 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/service-prefix-replacer/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services discoverable-client discovery-service
+                        gateway-service zaas-service mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -2860,6 +2781,11 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/service-prefix-replacer/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
