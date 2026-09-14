@@ -11,7 +11,7 @@
 package org.zowe.apiml.gateway.service;
 
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.InstanceStatus;
 import org.apache.groovy.util.Maps;
 import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,7 +89,7 @@ class CentralApimlInfoMapperTest {
             //Well decorated service
             Map<String, ServiceInfo.Instances> instances = Maps.of("dummy:host:14", instance);
             serviceOne = ServiceInfo.builder().serviceId("serviceId")
-                    .status(InstanceInfo.InstanceStatus.UP)
+                    .status(InstanceStatus.UP)
                     .apiml(apiml)
                     .instances(instances)
                     .build();
@@ -103,7 +103,7 @@ class CentralApimlInfoMapperTest {
             CentralServiceInfo centralService = info.getServices().get(0);
 
             assertThat(centralService.getServiceId()).isEqualTo("serviceId");
-            assertThat(centralService.getStatus()).isEqualTo(InstanceInfo.InstanceStatus.UP);
+            assertThat(centralService.getStatus()).isEqualTo(InstanceStatus.UP);
             assertThat(centralService.getApiId()).containsOnly("zowe.apiml.apicatalog");
             assertThat(centralService.getCustomMetadata()).containsOnlyKeys("zos.sysname", "zos.sysplex");
         }
@@ -123,7 +123,7 @@ class CentralApimlInfoMapperTest {
         void shouldMapListOfServices() {
             //bare minimal registration
             ServiceInfo serviceTwo = ServiceInfo.builder().serviceId("minimal")
-                    .status(InstanceInfo.InstanceStatus.UNKNOWN)
+                    .status(InstanceStatus.UNKNOWN)
                     .build();
 
             ApimlInfo info = centralApimlInfoMapper.buildApimlServiceInfo("apiml1", asList(serviceOne, serviceTwo));
@@ -135,7 +135,7 @@ class CentralApimlInfoMapperTest {
             assertThat(minimalService.getServiceId()).isEqualTo("minimal");
             assertThat(minimalService.getApiId()).isEmpty();
             assertThat(minimalService.getCustomMetadata()).isEmpty();
-            assertThat(minimalService.getStatus()).isEqualTo(InstanceInfo.InstanceStatus.UNKNOWN);
+            assertThat(minimalService.getStatus()).isEqualTo(InstanceStatus.UNKNOWN);
         }
 
     }

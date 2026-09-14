@@ -11,25 +11,23 @@
 package org.zowe.apiml.zaas.security.service;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.netflix.discovery.CacheRefreshedEvent;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.EurekaEvent;
-import com.netflix.discovery.EurekaEventListener;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.registry.client.spring.RegistryCacheRefreshedEvent;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.HttpsConfigError;
@@ -90,15 +88,15 @@ public class JwtSecurity {
     private final Set<String> events = Collections.synchronizedSet(new HashSet<>());
 
     @Autowired
-    public JwtSecurity(Providers providers, EurekaClient eurekaClient) {
+    public JwtSecurity(Providers providers) {
         this.providers = providers;
         this.zosmfServiceId = providers.getZosmfServiceId();
-        this.zosmfListener = new ZosmfListener(eurekaClient);
+        this.zosmfListener = new ZosmfListener();
     }
 
     @VisibleForTesting
-    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword, EurekaClient eurekaClient) {
-        this(providers, eurekaClient);
+    JwtSecurity(Providers providers, String keyAlias, String keyStore, char[] keyStorePassword, char[] keyPassword) {
+        this(providers);
 
         this.keyStore = keyStore;
         this.keyStorePassword = keyStorePassword;
@@ -334,59 +332,77 @@ public class JwtSecurity {
         return zosmfListener;
     }
 
+    /**
+     * Watches the registry until z/OSMF shows up, then decides who produces JWT tokens.
+     * <p>
+     * Previously a {@code EurekaEventListener} that unregistered itself from the Eureka client once it had
+     * seen z/OSMF up. There is nothing to unregister from now: the listener is a Spring
+     * {@code @EventListener} on {@link RegistryCacheRefreshedEvent} and simply stops acting once
+     * {@link #isZosmfReady()} is set, which is checked here rather than by removing a callback from a
+     * registry - the operation that, done in the wrong order, used to leave a listener holding a reference
+     * to a closed application context.
+     */
     public class ZosmfListener {
-        private boolean isZosmfReady = false;
-        private final EurekaClient eurekaClient;
 
-        private ZosmfListener(EurekaClient eurekaClient) {
-            this.eurekaClient = eurekaClient;
+        private boolean isZosmfReady = false;
+
+        private ZosmfListener() {
         }
 
-        // instance variable so can create an accessor for unit testing purposes
-        private final EurekaEventListener zosmfRegisteredListener = new EurekaEventListener() {
-            @Override
-            public void onEvent(EurekaEvent event) {
-                if (!(event instanceof CacheRefreshedEvent)) {
-                    return;
-                }
-
-                events.add("Discovery Service Cache was updated.");
-                log.debug("Trying to reach the z/OSMF instance " + zosmfServiceId + ".");
-                if (providers.isZosmfAvailableAndOnline()) {
-                    events.add("z/OSMF instance " + zosmfServiceId + " is available and online.");
-                    log.debug("The z/OSMF instance {} was reached.", zosmfServiceId);
-
-                    eurekaClient.unregisterEventListener(this); // only need to see zosmf up once to validate jwt secret
-                    isZosmfReady = true;
-
-                    try {
-                        validateInitializationAgainstZosmf();
-                    } catch (HttpsConfigError e) {
-                        synchronized (events) {
-                            apimlLog.log("org.zowe.apiml.zaas.jwtProducerConfigError", StringUtils.join(events, "\n"));
-                        }
-                        System.exit(1); // TODO remove
-                    }
-                } else {
-                    events.add("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");
-                }
+        /**
+         * Called whenever this service's view of the registry changes.
+         * <p>
+         * Idempotent and cheap once z/OSMF has been seen: the whole point is that the check runs on every
+         * refresh until it succeeds exactly once.
+         */
+        public void onRegistryRefreshed() {
+            if (isZosmfReady) {
+                return;
             }
-        };
 
+            events.add("Discovery Service Cache was updated.");
+            log.debug("Trying to reach the z/OSMF instance " + zosmfServiceId + ".");
+            if (providers.isZosmfAvailableAndOnline()) {
+                events.add("z/OSMF instance " + zosmfServiceId + " is available and online.");
+                log.debug("The z/OSMF instance {} was reached.", zosmfServiceId);
+
+                isZosmfReady = true; // only need to see zosmf up once to validate jwt secret
+
+                try {
+                    validateInitializationAgainstZosmf();
+                } catch (HttpsConfigError e) {
+                    synchronized (events) {
+                        apimlLog.log("org.zowe.apiml.zaas.jwtProducerConfigError", StringUtils.join(events, "\n"));
+                    }
+                    System.exit(1); // TODO remove
+                }
+            } else {
+                events.add("z/OSMF instance " + zosmfServiceId + " is not available and online yet.");
+            }
+        }
+
+        /**
+         * No longer registers anything; kept because {@link #validateInitializationWhenZosmfIsAvailable()}
+         * reads as a sequence and the timer below is the half that still matters.
+         */
         public void register() {
-            eurekaClient.registerEventListener(zosmfRegisteredListener);
+            log.debug("Watching the registry for z/OSMF instance {}", zosmfServiceId);
         }
 
         public boolean isZosmfReady() {
             return isZosmfReady;
         }
+    }
 
-        /**
-         * Only for unit testing the event listener.
-         */
-        public EurekaEventListener getZosmfRegisteredListener() {
-            return zosmfRegisteredListener;
-        }
+    /**
+     * Bridges the registry refresh to {@link ZosmfListener}.
+     * <p>
+     * On the {@code JwtSecurity} bean rather than the inner class so the container can see it: an inner
+     * class is not a bean, and {@code @EventListener} is only honoured on beans.
+     */
+    @EventListener
+    public void onRegistryCacheRefreshed(RegistryCacheRefreshedEvent event) {
+        zosmfListener.onRegistryRefreshed();
     }
 
     public enum JwtProducer {

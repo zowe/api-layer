@@ -10,15 +10,15 @@
 
 package org.zowe.apiml.acceptance;
 
-import com.netflix.appinfo.DataCenterInfo;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.MyDataCenterInfo;
-import com.netflix.discovery.converters.EurekaJacksonCodec;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
+import org.zowe.apiml.registry.codec.RegistryCodec;
+import org.zowe.apiml.registry.codec.WireFormat;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.config.SslContextConfigurer;
 
@@ -57,18 +57,17 @@ class MetadataValidationFilterTest {
             Map<String, String> metadata = new HashMap<>();
             metadata.put("apiml.apiInfo.0.swaggerUrl", "https://not-allowed.example.org/api-doc");
 
-            var mockInstance = InstanceInfo.Builder.newBuilder()
-                .setInstanceId("localhost:" + serviceId.toLowerCase() + ":10090")
-                .setAppName(serviceId)
-                .setHostName("localhost")
-                .setIPAddr("127.0.0.1")
-                .setPort(10090)
-                .setStatus(InstanceInfo.InstanceStatus.UP)
-                .setDataCenterInfo(new MyDataCenterInfo(DataCenterInfo.Name.MyOwn))
-                .setMetadata(metadata)
+            var mockInstance = ServiceInstance.builder()
+                .instanceId("localhost:" + serviceId.toLowerCase() + ":10090")
+                .appName(serviceId)
+                .hostName("localhost")
+                .ipAddr("127.0.0.1")
+                .port(10090, true)
+                .status(InstanceStatus.UP)
+                .metadata(metadata)
                 .build();
 
-            var registrationRequest = EurekaJacksonCodec.getInstance().writeToString(mockInstance);
+            var registrationRequest = new RegistryCodec().encode(mockInstance, WireFormat.JSON_FULL);
 
             var responseBody = given()
                 .config(SslContext.clientCertApiml)

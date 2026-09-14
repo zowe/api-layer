@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static io.restassured.RestAssured.given;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -46,7 +46,7 @@ class AuthEndpointConfigTest extends AcceptanceTestWithMockServices {
             .addEndpoint("/zaas/api/v1/auth/query")
                 .responseCode(200)
                 .assertion(he -> assertEquals("{\"input\":\"question\"}", getBody(he)))
-                .contentType(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON_VALUE)
                 .body("{\"status\":\"valid\"}")
                 .and()
             .addEndpoint("/zaas/api/v1/auth/access-token/revoke")

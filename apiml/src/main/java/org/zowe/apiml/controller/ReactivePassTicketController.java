@@ -35,7 +35,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.Objects;
 
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 
 @RestController
 @RequestMapping("/gateway/api/v1/auth")

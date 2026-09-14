@@ -29,8 +29,8 @@ import org.zowe.apiml.message.template.MessageTemplate;
 
 import java.io.IOException;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -80,7 +80,7 @@ public class HideEurekaFilterTest {
 
             filter.doFilter(request, response, chain);
 
-            assertEquals(APPLICATION_JSON, response.getHeader(CONTENT_TYPE));
+            assertEquals(APPLICATION_JSON_VALUE, response.getHeader(CONTENT_TYPE));
             assertTrue(response.getContentAsString() != null && response.getContentAsString().contains(""));
             assertEquals(404, response.getStatus());
             verify(chain, never()).doFilter(request, response);

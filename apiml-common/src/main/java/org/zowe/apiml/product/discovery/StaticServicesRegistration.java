@@ -10,13 +10,13 @@
 
 package org.zowe.apiml.product.discovery;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
 import java.util.List;
 
 public interface StaticServicesRegistration {
 
-    List<InstanceInfo> getStaticInstances();
+    List<ServiceInstance> getStaticInstances();
     StaticRegistrationResult reloadServices();
 
 }
