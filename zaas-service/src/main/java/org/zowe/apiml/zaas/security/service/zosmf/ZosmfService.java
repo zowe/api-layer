@@ -12,6 +12,7 @@ package org.zowe.apiml.zaas.security.service.zosmf;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
@@ -46,7 +47,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
 import org.zowe.apiml.security.common.error.ServiceNotAccessibleException;
+import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import org.zowe.apiml.security.common.login.ChangePasswordRequest;
 import org.zowe.apiml.security.common.login.LoginRequest;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
@@ -307,6 +310,36 @@ public class ZosmfService extends AbstractZosmfService {
     }
 
     /**
+     * Check whether a 401 response from z/OSMF indicates an expired password.
+     *
+     * @param e the HttpClientErrorException.Unauthorized exception with the response body
+     * @return true if the response body contains SAFReturnCode=8 and SAFReasonCode=24
+     */
+    private boolean isExpiredPassword(HttpClientErrorException.Unauthorized e) {
+        byte[] responseBody = e.getResponseBodyAsByteArray();
+        if (responseBody == null || responseBody.length == 0) {
+            return false;
+        }
+        try {
+            JsonNode root = securityObjectMapper.readTree(responseBody);
+            JsonNode safMessages = root.get("safMessages");
+            if (safMessages != null && safMessages.isArray()) {
+                for (JsonNode message : safMessages) {
+                    JsonNode safReturnCode = message.get("SAFReturnCode");
+                    JsonNode safReasonCode = message.get("SAFReasonCode");
+                    if (safReturnCode != null && safReturnCode.asInt() == 8
+                        && safReasonCode != null && safReasonCode.asInt() == 24) {
+                        return true;
+                    }
+                }
+            }
+        } catch (IOException e1) {
+            log.debug("Error parsing z/OSMF 401 response body: {}", e1.getMessage());
+        }
+        return false;
+    }
+
+    /**
      * POST to provided url and return authentication response
      *
      * @param authentication with credentials
@@ -324,6 +357,14 @@ public class ZosmfService extends AbstractZosmfService {
                     httpMethod,
                     new HttpEntity<>(null, headers), String.class);
             return getAuthenticationResponse(response);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            if (isExpiredPassword(e)) {
+                throw new ZosAuthenticationException(PlatformReturned.builder()
+                    .errno(168)
+                    .errnoMsg("org.zowe.apiml.security.platform.errno.EMVSEXPIRE")
+                    .build());
+            }
+            throw handleExceptionOnCall(url, e);
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
         }
