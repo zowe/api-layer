@@ -91,11 +91,15 @@ class ApimlSenderProviderTest {
 
         @Test
         void testCreate_https() {
+            var enabledProtocols = List.of("TLSv1.3");
+            when(senderHttpConfig.getEnabledProtocols()).thenReturn(enabledProtocols);
+
             try (var mockedConstruction = mockConstruction(OkHttpHttpSender.class, (mock, context) -> {
                 var args = context.arguments();
-                assertEquals(12, args.size());
+                assertEquals(13, args.size());
                 assertSame(sslContext, args.get(8));
                 assertSame(x509TrustManager, args.get(9));
+                assertSame(enabledProtocols, args.get(12));
             })) {
                 var client = apimlSenderProvider.createSender(senderHttpConfig);
                 assertNotNull(client);
@@ -105,12 +109,15 @@ class ApimlSenderProviderTest {
         @Test
         void testCreate_Grpc() {
             when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
+            var enabledProtocols = List.of("TLSv1.3");
+            when(senderGrcpConfig.getEnabledProtocols()).thenReturn(enabledProtocols);
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
-                assertEquals(10, args.size());
+                assertEquals(11, args.size());
                 assertSame(sslContext, args.get(6));
                 assertSame(x509TrustManager, args.get(7));
+                assertSame(enabledProtocols, args.get(10));
             })) {
                 var client = apimlSenderProvider.createSender(senderGrcpConfig);
                 assertNotNull(client);
@@ -130,11 +137,14 @@ class ApimlSenderProviderTest {
 
         @Test
         void testCreate_https() {
+            when(senderHttpConfig.getEnabledProtocols()).thenReturn(null);
+
             try (var mockedConstruction = mockConstruction(OkHttpHttpSender.class, (mock, context) -> {
                 var args = context.arguments();
-                assertEquals(12, args.size());
+                assertEquals(13, args.size());
                 assertNull(args.get(10));
                 assertNull(args.get(10));
+                assertNull(args.get(12));
             })) {
                 var client = apimlSenderProvider.createSender(senderHttpConfig);
                 assertNotNull(client);
@@ -144,12 +154,14 @@ class ApimlSenderProviderTest {
         @Test
         void testCreate_Grcp() {
             when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
+            when(senderGrcpConfig.getEnabledProtocols()).thenReturn(null);
 
             try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
                 var args = context.arguments();
-                assertEquals(10, args.size());
+                assertEquals(11, args.size());
                 assertNull(args.get(6));
                 assertNull(args.get(7));
+                assertNull(args.get(10));
             })) {
                 var client = apimlSenderProvider.createSender(senderGrcpConfig);
                 assertNotNull(client);

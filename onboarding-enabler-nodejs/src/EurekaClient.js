@@ -48,6 +48,8 @@
  * SOFTWARE.
  */
 
+
+/* eslint-disable no-underscore-dangle */
 import fs from 'fs';
 import yaml from 'js-yaml';
 import lodash from 'lodash';
@@ -58,6 +60,7 @@ import { series, waterfall } from 'async';
 import { EventEmitter } from 'events';
 
 import AwsMetadata from './AwsMetadata.js';
+import CircuitBreaker from './CircuitBreaker.js';
 import ConfigClusterResolver from './ConfigClusterResolver.js';
 import DnsClusterResolver from './DnsClusterResolver.js';
 import Logger from './Logger.js';
@@ -139,6 +142,34 @@ export default class Eureka extends EventEmitter {
       app: {},
       vip: {},
     };
+
+    // Constructed even when disabled so callers can inspect or subscribe to its state.
+    const cbConfig = this.config.eureka.circuitBreaker || {};
+    this.circuitBreaker = new CircuitBreaker({
+      maxFailures: cbConfig.maxFailures,
+      cooldownTime: cbConfig.cooldownTime,
+      backoffTimeout: cbConfig.backoffTimeout,
+      backoffMax: cbConfig.backoffMax,
+    });
+
+    this.circuitBreaker.on('circuitOpen', ({ from, to }) => {
+      this.logger.warn(`Circuit breaker transition: ${from} → ${to}. Eureka requests suspended.`);
+    });
+    this.circuitBreaker.on('circuitHalfOpen', ({ from, to }) => {
+      this.logger.info(`Circuit breaker transition: ${from} → ${to}. Probing Eureka server.`);
+    });
+    this.circuitBreaker.on('circuitClose', ({ from, to }) => {
+      this.logger.info(`Circuit breaker transition: ${from} → ${to}. Eureka requests resumed.`);
+    });
+
+    // Timeout tracking for circuit-breaker-managed scheduling
+    this._registrationTimeout = null;
+    this._heartbeatTimeout = null;
+    this._registryFetchTimeout = null;
+    this._loops = {};
+    this._generation = 0;
+    this._requestCancels = new Set();
+    this._timers = new Set();
   }
 
   /*
@@ -170,47 +201,65 @@ export default class Eureka extends EventEmitter {
     Registers instance with Eureka, begins heartbeats, and fetches registry.
   */
   start(callback = noop) {
+    if (this._starting) {
+      this._startCallbacks.push(callback);
+      return;
+    }
+    if (this._started) return callback();
+    this._starting = true;
+    this._startCallbacks = [callback];
+    const generation = this._generation;
+    const current = () => generation === this._generation;
     series([
       done => {
+        if (!current()) return;
         if (this.metadataClient && this.config.eureka.fetchMetadata) {
           return this.addInstanceMetadata(done);
         }
         done();
       },
       done => {
+        if (!current()) return;
         if (this.config.eureka.registerWithEureka) {
-          return this.register(done);
+          return this.startRegistration(done);
         }
         done();
       },
       done => {
+        if (!current()) return;
         if (this.config.eureka.registerWithEureka) {
           this.startHeartbeats();
         }
         if (this.config.eureka.fetchRegistry) {
+          if (this.breakerEnabled) return this.startRegistryFetches(done);
           this.startRegistryFetches();
-          if (this.config.eureka.waitForRegistry) {
-            const waitForRegistryUpdate = (cb) => {
-              this.fetchRegistry(() => {
-                const instances = this.getInstancesByVipAddress(this.config.instance.vipAddress);
-                if (instances.length === 0) setTimeout(() => waitForRegistryUpdate(cb), 2000);
-                else cb();
-              });
-            };
-            return waitForRegistryUpdate(done);
-          }
-          this.fetchRegistry(done);
+          const fetch = () => {
+            if (!current()) return;
+            this.fetchRegistry(err => {
+              if (!current()) return;
+              if (this.config.eureka.waitForRegistry &&
+                  this.getInstancesByVipAddress(this.config.instance.vipAddress).length === 0) {
+                this._registryFetchTimeout = setTimeout(fetch, 2000);
+              } else done(err);
+            });
+          };
+          fetch();
         } else {
           done();
         }
       },
     ], (err, ...rest) => {
+      if (!current()) return;
+      this._starting = false;
+      this._started = !err;
+      const callbacks = this._startCallbacks;
+      this._startCallbacks = [];
       if (err) {
         this.logger.warn('Error starting the Eureka Client', err);
       } else {
         this.emit('started');
       }
-      callback(err, ...rest);
+      callbacks.forEach(cb => { if (current()) cb(err, ...rest); });
     });
   }
 
@@ -218,9 +267,27 @@ export default class Eureka extends EventEmitter {
     De-registers instance with Eureka, stops heartbeats / registry fetches.
   */
   stop(callback = noop) {
+    this._generation += 1;
+    this._starting = false;
+    this._started = false;
+    this._startCallbacks = [];
+    this._loops = {};
+    this._timers.forEach(timer => clearTimeout(timer));
+    this._timers.clear();
+    this._requestCancels.forEach(cancel => cancel());
+    this.circuitBreaker.reset();
+    clearTimeout(this._registrationTimeout);
+    this._registrationTimeout = null;
+    clearTimeout(this._registryFetchTimeout);
+    this._registryFetchTimeout = null;
+    clearTimeout(this._heartbeatTimeout);
+    this._heartbeatTimeout = null;
+    // Clear legacy interval IDs for backward compatibility
     clearInterval(this.registryFetch);
+    this.registryFetch = null;
     if (this.config.eureka.registerWithEureka) {
       clearInterval(this.heartbeat);
+      this.heartbeat = null;
       this.deregister(callback);
     } else {
       callback();
@@ -244,6 +311,10 @@ export default class Eureka extends EventEmitter {
       validate('instance', 'dataCenterInfo');
     }
 
+    if (!Number.isFinite(config.eureka.requestTimeout) || config.eureka.requestTimeout <= 0) {
+      throw new TypeError('eureka.requestTimeout must be a positive finite number');
+    }
+
     if (typeof config.requestMiddleware !== 'function') {
       throw new TypeError('requestMiddleware must be a function');
     }
@@ -259,6 +330,7 @@ export default class Eureka extends EventEmitter {
         'Eureka. This usually means there is an issue connecting to the host ' +
         'specified. Start application with NODE_DEBUG=http for more logging.');
     }, 10000);
+    this._timers.add(connectionTimeout);
     this.eurekaRequest({
       method: 'POST',
       uri: this.config.instance.app,
@@ -266,6 +338,7 @@ export default class Eureka extends EventEmitter {
       body: { instance: this.config.instance },
     }, (error, response, body) => {
       clearTimeout(connectionTimeout);
+      this._timers.delete(connectionTimeout);
       if (!error && response.statusCode === 204) {
         this.logger.info(
           'registered with eureka: ',
@@ -281,6 +354,61 @@ export default class Eureka extends EventEmitter {
         new Error(`eureka registration FAILED: status: ${response.statusCode} body: ${body}`)
       );
     });
+  }
+
+  /*
+    Registers with Eureka through the circuit breaker. Initial registration must use the
+    breaker too; otherwise an unavailable Eureka server aborts start() before the
+    breaker-managed heartbeat and registry-fetch loops begin.
+  */
+  startRegistration(callback = noop) {
+    if (!this.breakerEnabled) return this.register(callback);
+    this._schedule('registration', done => this.register(done), 0, () => {
+      callback(null);
+      return null;
+    });
+  }
+
+  // One completion-relative scheduler shared by all breaker-managed operations.
+  // Identity plus generation guards invalidate both timers and in-flight callbacks.
+  _schedule(name, operation, initialDelay, onSuccess) {
+    if (this._loops[name]) return;
+    const generation = this._generation;
+    const token = {};
+    this._loops[name] = token;
+    const current = () => generation === this._generation && this._loops[name] === token;
+    const timerKey = `_${name}Timeout`;
+    const later = delay => {
+      // eslint-disable-next-line no-use-before-define
+      if (current()) this[timerKey] = setTimeout(invoke, delay);
+    };
+    const invoke = () => {
+      if (!current()) return;
+      this[timerKey] = null;
+      if (!this.circuitBreaker.allowRequest()) {
+        later(this.circuitBreaker.getNextCooldown());
+        return;
+      }
+      // Admission can emit synchronous listeners that stop or restart this client.
+      if (!current()) return;
+      let completed = false;
+      operation(err => {
+        if (completed || !current()) return;
+        completed = true;
+        if (err) {
+          later(this.circuitBreaker.recordFailure().delay);
+        } else {
+          this.circuitBreaker.recordSuccess();
+          if (!current()) return;
+          const delay = onSuccess();
+          if (!current()) return;
+          if (delay === null) delete this._loops[name];
+          else later(delay);
+        }
+      });
+    };
+    if (initialDelay === 0) invoke();
+    else later(initialDelay);
   }
 
   /*
@@ -308,16 +436,27 @@ export default class Eureka extends EventEmitter {
   }
 
   /*
-    Sets up heartbeats on interval for the life of the application.
+    Sets up heartbeats using setTimeout-based scheduling with circuit breaker.
     Heartbeat interval by setting configuration property: eureka.heartbeatInterval
+    When circuit breaker is enabled, each tick checks allowRequest() before
+    making the HTTP call and adjusts scheduling based on success/failure.
   */
   startHeartbeats() {
-    this.heartbeat = setInterval(() => {
-      this.renew();
-    }, this.config.eureka.heartbeatInterval);
+    if (!this.breakerEnabled) {
+      if (!this.heartbeat) {
+        this.heartbeat = setInterval(() => this.renew(), this.config.eureka.heartbeatInterval);
+      }
+      return;
+    }
+    this._schedule('heartbeat', done => this.renew(done), this.config.eureka.heartbeatInterval,
+      () => this.config.eureka.heartbeatInterval);
   }
 
-  renew() {
+  /*
+    Sends a heartbeat renewal to Eureka. Optionally accepts a callback for
+    success/failure notification (used by circuit breaker scheduling).
+  */
+  renew(callback = noop) {
     this.eurekaRequest({
       method: 'PUT',
       uri: `${this.config.instance.app}/${this.instanceId}`,
@@ -325,9 +464,10 @@ export default class Eureka extends EventEmitter {
       if (!error && response.statusCode === 200) {
         this.logger.debug('eureka heartbeat success');
         this.emit('heartbeat');
+        callback(null);
       } else if (!error && response.statusCode === 404) {
         this.logger.warn('eureka heartbeat FAILED, Re-registering app');
-        this.register();
+        this.register(callback); // The scheduler counts this composite operation only once.
       } else {
         if (error) {
           this.logger.error('An error in the request occured.', error);
@@ -335,22 +475,41 @@ export default class Eureka extends EventEmitter {
         this.logger.warn(
           'eureka heartbeat FAILED, will retry.' +
           `statusCode: ${response ? response.statusCode : 'unknown'}` +
-          `body: ${body} ${error | ''} `
+          `body: ${body} ${error || ''} `
         );
+        callback(error || new Error(
+          `Heartbeat failed: status ${response ? response.statusCode : 'unknown'}`
+        ));
       }
     });
   }
 
   /*
-    Sets up registry fetches on interval for the life of the application.
+    Sets up registry fetches using setTimeout-based scheduling with circuit breaker.
     Registry fetch interval setting configuration property: eureka.registryFetchInterval
   */
-  startRegistryFetches() {
-    this.registryFetch = setInterval(() => {
-      this.fetchRegistry(err => {
-        if (err) this.logger.warn('Error fetching registry', err);
+  startRegistryFetches(callback) {
+    if (!this.breakerEnabled) {
+      if (!this.registryFetch) {
+        this.registryFetch = setInterval(() => {
+          this.fetchRegistry(err => { if (err) this.logger.warn('Error fetching registry', err); });
+        }, this.config.eureka.registryFetchInterval);
+      }
+      return;
+    }
+    let initializing = Boolean(callback);
+    this._schedule('registryFetch', done => this.fetchRegistry(done),
+      initializing ? 0 : this.config.eureka.registryFetchInterval, () => {
+        if (initializing) {
+          if (this.config.eureka.waitForRegistry &&
+              this.getInstancesByVipAddress(this.config.instance.vipAddress).length === 0) {
+            return 2000;
+          }
+          initializing = false;
+          callback(null);
+        }
+        return this.config.eureka.registryFetchInterval;
       });
-    }, this.config.eureka.registryFetchInterval);
   }
 
   /*
@@ -612,26 +771,38 @@ export default class Eureka extends EventEmitter {
     Helper method for making a request to the Eureka server. Handles resolving
     the current cluster as well as some default options.
   */
+  get breakerEnabled() {
+    return this.config.eureka.circuitBreaker.enabled !== false;
+  }
+
   eurekaRequest(opts, callback, retryAttempt = 0) {
+    const generation = this._generation;
+    const current = () => generation === this._generation;
+    const rotate = this._rotateEndpoint;
+    this._rotateEndpoint = false;
     waterfall([
       /*
       Resolve Eureka Clusters
       */
       done => {
+        if (!current()) return;
         this.clusterResolver.resolveEurekaUrl((err, eurekaUrl) => {
+          if (!current()) return;
           if (err) return done(err);
           const requestOpts = merge({}, opts, {
             baseUrl: eurekaUrl,
             gzip: true,
           });
           done(null, requestOpts);
-        }, retryAttempt);
+        }, retryAttempt || (rotate ? 1 : 0));
       },
       /*
       Apply Request Middleware
       */
       (requestOpts, done) => {
+        if (!current()) return;
         this.requestMiddleware(requestOpts, (newRequestOpts) => {
+          if (!current()) return;
           if (typeof newRequestOpts !== 'object') {
             return done(new Error('requestMiddleware did not return an object'));
           }
@@ -642,8 +813,25 @@ export default class Eureka extends EventEmitter {
       Perform Request
        */
       (requestOpts, done) => {
+        if (!current()) return;
         const method = requestOpts.method ? requestOpts.method.toUpperCase() : 'GET';
-        const url = new URL(requestOpts.baseUrl + requestOpts.uri);
+        let url;
+        try {
+          url = new URL(requestOpts.baseUrl + requestOpts.uri);
+        } catch (error) {
+          return done(error);
+        }
+        let serializedBody;
+        try {
+          if (requestOpts.body) {
+            serializedBody = JSON.stringify(requestOpts.body);
+            if (typeof serializedBody !== 'string') {
+              throw new TypeError('Eureka request body must serialize to JSON');
+            }
+          }
+        } catch (error) {
+          return done(error, undefined, null, requestOpts);
+        }
 
         const headers = requestOpts.headers || {};
         headers['Content-Type'] = 'application/json';
@@ -662,38 +850,61 @@ export default class Eureka extends EventEmitter {
         };
         this.logger.debug(`prepared options for the request ${JSON.stringify(options)}`);
 
-        let response = {};
-        const req = https.request(options, (res) => {
-          this.logger.debug(`Received status code: ${res.statusCode}`);
-
-          response = res;
-          let data = '';
-          if (res.statusCode === 204) {
-            done(null, res, null, requestOpts);
-          } else {
-            res.on('data', chunk => {
-              data += chunk;
-            });
-            res.on('end', () => {
-              this.logger.debug(`Received data: ${data}`);
-              done(null, res, data, requestOpts);
-            });
+        let response;
+        let req;
+        let completed = false;
+        const finish = (error, body = null) => {
+          if (completed) return;
+          completed = true;
+          this._requestCancels.delete(cancel); // eslint-disable-line no-use-before-define
+          clearTimeout(deadline); // eslint-disable-line no-use-before-define
+          done(error, response, body, requestOpts);
+        };
+        // Absolute deadline covers connection, TLS negotiation and the entire body.
+        const cancel = () => {
+          finish(new Error('Eureka client stopped'));
+          if (req && req.destroy) req.destroy();
+        };
+        this._requestCancels.add(cancel);
+        const deadline = setTimeout(() => {
+          const error = new Error(
+            `Eureka request timed out after ${this.config.eureka.requestTimeout}ms`);
+          error.code = 'ETIMEDOUT';
+          finish(error);
+          if (req && req.destroy) req.destroy(error);
+        }, this.config.eureka.requestTimeout);
+        try {
+          req = https.request(options, (res) => {
+            response = res;
+            let data = '';
+            res.on('error', error => finish(error));
+            res.on('aborted', () => finish(new Error('Eureka response aborted')));
+            res.on('data', chunk => { if (!completed) data += chunk; });
+            res.on('end', () => finish(null, data));
+            if (res.statusCode === 204) finish(null);
+          });
+          req.on('error', error => finish(error));
+          if (requestOpts.body) req.write(serializedBody);
+          req.end();
+        } catch (error) {
+          // Completion callbacks are user code, not transport setup failures.
+          if (completed) throw error;
+          try {
+            finish(error);
+          } finally {
+            // Node queues socket assignment on nextTick. Destroying before that
+            // returns the pending TLS socket to the keep-alive agent instead of
+            // closing it. Run after assignment, even if the callback throws.
+            if (req && req.destroy) process.nextTick(() => req.destroy(error));
           }
-        });
-        req.on('error', e => {
-          this.logger.error(`Error occurred on ${url}: ${e}`);
-          done(e, response, null, requestOpts);
-        });
-        if (requestOpts.body) {
-          req.write(JSON.stringify(requestOpts.body));
         }
-        req.end();
       },
     ],
     /*
     Handle Final Output.
      */
     (error, response, body, requestOpts) => {
+      if (!current()) return;
       if (error) this.logger.error('Problem making eureka request', error);
 
       // Perform retry if request failed and we have attempts left
@@ -701,16 +912,25 @@ export default class Eureka extends EventEmitter {
         && response.statusCode
         && String(response.statusCode)[0] === '5';
 
-      if ((error || responseInvalid) && retryAttempt < this.config.eureka.maxRetries) {
+      if (
+        !this.breakerEnabled && requestOpts && (error || responseInvalid) &&
+        retryAttempt < this.config.eureka.maxRetries
+      ) {
         const nextRetryDelay = this.config.eureka.requestRetryDelay * (retryAttempt + 1);
         this.logger.warn(`Eureka request failed to endpoint ${requestOpts.baseUrl}, ` +
           `next server retry in ${nextRetryDelay}ms`);
 
-        setTimeout(() => this.eurekaRequest(opts, callback, retryAttempt + 1),
-          nextRetryDelay);
+        const timer = setTimeout(() => {
+          this._timers.delete(timer);
+          if (current()) this.eurekaRequest(opts, callback, retryAttempt + 1);
+        }, nextRetryDelay);
+        this._timers.add(timer);
         return;
       }
 
+      if (this.breakerEnabled && requestOpts && (error || responseInvalid)) {
+        this._rotateEndpoint = true;
+      }
       callback(error, response, body);
     });
   }
