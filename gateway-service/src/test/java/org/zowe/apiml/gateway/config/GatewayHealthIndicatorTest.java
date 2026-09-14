@@ -10,24 +10,46 @@
 
 package org.zowe.apiml.gateway.config;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class GatewayHealthIndicatorTest {
+
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    private GatewayHealthIndicator healthIndicator;
+
+    @BeforeEach
+    void setUp() {
+        this.healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
+    }
 
     private DefaultServiceInstance getDefaultServiceInstance(String serviceId, String hostname, int port) {
         return new DefaultServiceInstance(
@@ -38,56 +60,60 @@ class GatewayHealthIndicatorTest {
 
     @Nested
     class WhenCatalogAndDiscoveryAreAvailable {
+
         @Test
         void testStatusIsUp() {
-            DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
             when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(
+                Collections.singletonList(getDefaultServiceInstance(CoreService.ZAAS.getServiceId(), "host", 10011)));
 
-            GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
             Health.Builder builder = new Health.Builder();
             healthIndicator.doHealthCheck(builder);
             assertEquals(Status.UP, builder.build().getStatus());
         }
+
     }
 
     @Nested
     class WhenDiscoveryIsNotAreAvailable {
+
         @Test
         void testStatusIsDown() {
-            DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
             when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
 
-            GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
             Health.Builder builder = new Health.Builder();
             healthIndicator.doHealthCheck(builder);
             assertEquals(Status.DOWN, builder.build().getStatus());
         }
+
     }
 
     @Nested
     class GivenCustomCatalogProvider {
+
         @Test
         void whenHealthIsRequested_thenStatusIsUp() {
             String customCatalogServiceId = "customCatalog";
 
-            DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
             when(discoveryClient.getInstances(customCatalogServiceId)).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(customCatalogServiceId, "host", 10014)));
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.DISCOVERY.getServiceId(), "host", 10011)));
 
-            GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, customCatalogServiceId);
+            var healthIndicator = new GatewayHealthIndicator(discoveryClient, customCatalogServiceId);
+
             Health.Builder builder = new Health.Builder();
             healthIndicator.doHealthCheck(builder);
 
             String code = (String) builder.build().getDetails().get(CoreService.API_CATALOG.getServiceId());
             assertThat(code, is("UP"));
         }
+
     }
 
     @Nested
@@ -95,8 +121,6 @@ class GatewayHealthIndicatorTest {
 
         @Test
         void whenHealthRequested_onceLogMessageAboutStartup() {
-
-            DiscoveryClient discoveryClient = mock(DiscoveryClient.class);
             when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
             when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
@@ -104,13 +128,98 @@ class GatewayHealthIndicatorTest {
             when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(
                 Collections.singletonList(getDefaultServiceInstance(CoreService.ZAAS.getServiceId(), "host", 10023)));
 
-            GatewayHealthIndicator healthIndicator = new GatewayHealthIndicator(discoveryClient, CoreService.API_CATALOG.getServiceId());
             Health.Builder builder = new Health.Builder();
             healthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
 
             healthIndicator.doHealthCheck(builder);
 
             assertThat(healthIndicator.isStartedInformationPublished(), is(true));
+        }
+
+    }
+
+    @Nested
+    class WhenHAIsNotComplete {
+
+        @Mock
+        private ApimlLogger apimlLogger;
+
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(healthIndicator, "apimlLog", apimlLogger);
+            ReflectionTestUtils.setField(healthIndicator, "expectedInstanceCount", 2);
+        }
+
+        @Test
+        void whenOnlyGatewayReachesExpectedCount_thenHaLogIsNotPublished() {
+            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class), mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(List.of(mock(ServiceInstance.class)));
+            healthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
+
+            var builder = new Health.Builder();
+            healthIndicator.doHealthCheck(builder);
+
+            verify(apimlLogger, never()).log("org.zowe.apiml.common.mediationLayerStartedHA");
+        }
+
+        @Test
+        void whenNoInstancesAreRegisteredYet_thenHaLogIsNotPublished() {
+            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
+            when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(Collections.emptyList());
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(Collections.emptyList());
+            when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(Collections.emptyList());
+            healthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
+
+            var builder = new Health.Builder();
+            healthIndicator.doHealthCheck(builder);
+
+            verify(apimlLogger, never()).log("org.zowe.apiml.common.mediationLayerStartedHA");
+        }
+
+    }
+
+    @Nested
+    class WhenHAIsComplete {
+
+        @Mock
+        private ApimlLogger apimlLogger;
+
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(healthIndicator, "apimlLog", apimlLogger);
+            ReflectionTestUtils.setField(healthIndicator, "expectedInstanceCount", 2);
+
+            when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
+                List.of(mock(ServiceInstance.class), mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.DISCOVERY.getServiceId())).thenReturn(
+                List.of(mock(ServiceInstance.class), mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.ZAAS.getServiceId())).thenReturn(
+                List.of(mock(ServiceInstance.class), mock(ServiceInstance.class)));
+            when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
+                List.of(mock(ServiceInstance.class)));
+        }
+
+        @Test
+        void whenEveryServiceReachesExpectedInstanceCount_thenHaLogIsPublishedOnce() {
+            healthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
+
+            var builder = new Health.Builder();
+            healthIndicator.doHealthCheck(builder);
+
+            verify(apimlLogger, times(1)).log("org.zowe.apiml.common.mediationLayerStartedHA");
+        }
+
+        @Test
+        void whenHealthCheckedRepeatedly_thenHaLogIsPublishedOnlyOnce() {
+            healthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
+
+            healthIndicator.doHealthCheck(new Health.Builder());
+            healthIndicator.doHealthCheck(new Health.Builder());
+            healthIndicator.doHealthCheck(new Health.Builder());
+
+            verify(apimlLogger, times(1)).log("org.zowe.apiml.common.mediationLayerStartedHA");
         }
 
     }
