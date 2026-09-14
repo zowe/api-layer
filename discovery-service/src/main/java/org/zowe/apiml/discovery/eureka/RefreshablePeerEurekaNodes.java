@@ -29,12 +29,13 @@ import com.netflix.eureka.transport.Jersey3ReplicationClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestFilter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -47,12 +48,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.environment.EnvironmentChangeEvent;
 import org.springframework.cloud.netflix.eureka.server.EurekaServerConfigBean;
 import org.springframework.context.ApplicationListener;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import java.io.UnsupportedEncodingException;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -64,6 +69,12 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
     implements ApplicationListener<EnvironmentChangeEvent> {
 
     private static final String USER_AGENT = "Java-EurekaClient-Replication";
+
+    @Value("${apiml.discovery.userid:}")
+    private String eurekaUserId;
+
+    @Value("${apiml.discovery.password:}")
+    private String eurekaPassword;
 
     @Value("${apiml.security.ssl.nonStrictVerifySslCertificatesOfServices:false}")
     private boolean nonStrictVerifySslCertificatesOfServices;
@@ -208,6 +219,32 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
             }
         }
         return false;
+    }
+
+    String setCredentials(String uri) {
+        try {
+            if (StringUtils.isBlank(eurekaUserId) || StringUtils.isBlank(eurekaPassword)) {
+                return uri;
+            }
+
+            return UriComponentsBuilder.fromUri(new URI(uri))
+                .userInfo(
+                    String.format("%s:%s",
+                        URLEncoder.encode(eurekaUserId, StandardCharsets.UTF_8.name()),
+                        URLEncoder.encode(eurekaPassword, StandardCharsets.UTF_8.name())
+                    )
+                ).build().toUriString();
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
+            log.warn("Cannot set credentials to the URL: {}", uri, e);
+            return uri;
+        }
+    }
+
+    @Override
+    protected List<String> resolvePeerUrls() {
+        return super.resolvePeerUrls()
+            .stream().map(this::setCredentials)
+            .toList();
     }
 
     class CustomEurekaJersey3ClientBuilder extends EurekaJersey3ClientImpl.EurekaJersey3ClientBuilder {
