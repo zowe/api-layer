@@ -106,7 +106,6 @@ dependencies {
 
     testImplementation libs.awaitility
     testImplementation libs.mockito.core
-    testImplementation libs.mockito.inline
     testImplementation libs.spring.mock.mvc
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.rest.assured

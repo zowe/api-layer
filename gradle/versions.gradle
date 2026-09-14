@@ -114,7 +114,7 @@ dependencyResolutionManagement {
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
-            version('jacoco', '0.8.11')
+            version('jacoco', '0.8.15')
             version('gradle', '9.0')
             version('commonsCompress', '1.28.0')
             version('bucket4j', '8.19.0')
@@ -299,12 +299,10 @@ dependencyResolutionManagement {
             // Pure Java dependencies - do not use in Spring unless really necessary
             version('logback', '1.6.3')
             version('mockitoCore', '5.23.0')
-            version('mockitoInline', '5.2.0')
             version('mockServer','5.15.0')
 
             library('logback_classic', 'ch.qos.logback', 'logback-classic').versionRef('logback')
             library('mockito_core', 'org.mockito', 'mockito-core').versionRef('mockitoCore')
-            library('mockito_inline', 'org.mockito', 'mockito-inline').versionRef('mockitoInline')
             library('mockito_junit_jupiter', 'org.mockito', 'mockito-junit-jupiter').versionRef('mockitoCore')
             library('mock_server','org.mock-server','mockserver-netty').versionRef('mockServer')
 

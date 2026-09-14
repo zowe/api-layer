@@ -6,4 +6,7 @@
     <suppress checks="MethodName"
               files=".*security-module.*"
     />
+    <suppress checks="IllegalImport"
+              files=".*RefreshablePeerEurekaNodesTest\.java"
+    />
 </suppressions>
