@@ -121,6 +121,8 @@ sourceSets.main.resources.srcDir uiStaticDir
 
 processResources {
     dependsOn "copyUi"
+    //Do not allow duplicates by ignoring subsequent items to be created at the same path.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 tasks.register('copyUi', Sync) {
