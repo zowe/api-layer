@@ -527,7 +527,7 @@ jobs:
         # Services now run as a plain docker compose stack (docker/integration-tests/gateway-proxy)
         # instead of GitHub Actions' native container/services orchestration - the exact same
         # compose file and commands work unchanged on a developer machine. central-gateway-service
-        # shares gateway-service's real port, so the gradle steps below pass -Dcentralgateway.port
+        # shares gateway-service's real port, so the gradle steps below pass -Dcentralgateway.connectPorts
         # so the test runner (host-based now) reaches it on the different HOST port the compose
         # file publishes it to. See docker/integration-tests/README.md.
         steps:
@@ -551,7 +551,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.port=10030
+                    -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.connectPorts=10030
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -559,7 +559,7 @@ jobs:
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runGatewayProxyTest -Denvironment.config=-docker
-                    -Dcentralgateway.port=10030
+                    -Dcentralgateway.connectPorts=10030
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
@@ -592,11 +592,11 @@ jobs:
         # instead of GitHub Actions' native container/services orchestration - the exact same
         # compose file and commands work unchanged on a developer machine. central-gateway-service
         # and discovery-service-2 share their primary counterpart's real port, so the gradle steps
-        # below pass -Dcentralgateway.port / -Ddiscovery.additionalPort so the test runner
+        # below pass -Dcentralgateway.connectPorts / -Ddiscovery.additionalPort so the test runner
         # (host-based now) reaches them on the different HOST ports the compose file publishes
         # them to. See docker/integration-tests/README.md.
         env:
-            CONNECT_PORT_FLAGS: -Dcentralgateway.port=10030 -Ddiscovery.additionalPort=10021
+            CONNECT_PORT_FLAGS: -Dcentralgateway.connectPorts=10030 -Ddiscovery.additionalPort=10021
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -943,7 +943,7 @@ jobs:
         # of GitHub Actions' native container/services orchestration - the exact same compose file
         # and commands work unchanged on a developer machine (real OIDC tenant secrets need to be
         # supplied locally too - see docker/integration-tests/README.md). central-gateway-service
-        # shares gateway-service's real port, so the gradle steps below pass -Dcentralgateway.port
+        # shares gateway-service's real port, so the gradle steps below pass -Dcentralgateway.connectPorts
         # so the test runner (host-based now) reaches it on the different HOST port the compose
         # file publishes it to.
         steps:
@@ -971,7 +971,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
-                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=10030
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=10030
                     -DcentralHosts=central-gateway-service
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -985,7 +985,7 @@ jobs:
                     -Doidc.client.id=${{ secrets.OIDC_CLIENT_ID }} -Doidc.client.secret=${{ secrets.OIDC_CLIENT_SECRET }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OIDC_WINNIE_USER }}
                     -Doidc.test.alt_pass=${{ secrets.OIDC_WINNIE_PASS }} -Doidc.host=${{secrets.OIDC_HOST}}
-                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=10030
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=10030
                     -DcentralHosts=central-gateway-service
 
             -   name: Dump DC jacoco data

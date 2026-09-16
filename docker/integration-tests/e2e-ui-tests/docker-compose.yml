@@ -131,5 +131,9 @@ services:
         working_dir: /workspace
         volumes:
             - ../../..:/workspace
+            # The npm-install step (host-side) downloads the Cypress binary into $HOME/.cache/Cypress
+            # to be cached by actions/cache - bind-mount it in so this container (running as root)
+            # sees the same binary instead of trying to redownload it.
+            - ${HOME}/.cache/Cypress:/root/.cache/Cypress
         profiles:
             - cypress

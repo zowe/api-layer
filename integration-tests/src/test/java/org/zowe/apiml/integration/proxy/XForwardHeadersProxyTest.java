@@ -62,7 +62,7 @@ class XForwardHeadersProxyTest {
         cgwConf = ConfigReader.environmentConfiguration().getCentralGatewayServiceConfiguration();
         dgwConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
-        cgwUrl = String.format("%s://%s:%s%s", cgwConf.getScheme(), cgwConf.getHost(), cgwConf.getPort(), REQUEST_INFO_ENDPOINT);
+        cgwUrl = String.format("%s://%s:%s%s", cgwConf.getScheme(), cgwConf.getHost(), cgwConf.getConnectPortForHost(cgwConf.getHost()), REQUEST_INFO_ENDPOINT);
         dgwUrl = String.format("%s://%s:%s%s", dgwConf.getScheme(), dgwConf.getHost(), dgwConf.getPort(), REQUEST_INFO_ENDPOINT);
 
         jwt = gatewayToken();
