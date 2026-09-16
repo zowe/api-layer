@@ -24,6 +24,7 @@ public class ApiCatalogServiceConfiguration implements ServiceConfiguration {
     private String host;
     private int port;
     private int instances;
+    private String connectPorts;
 
     @Override
     public String getServiceId() {

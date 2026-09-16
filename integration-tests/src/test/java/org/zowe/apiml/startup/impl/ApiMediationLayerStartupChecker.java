@@ -128,24 +128,48 @@ public class ApiMediationLayerStartupChecker {
         private record HostAddress(String host, int connectPort) {
         }
 
+        /**
+         * Parses a comma-separated connectPorts string (see ServiceConfiguration.getConnectPorts())
+         * into an array, defaulting to fallbackPort when blank/unset entirely.
+         */
+        private static Integer[] parseConnectPorts(String connectPorts, int fallbackPort) {
+            if (StringUtils.isBlank(connectPorts)) {
+                return new Integer[]{fallbackPort};
+            }
+            return Arrays.stream(connectPorts.split("[,;]"))
+                .map(String::trim)
+                .map(Integer::parseInt)
+                .toArray(Integer[]::new);
+        }
+
         private static List<HostAddress> getAllHosts(ServiceConfiguration serviceConfiguration) {
             List<HostAddress> hosts = new ArrayList<>();
             if (serviceConfiguration == null) {
                 return hosts;
             }
             if (StringUtils.isNotBlank(serviceConfiguration.getHost())) {
-                for (String host : serviceConfiguration.getHost().split("[,;]")) {
-                    hosts.add(new HostAddress(host, serviceConfiguration.getPort()));
+                String[] primaryHosts = serviceConfiguration.getHost().split("[,;]");
+                Integer[] connectPorts = parseConnectPorts(serviceConfiguration.getConnectPorts(), serviceConfiguration.getPort());
+                for (int i = 0; i < primaryHosts.length; i++) {
+                    int connectPort = i < connectPorts.length ? connectPorts[i] : serviceConfiguration.getPort();
+                    hosts.add(new HostAddress(primaryHosts[i], connectPort));
                 }
             }
             if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration) {
                 String additionalHost = discoveryServiceConfiguration.getAdditionalHost();
                 if (StringUtils.isNotBlank(additionalHost)) {
-                    int additionalPort = discoveryServiceConfiguration.getAdditionalPort() > 0
+                    int fallbackPort = discoveryServiceConfiguration.getAdditionalPort() > 0
                         ? discoveryServiceConfiguration.getAdditionalPort()
                         : serviceConfiguration.getPort();
-                    for (String host : additionalHost.split("[,;]")) {
-                        hosts.add(new HostAddress(host, additionalPort));
+                    String[] additionalHosts = additionalHost.split("[,;]");
+                    // additionalConnectPorts is a comma-list paired positionally with
+                    // additionalHost, for when there's more than one additional instance (e.g.
+                    // apiml-2 AND apiml-3) and each needs a different connect port - falls back
+                    // to the single additionalPort value otherwise (e.g. the common 2-instance case).
+                    Integer[] connectPorts = parseConnectPorts(discoveryServiceConfiguration.getAdditionalConnectPorts(), fallbackPort);
+                    for (int i = 0; i < additionalHosts.length; i++) {
+                        int connectPort = i < connectPorts.length ? connectPorts[i] : fallbackPort;
+                        hosts.add(new HostAddress(additionalHosts[i], connectPort));
                     }
                 }
             }

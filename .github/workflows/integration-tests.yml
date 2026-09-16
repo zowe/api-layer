@@ -207,52 +207,16 @@ jobs:
     CITestsModulithSAFProviderHA:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SECURITY_X509_ENABLED: true
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SECURITY_AUTH_PROVIDER: saf
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
-                    logbackService: ZWEAGW1
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: apiml
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            apiml-2:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SECURITY_X509_ENABLED: true
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SECURITY_AUTH_PROVIDER: saf
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml-2
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
-                    logbackService: ZWEAGW2
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: apiml-2
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+        # Services now run as a plain docker compose stack (docker/integration-tests/modulith-saf-ha)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. apiml-2 shares apiml's
+        # real ports (10010/10011), so the gradle steps below pass -D*.connectPorts /
+        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches it on the
+        # different HOST ports the compose file publishes it to, instead of the shared
+        # environment-configuration-docker-modulith-ha.yml (also used by several other jobs).
+        # See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -261,11 +225,19 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith-saf-ha/docker-compose.yml
+                    hosts: apiml apiml-2 discoverable-client
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
                     -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
+                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
+                    -Ddiscovery.additionalPort=10021
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                     -Dzosmf.instances=0
                 env:
@@ -276,6 +248,8 @@ jobs:
                 run: >
                     ENV_CONFIG=docker-modulith-ha ./gradlew :integration-tests:runContainerSAFProviderTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
+                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
+                    -Ddiscovery.additionalPort=10021
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -290,93 +264,37 @@ jobs:
                         integration-tests/build/test-results/runContainerSAFProviderTests/binary/**
                         integration-tests/build/test-results/runStartUpCheck/binary/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith-saf-ha/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     CITestsModulithHA:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
         strategy:
             fail-fast: false
             matrix:
                 type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic"]
-        services:
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SECURITY_X509_ENABLED: true
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml-3:10011/eureka,https://apiml:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml-3:10011/eureka,https://apiml:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml
-                    logbackService: ZWEAGW1
-                    APIML_HEALTH_PROTECTED: false
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: apiml
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            apiml-2:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SECURITY_X509_ENABLED: true
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-3:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-3:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml-2
-                    logbackService: ZWEAGW2
-                    APIML_HEALTH_PROTECTED: false
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: apiml-2
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            apiml-3:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
-                    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-                    APIML_SECURITY_X509_ENABLED: true
-                    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: 16348
-                    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: 16348
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml-3
-                    logbackService: ZWEAGW3
-                    APIML_HEALTH_PROTECTED: false
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: apiml-3
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
-                    logbackService: ZWEADC2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+
+        # Services now run as a plain docker compose stack (docker/integration-tests/modulith-ha)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. apiml-2/apiml-3 and
+        # discoverable-client-2 share their primary counterpart's real ports, so the gradle steps
+        # below pass -D*.connectPorts / -Ddiscovery.additionalConnectPorts so the test runner
+        # (host-based now) reaches them on the different HOST ports the compose file publishes
+        # them to, instead of touching the shared environment-configuration-docker-modulith-ha.yml
+        # (also used by several other jobs). See docker/integration-tests/README.md. Chaotic tests
+        # induce failure via HTTP calls to each instance's own actuator shutdown endpoint, not by
+        # manipulating containers directly, so they need no special handling here.
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,10020,10030 -Dapicatalog.connectPorts=10010,10020,10030
+                -Dcaching.connectPorts=10010,10020,10030 -Ddiscovery.additionalConnectPorts=10021,10031
+                -Ddiscoverableclient.connectPorts=10012,10112
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -385,10 +303,17 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith-ha/docker-compose.yml
+                    hosts: apiml apiml-2 apiml-3 discoverable-client discoverable-client-2 mock-services
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -398,6 +323,7 @@ jobs:
                 if: ${{ 'normal' == matrix.type }}
                 run: >
                     ./gradlew runHATests -Denvironment.config=-docker-modulith-ha -Denvironment.gwCount=3
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -407,7 +333,7 @@ jobs:
                 if: ${{ 'gateway-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
-                    -Denvironment.config=-docker-modulith-ha
+                    -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -417,7 +343,7 @@ jobs:
                 if: ${{ 'discoverableclient-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
-                    -Denvironment.config=-docker-modulith-ha
+                    -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -427,7 +353,7 @@ jobs:
                 if: ${{ 'websocket-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
-                    -Denvironment.config=-docker-modulith-ha
+                    -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -438,7 +364,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
                     -Denvironment.config=-docker-modulith-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
-                    -Denvironment.modulith=true -Denvironment.chaotic=true
+                    -Denvironment.modulith=true -Denvironment.chaotic=true ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -456,6 +382,11 @@ jobs:
                     path: |
                         integration-tests/build/reports/**
                         integration-tests/build/test-results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith-ha/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -522,74 +453,20 @@ jobs:
     CITestsSAFProviderHA:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    APIML_HEALTH_PROTECTED: false
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEAAC2
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-                    logbackService: ZWEADS2
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    logbackService: ZWEAGW1
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEAGW2
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-                    APIML_SECURITY_AUTH_PROVIDER: saf
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
-                    APIML_SECURITY_AUTH_PROVIDER: saf
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEAZS2
+        # Services now run as a plain docker compose stack (docker/integration-tests/saf-provider-ha)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. Every "-2" service
+        # shares its primary's real port, so the gradle steps below pass -D*.connectPorts /
+        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
+        # different HOST ports the compose file publishes them to, instead of touching the shared
+        # environment-configuration-ha.yml (also used by several other jobs). See
+        # docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10014,10024
+                -Dzaas.connectPorts=10023,10033 -Ddiscovery.additionalPort=10021
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -598,10 +475,20 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/saf-provider-ha/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services api-catalog-services-2 caching-service discoverable-client
+                        discovery-service discovery-service-2 gateway-service gateway-service-2
+                        zaas-service zaas-service-2
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dcaching.instances=1 -Dzosmf.instances=0
                 env:
@@ -611,6 +498,7 @@ jobs:
             -   name: Run CI Tests With SAF Provider
                 run: >
                     ENV_CONFIG=ha ./gradlew :integration-tests:runContainerSAFProviderTests -Denvironment.config=-ha
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -624,58 +512,24 @@ jobs:
                         integration-tests/build/reports/**
                         results/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/saf-provider-ha/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     GatewayProxy:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 10
 
-        services:
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: apiml1
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
-                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
-                    logbackService: ZWEAGW1
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_APIMLID: apiml2
-                    logbackService: ZWEAGW2
-                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    logbackService: ZWEAZS2
-            central-gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: centralapiml
-                    APIML_CONNECTION_TIMEOUT: 2000
-                    APIML_SERVICE_FORWARDCLIENTCERTENABLED: true
-                    APIML_SERVICE_HOSTNAME: central-gateway-service
-                    APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/gateway-proxy)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. central-gateway-service
+        # shares gateway-service's real port, so the gradle steps below pass -Dcentralgateway.port
+        # so the test runner (host-based now) reaches it on the different HOST port the compose
+        # file publishes it to. See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -684,12 +538,20 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/gateway-proxy/docker-compose.yml
+                    hosts: >-
+                        discovery-service gateway-service gateway-service-2 zaas-service zaas-service-2
+                        central-gateway-service discoverable-client mock-services
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Ddiscovery.instances=1 -Dapicatalog.instances=0
+                    -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.port=10030
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -697,6 +559,7 @@ jobs:
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runGatewayProxyTest -Denvironment.config=-docker
+                    -Dcentralgateway.port=10030
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Dump CGW jacoco data
@@ -713,84 +576,27 @@ jobs:
                         integration-tests/build/reports/**
                         results/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/gateway-proxy/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     GatewayCentralRegistry:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 10
 
-        services:
-            # Domain apiml instance which registers it's gateway in central's discovery service
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/
-                    logbackService: ZWEAAZ2
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: domain-apiml
-                    APIML_SERVICE_EXTERNALURL: https://gateway-service:10010
-                    APIML_GATEWAY_REGISTRY_ENABLED: false
-                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
-                    logbackService: ZWEAGW2
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-
-            # Central apiml instance with central gateway registry
-            central-gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: central-apiml
-                    APIML_SERVICE_HOSTNAME: central-gateway-service
-                    APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
-                    APIML_GATEWAY_REGISTRY_ENABLED: true
-                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
-                    logbackService: ZWEAGW1
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
-                    logbackService: ZWEAAC2
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    logbackService: ZWEADS2
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
-                    logbackService: ZWEAZS2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/gateway-central-registry)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. central-gateway-service
+        # and discovery-service-2 share their primary counterpart's real port, so the gradle steps
+        # below pass -Dcentralgateway.port / -Ddiscovery.additionalPort so the test runner
+        # (host-based now) reaches them on the different HOST ports the compose file publishes
+        # them to. See docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: -Dcentralgateway.port=10030 -Ddiscovery.additionalPort=10021
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -799,11 +605,20 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/gateway-central-registry/docker-compose.yml
+                    hosts: >-
+                        discovery-service api-catalog-services zaas-service gateway-service
+                        discoverable-client central-gateway-service api-catalog-services-2
+                        discovery-service-2 zaas-service-2 mock-services
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
-                    -Ddiscoverableclient.instances=0 -Dgateway.instances=2
+                    -Ddiscoverableclient.instances=0 -Dgateway.instances=2 ${{ env.CONNECT_PORT_FLAGS }}
                     -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -814,6 +629,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
             -   name: Dump CGW jacoco data
@@ -830,59 +646,24 @@ jobs:
                         integration-tests/build/reports/**
                         results/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/gateway-central-registry/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     CentralRegistryModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 10
 
-        services:
-            # Domain apiml instance which registers it's gateway in central's discovery service
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: apiml
-                    APIML_SERVICE_APIMLID: domain-apiml
-                    APIML_SERVICE_EXTERNALURL: https://apiml:10010
-                    APIML_GATEWAY_REGISTRY_ENABLED: false
-                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://central-gateway-service:10011/eureka
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
-                    logbackService: ZWEAGW1
-                    APIML_HEALTH_PROTECTED: false
-                    APIML_SECURITY_X509_ENABLED: true
-
-
-            # Central apiml instance with central gateway registry
-            central-gateway-service:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: central-apiml
-                    APIML_SERVICE_HOSTNAME: central-gateway-service
-                    APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
-                    APIML_GATEWAY_REGISTRY_ENABLED: true
-                    APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://central-gateway-service:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://central-gateway-service:10011/eureka
-                    logbackService: ZWEAGW2
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_HEALTH_PROTECTED: false
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
-
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/central-registry-modulith)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. central-gateway-service
+        # shares apiml's real ports, so the gradle steps below pass -Dgateway.port /
+        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches it on the
+        # different HOST ports the compose file publishes it to. See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -891,11 +672,17 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/central-registry-modulith/docker-compose.yml
+                    hosts: apiml central-gateway-service discoverable-client mock-services
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0
-                    -Denvironment.modulith=true -Dgateway.host=central-gateway-service
+                    -Denvironment.modulith=true -Dgateway.host=central-gateway-service -Dgateway.port=10020
                     -DcentralHosts=central-gateway-service
 
             -   name: Run CI Tests
@@ -903,7 +690,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Ddiscovery.additionalHost=central-gateway-service
+                    -Ddiscovery.additionalHost=central-gateway-service -Ddiscovery.additionalPort=10021
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
@@ -914,6 +701,11 @@ jobs:
                     path: |
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/central-registry-modulith/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -1031,56 +823,18 @@ jobs:
     CITestsDiscoveryBasicAuthModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
-                    APIML_DISCOVERY_USERID: eureka
-                    APIML_DISCOVERY_PASSWORD: password
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml
-                    logbackService: ZWEAGW1
-                    APIML_HEALTH_PROTECTED: false
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: apiml
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            apiml-2:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
-                    APIML_DISCOVERY_USERID: eureka
-                    APIML_DISCOVERY_PASSWORD: password
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml-2
-                    logbackService: ZWEAGW2
-                    APIML_HEALTH_PROTECTED: false
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: apiml-2
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
-                    APIML_DISCOVERY_USERID: eureka
-                    APIML_DISCOVERY_PASSWORD: password
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/discovery-basic-auth-modulith)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. apiml-2 shares apiml's
+        # real ports, so the gradle steps below pass -D*.connectPorts / -Ddiscovery.additionalPort
+        # so the test runner (host-based now) reaches it on the different HOST ports the compose
+        # file publishes it to. See docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020
+                -Dcaching.connectPorts=10010,10020 -Ddiscovery.additionalPort=10021
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1089,18 +843,24 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/discovery-basic-auth-modulith/docker-compose.yml
+                    hosts: apiml apiml-2 discoverable-client mock-services
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-2-instances
-                    -Denvironment.modulith=true
+                    -Denvironment.modulith=true ${{ env.CONNECT_PORT_FLAGS }}
                     -Dapiml.security.ssl.verifySslCertificatesOfServices=false
                     -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
 
             -   name: Run Discovery Basic Auth Tests
                 run: >
                     ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker-modulith-2-instances
-                    -Denvironment.modulith=true
+                    -Denvironment.modulith=true ${{ env.CONNECT_PORT_FLAGS }}
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1111,6 +871,11 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/discovery-basic-auth-modulith/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
     CITestsRegistrationModulith:
@@ -1172,56 +937,15 @@ jobs:
     CITestsZaas:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    CACHING_STORAGE_MODE: "infinispan"
-                    JGROUPS_BIND_ADDRESS: "caching-service"
-                    JGROUPS_BIND_PORT: "7600"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]"
-            central-gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: central-apiml
-                    APIML_SERVICE_HOSTNAME: central-gateway-service
-                    APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
-                    logbackService: ZWEAGW2
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
-                    APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OIDC_CLIENT_ID }}
-                    APIML_SECURITY_OIDC_CLIENTSECRET: ${{ secrets.OIDC_CLIENT_SECRET }}
-                    APIML_SECURITY_OIDC_ENABLED: true
-                    APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
-                    APIML_SECURITY_OIDC_JWKS_URI: ${{ secrets.OIDC_JWKSET_URI }}
-                    APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
-                    APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/zaas) instead
+        # of GitHub Actions' native container/services orchestration - the exact same compose file
+        # and commands work unchanged on a developer machine (real OIDC tenant secrets need to be
+        # supplied locally too - see docker/integration-tests/README.md). central-gateway-service
+        # shares gateway-service's real port, so the gradle steps below pass -Dcentralgateway.port
+        # so the test runner (host-based now) reaches it on the different HOST port the compose
+        # file publishes it to.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1230,11 +954,24 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/zaas/docker-compose.yml
+                    hosts: >-
+                        caching-service central-gateway-service discoverable-client
+                        api-catalog-services discovery-service zaas-service gateway-service
+                        mock-services
+                    image-tag: ${{ env.JOB_ID }}
+                    extra-env: |
+                        OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
+                        OIDC_CLIENT_SECRET=${{ secrets.OIDC_CLIENT_SECRET }}
+                        OIDC_JWKSET_URI=${{ secrets.OIDC_JWKSET_URI }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
-                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=10030
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1247,7 +984,7 @@ jobs:
                     -Doidc.client.id=${{ secrets.OIDC_CLIENT_ID }} -Doidc.client.secret=${{ secrets.OIDC_CLIENT_SECRET }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OIDC_WINNIE_USER }}
                     -Doidc.test.alt_pass=${{ secrets.OIDC_WINNIE_PASS }} -Doidc.host=${{secrets.OIDC_HOST}}
-                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=10030
 
             -   name: Dump DC jacoco data
                 run: >
@@ -1262,6 +999,11 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/zaas/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -1546,66 +1288,22 @@ jobs:
 
     DeterministicHALoadBalancing:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    logbackService: ZWEAAC2
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-                    logbackService: ZWEADC2
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-                    logbackService: ZWEADS2
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    logbackService: ZWEAZS2
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_ROUTING_INSTANCEIDHEADER: true
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_ROUTING_INSTANCEIDHEADER: true
-                    logbackService: ZWEAGW2
+        # Services now run as a plain docker compose stack (docker/integration-tests/deterministic-lb)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. Every "-2" service
+        # shares its primary's real port, so the gradle steps below pass -D*.connectPorts /
+        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
+        # different HOST ports the compose file publishes them to, instead of touching the shared
+        # environment-configuration-ha.yml (also used by several other jobs). See
+        # docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10014,10024
+                -Dzaas.connectPorts=10023,10033 -Ddiscovery.additionalPort=10021
+                -Ddiscoverableclient.connectPorts=10012,10112
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1614,22 +1312,21 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
-            -   name: Setup Docker
-                if: ${{ false }} # Debug of containers
-                run: |
-                    apt update
-                    apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-                    apt update
-                    apt-cache policy docker-ce
-                    apt install -y docker-ce
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/deterministic-lb/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services api-catalog-services-2 caching-service discoverable-client
+                        discoverable-client-2 mock-services discovery-service discovery-service-2
+                        zaas-service zaas-service-2 gateway-service gateway-service-2
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-ha
                     -Ddiscoverableclient.instances=2 -Dcaching.instances=1
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1639,16 +1336,11 @@ jobs:
                 run: >
                     ./gradlew runDeterministicLbHaTests --info
                     -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=1
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Get Container Logs
-                if: ${{ false }} # Debug of containers
-                run: |
-                    docker ps -a
-                    docker ps -q | xargs -L 1 docker logs
 
             -   name: Correct Permisions
                 run: |
@@ -1664,45 +1356,22 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/deterministic-lb/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     DeterministicHALoadBalancingModulith:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        services:
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    logbackService: ZWEADC2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml
-                    APIML_ROUTING_INSTANCEIDHEADER: true
-                    logbackService: ZWEAGW1
-            apiml-2:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml-2
-                    APIML_ROUTING_INSTANCEIDHEADER: true
-                    logbackService: ZWEAGW2
+        # Services now run as a plain docker compose stack (docker/integration-tests/deterministic-lb-modulith)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1711,16 +1380,11 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
-            -   name: Setup Docker
-                if: ${{ false }} # Debug of containers
-                run: |
-                    apt update
-                    apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-                    apt update
-                    apt-cache policy docker-ce
-                    apt install -y docker-ce
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/deterministic-lb-modulith/docker-compose.yml
+                    hosts: apiml apiml-2 discoverable-client discoverable-client-2 mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1728,6 +1392,8 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
                     -Ddiscoverableclient.instances=2 -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2
                     -Dcaching.instances=2 -Dapicatalog.instances=2
+                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
+                    -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1737,15 +1403,12 @@ jobs:
                 run: >
                     ./gradlew runDeterministicLbHaTests --info
                     -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
+                    -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Get Container Logs
-                if: ${{ false }} # Debug of containers
-                run: |
-                    docker ps -a
-                    docker ps -q | xargs -L 1 docker logs
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
@@ -1759,75 +1422,30 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/deterministic-lb-modulith/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     StickySessionHALoadBalancing:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEADC2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-                    logbackService: ZWEADS2
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEAZS2
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-                    logbackService: ZWEAGW2
+        # Services now run as a plain docker compose stack (docker/integration-tests/sticky-session-lb)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. Every "-2" service
+        # shares its primary's real port, so the gradle steps below pass -D*.connectPorts /
+        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
+        # different HOST ports the compose file publishes them to, instead of touching the shared
+        # environment-configuration-ha.yml (also used by several other jobs). See
+        # docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,10020 -Dzaas.connectPorts=10023,10033
+                -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1836,16 +1454,14 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
-            -   name: Setup Docker
-                if: ${{ false }} # Debug of containers
-                run: |
-                    apt update
-                    apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-                    apt update
-                    apt-cache policy docker-ce
-                    apt install -y docker-ce
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/sticky-session-lb/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services caching-service discoverable-client discoverable-client-2
+                        mock-services discovery-service discovery-service-2 zaas-service zaas-service-2
+                        gateway-service gateway-service-2
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1853,6 +1469,7 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dapicatalog.instances=1 -Dcaching.instances=1
+                    ${{ env.CONNECT_PORT_FLAGS }}
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1860,16 +1477,11 @@ jobs:
             -   name: Run HA Tests
                 run: >
                     ./gradlew runStickySessionLbHaTests -Denvironment.config=-ha
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-
-            -   name: Get Container Logs
-                if: ${{ false }} # Debug of containers
-                run: |
-                    docker ps -a
-                    docker ps -q | xargs -L 1 docker logs
 
             -   name: Correct Permisions
                 run: |
@@ -1885,43 +1497,22 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/sticky-session-lb/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     StickySessionHALoadBalancingModulith:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        services:
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
-                    logbackService: ZWEADC2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-                    logbackService: ZWEAGW1
-            apiml-2:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: apiml-2
-                    APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
-                    logbackService: ZWEAGW2
+        # Services now run as a plain docker compose stack (docker/integration-tests/sticky-session-lb-modulith)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1930,16 +1521,11 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
-            -   name: Setup Docker
-                if: ${{ false }} # Debug of containers
-                run: |
-                    apt update
-                    apt install -y apt-transport-https ca-certificates curl software-properties-common
-                    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
-                    add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-                    apt update
-                    apt-cache policy docker-ce
-                    apt install -y docker-ce
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/sticky-session-lb-modulith/docker-compose.yml
+                    hosts: apiml apiml-2 discoverable-client discoverable-client-2 mock-services
+                    image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1947,6 +1533,8 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
+                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
+                    -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1954,15 +1542,12 @@ jobs:
             -   name: Run HA Tests
                 run: >
                     ./gradlew runStickySessionLbHaTests -Denvironment.config=-docker-modulith-ha
+                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
+                    -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
-            -   name: Get Container Logs
-                if: ${{ false }} # Debug of containers
-                run: |
-                    docker ps -a
-                    docker ps -q | xargs -L 1 docker logs
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
@@ -1976,120 +1561,34 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/sticky-session-lb-modulith/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
 
     CITestsHA_caching-chaotic:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    APIML_HEALTH_PROTECTED: false
-                    logbackService: ZWEAAC2
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: caching-service
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-                    APIML_SERVICE_HOSTNAME: caching-service
-                    APIML_HEALTH_PROTECTED: false
-                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
-                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            caching-service-2:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: caching-service-2
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-                    APIML_SERVICE_HOSTNAME: caching-service-2
-                    APIML_HEALTH_PROTECTED: false
-                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
-                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEACS2
-            caching-service-3:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: caching-service-3
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-                    APIML_SERVICE_HOSTNAME: caching-service-3
-                    APIML_HEALTH_PROTECTED: false
-                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
-                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    logbackService: ZWEACS3
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEADC2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-                    logbackService: ZWEADS2
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: zaas-service
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEAZS2
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    logbackService: ZWEAGW2
+
+        # Services now run as a plain docker compose stack (docker/integration-tests/ha-caching-chaotic)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. Every "-2"/"-3" service
+        # shares its primary's real port, so the gradle steps below pass -D*.connectPorts /
+        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
+        # different HOST ports the compose file publishes them to, instead of touching the shared
+        # environment-configuration-ha.yml (also used by several other jobs). Chaos is induced via
+        # HTTP calls to each instance's own actuator shutdown endpoint, not by manipulating
+        # containers directly, so no special handling is needed for that. See
+        # docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10014,10024
+                -Dzaas.connectPorts=10023,10033 -Ddiscovery.additionalPort=10021
+                -Ddiscoverableclient.connectPorts=10012,10112 -Dcaching.connectPorts=10016,10026,10036
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2098,10 +1597,21 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/ha-caching-chaotic/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services api-catalog-services-2 caching-service caching-service-2
+                        caching-service-3 discoverable-client discoverable-client-2 mock-services
+                        discovery-service discovery-service-2 zaas-service zaas-service-2
+                        gateway-service gateway-service-2
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=2
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2111,6 +1621,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
                     -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2129,110 +1640,38 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/ha-caching-chaotic/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
 
     CITestsHA:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 18
         strategy:
             fail-fast: false
             matrix:
                 type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            api-catalog-services-2:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: api-catalog-services-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    APIML_HEALTH_PROTECTED: false
-                    logbackService: ZWEAAC2
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: caching-service
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-                    APIML_SERVICE_HOSTNAME: caching-service
-                    APIML_HEALTH_PROTECTED: false
-                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
-                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            caching-service-2:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    CACHING_STORAGE_MODE: infinispan
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
-                    JGROUPS_BIND_PORT: 7600
-                    JGROUPS_BIND_ADDRESS: caching-service-2
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-                    APIML_SERVICE_HOSTNAME: caching-service-2
-                    APIML_HEALTH_PROTECTED: false
-                    MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "*"
-                    MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEACS2
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            discoverable-client-2:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: discoverable-client-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEADC2
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
-                    logbackService: ZWEADS2
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: zaas-service
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
-                    logbackService: ZWEAZS2
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
-                    logbackService: ZWEAGW2
+
+        # Services now run as a plain docker compose stack (docker/integration-tests/ha) instead
+        # of GitHub Actions' native container/services orchestration - the exact same compose
+        # file and commands work unchanged on a developer machine. Every "-2" service shares its
+        # primary's real port, so the gradle steps below pass -D*.connectPorts /
+        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
+        # different HOST ports the compose file publishes them to, instead of touching the shared
+        # environment-configuration-ha.yml (also used by several other jobs). Chaos is induced via
+        # HTTP calls to each instance's own actuator shutdown endpoint, not by manipulating
+        # containers directly, so no special handling is needed for that. See
+        # docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10014,10024
+                -Dzaas.connectPorts=10023,10033 -Ddiscovery.additionalPort=10021
+                -Ddiscoverableclient.connectPorts=10012,10112 -Dcaching.connectPorts=10016,10026
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2241,10 +1680,20 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/ha/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services api-catalog-services-2 caching-service caching-service-2
+                        discoverable-client discoverable-client-2 mock-services discovery-service
+                        discovery-service-2 zaas-service zaas-service-2 gateway-service gateway-service-2
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=2
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2254,6 +1703,7 @@ jobs:
                 if: ${{ 'normal' == matrix.type }}
                 run: >
                     ./gradlew runHATests -Denvironment.config=-ha -Denvironment.gwCount=2 -Dcaching.instances=2
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2263,7 +1713,7 @@ jobs:
                 if: ${{ 'discovery-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
-                    -Denvironment.config=-ha
+                    -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2273,7 +1723,7 @@ jobs:
                 if: ${{ 'gateway-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
-                    -Denvironment.config=-ha
+                    -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2283,7 +1733,7 @@ jobs:
                 if: ${{ 'discoverableclient-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
-                    -Denvironment.config=-ha
+                    -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2293,7 +1743,7 @@ jobs:
                 if: ${{ 'websocket-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
-                    -Denvironment.config=-ha
+                    -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2304,6 +1754,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
                     -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -2321,6 +1772,11 @@ jobs:
                     path: |
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/ha/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 
@@ -2387,50 +1843,12 @@ jobs:
     CITestsModulithWithInfinispan:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
         timeout-minutes: 15
 
-        services:
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
-                    CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
-                    CACHING_STORAGE_MODE: "infinispan"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
-                    JGROUPS_BIND_PORT: "7600"
-                    JGROUPS_BIND_ADDRESS: "apiml"
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            apiml-2:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
-                    APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
-                    APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: "apiml-2"
-                    logbackService: ZWEAGW2
-                    CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
-                    CACHING_STORAGE_MODE: "infinispan"
-                    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
-                    JGROUPS_BIND_PORT: "7600"
-                    JGROUPS_BIND_ADDRESS: "apiml-2"
-                    JGROUPS_KEYEXCHANGE_PORT: 7601
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
-
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
+        # Services now run as a plain docker compose stack (docker/integration-tests/modulith-with-infinispan)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2439,11 +1857,19 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith-with-infinispan/docker-compose.yml
+                    hosts: apiml apiml-2 api-catalog-services discoverable-client mock-services
+                    image-tag: ${{ env.JOB_ID }}
+
             -   name: Run Startup Check
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
+                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
+                    -Ddiscovery.additionalPort=10021
                     -Denvironment.modulith=true -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -2469,78 +1895,26 @@ jobs:
                         integration-tests/build/reports/**
                         results/**
 
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith-with-infinispan/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     E2EUITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: cypress/browsers:node-20.11.0-chrome-121.0.6167.85-1-ff-120.0-edge-121.0.2277.83-1
         timeout-minutes: 30
 
-        services:
-            api-catalog-services:
-                image: ghcr.io/balhar-jakub/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-            discovery-service:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            gateway-service:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID: ${{ secrets.OIDC_CLIENT_ID }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET: ${{ secrets.OIDC_CLIENT_PASSWORD }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_ISSUER: ${{ secrets.OIDC_HOST }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_AUTHORIZATIONURI: ${{ secrets.OIDC_AUTH_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_TOKENURI: ${{ secrets.OIDC_TOKEN_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERINFOURI: ${{ secrets.OIDC_USER_INFO_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERNAMEATTRIBUTE: sub
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_JWKSETURI: ${{ secrets.OIDC_JWKSET_URI }}
-                    APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
-                    APIML_HEALTH_PROTECTED: false
-            zaas-service:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_HEALTH_PROTECTED: false
-            caching-service:
-                image: ghcr.io/balhar-jakub/caching-service:${{ github.run_id }}-${{ github.run_number }}
-
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-
-            discovery-service-2:
-                image: ghcr.io/balhar-jakub/discovery-service:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_SERVICE_HOSTNAME: discovery-service-2
-                    APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
-                    logbackService: ZWEADS2
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/gateway-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_APIMLID: apiml2
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
-                    APIML_HEALTH_PROTECTED: false
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
-                    logbackService: ZWEAGW2
-            zaas-service-2:
-                image: ghcr.io/balhar-jakub/zaas-service:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
-                    APIML_HEALTH_PROTECTED: false
-                    APIML_SERVICE_HOSTNAME: zaas-service-2
-                    logbackService: ZWEAZS2
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/e2e-ui-tests)
+        # instead of GitHub Actions' native container/services orchestration. Unlike the other
+        # migrated jobs, the pinned Cypress/browser toolchain can't just move to the bare runner -
+        # GH Actions container jobs don't get docker-socket access, so a job running *inside*
+        # cypress/browsers couldn't itself drive docker compose. Instead the compose file defines
+        # cypress as a service using that same pinned image, invoked on demand via
+        # `docker compose run` once the stack is up - same network, so hostnames resolve exactly
+        # like from the host. See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2560,6 +1934,23 @@ jobs:
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/e2e-ui-tests/docker-compose.yml
+                    hosts: >-
+                        api-catalog-services discoverable-client discovery-service gateway-service
+                        zaas-service caching-service mock-services discovery-service-2
+                        gateway-service-2 zaas-service-2
+                    image-tag: ${{ env.JOB_ID }}
+                    extra-env: |
+                        OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
+                        OIDC_CLIENT_PASSWORD=${{ secrets.OIDC_CLIENT_PASSWORD }}
+                        OIDC_HOST=${{ secrets.OIDC_HOST }}
+                        OIDC_AUTH_URI=${{ secrets.OIDC_AUTH_URI }}
+                        OIDC_TOKEN_URI=${{ secrets.OIDC_TOKEN_URI }}
+                        OIDC_USER_INFO_URI=${{ secrets.OIDC_USER_INFO_URI }}
+                        OIDC_JWKSET_URI=${{ secrets.OIDC_JWKSET_URI }}
+
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
@@ -2570,17 +1961,14 @@ jobs:
                 if: failure()
                 shell: bash
                 run: |
-                    apt update
-                    apt install -y apt-transport-https ca-certificates curl software-properties-common
                     curl -k -s https://gateway-service:10010/application/health
                     curl -k -s https://gateway-service-2:10010/application/health
 
             -   name: Cypress run API Catalog
-                run: |
-                    cd api-catalog-ui/frontend
-                    export CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }}
-                    export CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
-                    npm run cy:e2e:ci
+                run: >
+                    docker compose -f docker/integration-tests/e2e-ui-tests/docker-compose.yml run --rm
+                    -e CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }} -e CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
+                    cypress sh -c "cd api-catalog-ui/frontend && npm run cy:e2e:ci"
 
             -   name: Dump CGW jacoco data
                 run: >
@@ -2605,6 +1993,12 @@ jobs:
                 with:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/e2e-ui-tests/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     E2EUITestsModulith:
@@ -2612,56 +2006,18 @@ jobs:
         # Where only gateway-service is an allowed hostname for redirects
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: cypress/browsers:node-20.11.0-chrome-121.0.6167.85-1-ff-120.0-edge-121.0.2277.83-1
         timeout-minutes: 30
 
-        services:
-            discoverable-client:
-                image: ghcr.io/balhar-jakub/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-                env:
-                    APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
-
-            gateway-service: # To avoid updating Oauth provider admin settings
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service:10011/eureka
-                    APIML_SERVICE_HOSTNAME: gateway-service
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID: ${{ secrets.OIDC_CLIENT_ID }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET: ${{ secrets.OIDC_CLIENT_PASSWORD }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_ISSUER: ${{ secrets.OIDC_HOST }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_AUTHORIZATIONURI: ${{ secrets.OIDC_AUTH_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_TOKENURI: ${{ secrets.OIDC_TOKEN_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERINFOURI: ${{ secrets.OIDC_USER_INFO_URI }}
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERNAMEATTRIBUTE: sub
-                    SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_JWKSETURI: ${{ secrets.OIDC_JWKSET_URI }}
-                    APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
-                    APIML_HEALTH_PROTECTED: false
-                    logbackService: ZWEAGW1
-                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
-            gateway-service-2:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-                env:
-                    APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service-2:10011/eureka
-                    APIML_SERVICE_HOSTNAME: gateway-service-2
-                    APIML_SERVICE_APIMLID: apiml2
-                    APIML_HEALTH_PROTECTED: false
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
-                    ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
-                    logbackService: ZWEAGW2
-                    APIML_SECURITY_X509_ENABLED: true
-                    APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
-                    APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
-                    APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/e2e-ui-tests-modulith)
+        # instead of GitHub Actions' native container/services orchestration. See the comment on
+        # docker/integration-tests/e2e-ui-tests/docker-compose.yml's cypress service for why the
+        # pinned Cypress/browser toolchain is a compose service instead of a `container:` job.
+        # gateway-service-2 shares gateway-service's real ports, so the gradle steps below pass
+        # -Dgateway.connectPorts / -Ddiscovery.additionalPort so the test runner (host-based now)
+        # reaches it on the different HOST ports the compose file publishes it to. See
+        # docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: -Dgateway.connectPorts=10010,10020 -Ddiscovery.additionalPort=10021
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2681,27 +2037,39 @@ jobs:
                         api-catalog-ui/frontend/node_modules
                     key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
 
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/e2e-ui-tests-modulith/docker-compose.yml
+                    hosts: discoverable-client mock-services gateway-service gateway-service-2
+                    image-tag: ${{ env.JOB_ID }}
+                    extra-env: |
+                        OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
+                        OIDC_CLIENT_PASSWORD=${{ secrets.OIDC_CLIENT_PASSWORD }}
+                        OIDC_HOST=${{ secrets.OIDC_HOST }}
+                        OIDC_AUTH_URI=${{ secrets.OIDC_AUTH_URI }}
+                        OIDC_TOKEN_URI=${{ secrets.OIDC_TOKEN_URI }}
+                        OIDC_USER_INFO_URI=${{ secrets.OIDC_USER_INFO_URI }}
+                        OIDC_JWKSET_URI=${{ secrets.OIDC_JWKSET_URI }}
+
             -   name: Run startup check
                 run: >
                     ./gradlew runStartUpCheck --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
                     -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -DcentralHosts=discoverable-client,gateway-service
 
             -   name: Show status when APIML is not ready yet
                 if: failure()
                 shell: bash
                 run: |
-                    apt update
-                    apt install -y apt-transport-https ca-certificates curl software-properties-common
                     curl -k -s https://gateway-service:10010/application/health
                     curl -k -s https://gateway-service-2:10010/application/health
 
             -   name: Cypress run API Catalog
-                run: |
-                    cd api-catalog-ui/frontend
-                    export CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }}
-                    export CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
-                    npm run cy:e2e:ci:modulith
+                run: >
+                    docker compose -f docker/integration-tests/e2e-ui-tests-modulith/docker-compose.yml run --rm
+                    -e CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }} -e CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
+                    cypress sh -c "cd api-catalog-ui/frontend && npm run cy:e2e:ci:modulith"
 
             -   name: Dump CGW jacoco data
                 run: >
@@ -2726,6 +2094,12 @@ jobs:
                 with:
                     name: cypress-snapshots-modulith
                     path: api-catalog-ui/frontend/cypress/screenshots
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/e2e-ui-tests-modulith/docker-compose.yml
+
             -   uses: ./.github/actions/teardown
 
     CITestsServicePrefixReplacer:
@@ -2791,23 +2165,13 @@ jobs:
 
     CITestsNodeJsAndPythonServices:
         needs: PublishJibContainers
-        container: ubuntu:latest
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        services:
-            apiml:
-                image: ghcr.io/balhar-jakub/apiml:${{ github.run_id }}-${{ github.run_number }}
-                volumes:
-                    - /api-defs:/api-defs
-            mock-services:
-                image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
-            nodejs-sample-app:
-                image: ghcr.io/balhar-jakub/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
-            python-sample-app:
-                image: ghcr.io/balhar-jakub/nodejs-sample-app:python${{ github.run_id }}-${{ github.run_number }}
-
-
+        # Services now run as a plain docker compose stack (docker/integration-tests/node-python-services)
+        # instead of GitHub Actions' native container/services orchestration - the exact same
+        # compose file and commands work unchanged on a developer machine (the two sample-app
+        # images need building locally first - see docker/integration-tests/README.md).
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2815,6 +2179,14 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/node-python-services/docker-compose.yml
+                    hosts: apiml mock-services nodejs-sample-app python-sample-app
+                    image-tag: ${{ env.JOB_ID }}
+                    extra-env: |
+                        SAMPLE_APP_IMAGE_PREFIX=ghcr.io/balhar-jakub/
 
             -   name: Run Startup Check
                 if: always()
@@ -2840,6 +2212,11 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
                         integration-tests/build/reports/**
                         results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/node-python-services/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
 

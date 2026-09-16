@@ -63,11 +63,11 @@ public class ConfigReader {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20, "zosmf", 5);
+                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20, "zosmf", 5, null);
                         CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010);
-                        ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1);
-                        DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);
-                        DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1);
+                        ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1, null);
+                        DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1, null);
+                        DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1, null);
 
                         TlsConfiguration tlsConfiguration = TlsConfiguration.builder()
                             .keyAlias("localhost")
@@ -119,6 +119,7 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
                     configuration.getGatewayServiceConfiguration().setBucketCapacity(parseInt(System.getProperty("gateway.bucketCapacity", String.valueOf(configuration.getGatewayServiceConfiguration().getBucketCapacity()))));
                     configuration.getGatewayServiceConfiguration().setAuthProvider(System.getProperty("gateway.authProvider", configuration.getGatewayServiceConfiguration().getAuthProvider()));
+                    configuration.getGatewayServiceConfiguration().setConnectPorts(System.getProperty("gateway.connectPorts", configuration.getGatewayServiceConfiguration().getConnectPorts()));
                     String timeoutProp = System.getProperty("gateway.connectionTimeout");
                     if (timeoutProp != null) {
                         configuration.getGatewayServiceConfiguration().setConnectionTimeout(Integer.parseInt(timeoutProp));
@@ -135,6 +136,7 @@ public class ConfigReader {
                         configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
                         configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
                         configuration.getZaasConfiguration().setPort(parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
+                        configuration.getZaasConfiguration().setConnectPorts(System.getProperty("zaas.connectPorts", configuration.getZaasConfiguration().getConnectPorts()));
                     }
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
@@ -143,6 +145,7 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setAdditionalHost(System.getProperty("discovery.additionalHost", configuration.getDiscoveryServiceConfiguration().getAdditionalHost()));
                     configuration.getDiscoveryServiceConfiguration().setPort(parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
                     configuration.getDiscoveryServiceConfiguration().setAdditionalPort(parseInt(System.getProperty("discovery.additionalPort", String.valueOf(configuration.getDiscoveryServiceConfiguration().getAdditionalPort()))));
+                    configuration.getDiscoveryServiceConfiguration().setAdditionalConnectPorts(System.getProperty("discovery.additionalConnectPorts", configuration.getDiscoveryServiceConfiguration().getAdditionalConnectPorts()));
                     configuration.getDiscoveryServiceConfiguration().setInstances(parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
                     configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", String.valueOf(configuration.getAuxiliaryUserList().getValue())));
@@ -152,14 +155,19 @@ public class ConfigReader {
                     configuration.getApiCatalogServiceConfiguration().setInstances(parseInt(System.getProperty("apicatalog.instances", String.valueOf(configuration.getApiCatalogServiceConfiguration().getInstances()))));
                     configuration.getApiCatalogServiceConfiguration().setScheme(System.getProperty("apicatalog.scheme", configuration.getApiCatalogServiceConfiguration().getScheme()));
                     configuration.getApiCatalogServiceConfiguration().setPort(parseInt(System.getProperty("apicatalog.port", String.valueOf(configuration.getApiCatalogServiceConfiguration().getPort()))));
+                    configuration.getApiCatalogServiceConfiguration().setConnectPorts(System.getProperty("apicatalog.connectPorts", configuration.getApiCatalogServiceConfiguration().getConnectPorts()));
 
                     configuration.getDiscoverableClientConfiguration().setApplId(System.getProperty("discoverableclient.applId", configuration.getDiscoverableClientConfiguration().getApplId()));
                     configuration.getDiscoverableClientConfiguration().setHost(System.getProperty("discoverableclient.host", configuration.getDiscoverableClientConfiguration().getHost()));
                     configuration.getDiscoverableClientConfiguration().setInstances(parseInt(System.getProperty("discoverableclient.instances", String.valueOf(configuration.getDiscoverableClientConfiguration().getInstances()))));
                     configuration.getDiscoverableClientConfiguration().setScheme(System.getProperty("discoverableclient.scheme", configuration.getDiscoverableClientConfiguration().getScheme()));
                     configuration.getDiscoverableClientConfiguration().setPort(parseInt(System.getProperty("discoverableclient.port", String.valueOf(configuration.getDiscoverableClientConfiguration().getPort()))));
+                    configuration.getDiscoverableClientConfiguration().setConnectPorts(System.getProperty("discoverableclient.connectPorts", configuration.getDiscoverableClientConfiguration().getConnectPorts()));
 
                     configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
+                    configuration.getCachingServiceConfiguration().setHost(System.getProperty("caching.host", configuration.getCachingServiceConfiguration().getHost()));
+                    configuration.getCachingServiceConfiguration().setPort(parseInt(System.getProperty("caching.port", String.valueOf(configuration.getCachingServiceConfiguration().getPort()))));
+                    configuration.getCachingServiceConfiguration().setConnectPorts(System.getProperty("caching.connectPorts", configuration.getCachingServiceConfiguration().getConnectPorts()));
 
                     configuration.getOidcConfiguration().setProviderName(System.getProperty("oidc.providerName", String.valueOf(configuration.getOidcConfiguration().getProviderName())));
                     configuration.getOidcConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getOidcConfiguration().getUser()));

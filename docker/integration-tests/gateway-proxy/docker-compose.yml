@@ -1,0 +1,94 @@
+services:
+
+    discovery-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service
+        ports:
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5121:5121"
+
+    gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service
+        environment:
+            APIML_SERVICE_APIMLID: apiml1
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SERVICE_FORWARDCLIENTCERTENABLED: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+            APIML_SECURITY_ENABLESTRICTURLVALIDATION: "false"
+            logbackService: ZWEAGW1
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6300:6300"
+
+    # gateway-service-2 and central-gateway-service share gateway-service's real port (10010) -
+    # only central-gateway-service is checked directly by the generic startup checker in this job
+    # (via its own single-host CentralGatewayServiceConfiguration, remapped below with
+    # -Dcentralgateway.port), gateway-service-2 isn't part of the generic checker's scope here
+    # (matches original behaviour) but still gets its own host port for convenience/debugging.
+    # See docker/integration-tests/README.md.
+    gateway-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service-2
+        environment:
+            APIML_SERVICE_HOSTNAME: gateway-service-2
+            APIML_SERVICE_APIMLID: apiml2
+            logbackService: ZWEAGW2
+            APIML_SECURITY_ENABLESTRICTURLVALIDATION: "false"
+        ports:
+            - "127.0.0.1:10020:10010"
+            - "127.0.0.1:5011:5130"
+            - "127.0.0.1:6310:6300"
+
+    zaas-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service
+        environment:
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+        ports:
+            - "127.0.0.1:10023:10023"
+            - "127.0.0.1:5120:5120"
+            - "127.0.0.1:6301:6301"
+
+    zaas-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service-2
+        environment:
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+            APIML_SERVICE_HOSTNAME: zaas-service-2
+            logbackService: ZWEAZS2
+        ports:
+            - "127.0.0.1:10033:10023"
+            - "127.0.0.1:5021:5120"
+            - "127.0.0.1:6321:6301"
+
+    central-gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: central-gateway-service
+        environment:
+            APIML_SERVICE_APIMLID: centralapiml
+            APIML_CONNECTION_TIMEOUT: "2000"
+            APIML_SERVICE_FORWARDCLIENTCERTENABLED: "true"
+            APIML_SERVICE_HOSTNAME: central-gateway-service
+            APIML_SECURITY_ENABLESTRICTURLVALIDATION: "false"
+        ports:
+            - "127.0.0.1:10030:10010"
+            - "127.0.0.1:5012:5130"
+            - "127.0.0.1:6320:6300"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"

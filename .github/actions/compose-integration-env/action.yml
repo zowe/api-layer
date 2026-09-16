@@ -19,6 +19,12 @@ inputs:
     image-prefix:
         description: "Registry/namespace prefix for every service image (APIML_IMAGE_PREFIX)"
         default: "ghcr.io/balhar-jakub"
+    extra-env:
+        description: >-
+            Extra environment variables the compose file's ${VAR} interpolation needs (e.g. real
+            OIDC tenant secrets), one KEY=VALUE per line
+        required: false
+        default: ""
 
 runs:
     using: "composite"
@@ -32,6 +38,12 @@ runs:
             env:
                 APIML_TAG: ${{ inputs.image-tag }}
                 APIML_IMAGE_PREFIX: ${{ inputs.image-prefix }}
+                EXTRA_ENV: ${{ inputs.extra-env }}
             run: |
-                docker compose -f "${{ inputs.compose-file }}" pull
-                docker compose -f "${{ inputs.compose-file }}" up -d
+                # Written to a file and passed via --env-file rather than exported/eval'd, so a
+                # secret value containing shell metacharacters can't be interpreted as a command.
+                env_file="$(mktemp)"
+                printf 'APIML_TAG=%s\nAPIML_IMAGE_PREFIX=%s\n%s\n' "$APIML_TAG" "$APIML_IMAGE_PREFIX" "$EXTRA_ENV" > "$env_file"
+                docker compose --env-file "$env_file" -f "${{ inputs.compose-file }}" pull
+                docker compose --env-file "$env_file" -f "${{ inputs.compose-file }}" up -d
+                rm -f "$env_file"

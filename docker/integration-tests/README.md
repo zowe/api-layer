@@ -21,12 +21,28 @@ is driven with plain `docker compose`.
 | `registration-modulith/`           | `CITestsRegistrationModulith`       | Single `apiml`, `mock-services`, `discoverable-client` |
 | `service-prefix-replacer/`         | `CITestsServicePrefixReplacer`      | Full split topology, discovery configured to rewrite service ID prefixes |
 | `with-infinispan/`                 | `CITestsWithInfinispan`             | Full split topology plus a second `caching-service` instance clustered via infinispan/JGroups (on its own real port, not a host/port collision) |
+| `discovery-basic-auth-modulith/`   | `CITestsDiscoveryBasicAuthModulith` | `apiml`/`apiml-2` pair with Eureka basic-auth env vars |
+| `modulith-saf-ha/`                 | `CITestsModulithSAFProviderHA`      | `apiml`/`apiml-2` pair, SAF auth provider |
+| `modulith-ha/`                     | `CITestsModulithHA` (matrix)        | `apiml`/`apiml-2`/`apiml-3` triple, `discoverable-client`/`-2`; normal + 4 chaotic variants |
+| `deterministic-lb-modulith/`       | `DeterministicHALoadBalancingModulith` | `apiml`/`apiml-2` pair, `discoverable-client`/`-2` |
+| `sticky-session-lb-modulith/`      | `StickySessionHALoadBalancingModulith` | `apiml`/`apiml-2` pair, sticky-session LB metadata |
+| `central-registry-modulith/`       | `CentralRegistryModulith`           | `apiml` (domain) + `central-gateway-service` (also an `apiml` image), central gateway registry |
+| `modulith-with-infinispan/`        | `CITestsModulithWithInfinispan`     | `apiml`/`apiml-2` pair, infinispan-backed caching |
+| `saf-provider-ha/`                 | `CITestsSAFProviderHA`              | Full split topology, every service has a `-2` peer, SAF auth provider |
+| `deterministic-lb/`                | `DeterministicHALoadBalancing`      | Full split topology, every service has a `-2` peer |
+| `sticky-session-lb/`               | `StickySessionHALoadBalancing`      | Full split topology, every service has a `-2` peer (except `api-catalog-services`), sticky-session LB metadata |
+| `ha-caching-chaotic/`              | `CITestsHA_caching-chaotic`         | Full split topology, `-2` peers plus a third `caching-service-3` (3-way infinispan cluster) |
+| `ha/`                              | `CITestsHA` (matrix)                | Same as above minus `caching-service-3`; normal + 4 chaotic variants |
+| `gateway-proxy/`                   | `GatewayProxy`                      | `gateway-service`/`gateway-service-2` plus a separate `central-gateway-service`, all sharing one real port |
+| `gateway-central-registry/`        | `GatewayCentralRegistry`            | Domain gateway/discovery/zaas/api-catalog plus a central-registry counterpart of each |
+| `zaas/`                            | `CITestsZaas`                       | Split topology + `central-gateway-service`, real external OIDC tenant secrets |
+| `e2e-ui-tests/`                    | `E2EUITests`                        | Split topology + a second discovery/gateway/zaas trio, Cypress E2E via a pinned browser image, real OIDC secrets |
+| `e2e-ui-tests-modulith/`           | `E2EUITestsModulith`                | `apiml`/`apiml-2` pair - hostnames pinned to `gateway-service`/`gateway-service-2` by an external OIDC provider constraint, Cypress E2E |
+| `node-python-services/`            | `CITestsNodeJsAndPythonServices`    | Single `apiml` + Node.js/Python onboarding-enabler sample apps (not Jib images - need building locally first) |
 
-More topologies (HA, SAF provider, chaotic, E2E, Node/Python sample apps) are still being migrated -
-several of them run two-or-three instances of the same service sharing one real port
-(`gatewayServiceConfiguration`/`zaasConfiguration`/`apiCatalogServiceConfiguration`/`cachingServiceConfiguration`/`discoverableClientConfiguration`
-all support a comma-separated `host` list under a single `port`), which needs the connect-port
-mechanism below extended beyond `discoveryServiceConfiguration` before those can move over safely.
+`docker/redis/` (a separate, pre-existing setup - see `docker/redis/run-redis.sh`) already used
+`docker compose` before this migration and backs `CITestsWithRedisReplica`/`CITestsWithRedisSentinel`
+unchanged.
 
 ## Running a test locally
 
@@ -134,13 +150,36 @@ addresses ([moby/moby#33088](https://github.com/moby/moby/issues/33088),
 [docker/for-mac#4607](https://github.com/docker/for-mac/issues/4607)) - confirmed by hand on this
 project. WSL2 (real Linux underneath) doesn't have that limitation, but plain macOS/Windows do.
 
-The fix that works everywhere: publish the second instance to a **different host port** instead
-(`split/docker-compose.yml` maps `discovery-service-2`'s real, unchanged internal port `10011` to
-host port `10021`), and teach `ApiMediationLayerStartupChecker` to connect on a different port
-than the one it expects the instance to self-report as its identity in Eureka
-(`Instance.connectPort` vs `Instance.port` - see the class for details). `discoveryServiceConfiguration.additionalPort`
-already existed in the config schema for exactly this but was previously unused by the checker.
-Since changing that value affects every job still sharing `environment-configuration-docker.yml`
-(most haven't been migrated off native `services:` yet, where the distinction doesn't apply),
-`CITests` uses its own `environment-configuration-docker-compose.yml` instead - an exact copy
-with `additionalPort: 10021` - leaving the shared file untouched for everyone else.
+The fix that works everywhere: publish the second (or third) instance to a **different host
+port** instead (e.g. `split/docker-compose.yml` maps `discovery-service-2`'s real, unchanged
+internal port `10011` to host port `10021`), and teach `ApiMediationLayerStartupChecker` to
+connect on a different port than the one it expects an instance to self-report as its identity in
+Eureka (`Instance.connectPort` vs `Instance.port` - see the class for details). This is exposed
+via `-D` system properties on the `./gradlew` invocations, matching each service's own naming:
+
+- `discovery.additionalPort` (single value) / `discovery.additionalConnectPorts` (comma-list, for
+  when there's more than one additional instance, e.g. `apiml-2` *and* `apiml-3`) -
+  `discoveryServiceConfiguration` already had a separate `host`/`additionalHost` pair, so this
+  just gives the additional side its own connect port(s).
+- `gateway.connectPorts` / `zaas.connectPorts` / `apicatalog.connectPorts` /
+  `caching.connectPorts` / `discoverableclient.connectPorts` (comma-list, positionally paired
+  with that service's comma-separated `host` list) - these config classes only ever had one
+  combined `host` string for every instance, so this is a new `connectPorts` field added
+  alongside it (`ServiceConfiguration.getConnectPorts()`, defaulting to null = "use the same port
+  everywhere", so every already-existing environment-configuration-*.yml file is unaffected
+  unless a job explicitly passes one of these flags).
+- `centralgateway.port` (single value, already existed) - `centralGatewayServiceConfiguration`
+  only ever has one host, so no comma-list handling is needed there.
+
+Every job's `hosts:`/port table follows one convention throughout: a service's own real port is
+unchanged, its `-2` peer publishes to `<port>+10` (or `+10000` for four/five-digit ports, e.g.
+`gateway-service` `10010`→`10020`, `discovery-service` `10011`→`10021`), and a `-3` peer (only
+`CITestsModulithHA`/`CITestsHA_caching-chaotic`) uses `+20`/`+30`. Debug and jacoco ports for a
+secondary instance are remapped the same way to avoid colliding with the primary's.
+
+Passing `-D` flags keeps the checked-in `environment-configuration-*.yml` files completely
+untouched, since most of them are still shared by several jobs (e.g.
+`environment-configuration-ha.yml` backs six jobs). The one exception is `CITests`, which uses
+its own `environment-configuration-docker-compose.yml` - an exact copy of
+`environment-configuration-docker.yml` with `additionalPort: 10021` - predating the `-D` override
+approach; every later migration used the flag instead of forking another file.

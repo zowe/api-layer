@@ -1,0 +1,74 @@
+services:
+
+    # apiml-2 shares apiml's real ports (10010/10011) - only the startup-check step needs a
+    # connect-port override for it (the actual infinispan test routes everything through the
+    # primary apiml/gateway and relies on container-to-container infinispan clustering, unaffected
+    # by this migration). See docker/integration-tests/README.md.
+    apiml:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml
+        environment:
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: "true"
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+            CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
+            CACHING_STORAGE_MODE: "infinispan"
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+            JGROUPS_BIND_PORT: "7600"
+            JGROUPS_BIND_ADDRESS: "apiml"
+            JGROUPS_KEYEXCHANGE_PORT: "7601"
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+
+    apiml-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml-2
+        environment:
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+            APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: "true"
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_HOSTNAME: "apiml-2"
+            logbackService: ZWEAGW2
+            CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
+            CACHING_STORAGE_MODE: "infinispan"
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+            JGROUPS_BIND_PORT: "7600"
+            JGROUPS_BIND_ADDRESS: "apiml-2"
+            JGROUPS_KEYEXCHANGE_PORT: "7601"
+        ports:
+            - "127.0.0.1:10020:10010"
+            - "127.0.0.1:10021:10011"
+            - "127.0.0.1:5011:5130"
+            - "127.0.0.1:6311:6310"
+
+    api-catalog-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}
+        hostname: api-catalog-services
+        volumes:
+            - ./api-defs:/api-defs
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
+        ports:
+            - "127.0.0.1:10014:10014"
+            - "127.0.0.1:5124:5124"
+            - "127.0.0.1:6304:6304"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"

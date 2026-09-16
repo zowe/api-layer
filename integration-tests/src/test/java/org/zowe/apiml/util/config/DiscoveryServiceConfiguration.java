@@ -27,6 +27,7 @@ public class DiscoveryServiceConfiguration implements ServiceConfiguration {
     private int port;
     private int additionalPort;
     private int instances;
+    private String additionalConnectPorts;
 
     @Override
     public String getServiceId() {

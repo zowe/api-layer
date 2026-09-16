@@ -33,6 +33,7 @@ public class GatewayServiceConfiguration implements ServiceConfiguration {
     private int bucketCapacity;
     private String authProvider;
     private Integer connectionTimeout;
+    private String connectPorts;
 
     public String getServiceId() {
         return CoreService.GATEWAY.getServiceId();

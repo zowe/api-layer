@@ -1,0 +1,60 @@
+x-apiml-ha-env: &apiml-ha-env
+    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+    APIML_SECURITY_X509_ENABLED: "true"
+    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: "16348"
+    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: "16348"
+    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+    APIML_SECURITY_AUTH_PROVIDER: saf
+    JGROUPS_BIND_PORT: "7600"
+    JGROUPS_KEYEXCHANGE_PORT: "7601"
+
+services:
+
+    # Same real ports (10010 gateway/catalog/caching, 10011 discovery) as apiml - the
+    # test runner (now host-based) reaches apiml-2 via different HOST ports instead
+    # (see docker/integration-tests/README.md and the -D*.connectPorts / -Ddiscovery.additionalPort
+    # flags on this job's gradle invocations), matching the repo's existing root
+    # docker-compose.yml convention (10020/10021/5011) for a second apiml instance.
+    apiml:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml
+        environment:
+            <<: *apiml-ha-env
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+            APIML_SERVICE_HOSTNAME: apiml
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+            logbackService: ZWEAGW1
+            JGROUPS_BIND_ADDRESS: apiml
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+
+    apiml-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml-2
+        environment:
+            <<: *apiml-ha-env
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_HOSTNAME: apiml-2
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+            logbackService: ZWEAGW2
+            JGROUPS_BIND_ADDRESS: apiml-2
+        ports:
+            - "127.0.0.1:10020:10010"
+            - "127.0.0.1:10021:10011"
+            - "127.0.0.1:5011:5130"
+            - "127.0.0.1:6311:6310"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"

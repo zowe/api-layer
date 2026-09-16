@@ -24,6 +24,7 @@ public class CachingServiceConfiguration implements ServiceConfiguration {
     private String host;
     private int port;
     private String url;
+    private String connectPorts;
 
     @Override
     public String getServiceId() {
