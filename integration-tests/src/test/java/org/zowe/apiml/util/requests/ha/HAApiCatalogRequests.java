@@ -28,9 +28,11 @@ public class HAApiCatalogRequests {
     public List<ApiCatalogRequests> apiCatalogServices = new ArrayList<>();
 
     public HAApiCatalogRequests() {
-        String[] apiCatalogHosts = environmentConfiguration().getApiCatalogServiceConfiguration().getHost().split(",");
+        var apiCatalogServiceConfiguration = environmentConfiguration().getApiCatalogServiceConfiguration();
+        String[] apiCatalogHosts = apiCatalogServiceConfiguration.getHost().split(",");
         for (String host: apiCatalogHosts) {
-            apiCatalogServices.add(new ApiCatalogRequests(host));
+            int port = apiCatalogServiceConfiguration.getConnectPortForHost(host);
+            apiCatalogServices.add(new ApiCatalogRequests(apiCatalogServiceConfiguration.getScheme(), host, port));
         }
         log.info("Created HAApiCatalogRequests");
     }

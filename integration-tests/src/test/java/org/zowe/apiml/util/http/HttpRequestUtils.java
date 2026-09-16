@@ -115,7 +115,7 @@ public class HttpRequestUtils {
     public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, Function<ServiceConfiguration, String> hostSelector, NameValuePair... arguments) {
         var scheme = serviceConfiguration.getScheme();
         var host = hostSelector.apply(serviceConfiguration);
-        int port = serviceConfiguration.getPort();
+        int port = serviceConfiguration.getConnectPortForHost(host);
         return getUri(scheme, host, port, endpoint, arguments);
     }
 

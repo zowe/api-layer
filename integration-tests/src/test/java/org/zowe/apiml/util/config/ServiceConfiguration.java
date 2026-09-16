@@ -45,4 +45,31 @@ public interface ServiceConfiguration {
         return null;
     }
 
+    /**
+     * Resolve which port a test should actually connect on for a specific hostname taken from
+     * getHost()'s comma-separated list, pairing it positionally with getConnectPorts(). Falls
+     * back to getPort() if connectPorts is blank, the host isn't found, or there's no
+     * corresponding entry - so callers that only ever deal with the primary/default host are
+     * unaffected.
+     */
+    default int getConnectPortForHost(String host) {
+        return getConnectPortForHost(host, getPort());
+    }
+
+    default int getConnectPortForHost(String host, int fallbackPort) {
+        String connectPorts = getConnectPorts();
+        String hosts = getHost();
+        if (org.apache.commons.lang3.StringUtils.isBlank(connectPorts) || org.apache.commons.lang3.StringUtils.isBlank(hosts) || host == null) {
+            return fallbackPort;
+        }
+        String[] hostArr = hosts.split(",");
+        String[] portArr = connectPorts.split("[,;]");
+        for (int i = 0; i < hostArr.length; i++) {
+            if (hostArr[i].trim().equalsIgnoreCase(host.trim())) {
+                return i < portArr.length ? Integer.parseInt(portArr[i].trim()) : fallbackPort;
+            }
+        }
+        return fallbackPort;
+    }
+
 }

@@ -972,6 +972,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=10030
+                    -DcentralHosts=central-gateway-service
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -985,6 +986,7 @@ jobs:
                     -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OIDC_WINNIE_USER }}
                     -Doidc.test.alt_pass=${{ secrets.OIDC_WINNIE_PASS }} -Doidc.host=${{secrets.OIDC_HOST}}
                     -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=10030
+                    -DcentralHosts=central-gateway-service
 
             -   name: Dump DC jacoco data
                 run: >
