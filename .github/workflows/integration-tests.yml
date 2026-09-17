@@ -23,7 +23,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
@@ -31,7 +31,7 @@ jobs:
             -   name: Generate certificates
                 run: ./gradlew generateCertificates
 
-            -   uses: actions/upload-artifact@v4
+            -   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 with:
                     name: development-certificates
                     retention-days: 1
@@ -50,7 +50,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
@@ -113,7 +113,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -140,7 +140,7 @@ jobs:
                 with:
                     services: apiml
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsModulithUnknownHostnames-${{ env.JOB_ID }}
@@ -191,7 +191,7 @@ jobs:
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -219,7 +219,7 @@ jobs:
                 with:
                     services: apiml
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITestsModulith-${{ env.JOB_ID }}
@@ -281,7 +281,7 @@ jobs:
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -309,7 +309,7 @@ jobs:
                 with:
                     services: apiml
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsModulithSAFProviderHA-${{ env.JOB_ID }}
@@ -407,7 +407,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -478,7 +478,7 @@ jobs:
                     chmod 755 -R .gradle
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsModulithHA-${{ env.JOB_ID }}-${{ matrix.type }}
@@ -564,7 +564,7 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
                     logbackService: ZWEAZS2
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -591,7 +591,7 @@ jobs:
                 with:
                     services: gateway-service,zaas-service,discovery-service,caching-service,api-catalog-services
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
@@ -674,7 +674,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAZS2
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -700,7 +700,7 @@ jobs:
                 with:
                     services: gateway-service,zaas-service,discovery-service,caching-service,api-catalog-services
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsSAFProviderHA-${{ env.JOB_ID }}
@@ -762,7 +762,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -789,7 +789,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: GatewayProxy-${{ env.JOB_ID }}
@@ -877,7 +877,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -906,7 +906,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: GatewayCentralRegistry-${{ env.JOB_ID }}
@@ -969,7 +969,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -992,7 +992,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ModulithCentralRegistry-${{ env.JOB_ID }}
@@ -1029,7 +1029,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1053,7 +1053,7 @@ jobs:
             # Coverage results are not stored in this job as it would not provide much additional data
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITestsRegistration-${{ env.JOB_ID }}
@@ -1104,7 +1104,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1124,7 +1124,7 @@ jobs:
                     ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsDiscoveryBasicAuth-${{ env.JOB_ID }}
@@ -1189,7 +1189,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1210,7 +1210,7 @@ jobs:
                     -Denvironment.modulith=true
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsDiscoveryBasicAuthModulith-${{ env.JOB_ID }}
@@ -1241,7 +1241,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1266,7 +1266,7 @@ jobs:
             # Coverage results are not stored in this job as it would not provide much additional data
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITestsRegistration-${{ env.JOB_ID }}
@@ -1330,7 +1330,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1361,7 +1361,7 @@ jobs:
                     java -jar ./scripts/jacococli.jar dump --address zaas-service --port 6301 --destfile ./results/zaas-service.exec
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITestsZaas-${{ env.JOB_ID }}
@@ -1408,7 +1408,7 @@ jobs:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1431,7 +1431,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
@@ -1468,7 +1468,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1492,7 +1492,7 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITestsZosmfWithoutJwtModulith-${{ env.JOB_ID }}
@@ -1508,7 +1508,7 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1573,7 +1573,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
@@ -1589,7 +1589,7 @@ jobs:
         timeout-minutes: 15
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1660,7 +1660,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
@@ -1733,7 +1733,7 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     logbackService: ZWEAGW2
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1782,7 +1782,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: DeterministicLbHaTest-${{ env.JOB_ID }}
@@ -1830,7 +1830,7 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     logbackService: ZWEAGW2
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -1877,7 +1877,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: DeterministicLbHaTestModulith-${{ env.JOB_ID }}
@@ -1955,7 +1955,7 @@ jobs:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW2
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -2003,7 +2003,7 @@ jobs:
 
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: StickySessionLbHaTest-${{ env.JOB_ID }}
@@ -2049,7 +2049,7 @@ jobs:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW2
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -2094,7 +2094,7 @@ jobs:
                     chmod 755 -R .gradle
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: StickySessionLbHaTestModulith-${{ env.JOB_ID }}
@@ -2217,7 +2217,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -2247,7 +2247,7 @@ jobs:
                     chmod 755 -R .gradle
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}-caching-chaotic
@@ -2360,7 +2360,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW2
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -2440,7 +2440,7 @@ jobs:
                     chmod 755 -R .gradle
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}-${{ matrix.type }}
@@ -2499,7 +2499,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -2527,7 +2527,7 @@ jobs:
                     services: gateway-service,zaas-service,discovery-service,caching-service,api-catalog-services
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
@@ -2586,7 +2586,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -2616,7 +2616,7 @@ jobs:
                     services: apiml,api-catalog-services
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsModulithWithInfinispan-${{ env.JOB_ID }}
@@ -2698,18 +2698,18 @@ jobs:
                     logbackService: ZWEAZS2
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
-                uses: bahmutov/npm-install@v1
+                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
                 with:
                     install-command: npm ci --legacy-peer-deps
                     working-directory: api-catalog-ui/frontend
             -   name: Cache NPM and Cypress 📦
-                uses: actions/cache@v4
+                uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
                 with:
                     path: |
                         ~/.cache/Cypress
@@ -2747,7 +2747,7 @@ jobs:
                     chmod 755 -R .gradle
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: E2EUITests-${{ env.JOB_ID }}
@@ -2756,7 +2756,7 @@ jobs:
                         results/**
 
             -   name: Upload screenshots API Catalog
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: cypress-snapshots
@@ -2819,18 +2819,18 @@ jobs:
                     APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
-                uses: bahmutov/npm-install@v1
+                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
                 with:
                     install-command: npm ci --legacy-peer-deps
                     working-directory: api-catalog-ui/frontend
             -   name: Cache NPM and Cypress 📦
-                uses: actions/cache@v4
+                uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
                 with:
                     path: |
                         ~/.cache/Cypress
@@ -2868,7 +2868,7 @@ jobs:
                     chmod 755 -R .gradle
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: E2EUITestsModulith-${{ env.JOB_ID }}
@@ -2877,7 +2877,7 @@ jobs:
                         results/**
 
             -   name: Upload screenshots API Catalog
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: cypress-snapshots-modulith
@@ -2910,7 +2910,7 @@ jobs:
             mock-services:
                 image: ghcr.io/balhar-jakub/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -2937,7 +2937,7 @@ jobs:
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsServicePrefixReplacer-${{ env.JOB_ID }}
@@ -2968,7 +2968,7 @@ jobs:
 
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -2991,7 +2991,7 @@ jobs:
                     -Denvironment.modulith=true
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: CITestsNodeJsAndPythonServices-${{ env.JOB_ID }}
@@ -3011,7 +3011,7 @@ jobs:
         timeout-minutes: 20
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     fetch-depth: 0
                     ref: ${{ github.head_ref }}
@@ -3019,27 +3019,27 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
 
-            -   uses: actions/download-artifact@v4
+            -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
                     name: ContainerCITests-${{ env.JOB_ID }}
                     path: containercitests
-            -   uses: actions/download-artifact@v4
+            -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
                     name: ContainerCITestsModulith-${{ env.JOB_ID }}
                     path: containercitestsmodulith
-            -   uses: actions/download-artifact@v4
+            -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: citestswithinfinispan
-            -   uses: actions/download-artifact@v4
+            -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
                     name: GatewayProxy-${{ env.JOB_ID }}
                     path: GatewayProxy
-            -   uses: actions/download-artifact@v4
+            -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
                     name: ContainerCITestsZaas-${{ env.JOB_ID }}
                     path: ContainerCITestsZaas
-            -   uses: actions/download-artifact@v4
+            -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
                     name: CITestsHA-${{ env.JOB_ID }}-websocket-chaotic
                     path: citestschaoticha
@@ -3056,7 +3056,7 @@ jobs:
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: failure()
                 with:
                     name: SonarResults-${{ env.JOB_ID }}
