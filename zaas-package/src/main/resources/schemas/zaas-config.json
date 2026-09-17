@@ -301,6 +301,30 @@
                                     "description": "Connect and read timeout for the revocation lookup made on every personal access token request. Bounded separately from the shared HTTP client so that a slow Caching Service cannot hold a request thread per personal access token user.",
                                     "minimum": 1,
                                     "default": 2000
+                                },
+                                "revocationLookupFailureThreshold": {
+                                    "type": "integer",
+                                    "description": "How many consecutive Caching Service failures put the revocation lookup into fail-fast mode, so that request threads return instead of each waiting out a timeout. Personal access tokens are rejected either way while the Caching Service is down.",
+                                    "minimum": 1,
+                                    "default": 5
+                                },
+                                "revocationLookupCircuitOpenMillis": {
+                                    "type": "integer",
+                                    "description": "How long the revocation lookup keeps failing fast after the failure threshold is reached, before one request is let through to test whether the Caching Service is back.",
+                                    "minimum": 1,
+                                    "default": 10000
+                                },
+                                "revocationLookupBatchKeys": {
+                                    "type": "integer",
+                                    "description": "Most keys one revocation lookup may ask for. A token with more scopes than fit is split across several lookups rather than rejected, so a token already issued above 'maxScopes' still validates. Keep this at or below 'components.caching-service.storage.maxQueryKeys'.",
+                                    "minimum": 3,
+                                    "default": 66
+                                },
+                                "revokeRuleSkewAllowanceMillis": {
+                                    "type": "integer",
+                                    "description": "How far in the future the 'timestamp' of a revoke-for-user or revoke-for-scope request may be before it is rejected with 400. Previous releases accepted any value; widen this if a client's clock runs ahead of the server's.",
+                                    "minimum": 0,
+                                    "default": 60000
                                 }
                             }
                         },

@@ -45,6 +45,10 @@ configs:
         cutoverEpoch:
         cutoverSkewAllowanceSeconds: 300
         revocationLookupTimeoutMillis: 2000
+        revocationLookupFailureThreshold: 5
+        revocationLookupCircuitOpenMillis: 10000
+        revocationLookupBatchKeys: 66
+        revokeRuleSkewAllowanceMillis: 60000
 
 
   server:

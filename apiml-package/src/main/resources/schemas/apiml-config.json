@@ -524,6 +524,30 @@
                                     "description": "Connect and read timeout for the revocation lookup made on every personal access token request. Bounded separately from the shared HTTP client so that a slow Caching Service cannot hold a request thread per personal access token user.",
                                     "minimum": 1,
                                     "default": 2000
+                                },
+                                "revocationLookupFailureThreshold": {
+                                    "type": "integer",
+                                    "description": "How many consecutive Caching Service failures put the revocation lookup into fail-fast mode, so that request threads return instead of each waiting out a timeout. Personal access tokens are rejected either way while the Caching Service is down.",
+                                    "minimum": 1,
+                                    "default": 5
+                                },
+                                "revocationLookupCircuitOpenMillis": {
+                                    "type": "integer",
+                                    "description": "How long the revocation lookup keeps failing fast after the failure threshold is reached, before one request is let through to test whether the Caching Service is back.",
+                                    "minimum": 1,
+                                    "default": 10000
+                                },
+                                "revocationLookupBatchKeys": {
+                                    "type": "integer",
+                                    "description": "Most keys one revocation lookup may ask for. A token with more scopes than fit is split across several lookups rather than rejected, so a token already issued above 'maxScopes' still validates. Keep this at or below 'components.caching-service.storage.maxQueryKeys'.",
+                                    "minimum": 3,
+                                    "default": 66
+                                },
+                                "revokeRuleSkewAllowanceMillis": {
+                                    "type": "integer",
+                                    "description": "How far in the future the 'timestamp' of a revoke-for-user or revoke-for-scope request may be before it is rejected with 400. Previous releases accepted any value; widen this if a client's clock runs ahead of the server's.",
+                                    "minimum": 0,
+                                    "default": 60000
                                 }
                             }
                         },
@@ -692,10 +716,46 @@
                             "description": "The number of records stored before the eviction strategy is initiated",
                             "default": 10000
                         },
+                        "maxQueryKeys": {
+                            "type": "integer",
+                            "description": "Maximum number of keys a single /cache-query request may look up. Keep this at or above 'apiml.security.personalAccessToken.revocationLookupBatchKeys'.",
+                            "minimum": 3,
+                            "default": 66
+                        },
                         "infinispan": {
                             "type": "object",
                             "description": "Use Infinispan as the selected storage solution",
                             "properties": {
+                                "distributedSyncTimeoutSecs": {
+                                    "type": "integer",
+                                    "description": "How long (in seconds) a cluster-wide operation may take before Infinispan gives up on it.",
+                                    "minimum": 1,
+                                    "default": 360
+                                },
+                                "numSegments": {
+                                    "type": "integer",
+                                    "description": "Number of hash segments each persistent cache is split into. Changing it on an existing installation invalidates the data already on disk.",
+                                    "minimum": 1,
+                                    "default": 256
+                                },
+                                "revocationStore": {
+                                    "type": "object",
+                                    "description": "The store of revoked personal access tokens. Entries expire on their own; these bound how large it may get first.",
+                                    "properties": {
+                                        "maxCount": {
+                                            "type": "integer",
+                                            "description": "Maximum number of revocation entries kept in memory. Beyond this, entries are evicted from memory only - reads fall back to the persistent store, so no revocation is lost.",
+                                            "minimum": 1,
+                                            "default": 100000
+                                        },
+                                        "sizeWarningThreshold": {
+                                            "type": "integer",
+                                            "description": "Log ZWECS704 once the store holds more entries than this. Set to 0 to disable the warning.",
+                                            "minimum": 0,
+                                            "default": 50000
+                                        }
+                                    }
+                                },
                                 "jgroups": {
                                     "type": "object",
                                     "description": "Data synchronization between Caching instances.",
