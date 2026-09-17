@@ -9,7 +9,15 @@ jobs:
         name: Identify security related PR
         runs-on: ubuntu-latest
         timeout-minutes: 20
-        permissions: write-all
+        # Scoped to the two GitHub API calls made by the github-script step below:
+        #   pull-requests: write - POST /repos/{owner}/{repo}/issues/{issue_number}/labels
+        #                          Adding a label to a pull request is enforced against the
+        #                          "Pull requests" permission (the target is a PR, not an
+        #                          issue), and write also covers the GET of the PR's files.
+        #                          Verified by CI: with only "issues: write" the label call
+        #                          fails with 403 "Resource not accessible by integration".
+        permissions:
+            pull-requests: write
 
         steps:
             - uses: actions/github-script@v7
