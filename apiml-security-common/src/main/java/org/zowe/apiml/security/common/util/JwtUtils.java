@@ -152,7 +152,8 @@ public class JwtUtils {
         } catch (ParseException exception) {
             claimsDescription = "claims unavailable (%s)".formatted(exception.getMessage());
         }
-        return "alg=%s, kid=%s, %s".formatted(header.getAlgorithm(), header.getKeyID(), claimsDescription);
+        return "alg=%s, kid=%s, %s, last chars of signature: ...%s".formatted(header.getAlgorithm(), header.getKeyID(), claimsDescription,
+            StringUtils.right(signedJwt.getParsedString(), 15));
     }
 
     private List<String> extractHighLevelField(JWTClaimsSet claims, List<String> pathToField) {

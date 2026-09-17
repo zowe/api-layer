@@ -347,23 +347,15 @@ public class AuthenticationService {
             var parsedJwt = tokenAuthentication.getJwt();
             if (parsedJwt instanceof SignedJWT signedJwt) {
                 String activeKid = jwtSecurityInitializer.getJwkPublicKey().map(JsonWebKey::getKeyId).orElse("unknown");
-                boolean verified;
-                try {
-                    verified = signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
-                } catch (JOSEException exception) {
-                    apimlLog.log(MessageType.DEBUG, "JWT signature verification threw an exception for token [{}], currently active signing key kid={}: {}",
-                        describeJwtForLogging(signedJwt), activeKid, exception.getMessage());
-                    throw exception;
-                }
-                if (verified) {
+                if (isVerified(signedJwt, activeKid)) {
                     if (tokenAuthentication.isExpired()) {
                         throw new ExpiredJWTException("Token expired on %s".formatted(tokenAuthentication.getExpiration()));
                     }
                     return;
                 }
-                apimlLog.log(MessageType.DEBUG, "JWT signature verification failed for token [{}], last chars of signature: ...{}, currently active signing key kid={}. " +
+                apimlLog.log(MessageType.DEBUG, "JWT signature verification failed for token [{}], currently active signing key kid={}. " +
                         "If the token's kid does not match the active kid, this instance does not hold the key that signed the token.",
-                    describeJwtForLogging(signedJwt), StringUtils.right(tokenAuthentication.getJwt().getParsedString(), 15), activeKid);
+                    describeJwtForLogging(signedJwt), activeKid);
                 throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get());
             } else {
                 throw new BadJWTException("Token is not signed");
@@ -372,6 +364,17 @@ public class AuthenticationService {
             throw handleJwtParserException(exception);
         }
     }
+
+    private boolean isVerified(SignedJWT signedJwt, String activeKid) throws JOSEException {
+        try {
+            return signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
+        } catch (JOSEException exception) {
+            apimlLog.log(MessageType.DEBUG, "JWT signature verification threw an exception for token [{}], currently active signing key kid={}: {}",
+                describeJwtForLogging(signedJwt), activeKid, exception.getMessage());
+            throw exception;
+        }
+    }
+
 
     /**
      * Method validate if jwtToken is valid or not. This method contains two types of verification:
