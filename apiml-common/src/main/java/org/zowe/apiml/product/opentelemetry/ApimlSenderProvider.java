@@ -46,7 +46,8 @@ public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvid
             sslContext,
             trustManagers == null ? null : getX509TrustManager(trustManagers),
             httpSenderConfig.getExecutorService(),
-            httpSenderConfig.getMaxResponseBodySize());
+            httpSenderConfig.getMaxResponseBodySize(),
+            httpSenderConfig.getEnabledProtocols());
     }
 
     private Collection<TrustManager> getTrustManagerFromSpring() {
@@ -92,7 +93,8 @@ public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvid
             sslContext,
             trustManagers == null ? null : getX509TrustManager(trustManagers),
             grpcSenderConfig.getExecutorService(),
-            grpcSenderConfig.getMaxResponseBodySize());
+            grpcSenderConfig.getMaxResponseBodySize(),
+            grpcSenderConfig.getEnabledProtocols());
     }
 
 }

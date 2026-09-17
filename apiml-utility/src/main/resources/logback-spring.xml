@@ -14,6 +14,9 @@
     <turboFilter class="org.zowe.apiml.product.logging.InfinispanLogsFilter"/>
     <turboFilter class="org.zowe.apiml.product.logging.UseridFilter"/>
 
+    <!-- This filter needs to run before log hiders, otherwise OTEL won't get any logs. -->
+    <turboFilter class="org.zowe.apiml.product.logging.OpenTelemetryLogsFilter"/>
+
     <springProfile name="!debug &amp; !diag &amp; !dev">
         <turboFilter class="org.zowe.apiml.product.logging.ApimlDependencyLogHider"/>
         <turboFilter class="org.zowe.apiml.product.logging.LogLevelInfoFilter"/>
@@ -80,7 +83,7 @@
         </else>
     </if>
 
-    <logger name="org.zowe.apiml.opentelemetry" level="INFO">
+    <logger name="org.zowe.apiml.opentelemetry" level="INFO" additivity="false">
         <appender-ref ref="OpenTelemetry" />
     </logger>
     <logger name="org.infinispan.persistence.sifs.FileProvider" level="DEBUG" />
