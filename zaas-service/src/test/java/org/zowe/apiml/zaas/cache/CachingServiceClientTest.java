@@ -223,6 +223,7 @@ class CachingServiceClientTest {
     class GivenPointLookup {
 
         String queryUrl = "https://localhost:10010/cachingservice/api/v1/cache-query";
+        String reachabilityUrl = "https://localhost:10010/cachingservice/api/v1/cache-list/apimlReachabilityProbe";
         ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
             new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
             };
@@ -273,6 +274,30 @@ class CachingServiceClientTest {
             verify(apimlLog).log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", CachingServiceClient.MIN_CACHING_SERVICE_VERSION);
         }
 
+        /**
+         * The revocation lookup is only ever made for a personal access token, so an installation with them
+         * turned off - the default - has nothing to find out and must not be reaching out at startup.
+         */
+        @Test
+        void givenPersonalAccessTokensAreDisabled_thenNothingIsProbedAtStartup() {
+            ReflectionTestUtils.setField(underTest, "personalAccessTokenEnabled", false);
+
+            underTest.probeOnStartup();
+
+            verify(restTemplate, never()).exchange(eq(queryUrl), any(HttpMethod.class), any(), eq(String.class));
+        }
+
+        @Test
+        void givenPersonalAccessTokensAreEnabled_thenTheProbeRunsAtStartup() {
+            ReflectionTestUtils.setField(underTest, "personalAccessTokenEnabled", true);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok("{}"));
+
+            underTest.probeOnStartup();
+
+            verify(restTemplate).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
+        }
+
         @Test
         void givenACurrentCachingService_thenTheProbeSaysSo() {
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
@@ -300,6 +325,58 @@ class CachingServiceClientTest {
                 .thenThrow(new RestClientException("connection refused"));
 
             assertTrue(underTest.probeMapItemQuery());
+        }
+
+        /**
+         * A gateway 404 for a caching service that is not registered looks exactly like a 404 for an endpoint
+         * that does not exist. Plenty of installations run no caching service at all, and every installation
+         * looks like this for the moments before registration completes - so a version-mismatch error must be
+         * confirmed against an endpoint that has existed in every release before it is logged.
+         */
+        @ParameterizedTest
+        @CsvSource({"404", "405"})
+        void givenNoCachingServiceAtAll_thenNoVersionMismatchIsReported(int status) {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatusCode.valueOf(status), "no such service", null, null, null));
+            when(restTemplate.exchange(eq(reachabilityUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such service", null, null, null));
+
+            assertTrue(underTest.probeMapItemQuery(), "an unreachable caching service must not be called too old");
+            assertTrue(underTest.supportsMapItemQuery());
+            verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cachingServiceTooOld"), any());
+        }
+
+        /**
+         * The control endpoint answering anything at all - including a 400 for a storage mode without map
+         * support - proves the caching service is there and therefore genuinely too old.
+         */
+        @Test
+        void givenACachingServiceThatAnswersElsewhere_thenTheVersionMismatchIsConfirmed() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such endpoint", null, null, null));
+            when(restTemplate.exchange(eq(reachabilityUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "storage has no map support", null, null, null));
+
+            assertFalse(underTest.probeMapItemQuery());
+            verify(apimlLog).log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", CachingServiceClient.MIN_CACHING_SERVICE_VERSION);
+        }
+
+        @Test
+        void givenALookupAgainstNoCachingServiceAtAll_thenTheFastPathIsKept() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such service", null, null, null));
+            when(restTemplate.exchange(eq(reachabilityUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such service", null, null, null));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            assertTrue(underTest.supportsMapItemQuery());
+            verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cachingServiceTooOld"), any());
         }
 
         @Test

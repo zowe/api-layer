@@ -87,6 +87,15 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
      */
     private static final long QUERY_SUPPORT_RECHECK_MILLIS = 5L * 60 * 1000;
 
+    /**
+     * Map key used for nothing but checking that the caching service is answering at all.
+     * {@code GET /cache-list/{mapKey}} has existed in every release and answers 200 for a map that does not
+     * exist, so it separates "too old to serve /cache-query" from "no caching service registered" without
+     * moving any real payload. It has to be an endpoint under {@code /api/v1}, because that is the only
+     * gateway route the caching service declares - {@code /application/info} is not reachable this way.
+     */
+    private static final String REACHABILITY_PROBE_MAP_KEY = "apimlReachabilityProbe";
+
     private volatile boolean mapItemQuerySupported = true;
     private final AtomicLong querySupportCheckedAt = new AtomicLong();
 
@@ -96,8 +105,11 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
      * answer is still "not valid" either way - {@code PATAuthSourceService.isValid} fails closed - but the
      * request threads come back rather than piling up behind a store that is not answering.
      */
-    private static final int LOOKUP_FAILURE_THRESHOLD = 5;
-    private static final long LOOKUP_CIRCUIT_OPEN_MILLIS = 10_000;
+    @Value("${apiml.security.personalAccessToken.revocationLookupFailureThreshold:5}")
+    private int lookupFailureThreshold = 5;
+
+    @Value("${apiml.security.personalAccessToken.revocationLookupCircuitOpenMillis:10000}")
+    private long lookupCircuitOpenMillis = 10_000;
 
     private final AtomicInteger consecutiveLookupFailures = new AtomicInteger();
     private final AtomicLong lookupCircuitOpenedAt = new AtomicLong();
@@ -110,6 +122,9 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
+
+    @Value("${apiml.security.personalAccessToken.enabled:false}")
+    private boolean personalAccessTokenEnabled;
 
     @Getter(AccessLevel.PACKAGE)
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
@@ -148,9 +163,17 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
      * a version-skewed deployment shows up in the log rather than as a stack trace on the first token. A
      * failure here is inconclusive - the caching service may simply not be registered yet - so it leaves the
      * optimistic answer in place and the first real lookup settles it.
+     * <p>
+     * Skipped entirely when personal access tokens are disabled, which is the default. The revocation lookup
+     * is only ever made for a personal access token, so such an installation has nothing to find out - and
+     * plenty of them run no caching service at all, where probing would only produce a misleading error.
      */
     @EventListener(ApplicationReadyEvent.class)
     public void probeOnStartup() {
+        if (!personalAccessTokenEnabled) {
+            log.debug("Personal access tokens are disabled, not probing the caching service for point lookup support");
+            return;
+        }
         probeMapItemQuery();
     }
 
@@ -222,7 +245,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     public Map<String, Map<String, String>> getMapItems(Map<String, Collection<String>> keysByMapKey) throws CachingServiceClientException {
         if (isLookupCircuitOpen()) {
             throw new CachingServiceClientException(
-                "Unable to look up cache items: the caching service has failed " + LOOKUP_FAILURE_THRESHOLD +
+                "Unable to look up cache items: the caching service has failed " + lookupFailureThreshold +
                     " lookups in a row, so this one was not attempted");
         }
         try {
@@ -230,9 +253,8 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
             consecutiveLookupFailures.set(0);
             return found;
         } catch (HttpStatusCodeException e) {
-            if (isEndpointMissing(e.getStatusCode())) {
-                markMapItemQueryUnsupported();
-            } else {
+            boolean versionMismatch = isEndpointMissing(e.getStatusCode()) && markMapItemQueryUnsupportedIfConfirmed();
+            if (!versionMismatch) {
                 recordLookupFailure();
             }
             throw new CachingServiceClientException("Unable to look up cache items, caused by: " + e.getMessage(), e);
@@ -264,7 +286,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         if (openedAt == 0) {
             return false;
         }
-        if (System.currentTimeMillis() - openedAt < LOOKUP_CIRCUIT_OPEN_MILLIS) {
+        if (System.currentTimeMillis() - openedAt < lookupCircuitOpenMillis) {
             return true;
         }
         // half open: let one request through to find out whether the store is back
@@ -275,7 +297,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     }
 
     private void recordLookupFailure() {
-        if (consecutiveLookupFailures.incrementAndGet() >= LOOKUP_FAILURE_THRESHOLD) {
+        if (consecutiveLookupFailures.incrementAndGet() >= lookupFailureThreshold) {
             lookupCircuitOpenedAt.compareAndSet(0, System.currentTimeMillis());
         }
     }
@@ -306,8 +328,8 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
             return true;
         } catch (HttpStatusCodeException e) {
             if (isEndpointMissing(e.getStatusCode())) {
-                markMapItemQueryUnsupported();
-                return false;
+                markMapItemQueryUnsupportedIfConfirmed();
+                return mapItemQuerySupported;
             }
             // any other status still proves the endpoint exists
             markMapItemQuerySupported();
@@ -330,12 +352,42 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         mapItemQuerySupported = true;
     }
 
-    private void markMapItemQueryUnsupported() {
+    /**
+     * A 404 from the query endpoint has two very different causes, and only one of them is worth an
+     * operator-facing error: a caching service too old to serve it, versus no caching service registered at
+     * the gateway. The second is the ordinary state of a deployment that does not run one, and of every
+     * deployment for the moments before registration completes - so it is confirmed against an endpoint that
+     * has existed in every release before the version-mismatch error is logged.
+     *
+     * @return whether this really is a version mismatch, as opposed to an unreachable caching service
+     */
+    private boolean markMapItemQueryUnsupportedIfConfirmed() {
+        if (!isCachingServiceReachable()) {
+            log.debug("The point lookup endpoint is missing, but the caching service is not answering at all; " +
+                "not treating this as a version mismatch");
+            return false;
+        }
         mapItemQuerySupported = false;
         // remember when this was learned, so the answer is trusted for the recheck interval rather than
         // re-probed on the very next request
         querySupportCheckedAt.set(System.currentTimeMillis());
         apimlLog.log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", MIN_CACHING_SERVICE_VERSION);
+        return true;
+    }
+
+    private boolean isCachingServiceReachable() {
+        try {
+            lookupRestTemplate.exchange(getGatewayAddress() + CACHING_LIST_API_PATH + REACHABILITY_PROBE_MAP_KEY,
+                HttpMethod.GET, new HttpEntity<>(defaultHeaders), String.class);
+            return true;
+        } catch (HttpStatusCodeException e) {
+            // any status other than "no such endpoint" came from the caching service itself, which is all
+            // this needs to establish - a 400 for a storage mode without map support still proves it is there
+            return !isEndpointMissing(e.getStatusCode());
+        } catch (RuntimeException e) {
+            log.debug("The caching service is not reachable", e);
+            return false;
+        }
     }
 
     /**

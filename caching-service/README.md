@@ -198,9 +198,23 @@ with nothing found is omitted from the response entirely:
 
 A read expressed as a POST is unidiomatic, but each key is a 128-character hash and a multi-scope token needs
 several of them, which does not fit a URL reliably. The number of keys per request is bounded by
-`caching.storage.maxQueryKeys`; that bound has to stay at least two above the scope cap ZAAS applies at
-issuance (`apiml.security.personalAccessToken.maxScopes`), because a rejected lookup makes a token
-unauthenticatable rather than merely slow.
+`caching.storage.maxQueryKeys`. ZAAS keeps within that bound by splitting a token with more scopes than fit
+across several lookups (`apiml.security.personalAccessToken.revocationLookupBatchKeys`), so a token issued
+with more scopes than the current cap - by a previous release, for instance - still authenticates rather than
+becoming permanently unusable.
+
+### Maps that are not the revocation store
+
+`cache-list` is a general-purpose API and its callers are not only the personal access token code. Two things
+are worth knowing if you use it for anything else:
+
+* **Entries under a map key other than `invalidTokens`, `invalidUsers` or `invalidScopes` are stored without
+  expiration**, exactly as before. Pass `ttlSeconds` on the item if you want one. Only the three revocation
+  maps get an automatic lifespan, because those are the ones that grow without bound.
+* **Items written before this release are still returned** by `GET /cache-list` and
+  `GET /cache-list/{mapKey}`: the frozen pre-cutover layout is read underneath the per-item one, and the
+  per-item value wins if the same key exists in both. That overlay disappears with the pre-cutover read path,
+  by which point nothing written before the upgrade is still relevant.
 
 ### Retiring the pre-cutover store
 

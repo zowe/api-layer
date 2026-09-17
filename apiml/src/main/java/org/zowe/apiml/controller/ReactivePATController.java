@@ -24,6 +24,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,10 @@ public class ReactivePATController {
     private final RauditxService rauditxService;
     private final MessageService messageService;
     private final ObjectMapper mapper;
+
+    /** @see org.zowe.apiml.zaas.controllers.AuthController#DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS */
+    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:60000}")
+    private long ruleTimestampSkewAllowanceMillis = DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
 
     @Data
     @NoArgsConstructor
@@ -284,7 +289,7 @@ public class ReactivePATController {
                 if (rulesRequestModel != null) {
                     timeStamp = rulesRequestModel.getTimestamp();
                 }
-                if (isFutureRuleTimestamp(timeStamp)) {
+                if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
                     return Mono.just(ResponseEntity.badRequest().build());
                 }
 
@@ -417,7 +422,7 @@ public class ReactivePATController {
     public Mono<ResponseEntity<String>> revokeAccessTokensForUser(@RequestBody RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
-        if (userId == null || isFutureRuleTimestamp(timeStamp)) {
+        if (userId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return badRequestForPATInvalidation();
         }
         log.debug("revokeAccessTokensForUser: userId={}", userId);
@@ -484,7 +489,7 @@ public class ReactivePATController {
     public Mono<ResponseEntity<String>> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
-        if (serviceId == null || isFutureRuleTimestamp(timeStamp)) {
+        if (serviceId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);

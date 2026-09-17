@@ -60,9 +60,10 @@ class InfinispanStorageTest {
 
     @BeforeEach
     void setup() {
-        cache = mock(Cache.class);
-        tokenCache = mock(Cache.class);
-        legacyTokenCache = mock(Cache.class);
+        // all three are map-backed, because the read paths iterate keySet() and a bare mock answers null
+        cache = createCache();
+        tokenCache = createCache();
+        legacyTokenCache = createCache();
         storage = newStorage(cache, tokenCache, legacyTokenCache);
     }
 
@@ -258,11 +259,36 @@ class InfinispanStorageTest {
             verify(tokenCache, never()).put(any(), any(), anyLong(), any());
         }
 
+        /**
+         * The cache-list API is public, and entries written through it have never expired. Giving them the
+         * revocation store's ceiling would silently delete another component's data 90 days after the
+         * upgrade, which is not something this change gets to do.
+         */
         @Test
-        void givenAnUnknownMapAndAnUninterpretableValue_thenItIsStoredWithTheCeilingTtl() {
+        void givenAnUnknownMap_thenItIsStoredWithoutExpiration() {
             storage.storeMapItem(serviceId1, "aMap", new KeyValue("aMapCacheKey", "aMapCacheValue"));
 
-            verify(tokenCache).put(itemKey(serviceId1, "aMap", "aMapCacheKey"), "aMapCacheValue", MAX_TTL_SECONDS, TimeUnit.SECONDS);
+            verify(tokenCache).put(itemKey(serviceId1, "aMap", "aMapCacheKey"), "aMapCacheValue");
+            verify(tokenCache, never()).put(any(), any(), anyLong(), any());
+        }
+
+        @Test
+        void givenAnUnknownMapAndARequestedTtl_thenTheRequestedTtlIsHonoured() {
+            storage.storeMapItem(serviceId1, "aMap", new KeyValue("aMapCacheKey", "aMapCacheValue", 30L));
+
+            verify(tokenCache).put(itemKey(serviceId1, "aMap", "aMapCacheKey"), "aMapCacheValue", 30L, TimeUnit.SECONDS);
+        }
+
+        /**
+         * A revocation record is a different matter: those are the entries that grow without bound, and a
+         * personal access token cannot outlive the ceiling anyway, so an unreadable one is capped rather
+         * than kept forever.
+         */
+        @Test
+        void givenARevocationMapAndAnUninterpretableValue_thenItIsStoredWithTheCeilingTtl() {
+            storage.storeMapItem(serviceId1, INVALID_TOKENS_KEY, new KeyValue("k", "notJson"));
+
+            verify(tokenCache).put(itemKey(serviceId1, INVALID_TOKENS_KEY, "k"), "notJson", MAX_TTL_SECONDS, TimeUnit.SECONDS);
         }
 
         @Test
@@ -325,6 +351,48 @@ class InfinispanStorageTest {
             assertEquals(2, result.get(INVALID_TOKENS_KEY).size());
             assertNotNull(result.get("invalidTokenRules"));
             assertEquals(2, result.get("invalidTokenRules").size());
+        }
+
+        /**
+         * The cache-list endpoints are a public API, so an external caller's pre-upgrade entries have to stay
+         * visible rather than appear to have been deleted by the upgrade. The per-item layout wins on a key
+         * collision, because that is where every write has gone since.
+         */
+        @Test
+        void givenPreCutoverEntries_thenTheyAreVisibleUnderneathTheNewLayout() {
+            legacyTokenCache.put(serviceId1 + "aLegacyMap", new HashMap<>(Map.of("legacyKey", "legacyValue")));
+            legacyTokenCache.put(serviceId1 + INVALID_TOKENS_KEY, new HashMap<>(Map.of("key1", "stale", "legacyOnly", "kept")));
+
+            Map<String, Map<String, String>> result = underTest.getAllMaps(serviceId1);
+
+            assertEquals("legacyValue", result.get("aLegacyMap").get("legacyKey"));
+            assertEquals("kept", result.get(INVALID_TOKENS_KEY).get("legacyOnly"));
+            assertEquals("token1", result.get(INVALID_TOKENS_KEY).get("key1"), "the per-item value must win");
+        }
+
+        @Test
+        void givenPreCutoverEntries_thenASingleMapReadSeesThemToo() {
+            legacyTokenCache.put(serviceId1 + INVALID_TOKENS_KEY, new HashMap<>(Map.of("legacyOnly", "kept", "key1", "stale")));
+
+            Map<String, String> result = underTest.getAllMapItems(serviceId1, INVALID_TOKENS_KEY);
+
+            assertEquals("kept", result.get("legacyOnly"));
+            assertEquals("token1", result.get("key1"), "the per-item value must win");
+        }
+
+        /**
+         * The legacy layout stores the inner map as the entry value, so the overlay must copy it rather than
+         * write into the object the cache handed back.
+         */
+        @Test
+        void givenPreCutoverEntries_thenTheLegacyMapIsNotMutated() {
+            Map<String, String> legacyItems = new HashMap<>(Map.of("legacyOnly", "kept"));
+            legacyTokenCache.put(serviceId1 + INVALID_TOKENS_KEY, legacyItems);
+
+            underTest.getAllMaps(serviceId1);
+            underTest.getAllMapItems(serviceId1, INVALID_TOKENS_KEY);
+
+            assertEquals(Map.of("legacyOnly", "kept"), legacyItems);
         }
 
         @Test

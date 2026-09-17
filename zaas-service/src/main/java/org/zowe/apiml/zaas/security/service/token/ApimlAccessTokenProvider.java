@@ -93,7 +93,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
      * Pins the cutover for the whole fleet. Zero means "not configured": the value is then read from the
      * store, and minted there if absent. Setting it explicitly makes the value deterministic, identical on
      * every node, and immune to anything that happens to the cache.
-     * TODO create this value in the start.sh/zowe launcher
      */
     @Value("${apiml.security.personalAccessToken.cutoverEpoch:0}")
     private long configuredCutoverEpoch;
@@ -107,8 +106,20 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     @Value("${apiml.security.personalAccessToken.cutoverSkewAllowanceSeconds:300}")
     private long cutoverSkewAllowanceSeconds = 300;
 
+    /**
+     * Cap on scopes at issuance. Advisory rather than load-bearing: validation chunks its lookups
+     * ({@link #batchScopes}), so a token issued above this cap - including one issued by a previous release,
+     * which no check here can undo - still authenticates.
+     */
     @Value("${apiml.security.personalAccessToken.maxScopes:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_SCOPES_PER_TOKEN}}")
     private int maxScopes = PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN;
+
+    /**
+     * Most keys one revocation lookup may ask for. Matches the caching service's own limit, which is what
+     * bounds the batch size; a value above it would make the caching service reject the lookup.
+     */
+    @Value("${apiml.security.personalAccessToken.revocationLookupBatchKeys:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
+    private int revocationLookupBatchKeys = PatRevocationStore.DEFAULT_MAX_QUERY_KEYS;
 
     private final AtomicLong cutoverEpoch = new AtomicLong(EPOCH_UNRESOLVED);
     private final AtomicLong cutoverEpochAttemptedAt = new AtomicLong();
@@ -198,8 +209,34 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             }
         }
 
-        return matches(cachingServiceClient.getMapItems(buildQuery(hashedToken, hashedUserId, hashedServiceIds)),
-            parsedToken, hashedToken, hashedUserId, hashedServiceIds);
+        for (List<String> scopeBatch : batchScopes(hashedServiceIds)) {
+            if (matches(cachingServiceClient.getMapItems(buildQuery(hashedToken, hashedUserId, scopeBatch)),
+                    parsedToken, hashedToken, hashedUserId, scopeBatch)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Splits the scope hashes so that no single lookup can exceed the caching service's key limit.
+     * <p>
+     * Chunking rather than rejecting is what keeps {@link #maxScopes} advisory: a token already issued with
+     * more scopes than the cap - which no check added now can undo - still authenticates, at the cost of an
+     * extra round trip. Each batch carries the token and user hashes too, so it is a complete answer on its
+     * own and the first match short-circuits the rest. In the overwhelmingly common case there is exactly one
+     * batch and this costs nothing.
+     */
+    private List<List<String>> batchScopes(List<String> hashedServiceIds) {
+        int perBatch = Math.max(1, revocationLookupBatchKeys - 2); // the token and user hashes ride along
+        if (hashedServiceIds.size() <= perBatch) {
+            return List.of(hashedServiceIds);
+        }
+        List<List<String>> batches = new ArrayList<>();
+        for (int from = 0; from < hashedServiceIds.size(); from += perBatch) {
+            batches.add(hashedServiceIds.subList(from, Math.min(from + perBatch, hashedServiceIds.size())));
+        }
+        return batches;
     }
 
     private Map<String, Collection<String>> buildQuery(String hashedToken, String hashedUserId, List<String> hashedServiceIds) {
@@ -523,15 +560,33 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             // a null value was returned
         }
         if (localSalt == null || localSalt.isEmpty()) {
+            boolean storeHadOtherPatState = hasStoredCutoverEpoch();
             String newSalt = Base64.getEncoder().encodeToString(generateSalt());
             storeSalt(newSalt);
-            // Not a self-heal: SHA-512(salt+value) under the new salt can never match anything hashed under
-            // the old one, so every revocation that predates this moment has just stopped being enforced.
-            apimlLog.log("org.zowe.apiml.zaas.pat.saltRegenerated");
+            if (storeHadOtherPatState) {
+                // Not a self-heal: SHA-512(salt+value) under the new salt can never match anything hashed
+                // under the old one, so every revocation that predates this moment has just stopped being
+                // enforced.
+                apimlLog.log("org.zowe.apiml.zaas.pat.saltRegenerated");
+            } else {
+                // Nothing else of ours is in the store either, so this is a first start rather than a loss.
+                // Saying otherwise would greet every new adopter with an incident.
+                log.info("A hashing salt for personal access tokens was created; the caching service held none, " +
+                    "which is expected on the first start after enabling personal access tokens");
+            }
             localSalt = newSalt;
         }
 
         return localSalt;
+    }
+
+    /**
+     * Whether the store holds the cutover epoch, which is written independently of the salt and never
+     * removed. It is the cheapest available way to tell "first ever start" from "the store lost the salt":
+     * both leave the salt absent, but only the second leaves this behind.
+     */
+    private boolean hasStoredCutoverEpoch() {
+        return readCutoverEpoch() != null;
     }
 
     /**

@@ -66,6 +66,13 @@ public class InfinispanStorage implements Storage {
      */
     public static final int DEFAULT_SIZE_CHECK_INTERVAL = 1000;
 
+    /**
+     * Lifespan sentinel for "store without expiration". Deliberately not {@code -1}, which is what Infinispan
+     * itself uses for that, because {@code -1} is indistinguishable from an ordinary already-elapsed
+     * retention - and those must be removed rather than stored forever.
+     */
+    private static final long NO_EXPIRY = Long.MIN_VALUE;
+
     private final DefaultCacheManager defaultCacheManager;
     private final long maxTtlSeconds;
     private final long sizeWarningThreshold;
@@ -128,6 +135,13 @@ public class InfinispanStorage implements Storage {
         Cache<String, String> cache = getTokenItemCache();
         long ttlSeconds = resolveTtlSeconds(mapKey, toCreate);
 
+        if (ttlSeconds == NO_EXPIRY) {
+            log.debug("Storing item into the token cache: {}|{}, without expiration", mapKey, toCreate.getKey());
+            cache.put(cacheKey, toCreate.getValue());
+            warnIfStoreTooLarge(cache);
+            return null;
+        }
+
         // Infinispan reads a non-positive lifespan as "never expire" (-1) or "already gone" (0); an entry
         // whose retention has already run out must not become the one entry that lives forever.
         if (ttlSeconds <= 0) {
@@ -148,7 +162,7 @@ public class InfinispanStorage implements Storage {
         String prefix = encodeMapPrefix(serviceId, mapKey);
         Cache<String, String> cache = getTokenItemCache();
 
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> result = new HashMap<>(legacyMapItems(serviceId, mapKey));
         for (String key : keysOf(cache)) {
             if (!key.startsWith(prefix)) continue;
             String value = cache.get(key);
@@ -167,6 +181,10 @@ public class InfinispanStorage implements Storage {
         Cache<String, String> cache = getTokenItemCache();
 
         Map<String, Map<String, String>> result = new HashMap<>();
+        // copied rather than referenced: the legacy layout stores the inner map as the entry value, so
+        // writing into what getAllLegacyMaps handed back would mutate the cached object in place
+        getAllLegacyMaps(serviceId).forEach((legacyMapKey, items) -> result.put(legacyMapKey, new HashMap<>(items)));
+
         for (String key : keysOf(cache)) {
             if (!key.startsWith(prefix)) continue;
             String[] mapAndItem = decodeAfterService(key, prefix.length());
@@ -180,6 +198,22 @@ public class InfinispanStorage implements Storage {
             }
         }
         return result;
+    }
+
+    /**
+     * The pre-cutover items of one map, or empty when there are none.
+     * <p>
+     * The {@code cache-list} endpoints are a public API, so their callers are not only the personal access
+     * token code. Overlaying the frozen layout underneath the per-item one keeps those callers' pre-upgrade
+     * data visible instead of appearing to have been deleted by the upgrade; the per-item values win on a
+     * collision, because that is where every write has gone since.
+     *
+     * @deprecated goes away with the legacy read path, at which point the overlay goes with it.
+     */
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    private Map<String, String> legacyMapItems(String serviceId, String mapKey) {
+        Map<String, String> legacy = getLegacyTokenCache().get(serviceId + mapKey);
+        return legacy == null ? Map.of() : legacy;
     }
 
     @Override
@@ -350,8 +384,9 @@ public class InfinispanStorage implements Storage {
     // ---------------------------------------------------------------------------------------------------
 
     /**
-     * @return the lifespan to store the entry with, in seconds; zero or less means the entry is already past
-     *         its retention and must be removed rather than stored.
+     * @return the lifespan to store the entry with, in seconds; {@link #NO_EXPIRY} for an entry that is
+     *         stored without expiration, and zero or less for one already past its retention, which must be
+     *         removed rather than stored.
      */
     private long resolveTtlSeconds(String mapKey, KeyValue toCreate) {
         Long requested = toCreate.getTtlSeconds();
@@ -360,14 +395,29 @@ public class InfinispanStorage implements Storage {
             return Math.min(requested, maxTtlSeconds);
         }
 
+        if (!isRevocationMapKey(mapKey)) {
+            // An arbitrary map, written through the public cache-list API by something that is not the
+            // personal access token code. Those entries have never expired, and quietly dropping another
+            // component's data after 90 days is not this change's business: the bound exists for the
+            // revocation maps, which are the ones that actually grow. A caller that wants an expiry can ask
+            // for one with ttlSeconds.
+            return NO_EXPIRY;
+        }
+
         Long derived = deriveTtlSeconds(mapKey, toCreate.getValue());
         if (derived == null) {
-            // Unknown map key, or a value this service cannot interpret - the generic cache-list API accepts
-            // both. Falling back to the ceiling rather than to "never expire" keeps the promise that nothing
-            // in this cache is unbounded, and the ceiling is longer than the longest possible PAT lifetime.
+            // A revocation record whose own expiry this service cannot read. The ceiling is the right
+            // fallback rather than "never expire" - a personal access token cannot live longer than that, so
+            // nothing that could still matter is lost by it.
             return maxTtlSeconds;
         }
         return Math.min(derived, maxTtlSeconds);
+    }
+
+    static boolean isRevocationMapKey(String mapKey) {
+        return INVALID_TOKENS_KEY.equals(mapKey)
+            || INVALID_USERS_KEY.equals(mapKey)
+            || INVALID_SCOPES_KEY.equals(mapKey);
     }
 
     private Long deriveTtlSeconds(String mapKey, String value) {

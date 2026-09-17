@@ -204,6 +204,90 @@ class ApimlAccessTokenProviderTest {
         assertEquals(2, query.get(INVALID_SCOPES_KEY).size());
     }
 
+    /**
+     * A token issued with more scopes than one lookup may carry is chunked rather than rejected. This is what
+     * keeps the issuance cap advisory: a token already issued above it - by a previous release, say, which no
+     * check added now can undo - must keep authenticating rather than become permanently unusable.
+     */
+    @Nested
+    class GivenMoreScopesThanOneLookupCanCarry {
+
+        private static final int BATCH_KEYS = 6; // so four scope hashes fit in one lookup
+
+        private QueryResponse manyScopes(List<String> scopes) {
+            return new QueryResponse(null, "user", issuedDate, new Date(), "issuer", scopes, QueryResponse.Source.ZOWE_PAT);
+        }
+
+        private List<String> scopeNames(int count) {
+            return IntStream.range(0, count).mapToObj(i -> "service" + i).toList();
+        }
+
+        @BeforeEach
+        void narrowTheBatch() {
+            ReflectionTestUtils.setField(accessTokenProvider, "revocationLookupBatchKeys", BATCH_KEYS);
+        }
+
+        @Test
+        void thenEveryScopeIsAskedAboutAcrossSeveralLookups() {
+            List<String> scopes = scopeNames(10);
+            when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(manyScopes(scopes));
+            givenStore(Map.of());
+
+            assertFalse(accessTokenProvider.isInvalidated(SCOPED_TOKEN));
+
+            ArgumentCaptor<Map<String, Collection<String>>> captor = ArgumentCaptor.forClass(Map.class);
+            verify(cachingServiceClient, times(3)).getMapItems(captor.capture());
+
+            Set<String> askedFor = new HashSet<>();
+            for (Map<String, Collection<String>> query : captor.getAllValues()) {
+                assertTrue(query.get(INVALID_SCOPES_KEY).size() <= BATCH_KEYS - 2, "a lookup exceeded the key limit");
+                // every batch carries the token and user hashes too, so each is a complete answer on its own
+                assertEquals(1, query.get(INVALID_TOKENS_KEY).size());
+                assertEquals(1, query.get(INVALID_USERS_KEY).size());
+                askedFor.addAll(query.get(INVALID_SCOPES_KEY));
+            }
+            byte[] salt = accessTokenProvider.getSalt();
+            Set<String> expected = scopes.stream()
+                .map(scope -> ApimlAccessTokenProvider.getSecurePassword(scope, salt))
+                .collect(Collectors.toSet());
+            assertEquals(expected, askedFor);
+        }
+
+        @Test
+        void givenARuleMatchingAScopeInALaterBatch_thenItIsStillFound() {
+            List<String> scopes = scopeNames(10);
+            when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(manyScopes(scopes));
+            byte[] salt = accessTokenProvider.getSalt();
+            String lastScopeHash = ApimlAccessTokenProvider.getSecurePassword(scopes.get(9), salt);
+            givenStore(Map.of(INVALID_SCOPES_KEY, Map.of(lastScopeHash, String.valueOf(System.currentTimeMillis()))));
+
+            assertTrue(accessTokenProvider.isInvalidated(SCOPED_TOKEN));
+        }
+
+        @Test
+        void givenARuleMatchingTheFirstBatch_thenTheRemainingLookupsAreSkipped() {
+            List<String> scopes = scopeNames(10);
+            when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(manyScopes(scopes));
+            byte[] salt = accessTokenProvider.getSalt();
+            String firstScopeHash = ApimlAccessTokenProvider.getSecurePassword(scopes.get(0), salt);
+            givenStore(Map.of(INVALID_SCOPES_KEY, Map.of(firstScopeHash, String.valueOf(System.currentTimeMillis()))));
+
+            assertTrue(accessTokenProvider.isInvalidated(SCOPED_TOKEN));
+
+            verify(cachingServiceClient, times(1)).getMapItems(any());
+        }
+
+        @Test
+        void givenScopesThatFitInOneLookup_thenOnlyOneIsMade() {
+            when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(manyScopes(scopeNames(4)));
+            givenStore(Map.of());
+
+            accessTokenProvider.isInvalidated(SCOPED_TOKEN);
+
+            verify(cachingServiceClient, times(1)).getMapItems(any());
+        }
+    }
+
     @Test
     void givenSaltNotAlreadyInCache_thenGenerateAndStoreNew() throws CachingServiceClientException {
         when(cachingServiceClient.read(SALT_KEY)).thenThrow(new CachingServiceClientException(""));
@@ -741,6 +825,23 @@ class ApimlAccessTokenProviderTest {
         void givenAnExistingSalt_thenNoRegenerationIsReported() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+
+            accessTokenProvider.getSalt();
+
+            verify(apimlLog, never()).log("org.zowe.apiml.zaas.pat.saltRegenerated");
+        }
+
+        /**
+         * A first start after enabling personal access tokens leaves the salt absent too, and it is not an
+         * incident. The cutover epoch tells the two apart: it is written independently and never removed, so
+         * an empty store means "new" while a store holding the epoch but no salt means "lost".
+         */
+        @Test
+        void givenAnEmptyStore_thenTheFirstSaltIsNotReportedAsAnIncident() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            when(cachingServiceClient.read(SALT_KEY)).thenThrow(new CachingServiceClientException("no record"));
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("no record"));
 
             accessTokenProvider.getSalt();
 

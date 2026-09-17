@@ -32,6 +32,7 @@ import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.lang.JoseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -543,10 +544,23 @@ public class AuthController {
      * for longer than the rule itself is kept, which is not a state the store can represent. Small clock
      * differences between the caller and this node are still tolerated.
      */
-    public static final long RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS = 60_000L;
+    public static final long DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS = 60_000L;
 
-    public static boolean isFutureRuleTimestamp(long timestamp) {
-        return timestamp > System.currentTimeMillis() + RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
+    /**
+     * Configurable because rejecting a future timestamp is a change in behaviour - this used to be accepted -
+     * and a caller whose clock runs further ahead than the allowance would otherwise have no remedy but to
+     * fix its time source. Widening this is the lesser evil against an automation that stops working on
+     * upgrade.
+     */
+    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:60000}")
+    private long ruleTimestampSkewAllowanceMillis = DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
+
+    public static boolean isFutureRuleTimestamp(long timestamp, long skewAllowanceMillis) {
+        return timestamp > System.currentTimeMillis() + skewAllowanceMillis;
+    }
+
+    private boolean isFutureRuleTimestamp(long timestamp) {
+        return isFutureRuleTimestamp(timestamp, ruleTimestampSkewAllowanceMillis);
     }
 
     /**
