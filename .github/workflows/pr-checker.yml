@@ -1,7 +1,9 @@
 name: PR Checker
 
+# pull_request (not pull_request_target): this job needs no repository secrets and never checks
+# out or executes pull request code, so it must not run in the privileged base-repository context.
 on:
-    pull_request_target:
+    pull_request:
         branches: [ v2.x.x, v3.x.x ]
         types: [opened, reopened, edited]
 
