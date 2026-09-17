@@ -51,7 +51,7 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -60,7 +60,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@main
+            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -76,13 +76,13 @@ jobs:
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
 
             -   name: Build amd64
-                uses: zowe-actions/shared-actions/docker-build-local@main
+                uses: zowe-actions/shared-actions/docker-build-local@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
                 timeout-minutes: 60
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
@@ -101,7 +101,7 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -110,7 +110,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@main
+            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -126,7 +126,7 @@ jobs:
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
 
             -   name: Build s390x
-                uses: zowe-actions/shared-actions/docker-build-zlinux@main
+                uses: zowe-actions/shared-actions/docker-build-zlinux@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 with:
                     zlinux-host: ${{ secrets.zlinux-host }}
                     zlinux-ssh-user: ${{ secrets.zlinux-ssh-user }}
@@ -140,7 +140,7 @@ jobs:
                 timeout-minutes: 60
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
@@ -161,7 +161,7 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ inputs.service == 'all' }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -170,7 +170,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@main
+            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -180,14 +180,14 @@ jobs:
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
 
-            -   uses: zowe-actions/shared-actions/docker-manifest@main
+            -   uses: zowe-actions/shared-actions/docker-manifest@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 with:
                     linux-distro: ${{ matrix.os }}
                     cpu-arch-list: "amd64 s390x"
                 timeout-minutes: 2
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
@@ -206,7 +206,7 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ inputs.service != 'all' }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -215,7 +215,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@main
+            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -232,14 +232,14 @@ jobs:
 
             -   name: Build amd64
                 if: matrix.arch == 'amd64'
-                uses: zowe-actions/shared-actions/docker-build-local@main
+                uses: zowe-actions/shared-actions/docker-build-local@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
                 timeout-minutes: 60
 
             -   name: Build s390x
                 if: matrix.arch == 's390x'
-                uses: zowe-actions/shared-actions/docker-build-zlinux@main
+                uses: zowe-actions/shared-actions/docker-build-zlinux@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 with:
                     zlinux-host: ${{ secrets.zlinux-host }}
                     zlinux-ssh-user: ${{ secrets.zlinux-ssh-user }}
@@ -253,7 +253,7 @@ jobs:
                 timeout-minutes: 60
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
@@ -272,7 +272,7 @@ jobs:
         runs-on: ubuntu-latest
         if: ${{ inputs.service != 'all' }}
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -281,7 +281,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@main
+            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -291,14 +291,14 @@ jobs:
                     image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}
 
-            -   uses: zowe-actions/shared-actions/docker-manifest@main
+            -   uses: zowe-actions/shared-actions/docker-manifest@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
                 with:
                     linux-distro: ${{ matrix.os }}
                     cpu-arch-list: "amd64 s390x"
                 timeout-minutes: 2
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: ${{ github.job }}-${{ matrix.service }}-${{ matrix.os }}-${{ env.JOB_ID }}
