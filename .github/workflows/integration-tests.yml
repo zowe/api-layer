@@ -1916,7 +1916,12 @@ jobs:
         # cypress/browsers couldn't itself drive docker compose. Instead the compose file defines
         # cypress as a service using that same pinned image, invoked on demand via
         # `docker compose run` once the stack is up - same network, so hostnames resolve exactly
-        # like from the host. See docker/integration-tests/README.md.
+        # like from the host. discovery-service-2 shares discovery-service's real port, so
+        # -Ddiscovery.additionalPort tells the test runner (host-based now) to reach it on the
+        # different HOST port the compose file publishes it to - without it the checker silently
+        # queries discovery-service's own port instead (same hostname-aliased loopback) and waits
+        # forever for discovery-service-2/zaas-service-2 to appear there. See
+        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1957,6 +1962,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Dgateway.instances=1 -Dcaching.instances=1 -Dapicatalog.instances=1
+                    -Ddiscovery.additionalPort=10021
                     -DcentralHosts=api-catalog-services,discoverable-client,discovery-service,gateway-service,zaas-service,caching-service
 
             -   name: Show status when APIML is not ready yet
