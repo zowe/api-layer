@@ -1987,6 +1987,7 @@ jobs:
                     name: E2EUITests-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
                         results/**
 
             -   name: Upload screenshots API Catalog
@@ -2088,6 +2089,7 @@ jobs:
                     name: E2EUITestsModulith-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
                         results/**
 
             -   name: Upload screenshots API Catalog
