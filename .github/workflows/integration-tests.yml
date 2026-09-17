@@ -13,6 +13,11 @@ on:
 
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
+    # Available to every job's `run:` steps as $ARTIFACTORY_USERNAME/$ARTIFACTORY_PASSWORD -
+    # referencing them that way (instead of ${{ secrets.* }} directly in a run script) avoids
+    # the secret literal being expanded into the generated shell script text.
+    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
 jobs:
     # Certificates are generated rather than committed, and each run produces a fresh
@@ -65,9 +70,10 @@ jobs:
                     cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
                     docker build -t nodesampleapp .
                     docker tag nodesampleapp ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-                    echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
+                    echo "$PERSONAL_JB_TOKEN" | docker login ghcr.io -u balhar-jakub --password-stdin
                     docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-
+                env:
+                    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
             -   name: Build Python Sample App
                 run: |
                     cd onboarding-enabler-python-sample-app
@@ -76,17 +82,21 @@ jobs:
                     cp -r ../onboarding-enabler-python ./onboarding-enabler-python
                     docker build -t pythonsampleapp .
                     docker tag pythonsampleapp ghcr.io/balhar-jakub/nodejs-sample-app:python${{ env.JOB_ID }}
-                    echo "${{ secrets.PERSONAL_JB_TOKEN }}" | docker login ghcr.io -u balhar-jakub --password-stdin
+                    echo "$PERSONAL_JB_TOKEN" | docker login ghcr.io -u balhar-jakub --password-stdin
                     docker push ghcr.io/balhar-jakub/nodejs-sample-app:python${{ env.JOB_ID }}
 
-
+                env:
+                    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
             -   name: Build with Gradle
                 run: >
-                    ./gradlew clean jib -Djib.serialize=true -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+                    ./gradlew clean jib -Djib.serialize=true -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Pzowe.docker.password=$PERSONAL_JB_TOKEN -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+                env:
+                    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
             -   name: Standalone Catalog
                 run: >
-                    ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
-
+                    ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Pzowe.docker.password=$PERSONAL_JB_TOKEN -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+                env:
+                    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
             -   uses: ./.github/actions/teardown
 
     CITestsModulithUnknownHostnames:
@@ -182,7 +192,7 @@ jobs:
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runContainerModulithTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -250,7 +260,7 @@ jobs:
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
                     -Ddiscovery.additionalPort=10021
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
@@ -429,7 +439,7 @@ jobs:
                 timeout-minutes: 4
                 run: >
                     ./gradlew :integration-tests:runContainerTests -Denvironment.config=-docker-compose
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -499,7 +509,7 @@ jobs:
                 run: >
                     ENV_CONFIG=ha ./gradlew :integration-tests:runContainerSAFProviderTests -Denvironment.config=-ha
                     ${{ env.CONNECT_PORT_FLAGS }}
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
             -   name: Store results
@@ -560,7 +570,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runGatewayProxyTest -Denvironment.config=-docker
                     -Dcentralgateway.connectPorts=10030
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Dump CGW jacoco data
                 run: >
@@ -630,7 +640,7 @@ jobs:
                     ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
                     ${{ env.CONNECT_PORT_FLAGS }}
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
             -   name: Dump CGW jacoco data
                 run: >
@@ -696,7 +706,7 @@ jobs:
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Ddiscovery.additionalHost=central-gateway-service -Ddiscovery.additionalPort=10021
                     -Dcentralgateway.connectPorts=10020
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -752,7 +762,7 @@ jobs:
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests -Denvironment.config=-docker
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             # Coverage results are not stored in this job as it would not provide much additional data
 
             -   name: Store results
@@ -920,7 +930,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests -Denvironment.config=-docker-modulith
                     -Denvironment.modulith=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             # Coverage results are not stored in this job as it would not provide much additional data
 
             -   name: Store results
@@ -986,13 +996,20 @@ jobs:
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZaasTest -Denvironment.config=-docker
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
-                    -Doidc.client.id=${{ secrets.OIDC_CLIENT_ID }} -Doidc.client.secret=${{ secrets.OIDC_CLIENT_SECRET }} -Doidc.test.user=${{ secrets.OIDC_TEST_USER }}
-                    -Doidc.test.pass=${{ secrets.OIDC_TEST_PASS }} -Doidc.test.alt_user=${{ secrets.OIDC_WINNIE_USER }}
-                    -Doidc.test.alt_pass=${{ secrets.OIDC_WINNIE_PASS }} -Doidc.host=${{secrets.OIDC_HOST}}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Doidc.client.id=$OIDC_CLIENT_ID -Doidc.client.secret=$OIDC_CLIENT_SECRET -Doidc.test.user=$OIDC_TEST_USER
+                    -Doidc.test.pass=$OIDC_TEST_PASS -Doidc.test.alt_user=$OIDC_WINNIE_USER
+                    -Doidc.test.alt_pass=$OIDC_WINNIE_PASS -Doidc.host=$OIDC_HOST
                     -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=10030
                     -DcentralHosts=central-gateway-service
-
+                env:
+                    OIDC_CLIENT_ID: ${{ secrets.OIDC_CLIENT_ID }}
+                    OIDC_CLIENT_SECRET: ${{ secrets.OIDC_CLIENT_SECRET }}
+                    OIDC_HOST: ${{ secrets.OIDC_HOST }}
+                    OIDC_TEST_PASS: ${{ secrets.OIDC_TEST_PASS }}
+                    OIDC_TEST_USER: ${{ secrets.OIDC_TEST_USER }}
+                    OIDC_WINNIE_PASS: ${{ secrets.OIDC_WINNIE_PASS }}
+                    OIDC_WINNIE_USER: ${{ secrets.OIDC_WINNIE_USER }}
             -   name: Dump DC jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address zaas-service --port 6301 --destfile ./results/zaas-service.exec
@@ -1052,7 +1069,7 @@ jobs:
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest -Denvironment.config=-docker
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1107,7 +1124,7 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -1164,7 +1181,7 @@ jobs:
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Output Redis logs
                 if: always()
@@ -1245,7 +1262,7 @@ jobs:
                     -DtlsConfiguration.keyAlias=apimtst
                     -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Output Redis logs
                 if: always()
@@ -1825,7 +1842,7 @@ jobs:
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runInfinispanServiceTests -Denvironment.config=-docker
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -1887,7 +1904,7 @@ jobs:
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -1980,9 +1997,11 @@ jobs:
             -   name: Cypress run API Catalog
                 run: >
                     docker compose -f docker/integration-tests/e2e-ui-tests/docker-compose.yml run --rm
-                    -e CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }} -e CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
+                    -e CYPRESS_AUTH0_USERNAME=$OIDC_WINNIE_USER -e CYPRESS_AUTH0_PASSWORD=$OIDC_WINNIE_PASS
                     cypress sh -c "cd api-catalog-ui/frontend && npm run cy:e2e:ci"
-
+                env:
+                    OIDC_WINNIE_PASS: ${{ secrets.OIDC_WINNIE_PASS }}
+                    OIDC_WINNIE_USER: ${{ secrets.OIDC_WINNIE_USER }}
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
@@ -2082,9 +2101,11 @@ jobs:
             -   name: Cypress run API Catalog
                 run: >
                     docker compose -f docker/integration-tests/e2e-ui-tests-modulith/docker-compose.yml run --rm
-                    -e CYPRESS_AUTH0_USERNAME=${{ secrets.OIDC_WINNIE_USER }} -e CYPRESS_AUTH0_PASSWORD=${{ secrets.OIDC_WINNIE_PASS }}
+                    -e CYPRESS_AUTH0_USERNAME=$OIDC_WINNIE_USER -e CYPRESS_AUTH0_PASSWORD=$OIDC_WINNIE_PASS
                     cypress sh -c "cd api-catalog-ui/frontend && npm run cy:e2e:ci:modulith"
-
+                env:
+                    OIDC_WINNIE_PASS: ${{ secrets.OIDC_WINNIE_PASS }}
+                    OIDC_WINNIE_USER: ${{ secrets.OIDC_WINNIE_USER }}
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
