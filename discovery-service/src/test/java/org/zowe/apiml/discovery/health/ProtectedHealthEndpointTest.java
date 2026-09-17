@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
-import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.discovery.registry.RegistryConfiguration;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import static io.restassured.RestAssured.given;
@@ -27,7 +27,7 @@ import static org.hamcrest.core.Is.is;
     properties = {
         "apiml.health.protected=false"
     },
-    classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
+    classes = {DiscoveryServiceApplication.class, RegistryConfiguration.class}
 )
 public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
     @Nested

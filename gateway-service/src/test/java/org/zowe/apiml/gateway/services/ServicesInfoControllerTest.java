@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.services;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.InstanceStatus;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -37,7 +37,7 @@ class ServicesInfoControllerTest {
 
     private final ServiceInfo serviceInfo = ServiceInfo.builder()
             .serviceId(SERVICE_ID)
-            .status(InstanceInfo.InstanceStatus.UP)
+            .status(InstanceStatus.UP)
             .build();
 
     @Mock
@@ -111,7 +111,7 @@ class ServicesInfoControllerTest {
         .then()
                 .statusCode(HttpStatus.OK.value())
                 .header(VERSION_HEADER, CURRENT_VERSION)
-                .body("status", is(InstanceInfo.InstanceStatus.UP.toString()))
+                .body("status", is(InstanceStatus.UP.toString()))
                 .body("serviceId", is(SERVICE_ID));
         //@formatter:on
     }
@@ -119,7 +119,7 @@ class ServicesInfoControllerTest {
     @ParameterizedTest(name = "whenServiceDoesNotExist_thenReturnNotFound: {0}")
     @ValueSource(strings = {SERVICES_SHORT_URL, SERVICES_FULL_URL})
     void whenServiceDoesNotExist_thenReturnNotFound(String url) {
-        serviceInfo.setStatus(InstanceInfo.InstanceStatus.UNKNOWN);
+        serviceInfo.setStatus(InstanceStatus.UNKNOWN);
         when(servicesInfoService.getServiceInfo(SERVICE_ID)).thenReturn(serviceInfo);
 
         //@formatter:off
@@ -129,7 +129,7 @@ class ServicesInfoControllerTest {
                 .get(url + "/" + SERVICE_ID)
         .then()
                 .statusCode(HttpStatus.NOT_FOUND.value())
-                .body("status", is(InstanceInfo.InstanceStatus.UNKNOWN.toString()))
+                .body("status", is(InstanceStatus.UNKNOWN.toString()))
                 .body("serviceId", is(SERVICE_ID));
         //@formatter:on
     }

@@ -14,7 +14,6 @@ import ch.qos.logback.core.util.IpAddressMatcher;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.base.Objects;
-import com.netflix.appinfo.InstanceInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +35,7 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -277,39 +277,98 @@ public class MetadataFilterService implements InitializingBean {
         return result.get();
     }
 
-    public InstanceInfo verifyAllowedDomains(InstanceInfo info) throws MetadataValidationException {
+    /**
+     * The subset of a registration this service actually inspects.
+     * <p>
+     * Introduced so the allow-list check is not tied to {@code com.netflix.appinfo.InstanceInfo}. The replacement
+     * registry applies the same check as a registration interceptor, and both models can populate this.
+     *
+     * @param instanceId           used only for log and error messages
+     * @param ipAddr               may be replaced by the resolved host address if it is not allowed
+     * @param hostName             checked against the allow list
+     * @param homePageUrl          checked against the allow list
+     * @param healthCheckUrl       checked against the allow list
+     * @param statusPageUrl        checked against the allow list
+     * @param secureHealthCheckUrl checked against the allow list
+     * @param metadata             every entry is checked; {@code apiml.corsAllowedOrigins} additionally
+     */
+    public record Candidate(
+        String instanceId,
+        String ipAddr,
+        String hostName,
+        String homePageUrl,
+        String healthCheckUrl,
+        String statusPageUrl,
+        String secureHealthCheckUrl,
+        Map<String, String> metadata
+    ) {
+
+        /**
+         * Builds a candidate from an instance discovered through Spring Cloud.
+         * <p>
+         * Spring's {@code ServiceInstance} carries no home-page, health-check or status-page URL, so those are
+         * left unset - {@code validateEntry} treats a blank value as allowed. That is not a hole: an instance's
+         * own URLs are checked when it registers, by the allow-list interceptor in the Discovery Service. What a
+         * consumer needs re-checked here is the <em>metadata</em> - swaggerUrl, graphqlUrl, documentationUrl,
+         * externalUrl - because that is what it is about to dereference, and those are all present.
+         */
+        public static Candidate of(org.springframework.cloud.client.ServiceInstance instance) {
+            return new Candidate(
+                instance.getInstanceId(),
+                null,
+                instance.getHost(),
+                null,
+                null,
+                null,
+                null,
+                instance.getMetadata()
+            );
+        }
+
+    }
+
+    /**
+     * Applies the domain allow list.
+     *
+     * @return the IP address the registration should use - the supplied one when it is allowed, otherwise the
+     *         address resolved from the hostname. A disallowed IP address is corrected rather than rejected,
+     *         which is long-standing behaviour: services behind NAT report an address the registry cannot verify.
+     * @throws DomainAllowListMetadataException when something is not allowed and {@code onlyWarn} is off
+     */
+    public String verifyAllowedDomains(Candidate candidate) throws MetadataValidationException {
         var result = new AtomicBoolean(true);
-        var instanceId = info.getInstanceId();
+        var instanceId = candidate.instanceId();
+        var ipAddr = candidate.ipAddr();
 
-        if (!validateEntry("IP Address", info.getIPAddr(), instanceId)) {
-            log.debug("IP address {} is not allowed. It is removed from the registration data.", info.getIPAddr());
-            // this is updating the same instance even it looks like creating a new instance of InstanceInfo
-            info = new InstanceInfo.Builder(info).setIPAddr(getIpAddress(info.getHostName())).build();
+        if (!validateEntry("IP Address", ipAddr, instanceId)) {
+            log.debug("IP address {} is not allowed. It is removed from the registration data.", ipAddr);
+            ipAddr = getIpAddress(candidate.hostName());
         }
-        if (!validateEntry("Instance Hostname", info.getHostName(), instanceId)) {
+        if (!validateEntry("Instance Hostname", candidate.hostName(), instanceId)) {
             result.set(false);
         }
-        if (!validateEntry("Home Page URL", info.getHomePageUrl(), instanceId)) {
+        if (!validateEntry("Home Page URL", candidate.homePageUrl(), instanceId)) {
             result.set(false);
         }
-        if (!validateEntry("HealthCheck URL", info.getHealthCheckUrl(), instanceId)) {
+        if (!validateEntry("HealthCheck URL", candidate.healthCheckUrl(), instanceId)) {
             result.set(false);
         }
-        if (!validateEntry("Status Page URL", info.getStatusPageUrl(), instanceId)) {
+        if (!validateEntry("Status Page URL", candidate.statusPageUrl(), instanceId)) {
             result.set(false);
         }
-        if (!validateEntry("Secure Health Check URL", info.getSecureHealthCheckUrl(), instanceId)) {
+        if (!validateEntry("Secure Health Check URL", candidate.secureHealthCheckUrl(), instanceId)) {
             result.set(false);
         }
 
-        if (info.getMetadata().containsKey("apiml.corsAllowedOrigins")) {
-            var corsVerificationResult = verifyCorsAllowedOrigins(info.getMetadata().get("apiml.corsAllowedOrigins"), instanceId);
+        var metadata = candidate.metadata() == null ? Map.<String, String>of() : candidate.metadata();
+        if (metadata.containsKey("apiml.corsAllowedOrigins")) {
+            var corsVerificationResult = verifyCorsAllowedOrigins(metadata.get("apiml.corsAllowedOrigins"), instanceId);
             if (!corsVerificationResult) {
                 result.set(false);
             }
         }
 
-        info.getMetadata().forEach((key, value) -> {
+        metadata.forEach((key, value) -> {
             var metadataVerificationResult = validateMetadataEntry(key, value, instanceId);
             if (!metadataVerificationResult) {
                 result.set(false);
@@ -320,7 +379,7 @@ public class MetadataFilterService implements InitializingBean {
             throw new DomainAllowListMetadataException("URLs not allowed found for instance " + instanceId);
         }
 
-        return info;
+        return ipAddr;
     }
 
 }
