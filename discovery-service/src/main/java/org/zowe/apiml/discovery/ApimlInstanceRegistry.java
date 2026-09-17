@@ -22,6 +22,7 @@ import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
@@ -186,7 +187,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        validateInstanceInfo(info);
+        info = validateInstanceInfo(info);
         info = changeServiceId(info);
 
         super.register(info, leaseDuration, isReplication);
@@ -194,7 +195,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        validateInstanceInfo(info);
+        info = validateInstanceInfo(info);
         info = changeServiceId(info);
 
         super.register(info, isReplication);
@@ -211,8 +212,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * described above. For backwards compatibility the validation prints warnings only for non-conformant values.
      * @param info the instance info
      */
-    private void validateInstanceInfo(InstanceInfo info) {
-        info = metadataFilterService.verifyAllowedDomains(info);
+    private InstanceInfo validateInstanceInfo(InstanceInfo info) {
+        var result = metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(info));
+        var resultInstanceInfo = new InstanceInfo.Builder(info).setIPAddr(result.getInstanceInfo().getIPAddr()).build();
 
         String instanceId = info.getInstanceId();
         String appName = StringUtils.lowerCase(info.getAppName());
@@ -236,6 +238,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
 
         verifyAuthenticationSchemeConfiguration(info, appName);
+        return resultInstanceInfo;
     }
 
     /**
