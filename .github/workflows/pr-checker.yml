@@ -12,6 +12,13 @@ jobs:
         name: PR Instructions
         runs-on: ubuntu-latest
         if: github.event.pull_request.user.login != 'zowe-robot'
+        # The title check labels and comments on non-conforming pull requests. Both calls target
+        # a pull request, which GitHub enforces against the "Pull requests" permission rather than
+        # "Issues" (POST /repos/{owner}/{repo}/issues/{issue_number}/labels and .../comments).
+        # Pull requests from forks still receive a read-only token, so on those the label and
+        # comment are denied by GitHub regardless of this block.
+        permissions:
+            pull-requests: write
 
         steps:
             -   name: Check PR title
