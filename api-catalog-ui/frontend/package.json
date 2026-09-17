@@ -46,7 +46,7 @@
         "rxjs": "7.8.2",
         "sass": "1.104.1",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.32.15",
+        "swagger-ui-react": "5.33.0",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -125,7 +125,7 @@
         "json-schema": "0.4.0",
         "nodemon": "3.1.14",
         "nth-check": "2.1.1",
-        "prettier": "3.9.6",
+        "prettier": "3.9.7",
         "prop-types": "15.8.1",
         "querystring-es3": "0.2.1",
         "redux-mock-store": "1.5.5",
