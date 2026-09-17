@@ -663,7 +663,11 @@ jobs:
         # compose file and commands work unchanged on a developer machine. central-gateway-service
         # shares apiml's real ports, so the gradle steps below pass -Dgateway.port /
         # -Ddiscovery.additionalPort so the test runner (host-based now) reaches it on the
-        # different HOST ports the compose file publishes it to. See docker/integration-tests/README.md.
+        # different HOST ports the compose file publishes it to. The functional tests
+        # (CentralRegistryTest/XForwardHeadersProxyTest/GatewayProxyTest) separately read
+        # centralGatewayServiceConfiguration, which needs its own -Dcentralgateway.connectPorts for
+        # the same reason - without it those tests hit the *domain* apiml instance instead (same
+        # host-port collision) and get 404s. See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -691,6 +695,7 @@ jobs:
                     ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Ddiscovery.additionalHost=central-gateway-service -Ddiscovery.additionalPort=10021
+                    -Dcentralgateway.connectPorts=10020
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
