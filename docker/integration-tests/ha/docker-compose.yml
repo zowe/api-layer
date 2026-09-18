@@ -31,9 +31,9 @@ services:
             APIML_HEALTH_PROTECTED: "false"
             logbackService: ZWEAAC2
         ports:
-            - "127.0.0.1:10024:10014"
-            - "127.0.0.1:5024:5124"
-            - "127.0.0.1:6314:6304"
+            - "127.0.0.1:20014:10014"
+            - "127.0.0.1:25124:5124"
+            - "127.0.0.1:26304:6304"
 
     caching-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/caching-service:${APIML_TAG:-local}
@@ -70,9 +70,9 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
             logbackService: ZWEACS2
         ports:
-            - "127.0.0.1:10026:10016"
-            - "127.0.0.1:5027:5126"
-            - "127.0.0.1:6316:6306"
+            - "127.0.0.1:20016:10016"
+            - "127.0.0.1:25126:5126"
+            - "127.0.0.1:26306:6306"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
@@ -91,8 +91,8 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
             logbackService: ZWEADC2
         ports:
-            - "127.0.0.1:10112:10012"
-            - "127.0.0.1:5112:5122"
+            - "127.0.0.1:20012:10012"
+            - "127.0.0.1:25122:5122"
 
     mock-services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
@@ -124,8 +124,8 @@ services:
             APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             logbackService: ZWEADS2
         ports:
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5031:5121"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25121:5121"
 
     zaas-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
@@ -146,9 +146,9 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
             logbackService: ZWEAZS2
         ports:
-            - "127.0.0.1:10033:10023"
-            - "127.0.0.1:5021:5120"
-            - "127.0.0.1:6321:6301"
+            - "127.0.0.1:20023:10023"
+            - "127.0.0.1:25120:5120"
+            - "127.0.0.1:26301:6301"
 
     gateway-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
@@ -168,6 +168,6 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             logbackService: ZWEAGW2
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6310:6300"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"

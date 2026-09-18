@@ -40,10 +40,10 @@ services:
             JGROUPS_BIND_ADDRESS: "apiml-2"
             JGROUPS_KEYEXCHANGE_PORT: "7601"
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6311:6310"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"
 
     api-catalog-services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}

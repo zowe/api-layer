@@ -121,7 +121,9 @@ Every service image already has a fixed remote-debug (JDWP) port baked in (see e
 `discovery-service` &rarr; `5121`, `discoverable-client` &rarr; `5122`, `mock-services` &rarr;
 `5123`, `api-catalog-services` &rarr; `5124`, `caching-service` &rarr; `5126`). Create a "Remote
 JVM Debug" run configuration in IntelliJ pointed at `localhost:<port>` and attach - no extra
-setup needed.
+setup needed. In an HA topology, a secondary instance's debug port is instance number + primary
+port (`gateway-service-2` &rarr; `25130`, `gateway-service-3` &rarr; `35130`) - see "A note on
+multi-instance topologies" below.
 
 ## Why hostname/SAN validation isn't affected
 
@@ -152,7 +154,7 @@ project. WSL2 (real Linux underneath) doesn't have that limitation, but plain ma
 
 The fix that works everywhere: publish the second (or third) instance to a **different host
 port** instead (e.g. `split/docker-compose.yml` maps `discovery-service-2`'s real, unchanged
-internal port `10011` to host port `10021`), and teach `ApiMediationLayerStartupChecker` to
+internal port `10011` to host port `20011`), and teach `ApiMediationLayerStartupChecker` to
 connect on a different port than the one it expects an instance to self-report as its identity in
 Eureka (`Instance.connectPort` vs `Instance.port` - see the class for details). This is exposed
 via `-D` system properties on the `./gradlew` invocations, matching each service's own naming:
@@ -168,18 +170,22 @@ via `-D` system properties on the `./gradlew` invocations, matching each service
   alongside it (`ServiceConfiguration.getConnectPorts()`, defaulting to null = "use the same port
   everywhere", so every already-existing environment-configuration-*.yml file is unaffected
   unless a job explicitly passes one of these flags).
-- `centralgateway.port` (single value, already existed) - `centralGatewayServiceConfiguration`
-  only ever has one host, so no comma-list handling is needed there.
+- `centralgateway.connectPorts` (single value) - `centralGatewayServiceConfiguration` only ever
+  has one host, so no comma-list handling is needed there.
 
-Every job's `hosts:`/port table follows one convention throughout: a service's own real port is
-unchanged, its `-2` peer publishes to `<port>+10` (or `+10000` for four/five-digit ports, e.g.
-`gateway-service` `10010`→`10020`, `discovery-service` `10011`→`10021`), and a `-3` peer (only
-`CITestsModulithHA`/`CITestsHA_caching-chaotic`) uses `+20`/`+30`. Debug and jacoco ports for a
-secondary instance are remapped the same way to avoid colliding with the primary's.
+Every job's `hosts:`/port table follows one convention throughout, chosen so the instance number
+is legible straight from the port: **a secondary/tertiary instance N's host-published port is N
+followed by the primary's own last 4 digits** (`gateway-service` `10010` → instance 2 `20010` →
+instance 3 `30010`; `discovery-service` `10011` → instance 2 `20011`; debug port `5130` →
+instance 2 `25130`; jacoco port `6300` → instance 2 `26300`), regardless of port category - app,
+debug, and jacoco ports all follow the exact same rule. The one wrinkle: a topology that has both
+a literal `-2` peer of a service *and* a same-image `central-gateway-service` counterpart (only
+`GatewayProxy`) numbers them 2 and 3 respectively, since both would otherwise land on the same
+instance-2 port - see that job's `docker-compose.yml` comments.
 
 Passing `-D` flags keeps the checked-in `environment-configuration-*.yml` files completely
 untouched, since most of them are still shared by several jobs (e.g.
 `environment-configuration-ha.yml` backs six jobs). The one exception is `CITests`, which uses
 its own `environment-configuration-docker-compose.yml` - an exact copy of
-`environment-configuration-docker.yml` with `additionalPort: 10021` - predating the `-D` override
+`environment-configuration-docker.yml` with `additionalPort: 20011` - predating the `-D` override
 approach; every later migration used the flag instead of forking another file.

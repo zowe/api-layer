@@ -1,12 +1,13 @@
 # Same topology as environment-configuration-docker.yml (used by CITests, still shared by
 # several other, not-yet-migrated jobs), except discoveryServiceConfiguration.additionalPort
 # differs from its port. CITests's docker-compose.yml publishes discovery-service-2's real
-# port (10011, unchanged) to a different HOST port (10021) instead of a different loopback
-# address, since alternate loopback addresses aren't reliably supported by Docker Desktop on
-# macOS/Windows (see docker/integration-tests/README.md). additionalPort is deliberately kept
-# equal to port in every other environment-configuration-*.yml file, where it's fine to reuse -
-# don't copy this pattern there without checking ApiMediationLayerStartupChecker's connectPort
-# vs identity-port distinction.
+# port (10011, unchanged) to a different HOST port (20011 - instance 2's port is always "2"
+# followed by the primary's last 4 digits, see docker/integration-tests/README.md) instead of
+# a different loopback address, since alternate loopback addresses aren't reliably supported by
+# Docker Desktop on macOS/Windows. additionalPort is deliberately kept equal to port in every
+# other environment-configuration-*.yml file, where it's fine to reuse - don't copy this pattern
+# there without checking ApiMediationLayerStartupChecker's connectPort vs identity-port
+# distinction.
 credentials:
     # Mainframe credentials are required - see /integration-tests/README.md for instructions
     user: USER
@@ -36,7 +37,7 @@ discoveryServiceConfiguration:
     password: user
     host: discovery-service
     additionalHost: discovery-service-2
-    additionalPort: 10021
+    additionalPort: 20011
     port: 10011
     instances: 1
 discoverableClientConfiguration:

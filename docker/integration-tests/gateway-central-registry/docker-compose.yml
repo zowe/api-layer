@@ -79,9 +79,9 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
             logbackService: ZWEAGW1
         ports:
-            - "127.0.0.1:10030:10010"
-            - "127.0.0.1:5012:5130"
-            - "127.0.0.1:6320:6300"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"
 
     api-catalog-services-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}
@@ -93,9 +93,9 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
             logbackService: ZWEAAC2
         ports:
-            - "127.0.0.1:10024:10014"
-            - "127.0.0.1:5024:5124"
-            - "127.0.0.1:6314:6304"
+            - "127.0.0.1:20014:10014"
+            - "127.0.0.1:25124:5124"
+            - "127.0.0.1:26304:6304"
 
     discovery-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
@@ -105,8 +105,8 @@ services:
             APIML_SERVICE_HOSTNAME: discovery-service-2
             logbackService: ZWEADS2
         ports:
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5031:5121"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25121:5121"
 
     zaas-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
@@ -119,9 +119,9 @@ services:
             APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
             logbackService: ZWEAZS2
         ports:
-            - "127.0.0.1:10033:10023"
-            - "127.0.0.1:5021:5120"
-            - "127.0.0.1:6321:6301"
+            - "127.0.0.1:20023:10023"
+            - "127.0.0.1:25120:5120"
+            - "127.0.0.1:26301:6301"
 
     mock-services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}

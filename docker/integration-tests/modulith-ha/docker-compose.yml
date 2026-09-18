@@ -47,10 +47,10 @@ services:
             logbackService: ZWEAGW2
             JGROUPS_BIND_ADDRESS: apiml-2
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6311:6310"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"
 
     apiml-3:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
@@ -63,10 +63,10 @@ services:
             logbackService: ZWEAGW3
             JGROUPS_BIND_ADDRESS: apiml-3
         ports:
-            - "127.0.0.1:10030:10010"
-            - "127.0.0.1:10031:10011"
-            - "127.0.0.1:5012:5130"
-            - "127.0.0.1:6312:6310"
+            - "127.0.0.1:30010:10010"
+            - "127.0.0.1:30011:10011"
+            - "127.0.0.1:35130:5130"
+            - "127.0.0.1:36310:6310"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
@@ -85,8 +85,8 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
             logbackService: ZWEADC2
         ports:
-            - "127.0.0.1:10112:10012"
-            - "127.0.0.1:5112:5122"
+            - "127.0.0.1:20012:10012"
+            - "127.0.0.1:25122:5122"
 
     mock-services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}

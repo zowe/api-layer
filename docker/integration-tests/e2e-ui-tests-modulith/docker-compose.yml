@@ -69,10 +69,10 @@ services:
             APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
             APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6311:6310"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"
 
     # Pinned Cypress + Chrome/Firefox/Edge toolchain, invoked on demand via
     # `docker compose run --rm cypress ...` - see docker/integration-tests/e2e-ui-tests/docker-compose.yml

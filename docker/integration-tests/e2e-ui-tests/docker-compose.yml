@@ -86,8 +86,8 @@ services:
             APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
             logbackService: ZWEADS2
         ports:
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5031:5121"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25121:5121"
 
     gateway-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
@@ -102,9 +102,9 @@ services:
             ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
             logbackService: ZWEAGW2
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6310:6300"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"
 
     zaas-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
@@ -118,9 +118,9 @@ services:
             APIML_SERVICE_HOSTNAME: zaas-service-2
             logbackService: ZWEAZS2
         ports:
-            - "127.0.0.1:10033:10023"
-            - "127.0.0.1:5021:5120"
-            - "127.0.0.1:6321:6301"
+            - "127.0.0.1:20023:10023"
+            - "127.0.0.1:25120:5120"
+            - "127.0.0.1:26301:6301"
 
     # Pinned Cypress + Chrome/Firefox/Edge toolchain, invoked on demand via
     # `docker compose run --rm cypress ...` - joins the same network as the services above (so

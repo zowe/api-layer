@@ -46,10 +46,10 @@ services:
             APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
             APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6311:6310"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}

@@ -25,9 +25,10 @@ services:
     # gateway-service-2 and central-gateway-service share gateway-service's real port (10010) -
     # only central-gateway-service is checked directly by the generic startup checker in this job
     # (via its own single-host CentralGatewayServiceConfiguration, remapped below with
-    # -Dcentralgateway.port), gateway-service-2 isn't part of the generic checker's scope here
-    # (matches original behaviour) but still gets its own host port for convenience/debugging.
-    # See docker/integration-tests/README.md.
+    # -Dcentralgateway.connectPorts), gateway-service-2 isn't part of the generic checker's scope
+    # here (matches original behaviour) but still gets its own host port for convenience/debugging.
+    # It's instance 2 (20010); central-gateway-service below is instance 3 (30010) since both
+    # would otherwise collide on the same instance-2 port. See docker/integration-tests/README.md.
     gateway-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
         hostname: gateway-service-2
@@ -37,9 +38,9 @@ services:
             logbackService: ZWEAGW2
             APIML_SECURITY_ENABLESTRICTURLVALIDATION: "false"
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6310:6300"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"
 
     zaas-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
@@ -61,9 +62,9 @@ services:
             APIML_SERVICE_HOSTNAME: zaas-service-2
             logbackService: ZWEAZS2
         ports:
-            - "127.0.0.1:10033:10023"
-            - "127.0.0.1:5021:5120"
-            - "127.0.0.1:6321:6301"
+            - "127.0.0.1:20023:10023"
+            - "127.0.0.1:25120:5120"
+            - "127.0.0.1:26301:6301"
 
     central-gateway-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
@@ -75,9 +76,9 @@ services:
             APIML_SERVICE_HOSTNAME: central-gateway-service
             APIML_SECURITY_ENABLESTRICTURLVALIDATION: "false"
         ports:
-            - "127.0.0.1:10030:10010"
-            - "127.0.0.1:5012:5130"
-            - "127.0.0.1:6320:6300"
+            - "127.0.0.1:30010:10010"
+            - "127.0.0.1:35130:5130"
+            - "127.0.0.1:36300:6300"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}

@@ -42,11 +42,11 @@ services:
             APIML_SERVICE_HOSTNAME: "caching-service-2"
             logbackService: ZWEACS2
         ports:
-            - "127.0.0.1:10016:10016"
+            - "127.0.0.1:20016:10016"
             # Same image as caching-service, so the same internal debug/jacoco ports (5126/6306) -
             # remap the HOST side only to avoid colliding with the primary instance's publish above.
-            - "127.0.0.1:5127:5126"
-            - "127.0.0.1:6307:6306"
+            - "127.0.0.1:25126:5126"
+            - "127.0.0.1:26306:6306"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}

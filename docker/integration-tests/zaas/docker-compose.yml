@@ -25,9 +25,9 @@ services:
             APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
             logbackService: ZWEAGW2
         ports:
-            - "127.0.0.1:10030:10010"
-            - "127.0.0.1:5012:5130"
-            - "127.0.0.1:6320:6300"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}

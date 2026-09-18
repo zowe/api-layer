@@ -17,8 +17,8 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             logbackService: ZWEADC2
         ports:
-            - "127.0.0.1:10112:10012"
-            - "127.0.0.1:5112:5122"
+            - "127.0.0.1:20012:10012"
+            - "127.0.0.1:25122:5122"
 
     mock-services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
@@ -58,7 +58,7 @@ services:
             APIML_ROUTING_INSTANCEIDHEADER: "true"
             logbackService: ZWEAGW2
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6311:6310"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"

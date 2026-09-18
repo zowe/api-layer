@@ -92,9 +92,10 @@ services:
     # discoveryServiceConfiguration.additionalHost, split into its own "central" instance
     # group via -DcentralHosts). It listens on the SAME real port (10011) as the primary
     # discovery-service, so from the host it needs a different HOST port instead - published
-    # here as 10021, matching that env-config file's additionalPort (the container's own
-    # internal port, and every other container's peer URLs referencing it, stay at 10011 -
-    # only the host-side publish differs). See docker/integration-tests/README.md.
+    # here as 20011 (instance 2's port = 2 followed by the primary's last 4 digits), matching
+    # that env-config file's additionalPort (the container's own internal port, and every
+    # other container's peer URLs referencing it, stay at 10011 - only the host-side publish
+    # differs). See docker/integration-tests/README.md.
     discovery-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
         hostname: discovery-service-2
@@ -103,7 +104,7 @@ services:
             APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
             logbackService: ZWEADS2
         ports:
-            - "127.0.0.1:10021:10011"
+            - "127.0.0.1:20011:10011"
 
     gateway-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}

@@ -16,8 +16,8 @@ services:
     # Same real ports (10010 gateway/catalog/caching, 10011 discovery) as apiml - the
     # test runner (now host-based) reaches apiml-2 via different HOST ports instead
     # (see docker/integration-tests/README.md and the -D*.connectPorts / -Ddiscovery.additionalPort
-    # flags on this job's gradle invocations), matching the repo's existing root
-    # docker-compose.yml convention (10020/10021/5011) for a second apiml instance.
+    # flags on this job's gradle invocations): every port for instance N is published on the
+    # host as N followed by the primary's own last 4 digits (20010/20011/25130 for instance 2).
     apiml:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml
@@ -45,10 +45,10 @@ services:
             logbackService: ZWEAGW2
             JGROUPS_BIND_ADDRESS: apiml-2
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6311:6310"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}

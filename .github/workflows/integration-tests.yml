@@ -246,8 +246,8 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
                     -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
-                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
-                    -Ddiscovery.additionalPort=10021
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                     -Dzosmf.instances=0
                 env:
@@ -258,8 +258,8 @@ jobs:
                 run: >
                     ENV_CONFIG=docker-modulith-ha ./gradlew :integration-tests:runContainerSAFProviderTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
-                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
-                    -Ddiscovery.additionalPort=10021
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -302,9 +302,9 @@ jobs:
         # manipulating containers directly, so they need no special handling here.
         env:
             CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,10020,10030 -Dapicatalog.connectPorts=10010,10020,10030
-                -Dcaching.connectPorts=10010,10020,10030 -Ddiscovery.additionalConnectPorts=10021,10031
-                -Ddiscoverableclient.connectPorts=10012,10112
+                -Dgateway.connectPorts=10010,20010,30010 -Dapicatalog.connectPorts=10010,20010,30010
+                -Dcaching.connectPorts=10010,20010,30010 -Ddiscovery.additionalConnectPorts=20011,30011
+                -Ddiscoverableclient.connectPorts=10012,20012
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -475,8 +475,8 @@ jobs:
         # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10014,10024
-                -Dzaas.connectPorts=10023,10033 -Ddiscovery.additionalPort=10021
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
+                -Dzaas.connectPorts=10023,20023 -Ddiscovery.additionalPort=20011
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -561,7 +561,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.connectPorts=10030
+                    -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.connectPorts=30010
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -569,7 +569,7 @@ jobs:
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runGatewayProxyTest -Denvironment.config=-docker
-                    -Dcentralgateway.connectPorts=10030
+                    -Dcentralgateway.connectPorts=30010
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Dump CGW jacoco data
@@ -606,7 +606,7 @@ jobs:
         # (host-based now) reaches them on the different HOST ports the compose file publishes
         # them to. See docker/integration-tests/README.md.
         env:
-            CONNECT_PORT_FLAGS: -Dcentralgateway.connectPorts=10030 -Ddiscovery.additionalPort=10021
+            CONNECT_PORT_FLAGS: -Dcentralgateway.connectPorts=20010 -Ddiscovery.additionalPort=20011
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -696,7 +696,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0
-                    -Denvironment.modulith=true -Dgateway.host=central-gateway-service -Dgateway.port=10020
+                    -Denvironment.modulith=true -Dgateway.host=central-gateway-service -Dgateway.port=20010
                     -DcentralHosts=central-gateway-service
 
             -   name: Run CI Tests
@@ -704,8 +704,8 @@ jobs:
                 run: >
                     ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Ddiscovery.additionalHost=central-gateway-service -Ddiscovery.additionalPort=10021
-                    -Dcentralgateway.connectPorts=10020
+                    -Ddiscovery.additionalHost=central-gateway-service -Ddiscovery.additionalPort=20011
+                    -Dcentralgateway.connectPorts=20010
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Store results
@@ -848,8 +848,8 @@ jobs:
         # file publishes it to. See docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020
-                -Dcaching.connectPorts=10010,10020 -Ddiscovery.additionalPort=10021
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010
+                -Dcaching.connectPorts=10010,20010 -Ddiscovery.additionalPort=20011
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -986,7 +986,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
-                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=10030
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=20010
                     -DcentralHosts=central-gateway-service
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -1000,7 +1000,7 @@ jobs:
                     -Doidc.client.id=$OIDC_CLIENT_ID -Doidc.client.secret=$OIDC_CLIENT_SECRET -Doidc.test.user=$OIDC_TEST_USER
                     -Doidc.test.pass=$OIDC_TEST_PASS -Doidc.test.alt_user=$OIDC_WINNIE_USER
                     -Doidc.test.alt_pass=$OIDC_WINNIE_PASS -Doidc.host=$OIDC_HOST
-                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=10030
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=20010
                     -DcentralHosts=central-gateway-service
                 env:
                     OIDC_CLIENT_ID: ${{ secrets.OIDC_CLIENT_ID }}
@@ -1325,9 +1325,9 @@ jobs:
         # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10014,10024
-                -Dzaas.connectPorts=10023,10033 -Ddiscovery.additionalPort=10021
-                -Ddiscoverableclient.connectPorts=10012,10112
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
+                -Dzaas.connectPorts=10023,20023 -Ddiscovery.additionalPort=20011
+                -Ddiscoverableclient.connectPorts=10012,20012
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1416,8 +1416,8 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
                     -Ddiscoverableclient.instances=2 -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2
                     -Dcaching.instances=2 -Dapicatalog.instances=2
-                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
-                    -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1427,8 +1427,8 @@ jobs:
                 run: >
                     ./gradlew runDeterministicLbHaTests --info
                     -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
-                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
-                    -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1468,8 +1468,8 @@ jobs:
         # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,10020 -Dzaas.connectPorts=10023,10033
-                -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
+                -Dgateway.connectPorts=10010,20010 -Dzaas.connectPorts=10023,20023
+                -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1557,8 +1557,8 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
-                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
-                    -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
                     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
@@ -1566,8 +1566,8 @@ jobs:
             -   name: Run HA Tests
                 run: >
                     ./gradlew runStickySessionLbHaTests -Denvironment.config=-docker-modulith-ha
-                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
-                    -Ddiscovery.additionalPort=10021 -Ddiscoverableclient.connectPorts=10012,10112
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
@@ -1610,9 +1610,9 @@ jobs:
         # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10014,10024
-                -Dzaas.connectPorts=10023,10033 -Ddiscovery.additionalPort=10021
-                -Ddiscoverableclient.connectPorts=10012,10112 -Dcaching.connectPorts=10016,10026,10036
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
+                -Dzaas.connectPorts=10023,20023 -Ddiscovery.additionalPort=20011
+                -Ddiscoverableclient.connectPorts=10012,20012 -Dcaching.connectPorts=10016,20016,30016
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1693,9 +1693,9 @@ jobs:
         # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10014,10024
-                -Dzaas.connectPorts=10023,10033 -Ddiscovery.additionalPort=10021
-                -Ddiscoverableclient.connectPorts=10012,10112 -Dcaching.connectPorts=10016,10026
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
+                -Dzaas.connectPorts=10023,20023 -Ddiscovery.additionalPort=20011
+                -Ddiscoverableclient.connectPorts=10012,20012 -Dcaching.connectPorts=10016,20016
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1892,8 +1892,8 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
-                    -Dgateway.connectPorts=10010,10020 -Dapicatalog.connectPorts=10010,10020 -Dcaching.connectPorts=10010,10020
-                    -Ddiscovery.additionalPort=10021
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011
                     -Denvironment.modulith=true -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
@@ -1984,7 +1984,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
                     -Dgateway.instances=1 -Dcaching.instances=1 -Dapicatalog.instances=1
-                    -Ddiscovery.additionalPort=10021
+                    -Ddiscovery.additionalPort=20011
                     -DcentralHosts=api-catalog-services,discoverable-client,discovery-service,gateway-service,zaas-service,caching-service
 
             -   name: Show status when APIML is not ready yet
@@ -2050,7 +2050,7 @@ jobs:
         # reaches it on the different HOST ports the compose file publishes it to. See
         # docker/integration-tests/README.md.
         env:
-            CONNECT_PORT_FLAGS: -Dgateway.connectPorts=10010,10020 -Ddiscovery.additionalPort=10021
+            CONNECT_PORT_FLAGS: -Dgateway.connectPorts=10010,20010 -Ddiscovery.additionalPort=20011
         steps:
             -   uses: actions/checkout@v4
                 with:

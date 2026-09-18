@@ -47,8 +47,8 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
             logbackService: ZWEADC2
         ports:
-            - "127.0.0.1:10112:10012"
-            - "127.0.0.1:5112:5122"
+            - "127.0.0.1:20012:10012"
+            - "127.0.0.1:25122:5122"
 
     mock-services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
@@ -78,8 +78,8 @@ services:
             APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             logbackService: ZWEADS2
         ports:
-            - "127.0.0.1:10021:10011"
-            - "127.0.0.1:5031:5121"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25121:5121"
 
     zaas-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
@@ -99,9 +99,9 @@ services:
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
             logbackService: ZWEAZS2
         ports:
-            - "127.0.0.1:10033:10023"
-            - "127.0.0.1:5021:5120"
-            - "127.0.0.1:6321:6301"
+            - "127.0.0.1:20023:10023"
+            - "127.0.0.1:25120:5120"
+            - "127.0.0.1:26301:6301"
 
     gateway-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
@@ -123,6 +123,6 @@ services:
             APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
             logbackService: ZWEAGW2
         ports:
-            - "127.0.0.1:10020:10010"
-            - "127.0.0.1:5011:5130"
-            - "127.0.0.1:6310:6300"
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"
