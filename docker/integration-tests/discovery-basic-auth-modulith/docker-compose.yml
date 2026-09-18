@@ -1,0 +1,72 @@
+x-basic-auth-env: &basic-auth-env
+    APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: "false"
+    APIML_DISCOVERY_USERID: eureka
+    APIML_DISCOVERY_PASSWORD: password
+
+services:
+
+    # apiml-2 shares apiml's real ports (10010/10011) - the test runner (host-based now) reaches
+    # it via different HOST ports instead, via -D*.connectPorts / -Ddiscovery.additionalPort on
+    # this job's gradle invocations. See docker/integration-tests/README.md.
+    apiml:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml
+        volumes:
+            - ./api-defs:/api-defs
+        environment:
+            <<: *basic-auth-env
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_HOSTNAME: apiml
+            logbackService: ZWEAGW1
+            APIML_HEALTH_PROTECTED: "false"
+            CACHING_STORAGE_MODE: infinispan
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+            JGROUPS_BIND_PORT: "7600"
+            JGROUPS_BIND_ADDRESS: apiml
+            JGROUPS_KEYEXCHANGE_PORT: "7601"
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+
+    apiml-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml-2
+        volumes:
+            - ./api-defs:/api-defs
+        environment:
+            <<: *basic-auth-env
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_HOSTNAME: apiml-2
+            logbackService: ZWEAGW2
+            APIML_HEALTH_PROTECTED: "false"
+            CACHING_STORAGE_MODE: infinispan
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+            JGROUPS_BIND_PORT: "7600"
+            JGROUPS_BIND_ADDRESS: apiml-2
+            JGROUPS_KEYEXCHANGE_PORT: "7601"
+        ports:
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            <<: *basic-auth-env
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"

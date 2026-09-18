@@ -12,6 +12,7 @@ package org.zowe.apiml.util.requests.ha;
 
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.util.requests.DiscoveryRequests;
+import org.zowe.apiml.util.requests.Requests;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,8 +28,10 @@ public class HADiscoveryRequests {
     public List<DiscoveryRequests> discoveryServices = new ArrayList<>();
 
     public HADiscoveryRequests() {
-        discoveryServices.add(new DiscoveryRequests(environmentConfiguration().getDiscoveryServiceConfiguration().getHost()));
-        discoveryServices.add(new DiscoveryRequests(environmentConfiguration().getDiscoveryServiceConfiguration().getAdditionalHost()));
+        var discoveryServiceConfiguration = environmentConfiguration().getDiscoveryServiceConfiguration();
+        String scheme = discoveryServiceConfiguration.getScheme();
+        discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getHost(), discoveryServiceConfiguration.getPort(), new Requests()));
+        discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getAdditionalHost(), discoveryServiceConfiguration.getAdditionalPort(), new Requests()));
         log.info("Created HADiscoveryRequests");
     }
 

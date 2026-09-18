@@ -130,7 +130,7 @@ public class SecurityUtils {
     //@formatter:off
 
     public static String getGatewayUrl(String host, String path) {
-        return getGatewayUrl(host, path, GATEWAY_PORT);
+        return getGatewayUrl(host, path, serviceConfiguration.getConnectPortForHost(host));
     }
 
     public static String getGatewayUrl(String path) {

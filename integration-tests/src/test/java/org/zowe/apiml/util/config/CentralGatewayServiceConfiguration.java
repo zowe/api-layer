@@ -23,6 +23,7 @@ public class CentralGatewayServiceConfiguration implements ServiceConfiguration 
     private String scheme;
     private String host;
     private int port;
+    private String connectPorts;
 
     @Override
     public String getServiceId() {

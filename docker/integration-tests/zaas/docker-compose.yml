@@ -1,0 +1,94 @@
+services:
+
+    caching-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/caching-service:${APIML_TAG:-local}
+        hostname: caching-service
+        environment:
+            CACHING_STORAGE_MODE: "infinispan"
+            JGROUPS_BIND_ADDRESS: "caching-service"
+            JGROUPS_BIND_PORT: "7600"
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]"
+        ports:
+            - "127.0.0.1:10016:10016"
+            - "127.0.0.1:5126:5126"
+            - "127.0.0.1:6306:6306"
+
+    # central-gateway-service shares gateway-service's real port - the test runner (host-based
+    # now) reaches it via -Dcentralgateway.port on this job's gradle invocations instead. See
+    # docker/integration-tests/README.md.
+    central-gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: central-gateway-service
+        environment:
+            APIML_SERVICE_APIMLID: central-apiml
+            APIML_SERVICE_HOSTNAME: central-gateway-service
+            APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
+            logbackService: ZWEAGW2
+        ports:
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    api-catalog-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}
+        hostname: api-catalog-services
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            - "127.0.0.1:10014:10014"
+            - "127.0.0.1:5124:5124"
+            - "127.0.0.1:6304:6304"
+
+    discovery-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5121:5121"
+
+    zaas-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service
+        environment:
+            APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: "true"
+            APIML_SECURITY_OIDC_CLIENTID: ${OIDC_CLIENT_ID:-}
+            APIML_SECURITY_OIDC_CLIENTSECRET: ${OIDC_CLIENT_SECRET:-}
+            APIML_SECURITY_OIDC_ENABLED: "true"
+            APIML_SECURITY_OIDC_REGISTRY: zowe.okta.com
+            APIML_SECURITY_OIDC_JWKS_URI: ${OIDC_JWKSET_URI:-}
+            APIML_SECURITY_OIDC_IDENTITYMAPPERUSER: APIMTST
+            APIML_SECURITY_OIDC_IDENTITYMAPPERURL: https://gateway-service:10010/zss/api/v1/certificate/dn
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+        ports:
+            - "127.0.0.1:10023:10023"
+            - "127.0.0.1:5120:5120"
+            - "127.0.0.1:6301:6301"
+
+    gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service
+        environment:
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6300:6300"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"

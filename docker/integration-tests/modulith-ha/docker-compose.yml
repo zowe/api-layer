@@ -1,0 +1,96 @@
+x-apiml-ha-env: &apiml-ha-env
+    APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+    APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+    APIML_SECURITY_X509_ENABLED: "true"
+    SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: "16348"
+    SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: "16348"
+    APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+    APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+    APIML_HEALTH_PROTECTED: "false"
+    CACHING_STORAGE_MODE: infinispan
+    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600],apiml-3[7600]"
+    JGROUPS_BIND_PORT: "7600"
+    JGROUPS_KEYEXCHANGE_PORT: "7601"
+
+services:
+
+    # Three real apiml instances sharing the same real ports (10010/10011). The test runner
+    # (now host-based) reaches apiml-2/apiml-3 via different HOST ports instead, via
+    # -D*.connectPorts / -Ddiscovery.additionalConnectPorts on this job's gradle invocations
+    # (the shared environment-configuration-docker-modulith-ha.yml stays untouched - several
+    # other jobs also use it). See docker/integration-tests/README.md.
+    apiml:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml
+        environment:
+            <<: *apiml-ha-env
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml-3:10011/eureka,https://apiml:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml-3:10011/eureka,https://apiml:10011/eureka
+            APIML_SERVICE_HOSTNAME: apiml
+            logbackService: ZWEAGW1
+            JGROUPS_BIND_ADDRESS: apiml
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+
+    apiml-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml-2
+        environment:
+            <<: *apiml-ha-env
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-3:10011/eureka,https://apiml-2:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-3:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_HOSTNAME: apiml-2
+            logbackService: ZWEAGW2
+            JGROUPS_BIND_ADDRESS: apiml-2
+        ports:
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"
+
+    apiml-3:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml-3
+        environment:
+            <<: *apiml-ha-env
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
+            APIML_SERVICE_HOSTNAME: apiml-3
+            logbackService: ZWEAGW3
+            JGROUPS_BIND_ADDRESS: apiml-3
+        ports:
+            - "127.0.0.1:30010:10010"
+            - "127.0.0.1:30011:10011"
+            - "127.0.0.1:35130:5130"
+            - "127.0.0.1:36310:6310"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    discoverable-client-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client-2
+        environment:
+            APIML_SERVICE_HOSTNAME: discoverable-client-2
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+            logbackService: ZWEADC2
+        ports:
+            - "127.0.0.1:20012:10012"
+            - "127.0.0.1:25122:5122"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"

@@ -1,0 +1,139 @@
+services:
+
+    api-catalog-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}
+        hostname: api-catalog-services
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            - "127.0.0.1:10014:10014"
+            - "127.0.0.1:5124:5124"
+            - "127.0.0.1:6304:6304"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    discovery-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5121:5121"
+
+    gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service
+        environment:
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID: ${OIDC_CLIENT_ID:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET: ${OIDC_CLIENT_PASSWORD:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_ISSUER: ${OIDC_HOST:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_AUTHORIZATIONURI: ${OIDC_AUTH_URI:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_TOKENURI: ${OIDC_TOKEN_URI:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERINFOURI: ${OIDC_USER_INFO_URI:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERNAMEATTRIBUTE: sub
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_JWKSETURI: ${OIDC_JWKSET_URI:-}
+            APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
+            APIML_HEALTH_PROTECTED: "false"
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6300:6300"
+
+    zaas-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service
+        environment:
+            APIML_HEALTH_PROTECTED: "false"
+        ports:
+            - "127.0.0.1:10023:10023"
+            - "127.0.0.1:5120:5120"
+            - "127.0.0.1:6301:6301"
+
+    caching-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/caching-service:${APIML_TAG:-local}
+        hostname: caching-service
+        ports:
+            - "127.0.0.1:10016:10016"
+            - "127.0.0.1:5126:5126"
+            - "127.0.0.1:6306:6306"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"
+
+    # discovery-service-2/gateway-service-2/zaas-service-2 aren't part of the generic startup
+    # checker's scope in this job (matches original behaviour - -DcentralHosts here names the
+    # *primary* hostnames, and none of environment-configuration-ha.yml's config classes has an
+    # additional-host pointing at these "-2" names) - only real for the actual Cypress E2E flow,
+    # reached container-to-container. Distinct host ports below are still needed since two
+    # containers can't publish to the same host port. See docker/integration-tests/README.md.
+    discovery-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service-2
+        volumes:
+            - ./api-defs:/api-defs
+        environment:
+            APIML_SERVICE_HOSTNAME: discovery-service-2
+            APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
+            logbackService: ZWEADS2
+        ports:
+            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:25121:5121"
+
+    gateway-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service-2
+        environment:
+            APIML_SERVICE_APIMLID: apiml2
+            APIML_SERVICE_HOSTNAME: gateway-service-2
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
+            APIML_HEALTH_PROTECTED: "false"
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+            logbackService: ZWEAGW2
+        ports:
+            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"
+
+    zaas-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service-2
+        environment:
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
+            APIML_HEALTH_PROTECTED: "false"
+            APIML_SERVICE_HOSTNAME: zaas-service-2
+            logbackService: ZWEAZS2
+        ports:
+            - "127.0.0.1:20023:10023"
+            - "127.0.0.1:25120:5120"
+            - "127.0.0.1:26301:6301"
+
+    # Pinned Cypress + Chrome/Firefox/Edge toolchain, invoked on demand via
+    # `docker compose run --rm cypress ...` - joins the same network as the services above (so
+    # hostnames resolve exactly like from the host), with the whole repo bind-mounted so it can
+    # see the node_modules/certs already present on disk. Not started by `up`.
+    cypress:
+        image: cypress/browsers:node-20.11.0-chrome-121.0.6167.85-1-ff-120.0-edge-121.0.2277.83-1
+        working_dir: /workspace
+        volumes:
+            - ../../..:/workspace
+            # The npm-install step (host-side) downloads the Cypress binary into $HOME/.cache/Cypress
+            # to be cached by actions/cache - bind-mount it in so this container (running as root)
+            # sees the same binary instead of trying to redownload it.
+            - ${HOME}/.cache/Cypress:/root/.cache/Cypress
+        profiles:
+            - cypress

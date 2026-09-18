@@ -31,12 +31,13 @@ public class HAGatewayRequests {
     }
 
     public HAGatewayRequests(String scheme) {
-        String[] gatewayHosts = environmentConfiguration().getGatewayServiceConfiguration().getHost().split(",");
-        int externalPort = environmentConfiguration().getGatewayServiceConfiguration().getExternalPort();
-        for (int i = 0; i < gatewayHosts.length; i++) {
-            String host = gatewayHosts[i];
+        var gatewayServiceConfiguration = environmentConfiguration().getGatewayServiceConfiguration();
+        String[] gatewayHosts = gatewayServiceConfiguration.getHost().split(",");
+        int externalPort = gatewayServiceConfiguration.getExternalPort();
+        for (String host : gatewayHosts) {
+            int port = gatewayServiceConfiguration.getConnectPortForHost(host, externalPort);
 
-            gatewayServices.add(new GatewayRequests(scheme, host, externalPort));
+            gatewayServices.add(new GatewayRequests(scheme, host, port));
         }
 
         log.info("Created HAGatewayRequests");

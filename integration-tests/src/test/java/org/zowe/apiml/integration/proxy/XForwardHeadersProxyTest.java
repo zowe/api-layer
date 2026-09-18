@@ -25,13 +25,12 @@ import org.zowe.apiml.util.config.GatewayServiceConfiguration;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 
-import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.matchesPattern;
 import static org.zowe.apiml.util.SecurityUtils.COOKIE_NAME;
 import static org.zowe.apiml.util.SecurityUtils.gatewayToken;
 import static org.zowe.apiml.util.requests.Endpoints.REQUEST_INFO_ENDPOINT;
@@ -50,8 +49,16 @@ class XForwardHeadersProxyTest {
     static String dgwUrl;
     static String jwt;
 
-    static String cgwIp;
-    static String localIp;
+    /**
+     * Matches one dotted-quad IPv4 address, used to assert x-forwarded-for structure (a
+     * comma-separated hop count) without pinning down the exact addresses. Under host-based test
+     * execution the addresses a container sees for the client->CGW hop and the CGW->GW hop are
+     * Docker's own NAT/bridge addresses (not the test host's identity, and not resolvable via the
+     * CGW hostname, which is aliased to 127.0.0.1 on the host) - those differ by platform and
+     * Docker network layout, so this only verifies the gateway is genuinely recording one hop per
+     * proxy instead of leaking/trusting a client-supplied value.
+     */
+    private static final String IPV4 = "\\d{1,3}(?:\\.\\d{1,3}){3}";
 
     @BeforeAll
     static void init() throws Exception {
@@ -62,17 +69,10 @@ class XForwardHeadersProxyTest {
         cgwConf = ConfigReader.environmentConfiguration().getCentralGatewayServiceConfiguration();
         dgwConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
-        cgwUrl = String.format("%s://%s:%s%s", cgwConf.getScheme(), cgwConf.getHost(), cgwConf.getPort(), REQUEST_INFO_ENDPOINT);
+        cgwUrl = String.format("%s://%s:%s%s", cgwConf.getScheme(), cgwConf.getHost(), cgwConf.getConnectPortForHost(cgwConf.getHost()), REQUEST_INFO_ENDPOINT);
         dgwUrl = String.format("%s://%s:%s%s", dgwConf.getScheme(), dgwConf.getHost(), dgwConf.getPort(), REQUEST_INFO_ENDPOINT);
 
         jwt = gatewayToken();
-
-        cgwIp = InetAddress.getByName(cgwConf.getHost()).getHostAddress();
-        localIp = InetAddress.getLocalHost().getHostAddress();
-
-        log.debug("Central GW hostname and IP Address: {}: {}", cgwConf.getHost(), Arrays.toString(InetAddress.getAllByName(cgwConf.getHost())));
-        log.debug("Domain GW hostname and IP Address: {}: {}", dgwConf.getHost(), Arrays.toString(InetAddress.getAllByName(dgwConf.getHost())));
-        log.debug("Local IP Address: {}", InetAddress.getLocalHost().getHostAddress());
     }
 
     private static Stream<Arguments> authenticationRequestSpecifications() {
@@ -94,9 +94,8 @@ class XForwardHeadersProxyTest {
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", emptyOrNullString())
-            .body("headers.x-forwarded-port", is(cgwConf.getPort() + "," + dgwConf.getInternalPorts()))
-            .body("headers.x-forwarded-for", containsString(cgwIp))
-            .body("headers.x-forwarded-for", containsString(localIp))
+            .body("headers.x-forwarded-port", is(cgwConf.getConnectPortForHost(cgwConf.getHost()) + "," + dgwConf.getInternalPorts()))
+            .body("headers.x-forwarded-for", matchesPattern(IPV4 + "," + IPV4))
             .body("headers.x-forwarded-host", containsString(cgwConf.getHost()))
             .body("headers.x-forwarded-host", containsString(dgwConf.getHost()));
     }
@@ -119,9 +118,9 @@ class XForwardHeadersProxyTest {
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", emptyOrNullString())
-            .body("headers.x-forwarded-port", is(cgwConf.getPort() + "," + dgwConf.getInternalPorts()))
+            .body("headers.x-forwarded-port", is(cgwConf.getConnectPortForHost(cgwConf.getHost()) + "," + dgwConf.getInternalPorts()))
             .body("headers.x-forwarded-for", not(containsString("6.6.6.6")))
-            .body("headers.x-forwarded-for", is(cgwIp))
+            .body("headers.x-forwarded-for", matchesPattern(IPV4))
             .body("headers.x-forwarded-host", not(containsString("9.9.9.9")))
             .body("headers.x-forwarded-host", containsString(cgwConf.getHost()))
             .body("headers.x-forwarded-host", containsString(dgwConf.getHost()));
