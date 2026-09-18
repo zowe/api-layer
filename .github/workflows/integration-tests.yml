@@ -1,8 +1,4 @@
-# TEMPORARY: unmodified copy of integration-tests.yml as it existed at e8f6351b9, before the
-# docker-compose migration (native GH Actions container:/services: orchestration). Kept side by
-# side with the migrated integration-tests.yml purely to compare total run time between the two
-# approaches - delete this file once that comparison is done.
-name: Integration tests using JIB containers (legacy native services)
+name: Integration tests using JIB containers
 
 on:
     push:

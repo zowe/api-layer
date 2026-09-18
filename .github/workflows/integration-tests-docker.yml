@@ -1,4 +1,4 @@
-name: Integration tests using JIB containers
+name: Integration tests using JIB containers (docker)
 
 on:
     push:
