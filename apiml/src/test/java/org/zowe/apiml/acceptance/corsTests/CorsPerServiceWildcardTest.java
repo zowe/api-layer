@@ -36,11 +36,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Modulith counterpart of {@code org.zowe.apiml.gateway.acceptance.corsTests.CorsPerServiceWildcardTest}.
- *
- * Verifies that a service configured with the exact wildcard origin is processed by Gateway CORS without the
- * Spring {@code IllegalArgumentException} caused by a literal {@code "*"} combined with credentials, and that
- * the requesting origin is echoed instead.
+ * Verifies the per-service wildcard-origin behaviour, modelled on {@link CorsPerServiceTest}: a service
+ * configured with the exact wildcard origin is processed by Gateway CORS without the Spring
+ * {@code IllegalArgumentException} caused by a literal {@code "*"} combined with credentials, and the
+ * requesting origin is echoed instead.
  */
 @AcceptanceTest
 @TestPropertySource(properties = {
