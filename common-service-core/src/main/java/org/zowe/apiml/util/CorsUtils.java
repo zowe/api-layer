@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -74,7 +75,7 @@ public class CorsUtils {
         var config = new CorsConfiguration();
         if (isCorsEnabledForService(metadata)) {
 
-            defaultAllowedCorsOrigins.forEach(config::addAllowedOrigin);
+            addConfiguredOrigins(config, defaultAllowedCorsOrigins);
 
             var corsAllowedOriginsForService = metadata.get("apiml.corsAllowedOrigins");
             var allowedHeadersForService = metadata.get("apiml.corsAllowedHeaders");
@@ -85,7 +86,12 @@ public class CorsUtils {
                 // Origins specified: split by comma, add to whitelist
                 log.debug("For service {}, set [{}] as allowed origins", serviceId, Arrays.toString(corsAllowedOriginsForService.split(",")));
                 Arrays.stream(corsAllowedOriginsForService.split(","))
-                    .forEach(config::addAllowedOrigin);
+                    .forEach(origin -> {
+                        if (CorsConfiguration.ALL.equals(origin)) {
+                            log.debug("Service {} configured a wildcard origin; registering it as an allowed origin pattern", serviceId);
+                        }
+                        addConfiguredOrigin(config, origin);
+                    });
             }
 
             if (isNotBlank(allowedCredentialsForService)) {
@@ -106,7 +112,7 @@ public class CorsUtils {
                 config.setAllowedHeaders(defaultAllowedCorsHeaders);
             }
         } else {
-            config.setAllowedOrigins(defaultAllowedCorsOrigins);
+            setConfiguredOrigins(config, defaultAllowedCorsOrigins);
             config.setAllowedHeaders(defaultAllowedCorsHeaders);
             config.setAllowCredentials(defaultAllowCredentials);
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
@@ -120,7 +126,7 @@ public class CorsUtils {
         List<String> pathsToEnable;
 
         if (gatewayCorsEnabled) {
-            config.setAllowedOrigins(defaultAllowedCorsOrigins);
+            setConfiguredOrigins(config, defaultAllowedCorsOrigins);
             config.setAllowCredentials(true);
             config.setAllowedHeaders(defaultAllowedCorsHeaders);
             config.setAllowedMethods(defaultAllowedCorsHttpMethods);
@@ -131,6 +137,43 @@ public class CorsUtils {
             pathsToEnable = Collections.singletonList("/**");
         }
         pathsToEnable.forEach(path -> pathMapper.accept(path, config));
+    }
+
+    /**
+     * Registers a configured origin. A token that is exactly "*" is registered as an allowed origin pattern,
+     * because a literal "*" cannot be combined with credentials (Spring rejects it and fails CORS processing).
+     * Any other value keeps the previous literal-origin behaviour.
+     */
+    private static void addConfiguredOrigin(CorsConfiguration config, String origin) {
+        if (CorsConfiguration.ALL.equals(origin)) {
+            config.addAllowedOriginPattern(CorsConfiguration.ALL);
+        } else {
+            config.addAllowedOrigin(origin);
+        }
+    }
+
+    private static void addConfiguredOrigins(CorsConfiguration config, List<String> origins) {
+        origins.forEach(origin -> addConfiguredOrigin(config, origin));
+    }
+
+    /**
+     * Replaces (rather than appends) the configured origins, splitting exact "*" tokens into allowed origin
+     * patterns. An empty origin list leaves the setting untouched, so callers keep their previous defaults.
+     */
+    private static void setConfiguredOrigins(CorsConfiguration config, List<String> origins) {
+        var explicitOrigins = origins.stream()
+            .filter(origin -> !CorsConfiguration.ALL.equals(origin))
+            .collect(Collectors.toList());
+        var wildcardPatterns = origins.stream()
+            .filter(CorsConfiguration.ALL::equals)
+            .collect(Collectors.toList());
+
+        if (!explicitOrigins.isEmpty()) {
+            config.setAllowedOrigins(explicitOrigins);
+        }
+        if (!wildcardPatterns.isEmpty()) {
+            config.setAllowedOriginPatterns(wildcardPatterns);
+        }
     }
 
 }
