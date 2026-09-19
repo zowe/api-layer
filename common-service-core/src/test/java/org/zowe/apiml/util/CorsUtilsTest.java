@@ -15,12 +15,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.cors.CorsConfiguration;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -146,6 +148,126 @@ class CorsUtilsTest {
                     assertNull(configuration.getAllowedMethods());
                 }
             );
+        }
+
+    }
+
+    @Nested
+    class GivenWildcardOrigin {
+
+        private static final String CLIENT_ORIGIN = "https://client.example.com";
+
+        private final List<String> defaultCorsMethods = List.of("GET", "HEAD", "POST", "PATCH", "DELETE", "PUT", "OPTIONS");
+
+        private CorsUtils corsUtils(List<String> defaultOrigins, boolean gatewayCorsEnabled, boolean defaultAllowCredentials) {
+            return CorsUtils.builder()
+                .gatewayCorsEnabled(gatewayCorsEnabled)
+                .corsAllowedEndpoints(allowedEndpoints)
+                .defaultAllowedCorsOrigins(defaultOrigins)
+                .defaultAllowedCorsHeaders(List.of("*"))
+                .defaultAllowedCorsHttpMethods(defaultCorsMethods)
+                .defaultAllowCredentials(defaultAllowCredentials)
+                .build();
+        }
+
+        private CorsConfiguration configuredForService(CorsUtils corsUtils, Map<String, String> serviceMetadata) {
+            var captured = new AtomicReference<CorsConfiguration>();
+            corsUtils.setCorsConfiguration("dclient", serviceMetadata, (path, configuration) -> captured.set(configuration));
+            assertNotNull(captured.get(), "No CORS configuration was registered for the service");
+            return captured.get();
+        }
+
+        private CorsConfiguration defaultConfiguration(CorsUtils corsUtils) {
+            var captured = new AtomicReference<CorsConfiguration>();
+            corsUtils.registerDefaultCorsConfiguration((path, configuration) -> captured.set(configuration));
+            assertNotNull(captured.get(), "No default CORS configuration was registered");
+            return captured.get();
+        }
+
+        private void assertWildcardPatternUsed(CorsConfiguration configuration) {
+            assertTrue(configuration.getAllowedOrigins() == null || !configuration.getAllowedOrigins().contains("*"),
+                "A literal wildcard must not be registered as an allowed origin");
+            assertEquals(List.of("*"), configuration.getAllowedOriginPatterns());
+            assertDoesNotThrow(configuration::validateAllowCredentials);
+        }
+
+        @Test
+        void givenServiceWildcardAndCredentialsEnabled_thenOriginPatternUsed() {
+            var serviceMetadata = new HashMap<>(metadata);
+            serviceMetadata.put("apiml.corsAllowedOrigins", "*");
+            serviceMetadata.put("apiml.corsAllowCredentials", "true");
+
+            var configuration = configuredForService(corsUtils(Collections.emptyList(), true, true), serviceMetadata);
+
+            assertWildcardPatternUsed(configuration);
+            assertTrue(configuration.getAllowCredentials());
+            assertEquals(CLIENT_ORIGIN, configuration.checkOrigin(CLIENT_ORIGIN));
+        }
+
+        @Test
+        void givenServiceWildcardAndCredentialsDisabled_thenWildcardAcceptedWithoutCredentials() {
+            var serviceMetadata = new HashMap<>(metadata);
+            serviceMetadata.put("apiml.corsAllowedOrigins", "*");
+            serviceMetadata.put("apiml.corsAllowCredentials", "false");
+
+            var configuration = configuredForService(corsUtils(Collections.emptyList(), true, true), serviceMetadata);
+
+            assertWildcardPatternUsed(configuration);
+            assertFalse(configuration.getAllowCredentials(), "Credentials must not be enabled implicitly");
+            assertEquals(CLIENT_ORIGIN, configuration.checkOrigin(CLIENT_ORIGIN));
+        }
+
+        @Test
+        void givenServiceWildcardMixedWithExplicitOrigins_thenNoLiteralWildcard() {
+            var serviceMetadata = new HashMap<>(metadata);
+            serviceMetadata.put("apiml.corsAllowedOrigins", "https://a.example.com,*");
+
+            var configuration = configuredForService(corsUtils(Collections.emptyList(), true, true), serviceMetadata);
+
+            assertWildcardPatternUsed(configuration);
+            assertEquals(List.of("https://a.example.com"), configuration.getAllowedOrigins());
+            assertEquals(CLIENT_ORIGIN, configuration.checkOrigin(CLIENT_ORIGIN));
+        }
+
+        @Test
+        void givenServiceExplicitOriginsOnly_thenListedAcceptedAndUnlistedRejected() {
+            var serviceMetadata = new HashMap<>(metadata);
+            serviceMetadata.put("apiml.corsAllowedOrigins", "https://a.example.com");
+
+            var configuration = configuredForService(corsUtils(Collections.emptyList(), true, true), serviceMetadata);
+
+            assertEquals(List.of("https://a.example.com"), configuration.getAllowedOrigins());
+            assertTrue(configuration.getAllowedOriginPatterns() == null || configuration.getAllowedOriginPatterns().isEmpty());
+            assertEquals("https://a.example.com", configuration.checkOrigin("https://a.example.com"));
+            assertNull(configuration.checkOrigin(CLIENT_ORIGIN));
+        }
+
+        @Test
+        void givenGatewayDefaultWildcard_thenOriginPatternUsed() {
+            var configuration = configuredForService(corsUtils(List.of("*"), true, true), new HashMap<>(metadata));
+
+            assertWildcardPatternUsed(configuration);
+            assertTrue(configuration.getAllowCredentials());
+            assertEquals(CLIENT_ORIGIN, configuration.checkOrigin(CLIENT_ORIGIN));
+        }
+
+        @Test
+        void givenCorsDisabledForServiceWithWildcardDefault_thenOriginPatternUsed() {
+            var serviceMetadata = new HashMap<>(metadata);
+            serviceMetadata.put("apiml.corsEnabled", "false");
+
+            var configuration = configuredForService(corsUtils(List.of("*"), true, true), serviceMetadata);
+
+            assertWildcardPatternUsed(configuration);
+            assertTrue(configuration.getAllowCredentials());
+        }
+
+        @Test
+        void givenGatewayDefaultsWithWildcard_thenRegisterDefaultConfigUsesPattern() {
+            var configuration = defaultConfiguration(corsUtils(List.of("*"), true, true));
+
+            assertWildcardPatternUsed(configuration);
+            assertTrue(configuration.getAllowCredentials());
         }
 
     }
