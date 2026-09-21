@@ -24,6 +24,12 @@ const ENV_MAP = [
     key: 'heartbeatInterval',
     unit: 'seconds',
   },
+  {
+    env: 'EUREKA_CLIENT_CIRCUITBREAKERBACKOFFTIMEOUTMILLISECONDS',
+    key: 'backoffTimeout',
+    namespace: 'circuitBreaker',
+    unit: 'milliseconds',
+  },
 ];
 
 function parsePositiveInt(envName) {
@@ -41,10 +47,15 @@ function parsePositiveInt(envName) {
 
 export default function envConfig() {
   const result = { eureka: {} };
-  for (const { env, key, unit } of ENV_MAP) {
+  for (const { env, key, namespace, unit } of ENV_MAP) {
     const value = parsePositiveInt(env);
     if (value !== undefined) {
-      result.eureka[key] = unit === 'seconds' ? value * 1000 : value;
+      let target = result.eureka;
+      if (namespace) {
+        if (!target[namespace]) target[namespace] = {};
+        target = target[namespace];
+      }
+      target[key] = unit === 'seconds' ? value * 1000 : value;
     }
   }
   return result;

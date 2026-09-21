@@ -97,7 +97,7 @@ public class EurekaDashboardController {
         ServerWebExchange serverWebExchange,
         Map<String, Object> model
     ) throws TemplateException, IOException {
-        original.status(null, model);
+        original.lastn(null, model);
         model.put("springMacroRequestContext", new RequestContext(serverWebExchange, model, messageSource));
         return Mono.just(templateProcessor.process(lastnTemplate, model));
     }

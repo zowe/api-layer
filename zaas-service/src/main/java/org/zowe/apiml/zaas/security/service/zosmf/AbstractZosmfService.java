@@ -167,7 +167,7 @@ public abstract class AbstractZosmfService {
 
         if (re instanceof HttpClientErrorException.Unauthorized) {
             log.debug("Request to z/OSMF requires authentication {}", re.getMessage());
-            return new BadCredentialsException("Invalid Credentials");
+            return new BadCredentialsException("Invalid Credentials", re);
         }
 
         if (re instanceof RestClientResponseException) {

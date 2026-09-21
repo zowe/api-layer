@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.product.logging.OpenTelemetryLogsFilter;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -149,7 +150,7 @@ public final class OtelRequestContext {
     }
 
     protected Logger getOtelLogger() {
-        return LoggerFactory.getLogger("org.zowe.apiml.opentelemetry");
+        return LoggerFactory.getLogger(OpenTelemetryLogsFilter.OTEL_LOGGER_NAME);
     }
 
     public void issue() {

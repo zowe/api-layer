@@ -10,7 +10,7 @@
 
     <logger name="com.jayway.jsonpath.internal.path.CompiledPath" level="OFF"/>
 
-    <logger name="org.zowe.apiml.opentelemetry" level="INFO">
+    <logger name="org.zowe.apiml.opentelemetry" level="INFO" additivity="false">
         <appender-ref ref="OpenTelemetry" />
     </logger>
 
