@@ -75,7 +75,7 @@ class ApimlInstanceRegistryTest {
      * Used to create a real MethodHandle via {@code MethodHandles.lookup().findStatic()}
      * instead of {@code mock(MethodHandle.class)} which fails on Java 25 where MethodHandle is sealed.
      */
-    static Object replicateToPeersTestStub(Object... args) {
+    static Object replicateToPeersTestStub(Object... args) { // NOSONAR - the Object[] parameter is required to match the replicateToPeers MethodHandle type
         REPLICATE_CALL_COUNT.incrementAndGet();
         return null;
     }

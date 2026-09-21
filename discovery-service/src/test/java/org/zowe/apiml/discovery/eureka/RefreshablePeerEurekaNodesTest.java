@@ -27,24 +27,22 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import javax.net.ssl.SSLContext;
-import java.lang.reflect.Field;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.stream.Stream;
-
-import sun.misc.Unsafe;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -81,20 +79,16 @@ class RefreshablePeerEurekaNodesTest {
     }
 
     @Test
-    void givenEurekaNodeUrl_thenCreateNode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void givenEurekaNodeUrl_thenCreateNode() {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
 
-        Field defaultExecutorField = StatsMonitor.class.getDeclaredField("DEFAULT_EXECUTOR");
-        Field unsafeField = Unsafe.class.getDeclaredField("theUnsafe");
-        unsafeField.setAccessible(true);
-        Unsafe unsafe = (Unsafe) unsafeField.get(null);
-        long offset = unsafe.staticFieldOffset(defaultExecutorField);
-        Object base = unsafe.staticFieldBase(defaultExecutorField);
-        unsafe.putObject(base, offset, Executors.newSingleThreadScheduledExecutor());
-
-        PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
-        assertInstanceOf(ApimlPeerEurekaNode.class, node);
+        // Mock the construction of StatsMonitor instead of forcing its static final DEFAULT_EXECUTOR
+        // field, which requires Unsafe or VarHandle tricks that recent JDKs restrict.
+        try (MockedConstruction<StatsMonitor> mocked = mockConstruction(StatsMonitor.class)) {
+            PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
+            assertInstanceOf(ApimlPeerEurekaNode.class, node);
+        }
     }
 
     static Stream<Set<String>> values() {
