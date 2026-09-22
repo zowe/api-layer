@@ -34,7 +34,7 @@ runs:
   using: composite
   steps:
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
       with:
         python-version: "3.14"
 
@@ -57,7 +57,7 @@ runs:
             ./gradlew onboarding-enabler-python:buildPython
 
     - name: Upload wheels
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       with:
         name: wheels
         path: onboarding-enabler-python/dist/
@@ -66,7 +66,7 @@ runs:
       shell: bash
       run: python -m pip install --upgrade twine
 
-    - uses: zowe-actions/octorelease@v1
+    - uses: zowe-actions/octorelease@6cf71bdb7ca82117775295e076d63fe7a812f3c8 # v1
       env:
         GIT_COMMITTER_NAME: ${{ inputs.zowe-robot-user }}
         GIT_COMMITTER_EMAIL: ${{ inputs.zowe-robot-email }}
