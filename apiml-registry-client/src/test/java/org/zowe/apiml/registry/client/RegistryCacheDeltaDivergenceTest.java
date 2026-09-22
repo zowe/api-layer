@@ -1,15 +1,13 @@
 /*
- * Proves that a diverged delta is published to the cache before it is validated.
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
  *
- * RegistryCache.applyDelta folds the delta into the current view and stores the result, and only afterwards
- * compares the recomputed hash with the one the registry declared. When they disagree it returns false, which
- * tells RegistryClient to fall back to a full fetch - but the inconsistent view is already visible to every
- * caller of upInstances()/serviceIds() until that fetch completes.
+ * SPDX-License-Identifier: EPL-2.0
  *
- * A Gateway resolving a service during that window finds no instance and answers 404 instead of routing, which
- * is the observed CI symptom (OpenTelemetryResourceAttributesZosTest expecting 401 and getting 404, and the
- * API Catalog vanishing from /eureka/apps).
+ * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.registry.client;
 
 import org.junit.jupiter.api.Test;
@@ -28,6 +26,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Proves that a diverged delta is published to the cache before it is validated.
+ *
+ * RegistryCache.applyDelta folds the delta into the current view and stores the result, and only afterwards
+ * compares the recomputed hash with the one the registry declared. When they disagree it returns false, which
+ * tells RegistryClient to fall back to a full fetch - but the inconsistent view is already visible to every
+ * caller of upInstances()/serviceIds() until that fetch completes.
+ *
+ * A Gateway resolving a service during that window finds no instance and answers 404 instead of routing, which
+ * is the observed CI symptom (OpenTelemetryResourceAttributesZosTest expecting 401 and getting 404, and the
+ * API Catalog vanishing from /eureka/apps). */
 class RegistryCacheDeltaDivergenceTest {
 
     private static ServiceInstance instance(String app, String id, InstanceStatus status, ActionType action) {

@@ -1,12 +1,13 @@
 /*
- * Characterises when the registry gives up a healthy, heartbeating instance.
+ * This program and the accompanying materials are made available under the terms of the
+ * Eclipse Public License v2.0 which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v20.html
  *
- * Written to test the hypothesis that the CI symptom - the API Catalog registers, starts, then disappears
- * from /eureka/apps - was self-preservation or eviction. It was not: with correct heartbeats the instance
- * survives any number of sweeps. What it does pin down is the sensitivity of that survival to the renewal
- * rate relative to the registry's own expected-client count, which is the number the Docker environment
- * makes uncomfortably small.
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.registry;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Characterises when the registry gives up a healthy, heartbeating instance.
+ *
+ * Written to test the hypothesis that the CI symptom - the API Catalog registers, starts, then disappears
+ * from /eureka/apps - was self-preservation or eviction. It was not: with correct heartbeats the instance
+ * survives any number of sweeps. What it does pin down is the sensitivity of that survival to the renewal
+ * rate relative to the registry's own expected-client count, which is the number the Docker environment
+ * makes uncomfortably small. */
 class ReproDisappearingInstanceTest {
 
     /** Mirrors config/docker/api-catalog-services.yml: leaseExpirationDurationInSeconds: 6, renewal: 1s. */
