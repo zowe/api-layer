@@ -42,6 +42,7 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -83,7 +84,10 @@ class SchemeControllerTest {
 
     @BeforeEach
     void setUp() throws PassTicketException, JSONException {
-        when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
+        // Only the passticket paths call generate(); the other scenarios (zoweJwt, zosmf, safIdt,
+        // bad-request, unsupported-media, ...) never reach it. A plain when() here is therefore
+        // reported as unnecessary stubbing for every one of those tests.
+        lenient().when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
         SchemeController zaasController = new SchemeController(authSourceService, passTicketService, zosmfService, tokenCreationService);
         MessageService messageService = new YamlMessageService("/zaas-messages.yml");
         mockMvc = MockMvcBuilders.standaloneSetup(zaasController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
