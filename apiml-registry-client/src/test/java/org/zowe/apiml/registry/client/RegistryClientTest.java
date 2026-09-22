@@ -47,6 +47,7 @@ class RegistryClientTest {
         Applications full = new Applications(List.of(), 1L, "");
         Applications delta;
         boolean failFetch;
+        boolean failDelta;
         boolean renewFound = true;
         final List<String> calls = new ArrayList<>();
 
@@ -62,7 +63,7 @@ class RegistryClientTest {
         @Override
         public Applications fetchDelta() throws RegistryTransportException {
             calls.add("fetchDelta");
-            if (failFetch) {
+            if (failFetch || failDelta) {
                 throw new RegistryTransportException("unreachable");
             }
             return delta;
@@ -238,6 +239,40 @@ class RegistryClientTest {
             client.refresh();
 
             assertEquals(List.of(1), seen);
+        }
+
+        @Test
+        @DisplayName("a delta the registry will not serve still leaves the view populated")
+        void fallsBackToAFullFetchWhenTheDeltaRequestFails() {
+            // A registry that rejects or fails /apps/delta used to end the refresh here. The client kept its
+            // registration working while its own view stayed empty, so every service it looked for appeared to
+            // be missing - which is what a Gateway reports as DOWN.
+            transport.failDelta = true;
+            transport.full = snapshot(List.of(instance("discovery", 10011, InstanceStatus.UP)), 1L);
+
+            assertTrue(client.refresh());
+
+            assertTrue(transport.calls.contains("fetchDelta"));
+            assertTrue(transport.calls.contains("fetchApplications"),
+                "the full fetch is the way out of a failing delta, not a reason to abandon the refresh");
+            assertEquals(1, client.cache().size());
+            assertEquals(0, client.consecutiveFetchFailures());
+            assertFalse(client.cache().upInstances("discovery").isEmpty());
+        }
+
+        @Test
+        @DisplayName("the client stops asking for deltas once the registry fails one")
+        void givesUpOnDeltasAfterAFailure() {
+            transport.failDelta = true;
+            transport.full = snapshot(List.of(instance("discovery", 10011, InstanceStatus.UP)), 1L);
+            client.refresh();
+
+            transport.calls.clear();
+            client.refresh();
+
+            assertFalse(transport.calls.contains("fetchDelta"),
+                "retrying a delta the registry cannot serve would keep the view stale on every refresh");
+            assertTrue(transport.calls.contains("fetchApplications"));
         }
     }
 

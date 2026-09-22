@@ -87,18 +87,30 @@ public final class RegistryClient {
      * @return true when the view changed
      */
     public boolean refresh() {
-        try {
-            if (deltaSupported) {
-                Applications delta = transport.fetchDelta();
-                if (delta == null) {
-                    deltaSupported = false;
-                } else if (cache.applyDelta(delta)) {
-                    consecutiveFetchFailures.set(0);
-                    notifyListeners();
-                    return true;
-                }
-                // Delta left us inconsistent - fall through to a full fetch rather than serve a divergent view.
+        if (deltaSupported) {
+            Applications delta = null;
+            try {
+                delta = transport.fetchDelta();
+            } catch (RegistryTransport.RegistryTransportException e) {
+                // A delta that cannot be fetched must not abandon the refresh. The full fetch below is the way
+                // out, and reaching the catch at the end instead would leave a client whose registry rejects or
+                // fails the delta with a permanently empty view - while its own registration carries on working,
+                // so it looks like a registry problem rather than a client one.
+                deltaSupported = false;
             }
+            if (delta == null) {
+                // The transport has no delta to offer. Both cases give up on deltas rather than retrying one the
+                // registry cannot serve, which would keep the view stale on every refresh.
+                deltaSupported = false;
+            } else if (cache.applyDelta(delta)) {
+                consecutiveFetchFailures.set(0);
+                notifyListeners();
+                return true;
+            }
+            // Either the delta left us inconsistent, or there was none: fall through to a full fetch rather than
+            // serve a divergent view.
+        }
+        try {
             cache.replace(transport.fetchApplications());
             consecutiveFetchFailures.set(0);
             notifyListeners();

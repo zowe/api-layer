@@ -189,10 +189,10 @@ public class RegistryClientLifecycle implements SmartLifecycle {
 
         if (target != InstanceStatus.UP) {
             // A service that advertises itself unhealthy because of what it cannot see in the registry is
-            // indistinguishable, from the outside, from one that is genuinely broken. Record its own view so the
-            // two can be told apart.
-            log.debug("Advertising {}; own registry view holds {} instance(s): {}",
-                target, client.cache().size(), describeCache());
+            // indistinguishable, from the outside, from one that is genuinely broken. Record its own view, and
+            // how many fetches have failed in a row, so the two can be told apart.
+            log.warn("Advertising {} after {} failed fetch(es); own registry view holds {} instance(s): {}",
+                target, client.consecutiveFetchFailures(), client.cache().size(), describeCache());
         }
 
         if (target == InstanceStatus.UNKNOWN || target == advertisedStatus.get()) {
