@@ -84,15 +84,18 @@ public final class RegistryCache implements RegistryView {
             }
         });
 
-        Applications result = new Applications(merged, delta.version(), delta.appsHashCode());
-        current.set(result);
-
         String expected = delta.appsHashCode();
-        if (expected == null || expected.isEmpty()) {
-            // Nothing to check against; treat as consistent rather than forcing a needless full fetch.
-            return true;
+        if (expected != null && !expected.isEmpty()
+            && !expected.equals(Applications.computeHashCode(merged))) {
+            // Diverged. Do NOT publish it: the caller is about to be told to do a full fetch, and until that
+            // completes this cache is what the Gateway routes on. Storing a view that disagrees with the
+            // registry turns a recoverable stale cache into traffic sent to instances that are not there.
+            return false;
         }
-        return expected.equals(Applications.computeHashCode(merged));
+
+        // Nothing to check against counts as consistent rather than forcing a needless full fetch.
+        current.set(new Applications(merged, delta.version(), delta.appsHashCode()));
+        return true;
     }
 
     public Optional<Application> application(String appName) {
