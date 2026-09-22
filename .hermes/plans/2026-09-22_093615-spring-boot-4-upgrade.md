@@ -29,19 +29,31 @@
 
 ---
 
-## Phase 0 — Decisions to confirm before writing code
+## Phase 0 — Decisions  ✅ ALL SETTLED (2026-09-22)
 
-These are cheap to answer now and expensive to reverse. Confirm before Task 1.
+1. **Java: build on 21, and keep the Java 17 run possible — DECIDED (both).**
+   The build baseline is Java 21, *and* Java 17 must remain runnable, delivered as the Jersey
+   `resolutionStrategy.force` pin rather than as a source-level constraint.
+   **A correction to what this plan originally argued:** the "Jersey 4 needs Java 21" premise was wrong
+   in detail. Measured across every Jersey jar — 3.1.x is class file **55**, `jersey-common:4.0.0` is
+   **61**, `jersey-common:4.0.2` is **61**, and only **`jersey-common:4.0.1` is 65 (Java 21)`. So exactly
+   one patch release is the entire hazard, and an unpinned range can land on it. That is why the fix is
+   a pin, not a Java-version cliff.
+   Probe result that settles the second half: flipping `sourceCompatibility`/`targetCompatibility` and
+   `liteJar.targetJavaVersion` to 17 and compiling with the **Java 17 JDK gives BUILD SUCCESSFUL across
+   every module with zero source changes**, bytecode major 61. The tree uses no Java 21 language features
+   or APIs, so Java 17 support costs version pins only.
+2. **Target line — DECIDED: 4.1.1** (not 4.0.x). Done in commit `7916e6919`.
+3. **Standalone services — DECIDED: fix minimally now**, deletion stays in the V4 contract. No module is
+   removed this cycle.
+4. **Jackson — DECIDED: keep the Jackson 2 shim (`spring-boot-jackson2`) for this upgrade.** Jackson 3 is
+   a separate track. The shim is deprecated for removal in **SB 4.3**, so revisit there; the version must
+   not float.
 
-1. **Java 21 vs Java 17 — this is the one decision that gates the whole plan, so decide it first.** SB4 supports Java 17, but the dependency chain does not cooperate. **Measured on the artifacts we would actually use:** `eureka-client-jersey3:2.0.6` declares `jersey-client:3.0.5`, and Gradle resolves that to **jersey-common 4.0.1**. I unpacked the class file: `jersey-common:4.0.1` → `ExtendedConfig.class` is **class file version 61 (Java 17)**; the newer `jersey-common:4.0.2` is **version 65 (Java 21)** — and Jersey 4.0 is the line that drops Java 17. So today's failure is *not* a Java-version blocker; it is Gradle resolving to a Jersey version nobody in the chain asked for, while the declared version is 3.0.5.
-   - Option **(a)** — move the build to Java 21. Removes the resolution hazard permanently, because any future Jersey 4.0.2+ (pulled transitively at any time) loads fine. Matches the modulith's ~1 GB production heap assumptions and the enablers, which already support 21.
-   - Option **(b)** — stay on Java 17 and force Jersey to the newest 3.x (**3.1.12**, verified present; class file version **55**, safe). Cheaper, but it is a pin we must remember to keep, and transitive drift toward 4.0.2 will keep re-introducing "bad class file version" failures.
-   **Recommendation: (a) Java 21.** Option (b) is not wrong, but it turns a one-time build change into a standing resolution rule — and Jersey 4.0 is exactly where Eureka's client chain is headed. Note the modulith itself needs no Jersey either way; this chain is only reachable through the Eureka client.
-2. **Target line: 4.0.8 or 4.1.1.** **Recommendation: 4.1.1.** It is the current stable branch, its OSS window runs to Jun 2027 (4.0's is shorter), and it is built on Framework 7.0.8+. The only 4.1-specific hazard is that removals of APIs deprecated in 4.0 now bite — which is the same code we are already migrating.
-3. **Fate of the standalone services in this cycle.** Fix them (Tasks 12–15) or delete them as the V4 runtime contract (pre-3.5.0, in this cycle)? **Recommendation: fix minimally now (they are 2–6 line fixes each), delete in V4** — deleting them is a product decision that needs release-notes and install-packaging work, not a framework upgrade.
-4. **Jackson 2 vs Jackson 3.** SB4 defaults to Jackson 3; Jersey 4.0 does not support it. The branch already added the `spring-boot-jackson2` shim for `apiml-tomcat-common`. Confirm we keep **Jackson 2 via shim** for this upgrade (Jackson 2 artifacts are deprecated for removal in 4.3) rather than doing a Jackson 3 migration in the same window.
-
----
+### Open item that falls out of decision 1
+`infinispan-commons` 16.2.x is class file **65/66 — Java 21 only**. The planned Infinispan
+`spring-boot4-starter-embedded` work must be checked against that, or the Java 17 requirement is not
+actually met by the caching-service path. Flagged in the skill playbook.
 
 ## Phase 1 — Rebase the SB4 branch onto current v3.x.x  ✅ DONE
 
