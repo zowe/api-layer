@@ -96,3 +96,9 @@ task jacocoFullReport(type: JacocoReport) {
 task coverage() {
     dependsOn jacocoFullReport, ":api-catalog-ui:test", "zowe-cli-id-federation-plugin:test"
 }
+
+// The aggregate report reads every module's XML, so those have to be produced before it is written - but
+// jacocoProjects.jacocoTestReport only orders the modules that were listed when the task graph was built.
+// Chaining the other way as well makes a single `jacocoFullReport` invocation reliable, instead of leaving a
+// stale aggregate behind whenever a module's report happens to be scheduled after it.
+jacocoFullReport.mustRunAfter(jacocoProjects.jacocoTestReport)
