@@ -13,9 +13,6 @@ services:
             - "127.0.0.1:5126:5126"
             - "127.0.0.1:6306:6306"
 
-    # central-gateway-service shares gateway-service's real port - the test runner (host-based
-    # now) reaches it via -Dcentralgateway.port on this job's gradle invocations instead. See
-    # docker/integration-tests/README.md.
     central-gateway-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
         hostname: central-gateway-service

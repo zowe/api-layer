@@ -10,14 +10,10 @@ x-apiml-ha-env: &apiml-ha-env
     APIML_SECURITY_AUTH_PROVIDER: saf
     JGROUPS_BIND_PORT: "7600"
     JGROUPS_KEYEXCHANGE_PORT: "7601"
+    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
 
 services:
 
-    # Same real ports (10010 gateway/catalog/caching, 10011 discovery) as apiml - the
-    # test runner (now host-based) reaches apiml-2 via different HOST ports instead
-    # (see docker/integration-tests/README.md and the -D*.connectPorts / -Ddiscovery.additionalPort
-    # flags on this job's gradle invocations): every port for instance N is published on the
-    # host as N followed by the primary's own last 4 digits (20010/20011/25130 for instance 2).
     apiml:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml
@@ -25,7 +21,6 @@ services:
             <<: *apiml-ha-env
             APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
             APIML_SERVICE_HOSTNAME: apiml
-            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
             logbackService: ZWEAGW1
             JGROUPS_BIND_ADDRESS: apiml
         ports:
@@ -41,7 +36,6 @@ services:
             <<: *apiml-ha-env
             APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             APIML_SERVICE_HOSTNAME: apiml-2
-            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
             logbackService: ZWEAGW2
             JGROUPS_BIND_ADDRESS: apiml-2
         ports:

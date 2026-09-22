@@ -1,9 +1,5 @@
 services:
 
-    # apiml-2 shares apiml's real ports (10010/10011) - only the startup-check step needs a
-    # connect-port override for it (the actual infinispan test routes everything through the
-    # primary apiml/gateway and relies on container-to-container infinispan clustering, unaffected
-    # by this migration). See docker/integration-tests/README.md.
     apiml:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml

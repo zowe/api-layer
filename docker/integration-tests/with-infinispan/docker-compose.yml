@@ -43,8 +43,6 @@ services:
             logbackService: ZWEACS2
         ports:
             - "127.0.0.1:20016:10016"
-            # Same image as caching-service, so the same internal debug/jacoco ports (5126/6306) -
-            # remap the HOST side only to avoid colliding with the primary instance's publish above.
             - "127.0.0.1:25126:5126"
             - "127.0.0.1:26306:6306"
 

@@ -5,9 +5,6 @@ x-basic-auth-env: &basic-auth-env
 
 services:
 
-    # apiml-2 shares apiml's real ports (10010/10011) - the test runner (host-based now) reaches
-    # it via different HOST ports instead, via -D*.connectPorts / -Ddiscovery.additionalPort on
-    # this job's gradle invocations. See docker/integration-tests/README.md.
     apiml:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml

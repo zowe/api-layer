@@ -1,4 +1,8 @@
 name: Integration tests using JIB containers (docker)
+# Services now run as a plain docker compose stack (docker/integration-tests/modulith)
+# instead of GitHub Actions' native container/services orchestration - the exact same
+# compose file and commands work unchanged on a developer machine. See
+# docker/integration-tests/README.md.
 
 on:
     push:
@@ -13,9 +17,6 @@ on:
 
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
-    # Available to every job's `run:` steps as $ARTIFACTORY_USERNAME/$ARTIFACTORY_PASSWORD -
-    # referencing them that way (instead of ${{ secrets.* }} directly in a run script) avoids
-    # the secret literal being expanded into the generated shell script text.
     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
     PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
@@ -150,10 +151,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/modulith)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -205,15 +202,11 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                -Ddiscovery.additionalPort=20011
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/modulith-saf-ha)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. apiml-2 shares apiml's
-        # real ports (10010/10011), so the gradle steps below pass -D*.connectPorts /
-        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches it on the
-        # different HOST ports the compose file publishes it to, instead of the shared
-        # environment-configuration-docker-modulith-ha.yml (also used by several other jobs).
-        # See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -232,8 +225,7 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
                     -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
-                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
-                    -Ddiscovery.additionalPort=20011
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                     -Dzosmf.instances=0
 
@@ -241,8 +233,7 @@ jobs:
                 run: >
                     ENV_CONFIG=docker-modulith-ha ./gradlew :integration-tests:runContainerSAFProviderTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
-                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
-                    -Ddiscovery.additionalPort=20011
+                    ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -273,17 +264,6 @@ jobs:
             fail-fast: false
             matrix:
                 type: [ "normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic" ]
-
-        # Services now run as a plain docker compose stack (docker/integration-tests/modulith-ha)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. apiml-2/apiml-3 and
-        # discoverable-client-2 share their primary counterpart's real ports, so the gradle steps
-        # below pass -D*.connectPorts / -Ddiscovery.additionalConnectPorts so the test runner
-        # (host-based now) reaches them on the different HOST ports the compose file publishes
-        # them to, instead of touching the shared environment-configuration-docker-modulith-ha.yml
-        # (also used by several other jobs). See docker/integration-tests/README.md. Chaotic tests
-        # induce failure via HTTP calls to each instance's own actuator shutdown endpoint, not by
-        # manipulating containers directly, so they need no special handling here.
         env:
             CONNECT_PORT_FLAGS: >-
                 -Dgateway.connectPorts=10010,20010,30010 -Dapicatalog.connectPorts=10010,20010,30010
@@ -370,10 +350,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/split)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -424,14 +400,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/saf-provider-ha)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. Every "-2" service
-        # shares its primary's real port, so the gradle steps below pass -D*.connectPorts /
-        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
-        # different HOST ports the compose file publishes them to, instead of touching the shared
-        # environment-configuration-ha.yml (also used by several other jobs). See
-        # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
                 -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
@@ -487,12 +455,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/gateway-proxy)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. central-gateway-service
-        # shares gateway-service's real port, so the gradle steps below pass -Dcentralgateway.connectPorts
-        # so the test runner (host-based now) reaches it on the different HOST port the compose
-        # file publishes it to. See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -545,13 +507,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/gateway-central-registry)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. central-gateway-service
-        # and discovery-service-2 share their primary counterpart's real port, so the gradle steps
-        # below pass -Dcentralgateway.connectPorts / -Ddiscovery.additionalPort so the test runner
-        # (host-based now) reaches them on the different HOST ports the compose file publishes
-        # them to. See docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: -Dcentralgateway.connectPorts=20010 -Ddiscovery.additionalPort=20011
         steps:
@@ -609,16 +564,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/central-registry-modulith)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. central-gateway-service
-        # shares apiml's real ports, so the gradle steps below pass -Dgateway.port /
-        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches it on the
-        # different HOST ports the compose file publishes it to. The functional tests
-        # (CentralRegistryTest/XForwardHeadersProxyTest/GatewayProxyTest) separately read
-        # centralGatewayServiceConfiguration, which needs its own -Dcentralgateway.connectPorts for
-        # the same reason - without it those tests hit the *domain* apiml instance instead (same
-        # host-port collision) and get 404s. See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -669,10 +614,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/registration)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -720,10 +661,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/discovery-basic-auth)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -771,12 +708,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/discovery-basic-auth-modulith)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. apiml-2 shares apiml's
-        # real ports, so the gradle steps below pass -D*.connectPorts / -Ddiscovery.additionalPort
-        # so the test runner (host-based now) reaches it on the different HOST ports the compose
-        # file publishes it to. See docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
                 -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010
@@ -828,10 +759,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/registration-modulith)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -880,13 +807,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/zaas) instead
-        # of GitHub Actions' native container/services orchestration - the exact same compose file
-        # and commands work unchanged on a developer machine (real OIDC tenant secrets need to be
-        # supplied locally too - see docker/integration-tests/README.md). central-gateway-service
-        # shares gateway-service's real port, so the gradle steps below pass -Dcentralgateway.connectPorts
-        # so the test runner (host-based now) reaches it on the different HOST port the compose
-        # file publishes it to.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -955,10 +875,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/zosmf-without-jwt)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1005,10 +921,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/zosmf-without-jwt-modulith)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1218,14 +1130,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/deterministic-lb)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. Every "-2" service
-        # shares its primary's real port, so the gradle steps below pass -D*.connectPorts /
-        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
-        # different HOST ports the compose file publishes them to, instead of touching the shared
-        # environment-configuration-ha.yml (also used by several other jobs). See
-        # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
                 -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
@@ -1285,10 +1189,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/deterministic-lb-modulith)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1345,14 +1245,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/sticky-session-lb)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. Every "-2" service
-        # shares its primary's real port, so the gradle steps below pass -D*.connectPorts /
-        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
-        # different HOST ports the compose file publishes them to, instead of touching the shared
-        # environment-configuration-ha.yml (also used by several other jobs). See
-        # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
                 -Dgateway.connectPorts=10010,20010 -Dzaas.connectPorts=10023,20023
@@ -1410,10 +1302,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/sticky-session-lb-modulith)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1468,16 +1356,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/ha-caching-chaotic)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. Every "-2"/"-3" service
-        # shares its primary's real port, so the gradle steps below pass -D*.connectPorts /
-        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
-        # different HOST ports the compose file publishes them to, instead of touching the shared
-        # environment-configuration-ha.yml (also used by several other jobs). Chaos is induced via
-        # HTTP calls to each instance's own actuator shutdown endpoint, not by manipulating
-        # containers directly, so no special handling is needed for that. See
-        # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
                 -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
@@ -1538,16 +1416,6 @@ jobs:
             matrix:
                 type: [ "normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic" ]
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/ha) instead
-        # of GitHub Actions' native container/services orchestration - the exact same compose
-        # file and commands work unchanged on a developer machine. Every "-2" service shares its
-        # primary's real port, so the gradle steps below pass -D*.connectPorts /
-        # -Ddiscovery.additionalPort so the test runner (host-based now) reaches them on the
-        # different HOST ports the compose file publishes them to, instead of touching the shared
-        # environment-configuration-ha.yml (also used by several other jobs). Chaos is induced via
-        # HTTP calls to each instance's own actuator shutdown endpoint, not by manipulating
-        # containers directly, so no special handling is needed for that. See
-        # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: >-
                 -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
@@ -1641,10 +1509,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/with-infinispan)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1695,10 +1559,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/modulith-with-infinispan)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1962,10 +1822,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/service-prefix-replacer)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -2014,10 +1870,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/node-python-services)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine (the two sample-app
-        # images need building locally first - see docker/integration-tests/README.md).
         steps:
             -   uses: actions/checkout@v4
                 with:

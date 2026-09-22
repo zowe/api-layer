@@ -29,10 +29,6 @@ services:
             - "127.0.0.1:10013:10013"
             - "127.0.0.1:5123:5123"
 
-    # apiml-2 shares apiml's real ports (10010/10011) - the test runner (host-based now) reaches
-    # it via different HOST ports instead, via -D*.connectPorts on this job's gradle invocations
-    # (the shared environment-configuration-docker-modulith-ha.yml stays untouched). See
-    # docker/integration-tests/README.md.
     apiml:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml

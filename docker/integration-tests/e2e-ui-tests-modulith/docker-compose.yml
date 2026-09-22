@@ -18,12 +18,6 @@ services:
             - "127.0.0.1:10013:10013"
             - "127.0.0.1:5123:5123"
 
-    # Both are "apiml" (modulith) images, but MUST keep the hostname "gateway-service" (not
-    # "apiml") - the real, external OAuth/OIDC provider's admin settings only allow redirects to
-    # that exact hostname. They share real ports (10010/10011); the test runner (host-based now)
-    # reaches gateway-service-2 via different HOST ports instead, via -Dgateway.connectPorts /
-    # -Ddiscovery.additionalPort on this job's gradle invocations. See
-    # docker/integration-tests/README.md.
     gateway-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: gateway-service
