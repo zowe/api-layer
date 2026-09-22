@@ -41,14 +41,7 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 /**
  * JWT Security related configuration. Distinguishes between methods used to generate JWT tokens provided by ZAAS.
@@ -73,13 +66,10 @@ public class JwtSecurity {
     @Value("${server.ssl.keyAlias:#{null}}")
     private String keyAlias;
 
-    @Value("${apiml.security.jwtInitializerTimeout:5}")
-    private int timeout;
-
     private JWSAlgorithm signatureAlgorithm;
     private PrivateKey jwtSecret;
     private PublicKey jwtPublicKey;
-    private JWSVerifier jwtVerifier;
+    private Map<String, JWSVerifier> jwtVerifier;
 
     private Optional<JsonWebKey> jwkPublicKey = Optional.empty();
 
@@ -184,10 +174,16 @@ public class JwtSecurity {
         try {
             jwtSecret = SecurityUtils.loadKey(config);
             jwtPublicKey = SecurityUtils.loadPublicKey(config);
-            jwtVerifier = buildVerifier(jwtPublicKey);
+            jwtVerifier = new HashMap<>();
+            for (var signingKey : SecurityUtils.loadSigningKeys(config)) {
+                var jwk = JsonWebKey.Factory.newJwk(signingKey);
+                jwtVerifier.put(jwk.calculateBase64urlEncodedThumbprint("SHA-256"), buildVerifier(signingKey));
+            }
             jwkPublicKey = getJwkPublicKey();
         } catch (HttpsConfigError er) {
             apimlLog.log("org.zowe.apiml.zaas.jwtInitConfigError", er.getCode(), er.getMessage());
+        } catch (JoseException e) {
+            apimlLog.log("org.zowe.apiml.zaas.jwkInitError", e.getMessage());
         }
     }
 
@@ -252,8 +248,8 @@ public class JwtSecurity {
         return AlgorithmIdentifiers.RSA_USING_SHA256;
     }
 
-    public JWSVerifier getJwtVerifier() {
-        return jwtVerifier;
+    public JWSVerifier getJwtVerifier(String kid) {
+        return jwtVerifier.get(kid);
     }
 
     @VisibleForTesting
@@ -270,7 +266,7 @@ public class JwtSecurity {
                 return null;
             }
         } catch (com.nimbusds.jose.JOSEException e) {
-            log.warn("Failed to create JWT verifier for key type {}: {}", publicKey == null ? null : publicKey.getClass(), e.getMessage());
+            log.warn("Failed to create JWT verifier for key type {}: {}", publicKey.getClass(), e.getMessage());
             return null;
         }
     }
@@ -351,7 +347,7 @@ public class JwtSecurity {
                 }
 
                 events.add("Discovery Service Cache was updated.");
-                log.debug("Trying to reach the z/OSMF instance " + zosmfServiceId + ".");
+                log.debug("Trying to reach the z/OSMF instance {}.", zosmfServiceId);
                 if (providers.isZosmfAvailableAndOnline()) {
                     events.add("z/OSMF instance " + zosmfServiceId + " is available and online.");
                     log.debug("The z/OSMF instance {} was reached.", zosmfServiceId);

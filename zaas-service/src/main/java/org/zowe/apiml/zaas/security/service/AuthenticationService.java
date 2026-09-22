@@ -338,7 +338,8 @@ public class AuthenticationService {
         try {
             var parsedJwt = tokenAuthentication.getJwt();
             if (parsedJwt instanceof SignedJWT signedJwt) {
-                if (signedJwt.verify(jwtSecurityInitializer.getJwtVerifier())) {
+                var keyId = signedJwt.getHeader().getKeyID();
+                if (signedJwt.verify(jwtSecurityInitializer.getJwtVerifier(keyId))) {
                     if (tokenAuthentication.isExpired()) {
                         throw new ExpiredJWTException("Token expired on %s".formatted(tokenAuthentication.getExpiration()));
                     }

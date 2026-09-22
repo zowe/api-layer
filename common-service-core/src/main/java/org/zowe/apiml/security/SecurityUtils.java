@@ -25,10 +25,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Enumeration;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -166,6 +163,29 @@ public class SecurityUtils {
         return null;
     }
 
+    public static List<PublicKey> loadSigningKeys(HttpsConfig config) {
+        if (StringUtils.isNotEmpty(config.getKeyStore())) {
+            try {
+                List<PublicKey> pubKeys = new ArrayList<>();
+                KeyStore ks = loadKeyStore(config);
+                for (Enumeration<String> e = ks.aliases(); e.hasMoreElements(); ) {
+                    String alias = e.nextElement();
+                    if (ks.isKeyEntry(alias)) {
+                        var cert = ks.getCertificate(alias);
+                        var legacyPublicKey = cert.getPublicKey();
+                        pubKeys.add(legacyPublicKey);
+                    }
+                }
+                return pubKeys;
+            } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
+                apimlLog.log("org.zowe.apiml.common.errorLoadingPublicKey", e.getMessage());
+                throw new HttpsConfigError(e.getMessage(), e,
+                    HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
+            }
+        }
+        return Collections.emptyList();
+    }
+
     /**
      * Finds a private key by public key in keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}
      *
@@ -221,6 +241,7 @@ public class SecurityUtils {
             return ks;
         }
     }
+
     /**
      * Loads keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}, from specified location
      *
