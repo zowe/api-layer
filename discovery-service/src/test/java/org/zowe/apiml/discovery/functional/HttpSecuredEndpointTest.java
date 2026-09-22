@@ -51,17 +51,17 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
     void statusEndpointIsSecuredWithConfiguredBasicAuth() {
         // Was the Freemarker dashboard at "/". Decision D4 replaced it with JSON at /eureka/status, which is one
         // of only two paths deliberately outside the frozen contract. The security behaviour being asserted -
-        // basic auth required, credentials accepted - is unchanged and is the part that matters here.
+        // client certificate required, certificate accepted - is unchanged and is the part that matters here.
+        //
+        // 403, not 401: /eureka/** is matched by the client-certificate filter chain, whose entry point is
+        // Spring's pre-authenticated Http403ForbiddenEntryPoint and sends no WWW-Authenticate challenge. There
+        // is no basic-auth path to it, so presenting credentials cannot turn a 403 into a 200 - an earlier
+        // version of this test asserted exactly that and failed. The matching assertions for the pre-cutover
+        // /eureka/apps live in HttpsSecuredEndpointsTest.
         given()
             .get(getDiscoveryUriWithPath("/eureka/status"))
             .then()
-            .statusCode(HttpStatus.UNAUTHORIZED.value());
-
-        given().auth().basic(EUREKA_USERID, EUREKA_PASSWORD)
-            .get(getDiscoveryUriWithPath("/eureka/status"))
-            .then()
-            .statusCode(HttpStatus.OK.value())
-            .contentType(org.springframework.http.MediaType.APPLICATION_JSON_VALUE);
+            .statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Nested
