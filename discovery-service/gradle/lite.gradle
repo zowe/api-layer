@@ -27,9 +27,8 @@ apply from: "$rootDir/gradle/lite-project.gradle"
 tasks.register('liteJar', BootJar) {
     //Do not allow duplicates by ignoring subsequent items to be created at the same path.
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    targetJavaVersion = JavaVersion.VERSION_17
-    includeTools = false
     targetJavaVersion = JavaVersion.VERSION_21
+    includeTools = false
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'
     }

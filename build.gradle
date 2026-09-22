@@ -121,6 +121,23 @@ allprojects {
 
             substitute(module('com.sun.mail:mailapi')).using(module("jakarta.mail:jakarta.mail-api:${libs.versions.mailapi}"))
         }
+
+        // Keep the whole Jersey stack on one line. eureka-client-jersey3:2.0.6 declares jersey-client:3.0.5,
+        // which Gradle otherwise resolves up to 4.0.x because another path asks for 4.0.2. Measured on the
+        // actual jars: jersey 3.1.x is major 55, 4.0.0/4.0.2 are major 61 (both Java 17-loadable), but
+        // jersey-common:4.0.1 is major 65 -- Java 21 only. That one patch version is the whole Java 17
+        // hazard, and an unpinned range can land on it. 3.1.12 is Java 17-loadable, is what Eureka's
+        // jersey3 connector was compiled against, and is what the pre-SB4 v3.x.x runtime used.
+        // Revisit together with the Java 17 -> 21 baseline decision; do not bump this in isolation.
+        resolutionStrategy.force(
+            "org.glassfish.jersey.core:jersey-common:${libs.versions.jersey3.get()}",
+            "org.glassfish.jersey.core:jersey-client:${libs.versions.jersey3.get()}",
+            "org.glassfish.jersey.core:jersey-server:${libs.versions.jersey3.get()}",
+            "org.glassfish.jersey.inject:jersey-hk2:${libs.versions.jersey3.get()}",
+            "org.glassfish.jersey.containers:jersey-container-servlet:${libs.versions.jersey3.get()}",
+            "org.glassfish.jersey.containers:jersey-container-servlet-core:${libs.versions.jersey3.get()}",
+            "org.glassfish.jersey.connectors:jersey-apache-connector:${libs.versions.jersey3.get()}"
+        )
     }
 
 }

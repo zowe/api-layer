@@ -6,6 +6,9 @@ dependencyResolutionManagement {
             version('projectNpm', '10.9.0')
 
             version('springBoot', '4.1.1')
+            // Jersey 3.1.x is Java 17-loadable (major 55). Only jersey-common:4.0.1 is Java 21 (major 65).
+            // Pinned via resolutionStrategy.force in build.gradle -- see the comment there.
+            version('jersey3', '3.1.12')
             version('springBootGraphQl', '4.0.2')
             version('springCloudNetflix', '5.0.2')
             version('springCloudCommons', '5.0.3')
