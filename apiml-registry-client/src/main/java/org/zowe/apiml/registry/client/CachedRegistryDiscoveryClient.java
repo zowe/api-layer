@@ -48,7 +48,15 @@ public class CachedRegistryDiscoveryClient implements DiscoveryClient {
         return client.cache().serviceIds();
     }
 
-    static ServiceInstance toSpringInstance(org.zowe.apiml.registry.model.ServiceInstance instance) {
+    /**
+     * The Spring Cloud view of a registry instance.
+     * <p>
+     * Public because the reactive adapter in {@code apiml-registry-client-spring} has to describe an instance
+     * exactly the same way: the two are read by different consumers - route building on one side, health and the
+     * API Catalog on the other - and a field that survives on one path but not the other is a bug that only shows
+     * up in one of them.
+     */
+    public static ServiceInstance toSpringInstance(org.zowe.apiml.registry.model.ServiceInstance instance) {
         boolean secure = instance.securePort() != null && instance.securePort().enabled();
         int port = secure ? instance.securePort().port() : instance.port().port();
         // Carry the advertised home page through: Spring's ServiceInstance has nowhere to put it, and the API

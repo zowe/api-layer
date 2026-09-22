@@ -15,6 +15,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -28,6 +29,8 @@ import org.springframework.cloud.commons.util.InetUtils;
 import org.springframework.cloud.commons.util.InetUtilsProperties;
 import org.springframework.core.env.Environment;
 import org.zowe.apiml.registry.SelfRegistration;
+import org.springframework.cloud.client.discovery.simple.SimpleDiscoveryClientAutoConfiguration;
+import org.springframework.cloud.client.discovery.simple.reactive.SimpleReactiveDiscoveryClientAutoConfiguration;
 import org.zowe.apiml.registry.client.CachedRegistryDiscoveryClient;
 import org.zowe.apiml.registry.client.HttpRegistryTransport;
 import org.zowe.apiml.registry.client.RegistryClient;
@@ -55,6 +58,10 @@ import java.util.List;
 @AutoConfiguration
 @ConditionalOnProperty(prefix = "eureka.client", name = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties({RegistryInstanceProperties.class, RegistryFetchProperties.class})
+@AutoConfigureBefore({
+    SimpleDiscoveryClientAutoConfiguration.class,
+    SimpleReactiveDiscoveryClientAutoConfiguration.class
+})
 public class RegistryClientAutoConfiguration {
 
     /**
@@ -153,10 +160,39 @@ public class RegistryClientAutoConfiguration {
                 : new RegistryClient(transport);
         }
 
+        /**
+         * The blocking view of the registry.
+         * <p>
+         * The condition is on this class, not on {@code DiscoveryClient} - a bare {@code @ConditionalOnMissingBean}
+         * resolves to the method's return type. Naming the interface instead makes the bean back off against Spring
+         * Cloud's {@code CompositeDiscoveryClient}, which is {@code @Primary} and is itself a
+         * {@code DiscoveryClient}: the registry client was then never created at all, while
+         * {@code RegistryClientLifecycle} went on registering this service and filling a cache that nothing read.
+         * Every consumer saw an empty registry - the Gateway built no routes, and the API Catalog and ZAAS reported
+         * DOWN - with registration working perfectly, which is what made it hard to see.
+         * <p>
+         * Coexisting is the intended design: the composite aggregates every discovery implementation, so this is
+         * how Spring Cloud's own clients are declared.
+         */
         @Bean
-        @ConditionalOnMissingBean(org.springframework.cloud.client.discovery.DiscoveryClient.class)
+        @ConditionalOnMissingBean
         CachedRegistryDiscoveryClient registryDiscoveryClient(RegistryClient registryClient) {
             return new CachedRegistryDiscoveryClient(registryClient);
+        }
+
+        /**
+         * The reactive view, which is what a reactive application actually reads.
+         * <p>
+         * Guarded on reactor rather than declared unconditionally: a servlet service has no use for it and must
+         * not gain a reactor dependency. Both this and the blocking client are declared here, before Spring
+         * Cloud's simple fallbacks, so those back off instead of leaving an application with an empty client that
+         * starts, registers and routes nothing.
+         */
+        @Bean
+        @ConditionalOnClass(name = "reactor.core.publisher.Flux")
+        @ConditionalOnMissingBean
+        CachedRegistryReactiveDiscoveryClient registryReactiveDiscoveryClient(RegistryClient registryClient) {
+            return new CachedRegistryReactiveDiscoveryClient(registryClient);
         }
 
         @Bean
