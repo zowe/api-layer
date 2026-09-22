@@ -63,15 +63,17 @@ dependencies {
 
     implementation libs.bundles.modulith
     implementation libs.spring.retry
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
     implementation libs.bundles.jaxb
     implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.boot.jackson2
     implementation libs.spring.cloud.starter.eureka.server
     implementation libs.spring.cloud.starter.gateway
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
+    implementation libs.spring.boot.starter.security.oauth2.client
     implementation libs.nimbus.jose.jwt
     implementation libs.spring.doc.webflux.ui
     implementation libs.jose4j.jwt // Signing, with support for JCA with ICSF
@@ -83,6 +85,9 @@ dependencies {
     testImplementation(testFixtures(project(":gateway-service")))
     testImplementation(testFixtures(project(":apiml-security-common")))
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.webmvc.test
+    testImplementation libs.spring.boot.starter.webflux.test
+    testImplementation libs.spring.boot.starter.security.test
     testImplementation libs.spring.mock.mvc
     testImplementation libs.modulith.test
     testImplementation libs.reactor.test

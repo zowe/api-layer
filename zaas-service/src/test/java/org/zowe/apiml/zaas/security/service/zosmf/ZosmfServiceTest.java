@@ -334,7 +334,7 @@ class ZosmfServiceTest {
 
             @Test
             void thenChangePasswordWithSuccess() {
-                ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", null, HttpStatus.OK);
+                ResponseEntity<String> responseEntity = new ResponseEntity<>("{}", (org.springframework.http.HttpHeaders) null, HttpStatus.OK);
                 doReturn(responseEntity).when(zosmfService).issueChangePasswordRequest(any(), any(), any());
                 ResponseEntity<?> response = zosmfService.changePassword(authentication);
 

@@ -29,6 +29,7 @@ tasks.register('liteJar', BootJar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     targetJavaVersion = JavaVersion.VERSION_17
     includeTools = false
+    targetJavaVersion = JavaVersion.VERSION_21
 
     manifest {
         attributes 'Main-Class': 'org.springframework.boot.loader.launch.PropertiesLauncher'

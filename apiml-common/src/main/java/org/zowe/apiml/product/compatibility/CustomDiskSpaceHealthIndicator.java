@@ -10,8 +10,8 @@
 
 package org.zowe.apiml.product.compatibility;
 
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.system.DiskSpaceHealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.application.DiskSpaceHealthIndicator;
 import org.springframework.util.unit.DataSize;
 
 import java.io.File;

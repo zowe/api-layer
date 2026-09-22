@@ -22,6 +22,7 @@ buildscript {
                 password mavenPassword
             }
         }
+        mavenCentral()
     }
 
     repositories mavenRepositories
@@ -60,8 +61,8 @@ apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 allprojects {
@@ -136,8 +137,6 @@ configure(subprojects.findAll { it.name in [
 ]}) {
 
     configurations.all {
-        // it has been replaced by spring-jcl
-        exclude group: "commons-logging", module: "commons-logging"
         // exclude netty platform specific native libraries from distribution
         exclude group: "io.netty", module: "netty-codec-native-quic"
     }
@@ -148,8 +147,8 @@ configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     test {

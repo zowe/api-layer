@@ -60,10 +60,11 @@ dependencies {
     api project(':onboarding-enabler-spring')
     api project(':apiml-security-common')
 
-    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.aspectj
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.cache
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
     implementation libs.eureka.jersey.client

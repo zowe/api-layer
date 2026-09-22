@@ -19,9 +19,9 @@ import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
-import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
-import org.springframework.boot.web.embedded.tomcat.TomcatReactiveWebServerFactory;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.tomcat.reactive.TomcatReactiveWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -226,7 +226,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
 
         @Override
         protected void initFactory(TomcatReactiveWebServerFactory factory) {
-            factory.addAdditionalTomcatConnectors(connector);
+            factory.addAdditionalConnectors(connector);
             factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         }
 
@@ -243,7 +243,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
 
         @Override
         protected void initFactory(TomcatServletWebServerFactory factory) {
-            factory.addAdditionalTomcatConnectors(connector);
+            factory.addAdditionalConnectors(connector);
             factory.addConnectorCustomizers(connectorCustomizers.toArray(new TomcatConnectorCustomizer[0]));
         }
 

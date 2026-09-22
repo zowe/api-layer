@@ -13,7 +13,7 @@ package org.zowe.apiml.gateway.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.boot.web.server.autoconfigure.ServerProperties;
 import org.springframework.boot.web.server.Ssl;
 
 import static org.junit.jupiter.api.Assertions.*;

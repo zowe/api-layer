@@ -19,8 +19,11 @@ import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.HandshakeInfo;
 import org.springframework.web.reactive.socket.adapter.TomcatWebSocketSession;
 import reactor.core.publisher.Sinks;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ApimlWebSocketSession extends TomcatWebSocketSession {
+    private static final Logger LOG = LoggerFactory.getLogger(ApimlWebSocketSession.class);
 
     private Sinks.Empty<Void> completionSink;
 
@@ -39,10 +42,10 @@ public class ApimlWebSocketSession extends TomcatWebSocketSession {
             // Ignore result: can't overflow, ok if not first or no one listens
             this.completionSink.tryEmitError(ex);
         }
-        if (logger.isDebugEnabled()) {
-            logger.debug("WebSocket session completed with error", ex);
-        } else if (logger.isInfoEnabled()) {
-            logger.info("WebSocket session completed with error: " + ex.getMessage());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("WebSocket session completed with error", ex);
+        } else if (LOG.isInfoEnabled()) {
+            LOG.info("WebSocket session completed with error: " + ex.getMessage());
         }
         // Jakarta implementation
         if (ex.getCause() instanceof AuthenticationException) {
