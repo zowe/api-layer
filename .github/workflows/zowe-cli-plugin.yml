@@ -7,14 +7,6 @@ jobs:
     release:
         runs-on: ubuntu-latest
         timeout-minutes: 40
-        # Scoped to the GitHub API calls made by the octorelease plugins configured in
-        # zowe-cli-id-federation-plugin/release.config.js (@octorelease/github with checkPrLabels,
-        # @octorelease/npm, @octorelease/git):
-        #   contents: write - create/update the GitHub Release and upload assets; read pull requests
-        #     associated with a commit (GET /commits/{sha}/pulls requires Contents read)
-        #   issues: write   - read/add/remove release labels on the PR and create/delete its comments
-        # npm publishing authenticates against Artifactory with NPM_USERNAME/NPM_PASSWORD and git
-        # operations use GIT_CREDENTIALS, so no other scope is required.
         permissions:
             contents: write
             issues: write

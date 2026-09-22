@@ -1,7 +1,5 @@
 name: PR Checker
 
-# pull_request (not pull_request_target): this job needs no repository secrets and never checks
-# out or executes pull request code, so it must not run in the privileged base-repository context.
 on:
     pull_request:
         branches: [ v2.x.x, v3.x.x ]
@@ -12,11 +10,6 @@ jobs:
         name: PR Instructions
         runs-on: ubuntu-latest
         if: github.event.pull_request.user.login != 'zowe-robot'
-        # The title check labels and comments on non-conforming pull requests. Both calls target
-        # a pull request, which GitHub enforces against the "Pull requests" permission rather than
-        # "Issues" (POST /repos/{owner}/{repo}/issues/{issue_number}/labels and .../comments).
-        # Pull requests from forks still receive a read-only token, so on those the label and
-        # comment are denied by GitHub regardless of this block.
         permissions:
             pull-requests: write
 
@@ -37,16 +30,9 @@ jobs:
 
                     echo "PR title doesn't start with any of allowed prefixes"
 
-                    # Announce the problem, but never let a denied write decide the gate's outcome:
-                    # pull requests from forks receive a read-only token, so these calls can fail
-                    # with 403 even though the title check itself must still fail the job.
                     gh pr edit "$PR" --add-label 'invalid' \
                         || echo "::warning::Could not add the 'invalid' label (the workflow token is read-only, as for pull requests from forks)"
                     gh pr comment "$PR" --body 'It looks like PR title does not contain one of the required prefixes: `fix:`, `feat:`, `docs:`, `refactor:`, `chore:`. Please add one of the prefixes based on the type of your changes by following our [contributing guidelines](https://github.com/zowe/api-layer/blob/v3.x.x/CONTRIBUTING.md#type)' \
                         || echo "::warning::Could not post the comment (the workflow token is read-only, as for pull requests from forks)"
 
-                    # Fail explicitly. Previously the step's exit status was whatever the last `gh`
-                    # command returned, so a non-conforming title failed only because the write was
-                    # denied - making the gate pass as soon as the token could write, and making its
-                    # result depend on a permission rather than on the title.
                     exit 1
