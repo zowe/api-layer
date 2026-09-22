@@ -13,7 +13,6 @@ package org.zowe.apiml.caching.health;
 import org.apache.commons.lang3.StringUtils;
 import org.infinispan.remoting.transport.Address;
 import org.infinispan.spring.embedded.provider.SpringEmbeddedCacheManager;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.health.contributor.AbstractHealthIndicator;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.Status;

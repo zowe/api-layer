@@ -32,8 +32,15 @@ import java.util.Map;
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class DiscoveryErrorController extends BasicErrorController {
 
-    public DiscoveryErrorController(ErrorAttributes errorAttributes, ErrorProperties errorProperties, List<ErrorViewResolver> errorViewResolvers) {
-        super(errorAttributes, errorProperties, errorViewResolvers);
+    /**
+     * Spring Boot 4 moved ErrorMvcAutoConfiguration into spring-boot-webmvc and no longer publishes an
+     * ErrorProperties bean (it is now bound inside WebProperties), so nothing can be injected here.
+     * BasicErrorController still needs an instance; an unconfigured default reproduces the previous
+     * behaviour for the paths this controller actually serves, and {@code /eureka/apps/**} 404s are
+     * short-circuited below before any property is consulted.
+     */
+    public DiscoveryErrorController(ErrorAttributes errorAttributes, List<ErrorViewResolver> errorViewResolvers) {
+        super(errorAttributes, new ErrorProperties(), errorViewResolvers);
     }
 
     @Override

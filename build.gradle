@@ -61,8 +61,8 @@ apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 allprojects {
@@ -136,7 +136,17 @@ allprojects {
             "org.glassfish.jersey.inject:jersey-hk2:${libs.versions.jersey3.get()}",
             "org.glassfish.jersey.containers:jersey-container-servlet:${libs.versions.jersey3.get()}",
             "org.glassfish.jersey.containers:jersey-container-servlet-core:${libs.versions.jersey3.get()}",
-            "org.glassfish.jersey.connectors:jersey-apache-connector:${libs.versions.jersey3.get()}"
+            "org.glassfish.jersey.connectors:jersey-apache-connector:${libs.versions.jersey3.get()}",
+
+            // Spring Boot 4.1's dependency management pins Groovy to 5.0.8. REST Assured 5.5.7 is compiled
+            // against Groovy 4 and fails at runtime on Groovy 5 with a NullPointerException deep inside
+            // ClosureMetaClass (every RestAssured call in discovery-service tests dies this way). Groovy has
+            // no binary compatibility guarantee across majors, so REST Assured has to be the authority here
+            // until it ships a Groovy 5 build. Remove this pin when rest-assured declares Groovy 5.
+            "org.apache.groovy:groovy:${libs.versions.groovy.get()}",
+            "org.apache.groovy:groovy-json:${libs.versions.groovy.get()}",
+            "org.apache.groovy:groovy-xml:${libs.versions.groovy.get()}",
+            "org.apache.groovy:groovy-bom:${libs.versions.groovy.get()}"
         )
     }
 
@@ -164,8 +174,8 @@ configure(subprojects.findAll {it.name != 'platform'}) {
     apply plugin: 'java-library'
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     test {

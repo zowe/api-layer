@@ -9,6 +9,8 @@ dependencyResolutionManagement {
             // Jersey 3.1.x is Java 17-loadable (major 55). Only jersey-common:4.0.1 is Java 21 (major 65).
             // Pinned via resolutionStrategy.force in build.gradle -- see the comment there.
             version('jersey3', '3.1.12')
+            // Last Groovy 4.x. REST Assured 5.5.7 requires 4.0.22; SB 4.1 would force 5.0.8 (incompatible).
+            version('groovy', '4.0.32')
             version('springBootGraphQl', '4.0.2')
             version('springCloudNetflix', '5.0.2')
             version('springCloudCommons', '5.0.3')
@@ -38,6 +40,10 @@ dependencyResolutionManagement {
             version('eureka', '2.0.6')
             version('fileupload', '1.6.0')
             version('netflixServo', '0.13.2')
+            // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
+            // DynamicPropertyFactory, but Spring Cloud Netflix 5.0.x excludes archaius-core from
+            // eureka-client/eureka-core. Declared explicitly to replace what 4.3.3 pulled in.
+            version('archaius', '0.7.6')
             version('googleErrorprone', '2.50.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.14.0')
@@ -198,6 +204,7 @@ dependencyResolutionManagement {
             library('http_client5', 'org.apache.httpcomponents.client5', 'httpclient5').versionRef('httpClient5')
             library('javax_annotation', 'javax.annotation', 'javax.annotation-api').versionRef('javaxAnnotation') // to define minimum version and avoid duplicity libraries in the classpath
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
+            library('archaius_core', 'com.netflix.archaius', 'archaius-core').versionRef('archaius')
 
             library('infinispan_spring_boot3_starter_embedded', 'org.infinispan', 'infinispan-spring-boot3-starter-embedded').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')

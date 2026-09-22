@@ -12,7 +12,6 @@ package org.zowe.apiml.discovery.eureka;
 
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.converters.wrappers.CodecWrapper;
 import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
