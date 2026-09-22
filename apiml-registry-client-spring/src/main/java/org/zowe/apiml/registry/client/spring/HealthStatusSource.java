@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.registry.client.spring;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.CompositeHealthContributor;
 import org.springframework.boot.actuate.health.CompositeReactiveHealthContributor;
 import org.springframework.boot.actuate.health.Health;
@@ -22,7 +23,7 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.actuate.health.StatusAggregator;
 import org.zowe.apiml.registry.model.InstanceStatus;
 
-import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ import java.util.Set;
  * Reactive contributors are blocked on, as they were before. That is safe here because the caller is the
  * registration scheduler's own thread, never an event-loop thread.
  */
+@Slf4j
 public class HealthStatusSource {
 
     private final StatusAggregator statusAggregator;
@@ -54,35 +56,45 @@ public class HealthStatusSource {
     }
 
     public InstanceStatus currentStatus() {
-        Set<Status> statuses = new HashSet<>();
-        for (HealthContributor contributor : healthContributors.values()) {
-            collect(statuses, contributor);
+        Map<String, Status> byContributor = new LinkedHashMap<>();
+        for (Map.Entry<String, HealthContributor> entry : healthContributors.entrySet()) {
+            collectNamed(byContributor, entry.getKey(), entry.getValue());
         }
-        for (ReactiveHealthContributor contributor : reactiveHealthContributors.values()) {
-            collect(statuses, contributor);
+        for (Map.Entry<String, ReactiveHealthContributor> entry : reactiveHealthContributors.entrySet()) {
+            collectNamed(byContributor, entry.getKey(), entry.getValue());
         }
-        return toInstanceStatus(statusAggregator.getAggregateStatus(statuses));
+
+        Status aggregate = statusAggregator.getAggregateStatus(Set.copyOf(byContributor.values()));
+        InstanceStatus result = toInstanceStatus(aggregate);
+        if (result != InstanceStatus.UP) {
+            // A service about to be advertised as unhealthy should say why, and which indicator decided it: the
+            // aggregate alone is not enough to tell a genuine fault from a self-referential one, where a
+            // service reports DOWN because it cannot yet see the registry it is reporting to.
+            log.warn("Aggregate health is {}, so the registered status is {}. Contributors: {}",
+                aggregate.getCode(), result, byContributor);
+        }
+        return result;
     }
 
-    private void collect(Set<Status> statuses, HealthContributor contributor) {
+    private void collectNamed(Map<String, Status> into, String name, HealthContributor contributor) {
         if (contributor instanceof CompositeHealthContributor composite) {
             for (NamedContributor<HealthContributor> child : composite) {
-                collect(statuses, child.getContributor());
+                collectNamed(into, name + "." + child.getName(), child.getContributor());
             }
         } else if (contributor instanceof HealthIndicator indicator) {
-            statuses.add(indicator.health().getStatus());
+            into.put(name, indicator.health().getStatus());
         }
     }
 
-    private void collect(Set<Status> statuses, ReactiveHealthContributor contributor) {
+    private void collectNamed(Map<String, Status> into, String name, ReactiveHealthContributor contributor) {
         if (contributor instanceof CompositeReactiveHealthContributor composite) {
             for (NamedContributor<ReactiveHealthContributor> child : composite) {
-                collect(statuses, child.getContributor());
+                collectNamed(into, name + "." + child.getName(), child.getContributor());
             }
         } else if (contributor instanceof ReactiveHealthIndicator indicator) {
             Health health = indicator.health().block();
             if (health != null) {
-                statuses.add(health.getStatus());
+                into.put(name, health.getStatus());
             }
         }
     }

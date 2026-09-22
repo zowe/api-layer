@@ -22,6 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Drives a {@link RegistryClient}: registers this service, renews the lease, refreshes the cached view and
@@ -160,6 +161,11 @@ public class RegistryClientLifecycle implements SmartLifecycle {
         try {
             if (client.refresh()) {
                 publishRefreshed();
+            } else {
+                // The cached view is deliberately kept when the registry cannot be reached, so a failing fetch is
+                // invisible from the outside: the service carries on routing from a stale table. Record it.
+                log.debug("Registry fetch failed ({} in a row); still serving the last known view",
+                    client.consecutiveFetchFailures());
             }
         } catch (RuntimeException e) {
             log.debug("Registry refresh failed", e);
@@ -181,6 +187,14 @@ public class RegistryClientLifecycle implements SmartLifecycle {
             ? InstanceStatus.UP
             : healthStatusSource.currentStatus();
 
+        if (target != InstanceStatus.UP) {
+            // A service that advertises itself unhealthy because of what it cannot see in the registry is
+            // indistinguishable, from the outside, from one that is genuinely broken. Record its own view so the
+            // two can be told apart.
+            log.debug("Advertising {}; own registry view holds {} instance(s): {}",
+                target, client.cache().size(), describeCache());
+        }
+
         if (target == InstanceStatus.UNKNOWN || target == advertisedStatus.get()) {
             return;
         }
@@ -188,6 +202,19 @@ public class RegistryClientLifecycle implements SmartLifecycle {
             advertisedStatus.set(target);
             log.debug("Registered status is now {}", target);
         }
+    }
+
+    private String describeCache() {
+        StringBuilder view = new StringBuilder();
+        for (String serviceId : client.cache().serviceIds()) {
+            if (view.length() > 0) {
+                view.append(", ");
+            }
+            view.append(serviceId).append('=').append(client.cache().instances(serviceId).stream()
+                .map(instance -> instance.instanceId() + ":" + instance.effectiveStatus())
+                .collect(Collectors.joining("|")));
+        }
+        return view.toString();
     }
 
     private static void cancel(ScheduledFuture<?> task) {
