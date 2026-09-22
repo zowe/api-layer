@@ -1951,7 +1951,7 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
-                uses: bahmutov/npm-install@v1
+                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
                 with:
                     install-command: npm ci --legacy-peer-deps
                     working-directory: api-catalog-ui/frontend
@@ -1991,8 +1991,8 @@ jobs:
                 if: failure()
                 shell: bash
                 run: |
-                    curl -k -s https://gateway-service:10010/application/health
-                    curl -k -s https://gateway-service-2:10010/application/health
+                    curl --cacert ./keystore/service/trusted_CAs.cer -s https://gateway-service:10010/application/health
+                    curl --cacert ./keystore/service/trusted_CAs.cer -s https://gateway-service-2:10010/application/health
 
             -   name: Cypress run API Catalog
                 run: >
@@ -2058,7 +2058,7 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
-                uses: bahmutov/npm-install@v1
+                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
                 with:
                     install-command: npm ci --legacy-peer-deps
                     working-directory: api-catalog-ui/frontend
@@ -2095,8 +2095,8 @@ jobs:
                 if: failure()
                 shell: bash
                 run: |
-                    curl -k -s https://gateway-service:10010/application/health
-                    curl -k -s https://gateway-service-2:10010/application/health
+                    curl --cacert ./keystore/service/trusted_CAs.cer -s https://gateway-service:10010/application/health
+                    curl --cacert ./keystore/service/trusted_CAs.cer -s https://gateway-service-2:10010/application/health
 
             -   name: Cypress run API Catalog
                 run: >

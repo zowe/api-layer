@@ -30,7 +30,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -116,7 +115,7 @@ class CachingServiceTests {
         assumeTrue(cachingServiceConfiguration.getHost() != null);
         baseUrls = Arrays.stream(cachingServiceConfiguration.getHost().split("[,;]"))
             .map(host -> String.format("%s://%s:%d", cachingServiceConfiguration.getScheme(), host, cachingServiceConfiguration.getConnectPortForHost(host)))
-            .collect(Collectors.toList());
+            .toList();
         baseUrls = baseUrls.subList(0, Integer.getInteger("caching.instances", baseUrls.size()));
         assumeTrue(baseUrls.size() > 1, "This test requires multiple instances of Caching service.");
         credentials = ConfigReader.environmentConfiguration().getCredentials();
