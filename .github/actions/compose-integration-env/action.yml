@@ -10,9 +10,6 @@ inputs:
     compose-file:
         description: "Path to the docker-compose.yml for this test job"
         required: true
-    hosts:
-        description: "Space-separated hostnames to alias to 127.0.0.1"
-        required: false
     image-tag:
         description: "Tag to pull/run for every service image (APIML_TAG)"
         required: true

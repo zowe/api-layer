@@ -74,6 +74,7 @@ jobs:
                     docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
                 env:
                     PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
+
             -   name: Build Python Sample App
                 run: |
                     cd onboarding-enabler-python-sample-app
@@ -87,16 +88,19 @@ jobs:
 
                 env:
                     PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
+
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean jib -Djib.serialize=true -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Pzowe.docker.password=$PERSONAL_JB_TOKEN -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
                 env:
                     PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
+
             -   name: Standalone Catalog
                 run: >
                     ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Pzowe.docker.password=$PERSONAL_JB_TOKEN -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
                 env:
                     PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
+
             -   uses: ./.github/actions/teardown
 
     CITestsModulithUnknownHostnames:
@@ -104,10 +108,6 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 15
 
-        # Services now run as a plain docker compose stack (docker/integration-tests/modulith-unknown-hostnames)
-        # instead of GitHub Actions' native container/services orchestration - the exact same
-        # compose file and commands work unchanged on a developer machine. See
-        # docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -119,7 +119,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/modulith-unknown-hostnames/docker-compose.yml
-                    hosts: apiml discoverable-client-unknown mock-services-unknown
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -175,7 +174,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/modulith/docker-compose.yml
-                    hosts: apiml discoverable-client mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -238,7 +236,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/modulith-saf-ha/docker-compose.yml
-                    hosts: apiml apiml-2 discoverable-client
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -288,7 +285,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic"]
+                type: [ "normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic" ]
 
         # Services now run as a plain docker compose stack (docker/integration-tests/modulith-ha)
         # instead of GitHub Actions' native container/services orchestration - the exact same
@@ -316,7 +313,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/modulith-ha/docker-compose.yml
-                    hosts: apiml apiml-2 apiml-3 discoverable-client discoverable-client-2 mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -420,10 +416,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/split/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services caching-service discoverable-client discovery-service
-                        gateway-service zaas-service mock-services
-                        discovery-service-2 gateway-service-2 zaas-service-2
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -488,10 +480,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/saf-provider-ha/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services api-catalog-services-2 caching-service discoverable-client
-                        discovery-service discovery-service-2 gateway-service gateway-service-2
-                        zaas-service zaas-service-2
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -551,9 +539,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/gateway-proxy/docker-compose.yml
-                    hosts: >-
-                        discovery-service gateway-service gateway-service-2 zaas-service zaas-service-2
-                        central-gateway-service discoverable-client mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -618,10 +603,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/gateway-central-registry/docker-compose.yml
-                    hosts: >-
-                        discovery-service api-catalog-services zaas-service gateway-service
-                        discoverable-client central-gateway-service api-catalog-services-2
-                        discovery-service-2 zaas-service-2 mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -689,7 +670,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/central-registry-modulith/docker-compose.yml
-                    hosts: apiml central-gateway-service discoverable-client mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -744,9 +724,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/registration/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services caching-service discoverable-client discovery-service
-                        gateway-service zaas-service mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -801,9 +778,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/discovery-basic-auth/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services discovery-service gateway-service zaas-service
-                        discoverable-client mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -861,7 +835,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/discovery-basic-auth-modulith/docker-compose.yml
-                    hosts: apiml apiml-2 discoverable-client mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -913,7 +886,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/registration-modulith/docker-compose.yml
-                    hosts: apiml mock-services discoverable-client
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -972,10 +944,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/zaas/docker-compose.yml
-                    hosts: >-
-                        caching-service central-gateway-service discoverable-client
-                        api-catalog-services discovery-service zaas-service gateway-service
-                        mock-services
                     image-tag: ${{ env.JOB_ID }}
                     extra-env: |
                         OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
@@ -1051,9 +1019,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/zosmf-without-jwt/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services caching-service discoverable-client discovery-service
-                        zaas-service gateway-service mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1107,7 +1072,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/zosmf-without-jwt-modulith/docker-compose.yml
-                    hosts: apiml discoverable-client mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1339,10 +1303,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/deterministic-lb/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services api-catalog-services-2 caching-service discoverable-client
-                        discoverable-client-2 mock-services discovery-service discovery-service-2
-                        zaas-service zaas-service-2 gateway-service gateway-service-2
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1407,7 +1367,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/deterministic-lb-modulith/docker-compose.yml
-                    hosts: apiml apiml-2 discoverable-client discoverable-client-2 mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1481,10 +1440,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/sticky-session-lb/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services caching-service discoverable-client discoverable-client-2
-                        mock-services discovery-service discovery-service-2 zaas-service zaas-service-2
-                        gateway-service gateway-service-2
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1548,7 +1503,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/sticky-session-lb-modulith/docker-compose.yml
-                    hosts: apiml apiml-2 discoverable-client discoverable-client-2 mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1624,11 +1578,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/ha-caching-chaotic/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services api-catalog-services-2 caching-service caching-service-2
-                        caching-service-3 discoverable-client discoverable-client-2 mock-services
-                        discovery-service discovery-service-2 zaas-service zaas-service-2
-                        gateway-service gateway-service-2
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1679,7 +1628,7 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
+                type: [ "normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic" ]
 
         # Services now run as a plain docker compose stack (docker/integration-tests/ha) instead
         # of GitHub Actions' native container/services orchestration - the exact same compose
@@ -1707,10 +1656,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/ha/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services api-catalog-services-2 caching-service caching-service-2
-                        discoverable-client discoverable-client-2 mock-services discovery-service
-                        discovery-service-2 zaas-service zaas-service-2 gateway-service gateway-service-2
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1824,9 +1769,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/with-infinispan/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services caching-service caching-service-2 discoverable-client
-                        discovery-service gateway-service zaas-service mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1884,7 +1826,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/modulith-with-infinispan/docker-compose.yml
-                    hosts: apiml apiml-2 api-catalog-services discoverable-client mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -1951,7 +1892,7 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
-                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
+                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1.12.1
                 with:
                     install-command: npm ci --legacy-peer-deps
                     working-directory: api-catalog-ui/frontend
@@ -1966,10 +1907,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/e2e-ui-tests/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services discoverable-client discovery-service gateway-service
-                        zaas-service caching-service mock-services discovery-service-2
-                        gateway-service-2 zaas-service-2
                     image-tag: ${{ env.JOB_ID }}
                     extra-env: |
                         OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
@@ -2058,7 +1995,7 @@ jobs:
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
-                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
+                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1.12.1
                 with:
                     install-command: npm ci --legacy-peer-deps
                     working-directory: api-catalog-ui/frontend
@@ -2073,7 +2010,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/e2e-ui-tests-modulith/docker-compose.yml
-                    hosts: discoverable-client mock-services gateway-service gateway-service-2
                     image-tag: ${{ env.JOB_ID }}
                     extra-env: |
                         OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
@@ -2158,9 +2094,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/service-prefix-replacer/docker-compose.yml
-                    hosts: >-
-                        api-catalog-services discoverable-client discovery-service
-                        gateway-service zaas-service mock-services
                     image-tag: ${{ env.JOB_ID }}
 
             -   name: Run Startup Check
@@ -2219,7 +2152,6 @@ jobs:
             -   uses: ./.github/actions/compose-integration-env
                 with:
                     compose-file: docker/integration-tests/node-python-services/docker-compose.yml
-                    hosts: apiml mock-services nodejs-sample-app python-sample-app
                     image-tag: ${{ env.JOB_ID }}
                     extra-env: |
                         SAMPLE_APP_IMAGE_PREFIX=ghcr.io/balhar-jakub/
