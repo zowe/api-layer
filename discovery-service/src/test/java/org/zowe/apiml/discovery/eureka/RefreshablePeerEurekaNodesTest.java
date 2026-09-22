@@ -27,25 +27,22 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
 import javax.net.ssl.SSLContext;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -53,16 +50,6 @@ import static org.mockito.Mockito.when;
 class RefreshablePeerEurekaNodesTest {
 
     private static final int DEFAULT_MAX_RETRIES = 10;
-    private static final VarHandle MODIFIERS;
-
-    static {
-        try {
-            var lookup = MethodHandles.privateLookupIn(Field.class, MethodHandles.lookup());
-            MODIFIERS = lookup.findVarHandle(Field.class, "modifiers", int.class);
-        } catch (IllegalAccessException | NoSuchFieldException ex) {
-            throw new RuntimeException(ex);
-        }
-    }
 
     PeerAwareInstanceRegistry registry;
     @Mock
@@ -92,17 +79,16 @@ class RefreshablePeerEurekaNodesTest {
     }
 
     @Test
-    void givenEurekaNodeUrl_thenCreateNode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void givenEurekaNodeUrl_thenCreateNode() {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
 
-        Field defaultExecutor = StatsMonitor.class.getDeclaredField("DEFAULT_EXECUTOR");
-        MODIFIERS.set(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);
-        defaultExecutor.setAccessible(true);
-        defaultExecutor.set(null, Executors.newSingleThreadScheduledExecutor());
-
-        PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
-        assertInstanceOf(ApimlPeerEurekaNode.class, node);
+        // Mock the construction of StatsMonitor instead of forcing its static final DEFAULT_EXECUTOR
+        // field, which requires Unsafe or VarHandle tricks that recent JDKs restrict.
+        try (MockedConstruction<StatsMonitor> mocked = mockConstruction(StatsMonitor.class)) {
+            PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
+            assertInstanceOf(ApimlPeerEurekaNode.class, node);
+        }
     }
 
     static Stream<Set<String>> values() {
