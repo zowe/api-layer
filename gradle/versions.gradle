@@ -5,13 +5,13 @@ dependencyResolutionManagement {
             version('projectNode', '24.10.0')
             version('projectNpm', '10.9.0')
 
-            version('springBoot', '4.0.2')
+            version('springBoot', '4.1.1')
             version('springBootGraphQl', '4.0.2')
-            version('springCloudNetflix', '5.0.1')
-            version('springCloudCommons', '5.0.1')
-            version('springCloudCB', '5.0.1')
-            version('springCloudGateway', '5.0.1')
-            version('springCloud', '2025.1.1')
+            version('springCloudNetflix', '5.0.2')
+            version('springCloudCommons', '5.0.3')
+            version('springCloudCB', '5.0.3')
+            version('springCloudGateway', '5.0.3')
+            version('springCloud', '2025.1.3')
             version('springFramework', '7.0.7')
             version('springRetry', '2.0.13')
 
@@ -43,7 +43,7 @@ dependencyResolutionManagement {
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6.4')
             version('infinispan', '16.2.3')
-            version('jacksonAnnotations', '2.22')
+            version('jacksonAnnotations', '2.22')  // Jackson 2 shim track: review when SB 4.3 lands
             version('jacksonCore', '2.22.2')
             version('jacksonDatabind', '2.22.2')
             version('jacksonDataformatYaml', '2.22.2')
