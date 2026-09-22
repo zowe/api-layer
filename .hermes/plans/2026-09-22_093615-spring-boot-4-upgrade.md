@@ -78,7 +78,40 @@ be fixed to reach green — none of which the original branch had solved:
   `TimeoutProperties` with a changed factory-supplier signature
 
 **Verification:** `./gradlew clean compileJava compileTestJava --continue` → **BUILD SUCCESSFUL, 0 errors,
-all 41 modules**, bytecode at class file version 65. Test *execution* is not yet proven — only compilation.
+all 41 modules.** Test *execution* is not yet proven — only compilation.
+
+### Phase 1A — What test execution actually revealed  ⚠️ IN PROGRESS (2026-09-22)
+
+Compilation being green was **not** the hard part. Running the suite on **JDK 17** (the JDK CI's `setup`
+action defaults to) found the real work, including three defects that would have shipped.
+
+**Measured state: 21 of 25 modules fully green; 56 failing tests in 4 modules.**
+Full table and per-category root causes: `docs/sb4-migration-status.md` on the branch.
+
+Production defects found (not test-only):
+- **Archaius excluded from the runtime classpath.** Spring Cloud Netflix 5.0.x's BOM excludes
+  `archaius-core`, but `eureka-core`'s `DefaultEurekaServerConfig` still needs it statically.
+  `eureka-client` 2.0.5 declared it; **2.0.6 dropped it**. Discovery service would fail at startup.
+- **gateway-service could not start.** An inherited `exclude spring-boot-starter-reactor-netty` (harmless
+  on SB3 because gateway runs on Tomcat) removed `NettyServerProperties`, which SB4's gateway
+  `NettyConfiguration` needs — so its `HttpClientProperties` `@Bean` was never registered. **31 of
+  gateway's 47 failing suites came from this one exclude.**
+- **springdoc 2.9.1 aborted ApplicationContext startup** by referencing a moved `WebFluxProperties`
+  class during `@ConditionalOnMissingBean` type deduction → `BeanTypeDeductionException`, ~80 suites.
+
+Two dependency lines are simply incompatible with the stack and had to move:
+- **REST Assured 5.5.7 → 6.0.1** (5.5.7 is Spring-6-compiled: calls removed `HttpHeaders.keySet()`, casts
+  `HttpHeaders` to `MultiValueMap`; also Groovy 4 vs the BOM's Groovy 5). **This retired the Groovy 4.0.32
+  pin** — the pin was a workaround for the wrong version of the library, not a real requirement.
+- springdoc 2.x → **3.1.1**.
+
+Still red, categorised: vacuous `@Mock`-under-`SpringExtension` tests (6), `HttpHeaders`/`MultiValueMap`
+(4), components not initialised at startup — suspected `@ConditionalOnMissingBean(name="modulithConfig")`
+flip, **possibly a production behaviour change** (7), and 39 needing individual review.
+
+**Lesson:** run the full `build` with tests before claiming a milestone. Every round of fixes here
+revealed a genuinely different root cause rather than chipping at one.
+
 
 Full API mapping tables and rebase pitfalls are recorded in the `apiml-architecture` skill at
 `references/sb4-migration-playbook.md` so they do not need re-deriving.
