@@ -203,11 +203,12 @@ public class RegistryClientAutoConfiguration {
         RegistryClientLifecycle registryClientLifecycle(
             RegistryClient registryClient,
             RegistryFetchProperties clientConfig,
+            RegistryInstanceProperties instanceConfig,
             ApplicationEventPublisher publisher,
             ObjectProvider<HealthStatusSource> healthStatusSource
         ) {
             return new RegistryClientLifecycle(
-                registryClient, clientConfig, publisher, healthStatusSource.getIfAvailable());
+                registryClient, clientConfig, instanceConfig, publisher, healthStatusSource.getIfAvailable());
         }
 
     }

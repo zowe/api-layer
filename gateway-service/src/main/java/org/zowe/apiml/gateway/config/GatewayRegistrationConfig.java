@@ -101,6 +101,7 @@ public class GatewayRegistrationConfig {
         List<AdditionalRegistration> additionalRegistrations,
         ServiceInstance selfServiceInstance,
         RegistryFetchProperties primaryConfig,
+        RegistryInstanceProperties instanceConfig,
         AdditionalRegistrationGatewayRegistry gatewayRegistry,
         ApplicationEventPublisher publisher,
         ObjectProvider<HealthStatusSource> healthStatusSource,
@@ -131,8 +132,8 @@ public class GatewayRegistrationConfig {
                 password);
 
             lifecycles.add(newAdditionalRegistration(
-                transport, selfServiceInstance, registration, primaryConfig, gatewayRegistry, publisher,
-                healthStatusSource.getIfAvailable()));
+                transport, selfServiceInstance, registration, primaryConfig, instanceConfig, gatewayRegistry,
+                publisher, healthStatusSource.getIfAvailable()));
         }
 
         return new AdditionalRegistrations(lifecycles);
@@ -150,6 +151,7 @@ public class GatewayRegistrationConfig {
         ServiceInstance selfServiceInstance,
         AdditionalRegistration registration,
         RegistryFetchProperties primaryConfig,
+        RegistryInstanceProperties instanceConfig,
         AdditionalRegistrationGatewayRegistry gatewayRegistry,
         ApplicationEventPublisher publisher,
         HealthStatusSource healthStatusSource
@@ -165,7 +167,7 @@ public class GatewayRegistrationConfig {
         config.setShouldUnregisterOnShutdown(primaryConfig.isShouldUnregisterOnShutdown());
         config.getHealthcheck().setEnabled(primaryConfig.getHealthcheck().isEnabled());
 
-        return new RegistryClientLifecycle(client, config, publisher, healthStatusSource);
+        return new RegistryClientLifecycle(client, config, instanceConfig, publisher, healthStatusSource);
     }
 
     /**

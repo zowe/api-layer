@@ -165,10 +165,14 @@ class AdditionalRegistrationTest {
             config.setRegistryFetchIntervalSeconds(3600);
             config.setInstanceInfoReplicationIntervalSeconds(3600);
 
+            // The heartbeat is paced by the lease, so this is what keeps the scheduled renewals out of the way.
+            var instanceConfig = new org.zowe.apiml.registry.client.spring.RegistryInstanceProperties();
+            instanceConfig.setLeaseRenewalIntervalInSeconds(3600);
+
             var lifecycles = new ArrayList<org.zowe.apiml.registry.client.spring.RegistryClientLifecycle>();
             for (RecordingTransport transport : transports) {
                 lifecycles.add(GatewayRegistrationConfig.newAdditionalRegistration(
-                    transport, primary, registration, config, gatewayRegistry, event -> { }, null));
+                    transport, primary, registration, config, instanceConfig, gatewayRegistry, event -> { }, null));
             }
             return new GatewayRegistrationConfig.AdditionalRegistrations(lifecycles);
         }

@@ -34,6 +34,9 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import java.time.Duration;
+
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RegistryClientLifecycleTest {
@@ -41,12 +44,13 @@ class RegistryClientLifecycleTest {
     private RecordingTransport transport;
     private RegistryClient client;
     private RegistryFetchProperties config;
+    private RegistryInstanceProperties instanceConfig;
     private List<ApplicationEvent> events;
 
     @BeforeEach
     void setUp() {
         transport = new RecordingTransport();
-        RegistryInstanceProperties instanceConfig = new RegistryInstanceProperties();
+        instanceConfig = new RegistryInstanceProperties();
         instanceConfig.setAppname("zaas");
         instanceConfig.setHostname("localhost");
         instanceConfig.setIpAddress("127.0.0.1");
@@ -57,13 +61,16 @@ class RegistryClientLifecycleTest {
         // work synchronously, which is the point of testing them this way.
         config.setRegistryFetchIntervalSeconds(3600);
         config.setInstanceInfoReplicationIntervalSeconds(3600);
+        // The heartbeat is paced by the lease, not by instance-info replication, so this is what has to be pushed
+        // out for the scheduled work not to interleave.
+        instanceConfig.setLeaseRenewalIntervalInSeconds(3600);
 
         events = new ArrayList<>();
     }
 
     private RegistryClientLifecycle lifecycle(HealthStatusSource healthStatusSource) {
         ApplicationEventPublisher publisher = event -> events.add((ApplicationEvent) event);
-        return new RegistryClientLifecycle(client, config, publisher, healthStatusSource);
+        return new RegistryClientLifecycle(client, config, instanceConfig, publisher, healthStatusSource);
     }
 
     private static HealthStatusSource health(Status status) {
@@ -218,10 +225,39 @@ class RegistryClientLifecycleTest {
     }
 
     /** Records what the lifecycle asked of the registry. */
+    @Test
+    @DisplayName("the lease is renewed on the interval the lease is measured against")
+    void heartbeatsFollowTheLeaseRenewalInterval() {
+        // The API Catalog's docker configuration is the case that matters: a six second lease, renewed every
+        // second. Pacing the heartbeat by instanceInfoReplicationIntervalSeconds - thirty seconds there - left the
+        // Catalog registered, evicted six seconds later, and unheard from until the next replication tick. It was
+        // the only service in the whole deployment that never appeared in the registry, and every integration test
+        // job failed its startup check on it.
+        instanceConfig.setLeaseRenewalIntervalInSeconds(1);
+        config.setInstanceInfoReplicationIntervalSeconds(3600);
+        config.setRegistryFetchIntervalSeconds(3600);
+
+        var lifecycle = lifecycle(null);
+        lifecycle.start();
+        try {
+            await().atMost(Duration.ofSeconds(15)).until(() -> {
+                synchronized (transport.renewals) {
+                    return transport.renewals.size() >= 2;
+                }
+            });
+        } finally {
+            lifecycle.stop();
+        }
+
+        assertTrue(transport.renewals.size() >= 2,
+            "a lease that expires in a second has to be renewed well inside instanceInfoReplicationIntervalSeconds");
+    }
+
     private static class RecordingTransport implements RegistryTransport {
 
         private final List<ServiceInstance> registrations = new ArrayList<>();
         private final List<InstanceStatus> statusUpdates = new ArrayList<>();
+        private final List<Long> renewals = new ArrayList<>();
         private final List<String> cancellations = new ArrayList<>();
         private int fullFetches;
         private int deltaFetches;
@@ -247,6 +283,9 @@ class RegistryClientLifecycleTest {
 
         @Override
         public boolean renew(String appName, String instanceId) {
+            synchronized (renewals) {
+                renewals.add(System.currentTimeMillis());
+            }
             return true;
         }
 

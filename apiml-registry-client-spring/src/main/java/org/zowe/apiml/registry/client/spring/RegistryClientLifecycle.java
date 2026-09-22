@@ -38,6 +38,7 @@ public class RegistryClientLifecycle implements SmartLifecycle {
 
     private final RegistryClient client;
     private final RegistryFetchProperties config;
+    private final RegistryInstanceProperties instanceConfig;
     private final ApplicationEventPublisher publisher;
 
     /** Null when {@code eureka.client.healthcheck.enabled} is off, or actuator is not on the classpath. */
@@ -49,14 +50,21 @@ public class RegistryClientLifecycle implements SmartLifecycle {
     private volatile ScheduledFuture<?> refreshTask;
     private volatile boolean running;
 
+    /**
+     * @param instanceConfig the lease this service is registered with. The heartbeat is paced by
+     *                       {@code leaseRenewalIntervalInSeconds} - the interval the Discovery Service is told to
+     *                       expect renewals at, and therefore the one that keeps the lease alive.
+     */
     public RegistryClientLifecycle(
         RegistryClient client,
         RegistryFetchProperties config,
+        RegistryInstanceProperties instanceConfig,
         ApplicationEventPublisher publisher,
         HealthStatusSource healthStatusSource
     ) {
         this.client = client;
         this.config = config;
+        this.instanceConfig = instanceConfig;
         this.publisher = publisher;
         this.healthStatusSource = healthStatusSource;
     }
@@ -93,10 +101,16 @@ public class RegistryClientLifecycle implements SmartLifecycle {
 
         if (config.isRegisterWithEureka()) {
             register();
+            // Paced by the lease renewal interval, which is what Eureka's client did and what the lease is
+            // actually measured against. instanceInfoReplicationIntervalSeconds is a different thing - how often
+            // the client checks whether its own instance info has changed and needs pushing - and it is usually
+            // far longer than the lease: a service whose lease expires in 6 seconds with a 30 second heartbeat
+            // registers, is evicted, and is not seen again for another 30 seconds.
+            int renewalInterval = instanceConfig.getLeaseRenewalIntervalInSeconds();
             heartbeatTask = scheduler.scheduleWithFixedDelay(
                 this::heartbeat,
-                config.getInstanceInfoReplicationIntervalSeconds(),
-                config.getInstanceInfoReplicationIntervalSeconds(),
+                renewalInterval,
+                renewalInterval,
                 TimeUnit.SECONDS);
         }
     }
