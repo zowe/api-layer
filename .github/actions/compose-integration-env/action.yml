@@ -12,7 +12,7 @@ inputs:
         required: true
     hosts:
         description: "Space-separated hostnames to alias to 127.0.0.1"
-        required: true
+        required: false
     image-tag:
         description: "Tag to pull/run for every service image (APIML_TAG)"
         required: true
@@ -29,9 +29,17 @@ inputs:
 runs:
     using: "composite"
     steps:
+        -   name: yq - portable yaml processor
+            id: extract_hostnames
+            uses: mikefarah/yq@c14f446382944492701b16c1ddb48bb9dbe683e3 # v4.53.6
+            with:
+                cmd: yq '.services | to_entries[] | .value.hostname // .key' "${{ inputs.compose-file }}" | paste -sd " " -
+
         -   name: Add compose stack hostname aliases
             shell: bash
-            run: ./docker/integration-tests/setup-hosts.sh add ${{ inputs.hosts }}
+            run: |
+                ./docker/integration-tests/setup-hosts.sh add ${{ steps.extract_hostnames.outputs.result }}
+
 
         -   name: Pull and start the compose stack
             shell: bash
