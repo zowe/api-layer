@@ -21,8 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.zaas.security.login.Providers;
 
@@ -46,7 +46,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class JwtSecurityTest {
     public static final String KEY_ALIAS = "localhost";
     private JwtSecurity underTest;

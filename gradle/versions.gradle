@@ -101,7 +101,10 @@ dependencyResolutionManagement {
             version('reactor', '3.8.7')
             version('restAssured', '5.5.7')
             version('rhino', '1.9.1')
-            version('springDoc', '2.9.1')
+            // springdoc 3.x is the Spring Boot 4 line. 2.9.1 references the SB3-only
+            // org.springframework.boot.autoconfigure.web.reactive.WebFluxProperties from
+            // org.springdoc.webflux.ui.SwaggerConfig, which breaks ApplicationContext startup on SB4.
+            version('springDoc', '3.1.1')
             version('swaggerCore', '2.2.55')
             version('swaggerInflector', '2.0.17')
             version('swagger2Parser', '1.0.76')
