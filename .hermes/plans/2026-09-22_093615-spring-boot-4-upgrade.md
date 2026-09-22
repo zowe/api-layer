@@ -43,9 +43,33 @@ These are cheap to answer now and expensive to reverse. Confirm before Task 1.
 
 ---
 
-## Phase 1 — Rebase the SB4 branch onto current v3.x.x
+## Phase 1 — Rebase the SB4 branch onto current v3.x.x  ✅ DONE
 
-The branch was cut from v3.x.x in early June 2026 and is 15+ weeks stale (v3.x.x is at `3.5.23-SNAPSHOT` with Gradle 9.7.1 and SB 3.5.16). Rebasing first keeps the eventual diff reviewable.
+**Status: complete on branch `feat/sb4-upgrade`, commit `ab056c236`.** The June branch was cut from v3.x.x
+in early June 2026 and was 15+ weeks stale (v3.x.x is at `3.5.23-SNAPSHOT`, SB 3.5.16, Gradle 9.7.1).
+
+Outcome: 11 conflicted files, resolved on the rule *keep v3.x.x's newer work, take the branch's
+SB4/Java-21 lines*. Beyond the rebase, ~15 main-source and ~20 test-source SB4/Spring 7 API breaks had to
+be fixed to reach green — none of which the original branch had solved:
+
+- `SafAuthorizationManager` — Spring Security 7 renamed `check()` to `authorize()` **and changed the
+  return type** to `AuthorizationResult`
+- `ModulithConfig` — Tomcat customizer getters lost the `Tomcat` prefix
+- `EurekaRestController` — new abstract `UriInfo.getMatchedResourceTemplate()` (Jakarta REST 4.0)
+- `apiml` module was missing `spring-boot-starter-security-oauth2-client`, needed to resolve the
+  `ReactiveOAuth2ClientAutoConfiguration` the modulith excludes
+- 34 test files migrated to SB4's split test-autoconfigure packages, plus 4 new test starters wired into
+  7 modules
+- `HttpHeaders` is no longer a `Map` (`containsKey` → `containsHeader`); `ResponseEntity(T, null, status)`
+  became ambiguous; Tomcat 11 dropped the one-arg `Request` ctor and the `codec.binary` classes;
+  `ServerHttpRequest.Builder` gained `localAddress()`; Eureka's `RestClientTimeoutProperties` became
+  `TimeoutProperties` with a changed factory-supplier signature
+
+**Verification:** `./gradlew clean compileJava compileTestJava --continue` → **BUILD SUCCESSFUL, 0 errors,
+all 41 modules**, bytecode at class file version 65. Test *execution* is not yet proven — only compilation.
+
+Full API mapping tables and rebase pitfalls are recorded in the `apiml-architecture` skill at
+`references/sb4-migration-playbook.md` so they do not need re-deriving.
 
 ### Task 1: Create a fresh SB4 working branch from current v3.x.x
 
