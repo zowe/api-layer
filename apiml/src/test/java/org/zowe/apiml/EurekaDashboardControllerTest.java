@@ -88,7 +88,7 @@ public class EurekaDashboardControllerTest {
         Map<String, Object> map = new HashMap<>();
 
         doReturn("content").when(processor).process(lastnTemplate, map);
-        when(originalController.status(isNull(), eq(map))).thenReturn("");
+        when(originalController.lastn(isNull(), eq(map))).thenReturn("");
 
         StepVerifier.create(controller.lastn(exchange, map))
             .expectNextMatches(content -> content.equals("content"))

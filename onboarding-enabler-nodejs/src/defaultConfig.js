@@ -53,6 +53,7 @@ export default {
   requestMiddleware: (request, done) => done(request),
   shouldUseDelta: false,
   eureka: {
+    requestTimeout: 10000,
     heartbeatInterval: 30000,
     registryFetchInterval: 30000,
     maxRetries: 3,
@@ -68,6 +69,13 @@ export default {
     registerWithEureka: true,
     useLocalMetadata: false,
     preferIpAddress: false,
+    circuitBreaker: {
+      enabled: true, // Set false to retain legacy setInterval scheduling.
+      maxFailures: 5, // Failures allowed; the following failure opens the circuit.
+      cooldownTime: 60000, // Base delay in ms; first OPEN cycle uses this value.
+      backoffTimeout: 1000, // Base delay in ms for retries while the circuit is CLOSED.
+      backoffMax: 300000, // OPEN cooldown and CLOSED retry backoff cap here.
+    },
   },
   instance: {},
 };
