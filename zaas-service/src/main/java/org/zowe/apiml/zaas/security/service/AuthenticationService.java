@@ -42,6 +42,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.message.core.MessageType;
@@ -316,8 +317,8 @@ public class AuthenticationService {
                     requestEntity,
                     Void.class
                 );
-            } catch (HttpClientErrorException e) {
-                log.debug("Problem invalidating token on another instance url {}", url, e);
+            } catch (HttpClientErrorException | ResourceAccessException e) {
+                log.warn("Problem invalidating token on another instance url {}", url, e);
                 returnValue = Boolean.FALSE;
             }
 
