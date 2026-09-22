@@ -80,4 +80,5 @@ class StaticApiRestControllerTest {
 
         verify(registrationService, times(1)).reloadServices();
     }
+
 }
