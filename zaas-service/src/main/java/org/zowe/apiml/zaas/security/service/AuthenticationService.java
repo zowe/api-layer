@@ -24,6 +24,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
@@ -41,9 +42,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.util.CacheUtils;
@@ -57,6 +62,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
+import static org.zowe.apiml.security.common.util.JwtUtils.describeJwtForLogging;
 import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
 import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
@@ -90,6 +96,9 @@ public class AuthenticationService {
     private boolean isModulithMode;
     private final AtomicReference<Cache> validatedJwtTokensCache = new AtomicReference<>();
     private final AtomicReference<Cache> invalidatedJwtTokensCache = new AtomicReference<>();
+
+    @InjectApimlLogger
+    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @PostConstruct
     public void afterPropertiesSet() {
@@ -163,7 +172,7 @@ public class AuthenticationService {
             jws.setAlgorithmHeaderValue(jwtSecurityInitializer.getJwtAlgorithm());
             jws.setDoKeyValidation(false);
             String token = jws.getCompactSerialization();
-            log.debug("JWT created with kid ...{}, last chars of signature: ...{}", StringUtils.right(kid, 15), StringUtils.right(token, 15));
+            apimlLog.log(MessageType.DEBUG, "JWT ({}) created with kid: {}, last chars of signature: ...{}", issuer, kid, StringUtils.right(token, 15));
             return token;
         } catch (JoseException e) {
             throw new UncheckedJoseException(e.getMessage(), e);
@@ -308,8 +317,8 @@ public class AuthenticationService {
                     requestEntity,
                     Void.class
                 );
-            } catch (HttpClientErrorException e) {
-                log.debug("Problem invalidating token on another instance url {}", url, e);
+            } catch (HttpClientErrorException | ResourceAccessException e) {
+                log.warn("Problem invalidating token on another instance url {}", url, e);
                 returnValue = Boolean.FALSE;
             }
 
@@ -338,13 +347,16 @@ public class AuthenticationService {
         try {
             var parsedJwt = tokenAuthentication.getJwt();
             if (parsedJwt instanceof SignedJWT signedJwt) {
-                if (signedJwt.verify(jwtSecurityInitializer.getJwtVerifier())) {
+                String activeKid = jwtSecurityInitializer.getJwkPublicKey().map(JsonWebKey::getKeyId).orElse("unknown");
+                if (isVerified(signedJwt, activeKid)) {
                     if (tokenAuthentication.isExpired()) {
                         throw new ExpiredJWTException("Token expired on %s".formatted(tokenAuthentication.getExpiration()));
                     }
                     return;
                 }
-                log.debug("JWT signature verification failed, last chars of signature: ...{}", StringUtils.right(tokenAuthentication.getJwt().getParsedString(), 15));
+                apimlLog.log(MessageType.DEBUG, "JWT signature verification failed for token [{}], currently active signing key kid={}. " +
+                        "If the token's kid does not match the active kid, this instance does not hold the key that signed the token.",
+                    describeJwtForLogging(signedJwt), activeKid);
                 throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get());
             } else {
                 throw new BadJWTException("Token is not signed");
@@ -353,6 +365,17 @@ public class AuthenticationService {
             throw handleJwtParserException(exception);
         }
     }
+
+    private boolean isVerified(SignedJWT signedJwt, String activeKid) throws JOSEException {
+        try {
+            return signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
+        } catch (JOSEException exception) {
+            apimlLog.log(MessageType.DEBUG, "JWT signature verification threw an exception for token [{}], currently active signing key kid={}: {}",
+                describeJwtForLogging(signedJwt), activeKid, exception.getMessage());
+            throw exception;
+        }
+    }
+
 
     /**
      * Method validate if jwtToken is valid or not. This method contains two types of verification:

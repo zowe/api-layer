@@ -7,18 +7,20 @@ jobs:
     release:
         runs-on: ubuntu-latest
         timeout-minutes: 40
-        permissions: write-all
+        permissions:
+            contents: write
+            issues: write
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   fetch-depth: 0
                   persist-credentials: false
                   ref: ${{ github.ref }}
 
             - name: Use Node.js LTS
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
                   node-version: 'lts/*'
 
@@ -28,7 +30,7 @@ jobs:
                  npm ci
 
             - name: Update Dependencies
-              uses: zowe-actions/octorelease-script@master
+              uses: zowe-actions/octorelease-script@85d3c773c5027a9edd6ae9d079dca338bdf1f4ee # master
               with:
                   working-dir: zowe-cli-id-federation-plugin
                   script: npmUpdate
@@ -50,7 +52,7 @@ jobs:
                       rm -f .npmrc
                     fi
 
-            - uses: zowe-actions/octorelease@v1
+            - uses: zowe-actions/octorelease@6cf71bdb7ca82117775295e076d63fe7a812f3c8 # v1
               with:
                 working-dir: zowe-cli-id-federation-plugin
               env:

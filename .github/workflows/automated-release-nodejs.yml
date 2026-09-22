@@ -31,7 +31,7 @@ jobs:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   ref: ${{ github.head_ref }}
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
@@ -48,7 +48,7 @@ jobs:
               run: git config user.name "Zowe Robot"
 
             - name: Checkout Repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   fetch-depth: 0
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
