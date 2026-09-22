@@ -137,6 +137,8 @@ jobs:
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+                with:
+                    services: apiml
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -214,6 +216,8 @@ jobs:
                     -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+                with:
+                    services: apiml
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -302,6 +306,8 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+                with:
+                    services: apiml
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -582,6 +588,8 @@ jobs:
                     -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+                with:
+                    services: gateway-service,zaas-service,discovery-service,caching-service,api-catalog-services
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -689,6 +697,8 @@ jobs:
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+                with:
+                    services: gateway-service,zaas-service,discovery-service,caching-service,api-catalog-services
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -2513,6 +2523,8 @@ jobs:
 
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+                with:
+                    services: gateway-service,zaas-service,discovery-service,caching-service,api-catalog-services
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -2600,6 +2612,8 @@ jobs:
 
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+                with:
+                    services: apiml,api-catalog-services
 
             -   name: Store results
                 uses: actions/upload-artifact@v4

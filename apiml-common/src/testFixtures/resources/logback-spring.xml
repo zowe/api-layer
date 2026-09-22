@@ -17,7 +17,7 @@
 
     <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
 
-    <logger name="org.zowe.apiml.opentelemetry" level="INFO">
+    <logger name="org.zowe.apiml.opentelemetry" level="INFO" additivity="false">
         <appender-ref ref="OpenTelemetry" />
     </logger>
 
