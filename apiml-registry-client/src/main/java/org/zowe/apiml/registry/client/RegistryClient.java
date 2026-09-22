@@ -169,6 +169,13 @@ public final class RegistryClient {
      * Used to advertise {@code UP} once the application reports healthy, and {@code DOWN} if it stops being
      * healthy while still running - which is the difference between a service that is quietly broken and one
      * that has been taken out of the routing table.
+     * <p>
+     * The status is conveyed by re-registering, not by calling the registry's status endpoint. That endpoint
+     * sets {@code overriddenStatus}, which is an operator override: it outranks the instance's own status and
+     * is only cleared explicitly, so using it for a health change made a transient {@code DOWN} permanent. A
+     * service that had recovered was still served as {@code DOWN} - the Gateway doing exactly that broke
+     * authentication for every service behind it, because the Discovery Service could no longer log in through
+     * it. Re-registering is also how the Eureka client advertised a health-driven status change.
      *
      * @return true when the registry accepted the change
      */
@@ -177,9 +184,11 @@ public final class RegistryClient {
             return false;
         }
         try {
-            transport.updateStatus(self.appName(), self.instanceId(), status);
+            transport.register(self.toBuilder().status(status).build());
+            registered.set(true);
             return true;
         } catch (RegistryTransport.RegistryTransportException e) {
+            registered.set(false);
             return false;
         }
     }

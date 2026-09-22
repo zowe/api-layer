@@ -42,6 +42,13 @@ public interface RegistryTransport {
 
     void cancel(String appName, String instanceId) throws RegistryTransportException;
 
+    /**
+     * Sets an operator status override - {@code PUT /eureka/apps/{app}/{id}/status?value=...}.
+     * <p>
+     * This is not how a service advertises its own health. An override outranks the instance's own status and is
+     * cleared only by an explicit call, so using it for a health change pins an instance down permanently. Use
+     * {@code register} with the new status for that, which is what {@code RegistryClient.updateStatus} does.
+     */
     void updateStatus(String appName, String instanceId, InstanceStatus status) throws RegistryTransportException;
 
     /** A transport-level failure, distinct from the registry answering "not found". */

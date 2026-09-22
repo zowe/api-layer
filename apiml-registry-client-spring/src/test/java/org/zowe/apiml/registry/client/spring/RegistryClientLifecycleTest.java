@@ -85,10 +85,13 @@ class RegistryClientLifecycleTest {
             lifecycle.start();
 
             assertTrue(lifecycle.isRunning());
-            assertEquals(1, transport.registrations.size());
+            assertEquals(2, transport.registrations.size());
             // Registered as STARTING so nothing routes to it before it is ready, then promoted.
             assertEquals(InstanceStatus.STARTING, transport.registrations.get(0).status());
-            assertEquals(List.of(InstanceStatus.UP), transport.statusUpdates);
+            assertEquals(InstanceStatus.UP, transport.registrations.get(1).status());
+            // A health change is not an operator override - see RegistryClient.updateStatus.
+            assertEquals(List.of(), transport.statusUpdates,
+                "a health-driven status change must not be written as a status override");
             assertEquals(1, transport.fullFetches, "The first view must be fetched before serving requests");
 
             assertInstanceOf(RegistryRegisteredEvent.class, events.get(1));
@@ -109,7 +112,8 @@ class RegistryClientLifecycleTest {
             lifecycle.start();
             lifecycle.start();
 
-            assertEquals(1, transport.registrations.size());
+            // STARTING at registration and UP when health promoted it; the second start does neither again.
+            assertEquals(2, transport.registrations.size());
         }
 
     }
@@ -126,7 +130,10 @@ class RegistryClientLifecycleTest {
         void thenItIsNotAdvertisedAsUp() {
             lifecycle(health(Status.DOWN)).start();
 
-            assertEquals(List.of(InstanceStatus.DOWN), transport.statusUpdates);
+            assertEquals(2, transport.registrations.size());
+            assertEquals(InstanceStatus.DOWN, transport.registrations.get(1).status());
+            assertEquals(List.of(), transport.statusUpdates,
+                "an unhealthy service must report its own status, not an operator override");
         }
 
         @Test
@@ -134,6 +141,8 @@ class RegistryClientLifecycleTest {
         void thenUnknownHealthChangesNothing() {
             lifecycle(health(Status.UNKNOWN)).start();
 
+            // Only the initial STARTING registration: an unknown status changes nothing.
+            assertEquals(1, transport.registrations.size());
             assertEquals(List.of(), transport.statusUpdates);
         }
 
@@ -147,7 +156,9 @@ class RegistryClientLifecycleTest {
         void thenItGoesUpOnRegistration() {
             lifecycle(null).start();
 
-            assertEquals(List.of(InstanceStatus.UP), transport.statusUpdates);
+            assertEquals(2, transport.registrations.size());
+            assertEquals(InstanceStatus.UP, transport.registrations.get(1).status());
+            assertEquals(List.of(), transport.statusUpdates);
         }
 
     }
@@ -182,7 +193,8 @@ class RegistryClientLifecycleTest {
 
             lifecycle(null).start();
 
-            assertEquals(1, transport.registrations.size());
+            // STARTING at registration, then UP from the health status; nothing else is read or written.
+            assertEquals(2, transport.registrations.size());
             assertEquals(0, transport.fullFetches);
             assertEquals(0, transport.deltaFetches);
         }
