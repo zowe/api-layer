@@ -9,8 +9,6 @@ dependencyResolutionManagement {
             // Jersey 3.1.x is Java 17-loadable (major 55). Only jersey-common:4.0.1 is Java 21 (major 65).
             // Pinned via resolutionStrategy.force in build.gradle -- see the comment there.
             version('jersey3', '3.1.12')
-            // Last Groovy 4.x. REST Assured 5.5.7 requires 4.0.22; SB 4.1 would force 5.0.8 (incompatible).
-            version('groovy', '4.0.32')
             version('springBootGraphQl', '4.0.2')
             version('springCloudNetflix', '5.0.2')
             version('springCloudCommons', '5.0.3')
@@ -99,7 +97,10 @@ dependencyResolutionManagement {
             version('picocli', '4.7.7')
 
             version('reactor', '3.8.7')
-            version('restAssured', '5.5.7')
+            // REST Assured 6.x is the Spring Framework 7 line (its spring-web-test-client declares
+            // spring 7.0.1) and requires Groovy 5, which is what the SB 4.1 BOM already manages.
+            // 5.5.7 is compiled against Spring 6 and Groovy 4 and fails on both.
+            version('restAssured', '6.0.1')
             version('rhino', '1.9.1')
             // springdoc 3.x is the Spring Boot 4 line. 2.9.1 references the SB3-only
             // org.springframework.boot.autoconfigure.web.reactive.WebFluxProperties from

@@ -60,7 +60,12 @@ configurations.all {
     exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-archaius"
     exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-ribbon'
     exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-eureka-server'
-    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-reactor-netty'
+    // NOTE: do NOT exclude spring-boot-starter-reactor-netty. Spring Cloud Gateway's
+    // NettyConfiguration is active regardless of the server (this service runs on Tomcat), and in
+    // SB4 it @Bean-defines HttpClientProperties -- which our websocket/routing code injects -- while
+    // also needing org.springframework.boot.reactor.netty.autoconfigure.NettyServerProperties.
+    // Excluding the starter removes that class and the whole configuration fails, taking
+    // HttpClientProperties with it and breaking ApplicationContext startup.
 }
 
 dependencies {
