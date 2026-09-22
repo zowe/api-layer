@@ -18,6 +18,7 @@ env:
     # the secret literal being expanded into the generated shell script text.
     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
     ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
 
 jobs:
     # Certificates are generated rather than committed, and each run produces a fresh
@@ -72,8 +73,6 @@ jobs:
                     docker tag nodesampleapp ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
                     echo "$PERSONAL_JB_TOKEN" | docker login ghcr.io -u balhar-jakub --password-stdin
                     docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
-                env:
-                    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
 
             -   name: Build Python Sample App
                 run: |
@@ -86,20 +85,13 @@ jobs:
                     echo "$PERSONAL_JB_TOKEN" | docker login ghcr.io -u balhar-jakub --password-stdin
                     docker push ghcr.io/balhar-jakub/nodejs-sample-app:python${{ env.JOB_ID }}
 
-                env:
-                    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
-
             -   name: Build with Gradle
                 run: >
                     ./gradlew clean jib -Djib.serialize=true -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Pzowe.docker.password=$PERSONAL_JB_TOKEN -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
-                env:
-                    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
 
             -   name: Standalone Catalog
                 run: >
                     ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Pzowe.docker.password=$PERSONAL_JB_TOKEN -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
-                env:
-                    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
 
             -   uses: ./.github/actions/teardown
 
@@ -128,16 +120,15 @@ jobs:
                     -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Ddiscoverableclient.host=discoverable-client-unknown -Dzosmf.host=mock-services-unknown
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run CI Tests with Unknown Hostnames
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runUnknownHostnamesTests --info
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -182,9 +173,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
                     -Denvironment.modulith=true -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Modulith CI Tests
                 run: >
@@ -194,6 +182,7 @@ jobs:
                     -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -247,9 +236,6 @@ jobs:
                     -Ddiscovery.additionalPort=20011
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
                     -Dzosmf.instances=0
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Modulith CI Tests with SAF Provider in HA
                 run: >
@@ -260,6 +246,7 @@ jobs:
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -321,9 +308,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Normal HA Tests in Modulith
                 if: ${{ 'normal' == matrix.type }}
@@ -331,9 +315,6 @@ jobs:
                     ./gradlew runHATests -Denvironment.config=-docker-modulith-ha -Denvironment.gwCount=3
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Gateway Service Chaotic HA Tests in Modulith
                 if: ${{ 'gateway-chaotic' == matrix.type }}
@@ -341,9 +322,6 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
                     -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Discoverable Client Chaotic HA Tests in Modulith
                 if: ${{ 'discoverableclient-chaotic' == matrix.type }}
@@ -351,9 +329,6 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
                     -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run WebSocket Chaotic HA Tests in Modulith
                 if: ${{ 'websocket-chaotic' == matrix.type }}
@@ -361,9 +336,6 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Caching Chaotic HA Tests
                 if: ${{ 'caching-chaotic' == matrix.type }}
@@ -372,9 +344,6 @@ jobs:
                     -Denvironment.config=-docker-modulith-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
                     -Denvironment.modulith=true -Denvironment.chaotic=true ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Correct Permisions
                 run: |
@@ -423,9 +392,6 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-compose -DcentralGateway.instances=0
                     -DcentralHosts=discovery-service-2,gateway-service-2,zaas-service-2
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run CI Tests
                 timeout-minutes: 4
@@ -435,6 +401,7 @@ jobs:
                     -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -489,9 +456,6 @@ jobs:
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dcaching.instances=1 -Dzosmf.instances=0
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run CI Tests With SAF Provider
                 run: >
@@ -500,6 +464,7 @@ jobs:
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
+
             -   name: Store results
                 uses: actions/upload-artifact@v4
                 if: always()
@@ -547,9 +512,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.connectPorts=30010
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run CI Tests
                 run: >
@@ -612,9 +574,6 @@ jobs:
                     -Ddiscoverableclient.instances=0 -Dgateway.instances=2 ${{ env.CONNECT_PORT_FLAGS }}
                     -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run CI Tests
                 run: >
@@ -623,6 +582,7 @@ jobs:
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
+
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
@@ -732,9 +692,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run CI Tests
                 run: >
@@ -894,9 +851,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run CI Tests
                 run: >
@@ -957,9 +911,6 @@ jobs:
                     -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=20010
                     -DcentralHosts=central-gateway-service
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Build with Gradle
                 run: >
@@ -1027,9 +978,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Build with Gradle
                 run: >
@@ -1080,9 +1028,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -DcentralGateway.instances=0
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Build with Gradle
                 run: >
@@ -1134,9 +1079,6 @@ jobs:
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Caching Service tests
                 run: >
@@ -1215,9 +1157,6 @@ jobs:
                     -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
                     -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Caching Service tests
                 run: >
@@ -1312,9 +1251,6 @@ jobs:
                     -Ddiscoverableclient.instances=2 -Dcaching.instances=1
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run HA Tests
                 run: >
@@ -1322,9 +1258,6 @@ jobs:
                     -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=1
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Correct Permisions
                 run: |
@@ -1378,9 +1311,6 @@ jobs:
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
                     -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run HA Tests
                 run: >
@@ -1389,9 +1319,7 @@ jobs:
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
                     -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
@@ -1449,18 +1377,12 @@ jobs:
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dapicatalog.instances=1 -Dcaching.instances=1
                     ${{ env.CONNECT_PORT_FLAGS }}
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run HA Tests
                 run: >
                     ./gradlew runStickySessionLbHaTests -Denvironment.config=-ha
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Correct Permisions
                 run: |
@@ -1513,9 +1435,6 @@ jobs:
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
                     -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run HA Tests
                 run: >
@@ -1523,9 +1442,7 @@ jobs:
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
                     -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
             -   name: Correct Permisions
                 run: |
                     chmod 755 -R .gradle
@@ -1545,7 +1462,6 @@ jobs:
                     compose-file: docker/integration-tests/sticky-session-lb-modulith/docker-compose.yml
 
             -   uses: ./.github/actions/teardown
-
 
     CITestsHA_caching-chaotic:
         needs: PublishJibContainers
@@ -1586,9 +1502,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=2
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Caching Chaotic HA Tests
                 run: >
@@ -1596,9 +1509,6 @@ jobs:
                     -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Correct Permisions
                 run: |
@@ -1617,9 +1527,7 @@ jobs:
                 if: always()
                 with:
                     compose-file: docker/integration-tests/ha-caching-chaotic/docker-compose.yml
-
             -   uses: ./.github/actions/teardown
-
 
     CITestsHA:
         needs: PublishJibContainers
@@ -1664,9 +1572,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=2
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Normal HA Tests
                 if: ${{ 'normal' == matrix.type }}
@@ -1674,9 +1579,6 @@ jobs:
                     ./gradlew runHATests -Denvironment.config=-ha -Denvironment.gwCount=2 -Dcaching.instances=2
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Discovery Service Chaotic HA Tests
                 if: ${{ 'discovery-chaotic' == matrix.type }}
@@ -1684,9 +1586,6 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
                     -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Gateway Service Chaotic HA Tests
                 if: ${{ 'gateway-chaotic' == matrix.type }}
@@ -1694,9 +1593,6 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
                     -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Discoverable Client Chaotic HA Tests
                 if: ${{ 'discoverableclient-chaotic' == matrix.type }}
@@ -1704,9 +1600,6 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
                     -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run WebSocket Chaotic HA Tests
                 if: ${{ 'websocket-chaotic' == matrix.type }}
@@ -1714,9 +1607,6 @@ jobs:
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
                     -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Caching Chaotic HA Tests
                 if: ${{ 'caching-chaotic' == matrix.type }}
@@ -1725,9 +1615,6 @@ jobs:
                     -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Correct Permisions
                 run: |
@@ -1777,9 +1664,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Build with Gradle
                 run: >
@@ -1837,9 +1721,6 @@ jobs:
                     -Ddiscovery.additionalPort=20011
                     -Denvironment.modulith=true -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Build with Gradle
                 run: >
@@ -1939,6 +1820,7 @@ jobs:
                 env:
                     OIDC_WINNIE_PASS: ${{ secrets.OIDC_WINNIE_PASS }}
                     OIDC_WINNIE_USER: ${{ secrets.OIDC_WINNIE_USER }}
+
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
@@ -2042,6 +1924,7 @@ jobs:
                 env:
                     OIDC_WINNIE_PASS: ${{ secrets.OIDC_WINNIE_PASS }}
                     OIDC_WINNIE_USER: ${{ secrets.OIDC_WINNIE_USER }}
+
             -   name: Dump CGW jacoco data
                 run: >
                     java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
@@ -2103,17 +1986,11 @@ jobs:
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DserviceIdReplaced=discoverableclient:sampleclient
                     -DcentralGateway.instances=0
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Service ID Prefix Replacer Tests
                 run: >
                     ./gradlew :integration-tests:runIdPrefixReplacerTests -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -2162,9 +2039,6 @@ jobs:
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
                     -Denvironment.modulith=true -Ddiscoverableclient.instances=0 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
 
             -   name: Run Node.JS and Python Services Tests
                 run: >
@@ -2235,8 +2109,6 @@ jobs:
                     ./gradlew --scan --info coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
-                    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-                    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
                     SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
                     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
