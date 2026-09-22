@@ -98,9 +98,9 @@ class RegistryDiscoveryClientAutoConfigurationTest {
             // does not back off when another DiscoveryClient exists and the two coexist. What matters is not how
             // many there are but that the one an application is handed - resolved by type, as its own code does -
             // answers from the registry rather than from the empty simple client.
-            assertThat(context).hasBean("registryDiscoveryClient");
+            assertThat(context).hasBean("apimlRegistryDiscoveryClient");
             assertInstanceOf(CachedRegistryDiscoveryClient.class,
-                context.getBean("registryDiscoveryClient"));
+                context.getBean("apimlRegistryDiscoveryClient"));
 
             context.getBean(RegistryClient.class).cache().replace(new Applications(
                 List.of(new Application(SERVICE.toUpperCase(),
@@ -136,6 +136,35 @@ class RegistryDiscoveryClientAutoConfigurationTest {
             assertThat(reactive.getServices().collectList().block()).contains(SERVICE);
             assertThat(reactive.getInstances(SERVICE).collectList().block()).hasSize(1);
         });
+    }
+
+    @Test
+    @DisplayName("an application with its own registryDiscoveryClient bean still starts")
+    void doesNotCollideWithAnApplicationDefinedClient() {
+        // The Discovery Service ships its own RegistryDiscoveryClient as a component, so that name is taken
+        // there. A bean of the same name in this auto-configuration stopped it from starting at all, which is
+        // how this was found.
+        runner.withBean("registryDiscoveryClient", DiscoveryClient.class, () -> new DiscoveryClient() {
+                @Override
+                public String description() {
+                    return "the application's own discovery client";
+                }
+
+                @Override
+                public List<org.springframework.cloud.client.ServiceInstance> getInstances(String serviceId) {
+                    return List.of();
+                }
+
+                @Override
+                public List<String> getServices() {
+                    return List.of();
+                }
+            })
+            .run(context -> {
+                assertThat(context).hasNotFailed();
+                assertThat(context).hasBean("registryDiscoveryClient");
+                assertThat(context).hasBean("apimlRegistryDiscoveryClient");
+            });
     }
 
     @Test

@@ -173,10 +173,14 @@ public class RegistryClientAutoConfiguration {
          * <p>
          * Coexisting is the intended design: the composite aggregates every discovery implementation, so this is
          * how Spring Cloud's own clients are declared.
+         * <p>
+         * The name carries the {@code apiml} prefix because the Discovery Service ships its own
+         * {@code RegistryDiscoveryClient} as a component, whose bean name is {@code registryDiscoveryClient}. A
+         * method of that name here collides with it and stops the Discovery Service from starting at all.
          */
         @Bean
         @ConditionalOnMissingBean
-        CachedRegistryDiscoveryClient registryDiscoveryClient(RegistryClient registryClient) {
+        CachedRegistryDiscoveryClient apimlRegistryDiscoveryClient(RegistryClient registryClient) {
             return new CachedRegistryDiscoveryClient(registryClient);
         }
 
@@ -191,7 +195,7 @@ public class RegistryClientAutoConfiguration {
         @Bean
         @ConditionalOnClass(name = "reactor.core.publisher.Flux")
         @ConditionalOnMissingBean
-        CachedRegistryReactiveDiscoveryClient registryReactiveDiscoveryClient(RegistryClient registryClient) {
+        CachedRegistryReactiveDiscoveryClient apimlRegistryReactiveDiscoveryClient(RegistryClient registryClient) {
             return new CachedRegistryReactiveDiscoveryClient(registryClient);
         }
 
