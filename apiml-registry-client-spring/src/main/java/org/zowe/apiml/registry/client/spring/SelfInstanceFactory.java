@@ -76,7 +76,13 @@ public final class SelfInstanceFactory {
 
             metadata = rewriteBase(metadata, homePageUrl, base);
             homePageUrl = base + orSlash(config.getHomePageUrlPath());
-            statusPageUrl = config.getStatusPageUrlPath() == null ? null : base + config.getStatusPageUrlPath();
+            // A path that is already a complete URL must not be prefixed - see
+            // RegistryInstanceProperties.absoluteUrl, where the same mistake produced a double-scheme URL that
+            // the domain allow list rejected, refusing the whole registration.
+            statusPageUrl = config.getStatusPageUrlPath() == null ? null
+                : RegistryInstanceProperties.isAbsoluteUrl(config.getStatusPageUrlPath())
+                    ? config.getStatusPageUrlPath()
+                    : base + config.getStatusPageUrlPath();
             healthCheckUrl = config.getHealthCheckUrlPath() == null || !config.isNonSecurePortEnabled()
                 ? null
                 : "http://" + hostname + ":" + port + config.getHealthCheckUrlPath();

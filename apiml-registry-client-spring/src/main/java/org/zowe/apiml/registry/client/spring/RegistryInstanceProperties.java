@@ -151,6 +151,14 @@ public class RegistryInstanceProperties {
      * only affects an onboarded service that supplies a path alone; reproduced as it was rather than
      * corrected, because a service registering a suddenly-different status page URL is a behaviour change
      * that belongs in its own commit.
+     * <p>
+     * The prefix is only correct for a genuinely relative path. The API Catalog sets
+     * {@code eureka.instance.statusPageUrlPath} to a complete URL
+     * ({@code ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/apicatalog/application/info}),
+     * which is the only value in the shipped configuration that takes this branch, and prefixing it produced
+     * {@code http://localhost:80https://localhost:10014/apicatalog/application/info}. That is not a URL any
+     * client can use, and it is rejected by the domain allow list - which logs ZWEAM601W and then throws, so
+     * the registration is refused outright and the service never appears in the registry.
      */
     private String absoluteUrl(String explicit, String path) {
         if (explicit != null) {
@@ -159,7 +167,31 @@ public class RegistryInstanceProperties {
         if (path == null) {
             return null;
         }
+        if (isAbsoluteUrl(path)) {
+            return path;
+        }
         return "http://" + resolvedHostname() + ":" + nonSecurePort + path;
+    }
+
+    /**
+     * Whether a configured value is already a complete URL rather than a path.
+     * <p>
+     * Checked with a scheme test rather than {@code URI.create}: the values involved are configuration, not
+     * input, and a malformed one must fall through to the relative-path behaviour rather than throw during
+     * registration.
+     */
+    static boolean isAbsoluteUrl(String value) {
+        int colon = value.indexOf(':');
+        if (colon <= 0) {
+            return false;
+        }
+        for (int i = 0; i < colon; i++) {
+            char c = value.charAt(i);
+            if (!Character.isLetterOrDigit(c) && c != '+' && c != '-' && c != '.') {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
