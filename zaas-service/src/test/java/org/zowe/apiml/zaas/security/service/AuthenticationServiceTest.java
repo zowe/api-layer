@@ -47,6 +47,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
@@ -66,6 +67,7 @@ import org.zowe.apiml.zaas.config.CacheConfig;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
+import java.net.ConnectException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -809,6 +811,40 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertFalse(authService.invalidateJwtToken(token, true));
 
+        }
+
+        @Test
+        void givenPeerUnreachableOnInvalidateAnotherInstance_thenReturnFalseInsteadOfFailing() {
+            String token = "jwtToken";
+
+            Application application = mock(Application.class);
+            ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
+
+            InstanceInfo myInstance = mock(InstanceInfo.class);
+            InstanceInfo otherInstance = mock(InstanceInfo.class);
+
+            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId()))
+                .thenReturn(application);
+
+            when(eurekaClient.getApplicationInfoManager())
+                .thenReturn(applicationInfoManager);
+
+            when(applicationInfoManager.getInfo())
+                .thenReturn(myInstance);
+
+            when(myInstance.getInstanceId())
+                .thenReturn("myInstance");
+
+            when(application.getInstances())
+                .thenReturn(List.of(myInstance, otherInstance));
+
+            doThrow(new ResourceAccessException(
+                "I/O error on DELETE request for \"https://localhost:10010/gateway/api/v1/auth/invalidate\"",
+                new ConnectException("Connection refused")))
+                .when(restTemplate)
+                .exchange(anyString(), any(), any(), (Class<Object>) any());
+
+            assertFalse(authService.invalidateJwtToken(token, true));
         }
     }
 
