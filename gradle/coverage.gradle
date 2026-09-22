@@ -24,7 +24,13 @@ ext.javaProjectsWithUnitTests = [
     'zosmf-jwt-check',
     'apiml-tomcat-common',
     'apiml-extension-loader',
-    'zaas-service'
+    'zaas-service',
+    // The registry that replaced Eureka. Listed here for the same reason as every other module: without it
+    // these modules are compiled, tested and shipped but left out of the aggregate coverage report, so the
+    // project's headline number silently excludes the largest new body of code in the cut-over.
+    'apiml-registry',
+    'apiml-registry-client',
+    'apiml-registry-client-spring'
 ]
 
 ext.jacocoProjects = subprojects.findAll { it.name in javaProjectsWithUnitTests }
