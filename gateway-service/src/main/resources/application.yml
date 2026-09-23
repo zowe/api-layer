@@ -84,6 +84,22 @@ spring:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
+    autoconfigure:
+        # Netty must not become the reactive web server: gateway runs on Tomcat, and APIML's
+        # servlet-based integrations depend on it (ApimlRequestUpgradeStrategy reads the native
+        # request as a jakarta.servlet.http.HttpServletRequest, and the apiml-tomcat-common
+        # customizers are servlet/connector based).
+        #
+        # Both TomcatReactiveWebServerAutoConfiguration and NettyReactiveWebServerAutoConfiguration
+        # are guarded only by @ConditionalOnMissingBean(ReactiveWebServerFactory.class), and
+        # auto-configurations are ordered by class name, so reactor.netty is processed before tomcat
+        # and Netty wins whenever reactor-netty is on the classpath. reactor-netty is required by
+        # Spring Cloud Gateway (its NettyConfiguration defines the HttpClientProperties bean APIML
+        # injects), so the Netty *server* auto-configuration is the only piece to drop.
+        #
+        # NettyServerProperties, which that auto-configuration also registered, is re-declared by
+        # org.zowe.apiml.gateway.config.NettyServerPropertiesConfiguration.
+        exclude: org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration
 
 otel:
     sdk:
