@@ -177,4 +177,19 @@ class RegistryDiscoveryClientAutoConfigurationTest {
             });
     }
 
+    /**
+     * The startup check reads {@code /application/eurekaversion} on every instance to decide whether they have
+     * converged. Every service used to answer it from {@code apiml-common}; when the endpoint moved to the
+     * Discovery Service, the Gateway, ZAAS and the API Catalog stopped answering it, and the check reported them
+     * as never coming up - which gated every integration test job.
+     */
+    @Test
+    @DisplayName("a service with the registry client serves the eurekaversion endpoint")
+    void versionEndpointIsServed() {
+        runner.run(context -> {
+            assertThat(context).hasNotFailed();
+            assertThat(context).hasSingleBean(RegistryClientVersionEndpoint.class);
+        });
+    }
+
 }

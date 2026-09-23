@@ -227,6 +227,22 @@ public class RegistryClientAutoConfiguration {
                 registryClient, clientConfig, instanceConfig, publisher, healthStatusSource.getIfAvailable());
         }
 
+        /**
+         * The {@code /application/eurekaversion} endpoint, which the integration startup check reads on every
+         * instance to decide whether they have converged.
+         * <p>
+         * Guarded on actuator rather than declared unconditionally: a service without it has no actuator
+         * endpoints at all, and the endpoint type would not resolve. The Caching Service, the discoverable
+         * client and the Discovery Service serve this endpoint from their own registry and must not depend on
+         * this module - two endpoints with the same id stop the application from starting.
+         */
+        @Bean
+        @ConditionalOnClass(org.springframework.boot.actuate.endpoint.annotation.Endpoint.class)
+        @ConditionalOnMissingBean
+        RegistryClientVersionEndpoint apimlRegistryVersionEndpoint(RegistryClient registryClient) {
+            return new RegistryClientVersionEndpoint(registryClient);
+        }
+
     }
 
     /**
