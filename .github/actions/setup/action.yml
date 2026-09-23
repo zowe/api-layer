@@ -58,7 +58,11 @@ runs:
                 node-version: '24.21.0'
         -   name: Install npm
             if: inputs.setupNode == 'true'
-            run: npm install -g npm@10.9.9
+            # --ignore-scripts keeps lifecycle scripts from running during the install
+            # (SonarCloud githubactions:S6505). Verified that the resulting global npm is
+            # still functional: the bin shim is created by the installing npm itself, so
+            # `npm --version` and `npm ls -g` both work afterwards.
+            run: npm install -g npm@10.9.9 --ignore-scripts
             shell: bash
         -   name: Grant execute permission for gradlew
             run: chmod +x gradlew
