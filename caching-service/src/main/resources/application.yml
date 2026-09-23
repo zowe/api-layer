@@ -109,7 +109,11 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         gateway:
             mvc.enabled: false
-            enabled: false
+            # See discovery-service: Spring Cloud Gateway 5.0 renamed this switch from
+            # spring.cloud.gateway.enabled to spring.cloud.gateway.server.webflux.enabled, and the old
+            # name is no longer read. Migrated so the service keeps opting out of the gateway
+            # autoconfiguration the way it did before the upgrade.
+            server.webflux.enabled: false
         discovery:
             client:
                 health-indicator:
