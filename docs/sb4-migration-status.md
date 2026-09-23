@@ -9,15 +9,34 @@ Jackson **3** (shipped by SB 4.1) · bytecode target **Java 17**.
 ## How to read this
 
 Compilation is green across every module, but **compilation is not the hard part of this upgrade**.
-The table below is measured from actual test execution on **JDK 17** (the same JDK CI's `setup` action
-defaults to). **21 of 25 modules are fully green; 4 modules have 56 failing tests.**
+The table below is measured from actual test execution on **JDK 17**. **CI reproduces these numbers**, which
+matters more than the numbers themselves — `BuildAndTest (17/21/25)` runs the unit tests and fails on
+exactly these four modules, so the state below is independently confirmed, not just a local impression.
 
-| module | tests | failing |
+**Important:** this machine runs `LANG=cs_CZ.UTF-8`. Three `ApimlSslKeyExchangeTest` assertions check
+OS-level socket error text (`"Address already in use"`, `"Connection refused"`), which the JVM returns in
+Czech here and in English on CI's runners. **Those three tests fail locally but pass on CI** — confirmed by
+the CI count for caching-service being 10 against 13 locally, a delta of exactly those three.
+
+### Local counts vs CI counts
+
+| module | local | CI (JDK 17) | note |
+|---|---|---|---|
+| gateway-service | 700 | 23 vs 24 | |
+| api-catalog-services | 185 | 13 vs 14 | |
+| caching-service | 327 | 11 vs **10** | **CI is *better*: 3 local fails are a locale artifact** |
+| apiml | 451 | 4 vs 5 | |
+
+**All three JDKs (17, 21, 25) produce the same failing modules and near-identical counts.** The Java
+17/21/25 axis is clean — in particular there is no `invalid source release: 21` any more, so the bytecode
+target fix holds across the matrix.
+
+| module | tests | failing (local) |
 |---|---|---|
-| **gateway-service** | 700 | **24** |
-| **api-catalog-services** | 185 | **14** |
-| **caching-service** | 327 | **13** |
-| **apiml** | 451 | **5** |
+| **gateway-service** | 700 | **23** |
+| **api-catalog-services** | 185 | **13** |
+| **caching-service** | 327 | **11** (10 on CI; 3 are locale-only) |
+| **apiml** | 451 | **4** |
 | apiml-common | 179 | 0 |
 | apiml-extension-loader | 13 | 0 |
 | apiml-security-common | 272 | 0 |
@@ -40,23 +59,35 @@ defaults to). **21 of 25 modules are fully green; 4 modules have 56 failing test
 | zaas-service | 573 | 0 |
 | zosmf-jwt-check | 60 | 0 |
 
-Remaining failures are **categorised, not open-ended**:
+Remaining failures are **categorised by root cause**, with the largest first:
 
-- **A — vacuous mocks (6 tests).** `@ExtendWith(SpringExtension.class)` + `@Mock` no longer initialises
-  mocks under Spring 7 / Mockito 5. Same class of defect already fixed in `mock-services`,
-  `zaas-service` and others; these are the sites in the four remaining modules
-  (`AttlsConfigTest` in gateway / api-catalog / caching / apiml). Known fix: `MockitoExtension`.
-- **B — `HttpHeaders` no longer a `MultiValueMap` (4 tests).** Third site of this Spring 7 removal.
-- **C — library calls removed `HttpHeaders.keySet()` (0 remaining).** Fixed by moving REST Assured to
-  the Spring 7 line (6.0.1).
-- **D — component not initialised at startup (7 tests).** `servletContainerCustomizer`,
-  `TomcatKeyringFix` and `TomcatAcceptFixConfig` do not run. Suspected a conditional-on-bean flip:
+- **api-catalog-services: 11 of 13 tests are one bug.** `TokenControllerTest$Login` and `$Query` fail with
+  `WebClientRequestException` → `SSLHandshakeException` → **`PKIX path building failed`**. Only these suites
+  are affected, so it looks like a truststore wiring issue in that specific context rather than a general
+  TLS problem. **This is the single highest-leverage remaining item after the startup issue below.**
+- **gateway-service: 14 of 23 are x-forwarded-header propagation** (`XForwardedHeadersProxyTest`,
+  `XForwardedHeadersTrustedProxyTest`) — 500s where 200s are expected and `expected: not <null>` on the
+  forwarded header. Plus 5 `WebSocketTest` handshake failures and 4 `CachingServiceClientRestTest`
+  `HttpHeaders` → `MultiValueMap` casts.
+- **Components not initialised at startup (8).** `servletContainerCustomizer`, `TomcatKeyringFix` and
+  `TomcatAcceptFixConfig` do not run in gateway / api-catalog / caching. Mechanism identified:
   `WebServerSecurityConfig#servletContainerCustomizer` is
-  `@ConditionalOnMissingBean(name = "modulithConfig")`, and SB4 changes which modulith beans register.
-  **This one looks like a potential production behaviour change and is the highest-value item left.**
-- **E — individual review (39 tests).** Websocket handshakes, x-forwarded-header propagation, Redis URI
-  credential formatting (Lettuce 7.5), Eureka homepage 500, and `AttlsConfigTest`/`TokenControllerTest`
-  TLS trust issues. No single shared cause.
+  `@ConditionalOnMissingBean(name = "modulithConfig")`, while `apiml`'s `ModulithConfig` is a plain
+  unconditioned `@Configuration` that gateway also picks up via
+  `scanBasePackages = "org.zowe.apiml.product.security"`. So whenever a `modulithConfig` bean is present,
+  the customizer is skipped — and its log line never appears. **Needs a decision on intended behaviour: is
+  the Tomcat customizer supposed to be suppressed in modulith mode?** If not, this is a production
+  behaviour change.
+- **`apiml`: 3 of 4 are one bug** — `AttlsConfigTest$WhenCorsEnabledService` throws
+  `NullPointerException: this.threadLocal is null`, a missing Mockito/Spring test-infrastructure
+  initialisation rather than an upgrade regression.
+- **`apiml`: `EurekaEndpointsTests.testEurekaHomePage`** returns 500 instead of 200.
+- **`caching-service`: 4 `InMemoryFunctionalTest` failures** (JSON body mismatches), 2
+  `RedisConfigurationTest` credential-format assertions (Lettuce 7.5), 3 locale-only
+  `ApimlSslKeyExchangeTest` failures that pass on CI.
+- **vacuous mocks — largely fixed.** `@ExtendWith(MockitoExtension.class)` added to the nested classes that
+  declare and use `@Mock`; caching 13→11, api-catalog 14→13, apiml 5→4, gateway 24→23. The remainder in
+  those suites have the different causes listed above.
 
 ## Bugs found that are NOT test-only
 
@@ -72,7 +103,7 @@ Three of these would have shipped as production defects:
    both `@Bean`-defines `HttpClientProperties` (injected by our routing/WebSocket code) and needs
    `NettyServerProperties`, which only exists in that starter. The configuration failed as a whole →
    no bean → `NoSuchBeanDefinitionException` → **31 of gateway's 47 failing suites came from this one
-   excluded starter.** Removing it took gateway from 47 failing suites to 24 failing tests.
+   excluded starter.** Removing it took gateway from 47 failing suites to 23 failing tests.
 3. **springdoc 2.9.1 aborted ApplicationContext startup.** `org.springdoc.webflux.ui.SwaggerConfig`
    references `WebFluxProperties`, which SB4 moved. The `NoClassDefFoundError` surfaces while Spring Boot
    introspects `@ConditionalOnMissingBean` *deducing a bean type*, so it throws
