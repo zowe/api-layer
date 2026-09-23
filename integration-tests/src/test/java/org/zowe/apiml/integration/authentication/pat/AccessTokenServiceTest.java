@@ -352,6 +352,7 @@ public class AccessTokenServiceTest {
             body.put("scopes", scopes);
 
             given()
+                .log().ifValidationFails()
                 .contentType(ContentType.JSON)
                 .header("Authorization", "Basic " + java.util.Base64.getEncoder()
                     .encodeToString((SecurityUtils.USERNAME + ":" + SecurityUtils.PASSWORD).getBytes()))
@@ -359,6 +360,7 @@ public class AccessTokenServiceTest {
             .when()
                 .post(GENERATE_ENDPOINT)
             .then()
+                .log().ifValidationFails()
                 .statusCode(400)
                 .body("messages[0].messageNumber", is("ZWEAT612E"));
         }
