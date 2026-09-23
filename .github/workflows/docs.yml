@@ -38,10 +38,10 @@ jobs:
                   git config --global user.email "zowe-robot@users.noreply.github.com"
                   git config --global user.name "Zowe Robot"
                   cd ../scripts/docs
-                  # --ignore-scripts (SonarCloud githubactions:S6505): this directory
-                  # depends on octokit alone and no package in its tree declares an
-                  # install lifecycle script, so skipping them changes nothing.
-                  npm install --ignore-scripts
+                  # npm ci installs the committed lockfile instead of resolving fresh
+                  # versions, and --ignore-scripts keeps lifecycle scripts from running.
+                  # Together they satisfy githubactions:S8543 and githubactions:S6505.
+                  npm ci --ignore-scripts
                   node index.js zowe api-layer ${{ secrets.ZOWE_ROBOT_TOKEN }}
 
 
