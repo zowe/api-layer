@@ -20,12 +20,14 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -92,6 +94,7 @@ class AttlsConfigTest {
             "apiml.health.protected=false"
         }
     )
+    @ExtendWith(MockitoExtension.class)
     class GivenAttlsProfile {
 
         @LocalServerPort
@@ -181,6 +184,7 @@ class AttlsConfigTest {
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
     @TestInstance(Lifecycle.PER_CLASS)
+    @ExtendWith(MockitoExtension.class)
     class GivenSslDisabled {
 
         @MockitoBean
