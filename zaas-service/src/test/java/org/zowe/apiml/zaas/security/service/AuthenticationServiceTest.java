@@ -14,10 +14,11 @@ import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
-
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.proc.BadJWTException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.Cookie;
@@ -45,8 +46,8 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
 import org.zowe.apiml.product.constants.CoreService;
@@ -66,12 +67,21 @@ import org.zowe.apiml.zaas.config.CacheConfig;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 
+import java.net.ConnectException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.text.ParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
@@ -271,6 +281,21 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 () -> authService.parseJwtWithSignature(invalidToken));
         }
 
+        @Test
+        void whenSignatureNotVerified_thenThrowsTokenNotValidException() throws JOSEException {
+            stubJWTSecurityForSign();
+            var verifier = mock(RSASSAVerifier.class);
+            lenient().when(verifier.getPublicKey()).thenReturn((RSAPublicKey) publicKey);
+            lenient().when(verifier.verify(any(), any(), any())).thenReturn(false);
+            lenient().when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(verifier);
+
+            String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
+            var exception = assertThrows(TokenNotValidException.class,
+                () -> authService.parseJwtWithSignature(pat),
+                "Expected exception is not TokenNotValidException");
+            assertEquals(BadJWTException.class, exception.getCause().getClass());
+            assertTrue(exception.getCause().getMessage().startsWith("Token signature is invalid for public key:"));
+        }
     }
 
     @Nested
@@ -786,6 +811,40 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
             assertFalse(authService.invalidateJwtToken(token, true));
 
+        }
+
+        @Test
+        void givenPeerUnreachableOnInvalidateAnotherInstance_thenReturnFalseInsteadOfFailing() {
+            String token = "jwtToken";
+
+            Application application = mock(Application.class);
+            ApplicationInfoManager applicationInfoManager = mock(ApplicationInfoManager.class);
+
+            InstanceInfo myInstance = mock(InstanceInfo.class);
+            InstanceInfo otherInstance = mock(InstanceInfo.class);
+
+            when(eurekaClient.getApplication(CoreService.ZAAS.getServiceId()))
+                .thenReturn(application);
+
+            when(eurekaClient.getApplicationInfoManager())
+                .thenReturn(applicationInfoManager);
+
+            when(applicationInfoManager.getInfo())
+                .thenReturn(myInstance);
+
+            when(myInstance.getInstanceId())
+                .thenReturn("myInstance");
+
+            when(application.getInstances())
+                .thenReturn(List.of(myInstance, otherInstance));
+
+            doThrow(new ResourceAccessException(
+                "I/O error on DELETE request for \"https://localhost:10010/gateway/api/v1/auth/invalidate\"",
+                new ConnectException("Connection refused")))
+                .when(restTemplate)
+                .exchange(anyString(), any(), any(), (Class<Object>) any());
+
+            assertFalse(authService.invalidateJwtToken(token, true));
         }
     }
 

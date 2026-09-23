@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`id-federation map command integration tests should fail when arguments are not valid 1`] = `
-"Unable to perform this operation due to the following problem.
+"Unable to perform this operation due to the following problem:
 Unknown argument: invalidarg
 Command failed due to improper syntax
 Did you mean: plugins validate?

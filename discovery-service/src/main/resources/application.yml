@@ -17,11 +17,12 @@ apiml:
         id: discovery  # Service ID of this service. It is fixed for APIML Discovery Service
         hostname: localhost  # Hostname that is advertised in Eureka. Default is valid only for localhost
         port: 10011  # Default port name for discovery service
+        scheme: https
         # The apiml.service.ipAddress was replaced by eureka.instance.ipAddress. Because the value must remain unset (null) to allow eureka fallback
         # its native ip address discovery the field cannot just reference a value from another due to spring limitation in processing properties from yml file.
         preferIpAddress: false
     discovery:
-        allPeersUrls: 'http://#{("${apiml.discovery.userid:}".isEmpty() or "${apiml.discovery.password:}".isEmpty()) ? "" : "${apiml.discovery.userid:}:${apiml.discovery.password:}@"}${apiml.service.hostname}:${apiml.service.port}/eureka/'
+        allPeersUrls: ${apiml.service.scheme:}://${apiml.service.hostname}:${apiml.service.port}/eureka/
     health:
         protected: true
 
@@ -54,55 +55,6 @@ server:
     address: 0.0.0.0
     port: ${apiml.service.port}
     ssl:
-        enabled: false
-
-archaius.deployment.environment: test
-
-eureka:
-    instance:
-        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
-        hostname: ${apiml.service.hostname}
-        port: ${server.port}
-        securePort: 0
-        nonSecurePortEnabled: true
-        securePortEnabled: false
-        preferIpAddress: ${apiml.service.preferIpAddress}
-        statusPageUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/info
-        healthCheckUrl: http://${apiml.service.hostname}:${apiml.service.port}/application/health
-    client:
-        registerWithEureka: true
-        fetchRegistry: true
-        region: default
-        serviceUrl:
-            defaultZone: ${apiml.discovery.allPeersUrls}
-    server:
-        max-threads-for-peer-replication: 6
-        useReadOnlyResponseCache: false
-        peer-node-read-timeout-ms: 15000
-
-management:
-    endpoints:
-        migrate-legacy-ids: true
-        web:
-            base-path: /application
-            exposure:
-                include: health,info,hystrixstream
-    health:
-        defaults:
-            enabled: false
-    endpoint:
-        health:
-            show-details: always
-
----
-spring.config.activate.on-profile: https
-
-apiml:
-    discovery:
-        allPeersUrls: https://${apiml.service.hostname}:${apiml.service.port}/eureka/
-
-server:
-    ssl:
         enabled: true
         clientAuth: want
         protocol: TLS
@@ -118,19 +70,45 @@ server:
         trustStore: keystore/service/service.truststore.p12
         trustStorePassword: password
 
+archaius.deployment.environment: test
+
 eureka:
     instance:
+        instanceId: ${apiml.service.hostname}:${apiml.service.id}:${apiml.service.port}
+        hostname: ${apiml.service.hostname}
+        port: ${server.port}
+        securePort: ${server.port}
         nonSecurePortEnabled: false
         securePortEnabled: true
-        port: 0
-        securePort: ${server.port}
-        homePageUrl: https://${apiml.service.hostname}:${apiml.service.port}/
-        statusPageUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/info
-        healthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
-        secureHealthCheckUrl: https://${apiml.service.hostname}:${apiml.service.port}/application/health
+        preferIpAddress: ${apiml.service.preferIpAddress}
+        homePageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/
+        statusPageUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/info
+        healthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
+        secureHealthCheckUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}/application/health
     client:
+        registerWithEureka: true
+        fetchRegistry: true
+        region: default
         serviceUrl:
             defaultZone: ${apiml.discovery.allPeersUrls}
+    server:
+        max-threads-for-peer-replication: 6
+        useReadOnlyResponseCache: false
+        peer-node-read-timeout-ms: 30000 # Gives peer replication more headroom before permanent-error escalation (GH#4777)
+
+management:
+    endpoints:
+        migrate-legacy-ids: true
+        web:
+            base-path: /application
+            exposure:
+                include: health,info,hystrixstream
+    health:
+        defaults:
+            enabled: false
+    endpoint:
+        health:
+            show-details: always
 
 ---
 spring.config.activate.on-profile: quiet

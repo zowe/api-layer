@@ -1,7 +1,7 @@
 name: PR Checker
 
 on:
-    pull_request_target:
+    pull_request:
         branches: [ v2.x.x, v3.x.x ]
         types: [opened, reopened, edited]
 
@@ -10,6 +10,8 @@ jobs:
         name: PR Instructions
         runs-on: ubuntu-latest
         if: github.event.pull_request.user.login != 'zowe-robot'
+        permissions:
+            pull-requests: write
 
         steps:
             -   name: Check PR title
@@ -18,13 +20,19 @@ jobs:
                     TITLE: ${{ github.event.pull_request.title }}
                     PR: ${{ github.event.pull_request.html_url }}
                 run: |
-                    for prefix in 'fix:' 'feat:' 'docs:' 'refactor:' 'chore:'; do
+                    for prefix in 'fix' 'feat' 'docs' 'refactor' 'chore'; do
                         case $TITLE in
                             "$prefix"*)
                                 echo "PR title starts with '$prefix'"
                                 exit 0
                         esac
                     done
+
                     echo "PR title doesn't start with any of allowed prefixes"
-                    gh pr edit $PR --add-label 'invalid'
-                    gh pr comment $PR --body 'It looks like PR title does not contain one of the required prefixes: `fix:`, `feat:`, `docs:`, `refactor:`, `chore:`. Please add one of the prefixes based on the type of your changes by following our [contributing guidelines](https://github.com/zowe/api-layer/blob/v3.x.x/CONTRIBUTING.md#type)'
+
+                    gh pr edit "$PR" --add-label 'invalid' \
+                        || echo "::warning::Could not add the 'invalid' label (the workflow token is read-only, as for pull requests from forks)"
+                    gh pr comment "$PR" --body 'It looks like PR title does not contain one of the required prefixes: `fix:`, `feat:`, `docs:`, `refactor:`, `chore:`. Please add one of the prefixes based on the type of your changes by following our [contributing guidelines](https://github.com/zowe/api-layer/blob/v3.x.x/CONTRIBUTING.md#type)' \
+                        || echo "::warning::Could not post the comment (the workflow token is read-only, as for pull requests from forks)"
+
+                    exit 1

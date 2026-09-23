@@ -7,7 +7,7 @@
 - Artifacts are deployed to the [lib-release repository](https://zowe.jfrog.io/zowe/libs-release/org/zowe/apiml/sdk/).
 - The API ML follows [semantic versioning](https://semver.org/).
 - The API ML is a part of the Zowe PAX file that is packaged by builds of the [zowe-install-packaging](https://github.com/zowe/zowe-install-packaging/) repository.
-- When a new release is available for a release candidate, the [zowe-install-packaging/manifest.json.template file on the RC branch](https://github.com/zowe/zowe-install-packaging/blob/rc/manifest.json.template) needs to be updated so the `org.zowe.apiml.sdk.*` components have the proper version.
+- When a new release is available for a release candidate, the [zowe-install-packaging/manifest.json.template file on the RC branch](https://github.com/zowe/zowe-install-packaging/blob/v3.x/rc/manifest.json.template) needs to be updated so the API ML components have the proper version (see [Releasing API ML for a Zowe Release](#releasing-api-ml-for-a-zowe-release) for the exact list).
   - [Zowe Release Process](https://github.com/zowe/community/blob/master/Technical-Steering-Committee/release.md)
 - If you need to publish a PR version of the API ML, use the [PR snapshot workflow](https://github.com/zowe/api-layer/actions/workflows/pull-request-snapshot-release.yml) and use the current snapshot version as new version and the currently released version with an added PR as the current version {VERSION}-PR-{PR_NUMBER} and run from the branch for the PR you want to release. Example:
   - Pull request: PR-123
@@ -29,16 +29,29 @@ This is done in two steps:
 2. Release the images with the [image specific release workflow](https://github.com/zowe/api-layer/actions/workflows/image-specific-release.yml).
     * `release_version` is the version that will be released. This should be the same value as used in step `i`.
 
-After this release is finished the new version must be added to the [release candidate manifest](https://github.com/zowe/zowe-install-packaging/blob/rc/manifest.json.template).
+After this release is finished the new version must be added to the [release candidate manifest](https://github.com/zowe/zowe-install-packaging/blob/v3.x/rc/manifest.json.template).
+The [update manifest workflow](https://github.com/zowe/api-layer/actions/workflows/release_and_update_manifest_json.yml) does this and opens the pull request; the list below is the manual fallback.
 
 The following sections of the manifest need to have their version tag updated to the newly released version of the API ML (the value used in `release_version`):
-* `binaryDependencies.org.zowe.apiml.sdk.*` components
+* `binaryDependencies` components released from this repository:
+  * `org.zowe.apiml.apiml-package`
+  * `org.zowe.apiml.api-catalog-package`
+  * `org.zowe.apiml.discovery-package`
+  * `org.zowe.apiml.gateway-package`
+  * `org.zowe.apiml.zaas-package`
+  * `org.zowe.apiml.caching-service-package`
+  * `org.zowe.apiml.apiml-common-lib-package`
+  * `org.zowe.apiml.sdk.apiml-sample-extension-package`
 * API ML components under `imageDependencies`:
   * `api-catalog`
   * `caching`
   * `discovery`
   * `gateway`
+  * `zaas`
 * `api-layer` repository under `sourceDependencies`
+
+Do not change `org.zowe.apiml.sdk.common-java-lib-package` (released from the `common-java` repository) or
+`org.zowe.apiml.sdk.certificate-analyser` (deliberately pinned to a `^` range).
   
 ## GitHub actions
 

@@ -18,13 +18,19 @@ jobs:
     BuildAndTest:
         runs-on: ubuntu-latest
         timeout-minutes: 35
+        strategy:
+            fail-fast: false
+            matrix:
+                javaVersion: ['17', '21', '25']
 
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    jdkVersion: ${{ matrix.javaVersion }}
 
             -   name: Install BATS to test the shell scripts
                 run: |
@@ -39,7 +45,7 @@ jobs:
                     ./gradlew clean build --info --scan
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: BuildAndTest-${{ env.JOB_ID }}
@@ -54,7 +60,7 @@ jobs:
         env:
             EUREKA_INSTANCE_IPADDRESS: 127.0.0.1
         steps:
-            -   uses: actions/checkout@v4
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
@@ -84,7 +90,7 @@ jobs:
                     sh/validate_and_stop.sh
 
             -   name: Store results
-                uses: actions/upload-artifact@v4
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
                     name: Register-${{ env.JOB_ID }}

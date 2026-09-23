@@ -15,21 +15,19 @@ jobs:
 
         steps:
             - name: Set up Node
-              uses: actions/setup-node@v4
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
               with:
-                  node-version: '24.19.0'
+                  node-version: '24.21.0'
 
             - name: Checkout repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
             - name: Upgrade API ML components in zowe-install-packaging
               run: |
                   git config --global user.email "zowe-robot@users.noreply.github.com"
                   git config --global user.name "Zowe Robot"
                   git clone https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/zowe-install-packaging.git
-                  cd zowe-install-packaging
-                  git checkout v2.x/rc
-                  cd ../scripts/release_components
+                  cd scripts/release_components
                   npm install
                   node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.release_version }}
             - uses: ./.github/actions/teardown

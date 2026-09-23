@@ -12,12 +12,11 @@
 
 validate_caching_storage_mode() {
   storage_mode="${ZWE_components_caching_service_storage_mode:-${ZWE_configs_storage_mode}}"
-  storage_mode_lc=$(printf '%s' "${storage_mode}" | tr '[:upper:]' '[:lower:]')
 
-  if [ -n "${storage_mode}" ] && [ "${storage_mode_lc}" != "infinispan" ]; then
-    echo "API ML single service requires caching storage mode set to infinispan"
-    return 1
-  fi
+  case "${storage_mode}" in
+    [Ii][Nn][Ff][Ii][Nn][Ii][Ss][Pp][Aa][Nn]) ;;
+    *) echo "API ML single service requires caching storage mode set to infinispan"; return 1 ;;
+  esac
 }
 
 print_formatted_debug "ZWELS" "apiml-service,bin/validate.sh:${LINENO}" "- Checking API ML single service caching storage mode is infinispan"

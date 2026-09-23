@@ -166,6 +166,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
             .when()
                 .get(uri)
             .then()
+                .log().ifValidationFails()
                 .statusCode(is(200))
                 .extract().body().asString();
 

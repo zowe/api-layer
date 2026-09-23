@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.security.common.util;
 
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ExpiredJWTException;
 import org.hamcrest.Matchers;
@@ -29,6 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.zowe.apiml.security.common.util.JWTTestUtils.createDummySignedJwt;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createTokenWithUserFields;
 
 class JwtUtilsTest {
@@ -103,6 +105,34 @@ class JwtUtilsTest {
         assertThrows(IllegalArgumentException.class, () -> JwtUtils.getFieldValuesFromToken(TOKEN_WITH_USERNAME_FIELDS, List.of(" ")));
     }
 
+    @Test
+    void givenSignedJwtWithValidClaims_thenDescribeJwtForLoggingReturnsHeaderAndClaims() throws Exception {
+        var signedJwt = parseSignedJwt(createDummySignedJwt("user1", "APIML", null,"key1"));
+        var description = JwtUtils.describeJwtForLogging(signedJwt);
+        var expectedSignatureSuffix = signedJwt.getParsedString().substring(signedJwt.getParsedString().length() - 15);
+
+        assertThat(description, Matchers.allOf(
+            Matchers.startsWith("alg=RS256, kid=key1, sub=user1, iss=APIML, iat="),
+            Matchers.containsString(", exp="),
+            Matchers.endsWith("last chars of signature: ..." + expectedSignatureSuffix)
+        ));
+    }
+
+    @Test
+    void givenSignedJwtWithUnparsableClaims_thenDescribeJwtForLoggingReturnsClaimsUnavailableMessage() throws Exception {
+        var signedJwt = parseSignedJwt(createDummySignedJwt(null, null, "not-a-json-payload","key2"));
+        var description = JwtUtils.describeJwtForLogging(signedJwt);
+        var expectedSignatureSuffix = signedJwt.getParsedString().substring(signedJwt.getParsedString().length() - 15);
+
+        assertThat(description, Matchers.allOf(
+            Matchers.startsWith("alg=RS256, kid=key2, claims unavailable ("),
+            Matchers.endsWith("last chars of signature: ..." + expectedSignatureSuffix)
+        ));
+    }
+
+    private SignedJWT parseSignedJwt(String token) throws Exception {
+        return SignedJWT.parse(token);
+    }
 
     private List<String> splitFieldPath(String fieldPath) {
         return Arrays.asList(fieldPath.trim().split("\\."));

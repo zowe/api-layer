@@ -151,11 +151,15 @@ class HttpClientWrapperTest {
             HttpClientWrapper client = new HttpClientWrapper();
             URL url = new URL("http://localhost:" + port + "/broken");
 
-            HttpClientWrapper.Response response = client.executeCall(url, null);
-
-            assertEquals(200, response.getStatusCode());
-            // readBody returns either truncated content or null if stream throws
-            // The body should be empty string or null depending on timing
+            try {
+                HttpClientWrapper.Response response = client.executeCall(url, null);
+                // Java 17: getResponseCode() returns 200, readBody handles stream errors
+                assertEquals(200, response.getStatusCode());
+            } catch (java.net.SocketException e) {
+                // Java 25: getResponseCode() throws SocketException when the server
+                // prematurely closes the connection before sending the full response body
+                assertTrue(e.getMessage().contains("Unexpected end of file"));
+            }
         }
     }
 

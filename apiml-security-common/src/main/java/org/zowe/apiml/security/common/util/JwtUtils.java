@@ -12,6 +12,7 @@ package org.zowe.apiml.security.common.util;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ExpiredJWTException;
 import lombok.experimental.UtilityClass;
@@ -91,7 +92,7 @@ public class JwtUtils {
      */
     public RuntimeException handleJwtParserException(Exception exception) {
         if (exception instanceof ExpiredJWTException) {
-            log.debug("Token is expired.");
+            log.debug("Token is expired: {}", exception.getMessage());
             return new TokenExpireException("Token is expired.", exception);
         }
         if (exception instanceof BadJWTException || exception instanceof ParseException) {
@@ -135,6 +136,24 @@ public class JwtUtils {
             throw new TokenFormatNotValidException(
                 String.format("Cannot extract value from field %s. The field does not exist, is empty, or is an object.", String.join(".", pathToField)));
         }
+    }
+
+    /**
+     * Builds a diagnostic description of a signed JWT (header kid/alg and non-sensitive claims) for logging
+     * purposes, without logging the raw token or its signature.
+     */
+    public String describeJwtForLogging(SignedJWT signedJwt) {
+        var header = signedJwt.getHeader();
+        String claimsDescription;
+        try {
+            var claims = signedJwt.getJWTClaimsSet();
+            claimsDescription = "sub=%s, iss=%s, iat=%s, exp=%s".formatted(
+                claims.getSubject(), claims.getIssuer(), claims.getIssueTime(), claims.getExpirationTime());
+        } catch (ParseException exception) {
+            claimsDescription = "claims unavailable (%s)".formatted(exception.getMessage());
+        }
+        return "alg=%s, kid=%s, %s, last chars of signature: ...%s".formatted(header.getAlgorithm(), header.getKeyID(), claimsDescription,
+            StringUtils.right(signedJwt.getParsedString(), 15));
     }
 
     private List<String> extractHighLevelField(JWTClaimsSet claims, List<String> pathToField) {

@@ -10,58 +10,72 @@
 
 package org.zowe.apiml.message.log;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.zowe.apiml.message.core.Message;
-import org.zowe.apiml.message.core.MessageType;
-
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.message.core.Message;
+import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class ApimlLoggerTest {
+
+    private static final Marker MARKER = (Marker) ReflectionTestUtils.getField(ApimlLogger.class, "marker");
+
+    @Mock
+    private Logger logger;
+
+    private ApimlLogger apimlLogger;
+
+    @BeforeEach
+    void setUp() {
+        apimlLogger = new ApimlLogger(ApimlLoggerTest.class, null);
+        ReflectionTestUtils.setField(apimlLogger, "logger", logger);
+    }
 
     @Test
     void testEmpty() {
-        ApimlLogger apimlLogger = ApimlLogger.empty();
-        Logger logger = (Logger) ReflectionTestUtils.getField(apimlLogger, "logger");
-        assertEquals(ApimlLogger.class.getName(), logger.getName());
-        assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
+        ApimlLogger emptyLogger = ApimlLogger.empty();
+        Logger defaultLogger = (Logger) ReflectionTestUtils.getField(emptyLogger, "logger");
+        assertEquals(ApimlLogger.class.getName(), defaultLogger.getName());
+        assertNull(ReflectionTestUtils.getField(emptyLogger, "messageService"));
 
-        assertNull(apimlLogger.log("someKey"));
+        assertNull(emptyLogger.log("someKey"));
     }
 
     @Test
     void testLogLevel() {
-        ApimlLogger apimlLogger = new ApimlLogger(ApimlLoggerTest.class, null);
+        apimlLogger.log(MessageType.TRACE, "traceLog {}", new Object[]{"param1"});
+        verify(logger, times(1)).trace(MARKER, "traceLog {}", new Object[]{"param1"});
 
-        Logger logger = mock(Logger.class);
-        ReflectionTestUtils.setField(apimlLogger, "logger", logger);
+        apimlLogger.log(MessageType.DEBUG, "debugLog {}", new Object[]{"param2"});
+        verify(logger, times(1)).debug(MARKER, "debugLog {}", new Object[]{"param2"});
 
-        Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
+        apimlLogger.log(MessageType.INFO, "infoLog {}", new Object[]{"param3"});
+        verify(logger, times(1)).info(MARKER, "infoLog {}", new Object[]{"param3"});
 
-        apimlLogger.log(MessageType.TRACE, "traceLog", new Object[]{"param1"});
-        verify(logger, times(1)).trace(marker, "traceLog", new Object[]{"param1"});
+        apimlLogger.log(MessageType.WARNING, "warningLog {}", new Object[]{"param4"});
+        verify(logger, times(1)).warn(MARKER, "warningLog {}", new Object[]{"param4"});
 
-        apimlLogger.log(MessageType.DEBUG, "debugLog", new Object[]{"param2"});
-        verify(logger, times(1)).debug(marker, "debugLog", new Object[]{"param2"});
-
-        apimlLogger.log(MessageType.INFO, "infoLog", new Object[]{"param3"});
-        verify(logger, times(1)).info(marker, "infoLog", new Object[]{"param3"});
-
-        apimlLogger.log(MessageType.WARNING, "warningLog", new Object[]{"param4"});
-        verify(logger, times(1)).warn(marker, "warningLog", new Object[]{"param4"});
-
-        apimlLogger.log(MessageType.ERROR, "errorLog", new Object[]{"param5"});
-        verify(logger, times(1)).error(marker, "errorLog", new Object[]{"param5"});
+        apimlLogger.log(MessageType.ERROR, "errorLog {}", new Object[]{"param5"});
+        verify(logger, times(1)).error(MARKER, "errorLog {}", new Object[]{"param5"});
 
         verify(logger, times(1)).trace((Marker) any(), anyString(), (Object[]) any());
         verify(logger, times(1)).debug((Marker) any(), anyString(), (Object[]) any());
@@ -70,9 +84,27 @@ class ApimlLoggerTest {
         verify(logger, times(1)).error((Marker) any(), anyString(), (Object[]) any());
     }
 
+    @Test
+    void whenArgumentsAreInvalidAndDebugIsEnabledForTheMarker_thenStackTraceIsLogged() {
+        when(logger.isDebugEnabled(MARKER)).thenReturn(true);
+
+        apimlLogger.log((MessageType) null, "text");
+
+        verify(logger, times(1)).debug(eq(MARKER), anyString(), any(), any());
+        verify(logger, never()).warn(eq(MARKER), anyString(), any(), any());
+        verify(logger, never()).isDebugEnabled();
+    }
+
+    @Test
+    void whenArgumentsAreInvalidAndDebugIsDisabledForTheMarker_thenHintIsLogged() {
+        apimlLogger.log((MessageType) null, "text");
+
+        verify(logger, times(1)).warn(eq(MARKER), anyString(), any(), any());
+        verify(logger, never()).debug(eq(MARKER), anyString(), any(), any());
+    }
+
     @Nested
     class GivenNullMessageService {
-        ApimlLogger apimlLogger = ApimlLogger.empty();
 
         @Test
         void when_nullMessageService_return_nullMessage() {
@@ -84,11 +116,6 @@ class ApimlLoggerTest {
         void when_nullKey_return_invalidKeyMessage() {
             assertNull(ReflectionTestUtils.getField(apimlLogger, "messageService"));
 
-            Logger logger = mock(Logger.class);
-            ReflectionTestUtils.setField(apimlLogger, "logger", logger);
-
-            Marker marker = (Marker) ReflectionTestUtils.getField(apimlLogger, "marker");
-
             Message message = apimlLogger.log(null, new Object[]{});
             MessageTemplate messageTemplate = (MessageTemplate) ReflectionTestUtils.getField(message, "messageTemplate");
             String invalidKeyMessageText = "Internal error: Invalid message key '%s' provided. " +
@@ -99,7 +126,7 @@ class ApimlLoggerTest {
             assertEquals(MessageType.ERROR, messageTemplate.getType());
             assertEquals(invalidKeyMessageText, messageTemplate.getText());
 
-            verify(logger, times(1)).error(marker, "ZWEAM102E Internal error: Invalid message key " +
+            verify(logger, times(1)).error(MARKER, "ZWEAM102E Internal error: Invalid message key " +
                 "'null' provided. No default message found. Please contact support of further assistance.", new Object[0]);
         }
 

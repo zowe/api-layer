@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -133,6 +134,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     // -------------------------------------------------------------------------------------------------
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
+        apimlLog.log(MessageType.DEBUG, "Invalidating PAT: ...{}", StringUtils.right(token, 15));
         String hashedValue = getHash(token);
         QueryResponse queryResponse = authenticationService.parseJwtWithSignature(token);
         AccessTokenContainer container = new AccessTokenContainer();
@@ -146,6 +148,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public void invalidateAllTokensForUser(String userId, long timestamp) throws CachingServiceClientException {
+        apimlLog.log(MessageType.DEBUG, "Invalidating all PATs for user: {}", userId);
         String hashedUserId = getHash(userId.trim().toUpperCase());
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
@@ -156,6 +159,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public void invalidateAllTokensForService(String serviceId, long timestamp) throws CachingServiceClientException {
+        apimlLog.log(MessageType.DEBUG, "Invalidating all PATs for service: {}", serviceId);
         String hashedServiceId = getHash(serviceId);
         if (timestamp == 0) {
             timestamp = System.currentTimeMillis();
@@ -190,6 +194,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     // -------------------------------------------------------------------------------------------------
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
+        boolean result = false;
         byte[] salt = getSalt();
         QueryResponse parsedToken = authenticationService.parseJwtWithSignature(token);
         String hashedToken = getHash(token, salt);
@@ -687,5 +692,4 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
         return generatedPassword;
     }
-
 }

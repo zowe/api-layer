@@ -13,38 +13,32 @@ package org.zowe.apiml.discovery.health;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.zowe.apiml.discovery.DiscoveryServiceApplication;
-import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.springframework.test.context.TestPropertySource;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {
-        "apiml.health.protected=false"
-    },
-    classes = {DiscoveryServiceApplication.class, EurekaConfig.class}
-)
-public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
+@TestPropertySource(properties = {
+    "apiml.health.protected=false"
+})
+class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
+
     @Nested
-    @ActiveProfiles("http")
     class GivenProtectedHealthEndpointWithHttp {
-    @Test
-    void applicationHealthEndpointsWhenProtected() {
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/health"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-      }
+
+        @Test
+        void applicationHealthEndpointsWhenProtected() {
+            given()
+                .when()
+                .get(getDiscoveryUriWithPath("/application/health"))
+                .then()
+                .statusCode(is(HttpStatus.SC_OK));
+        }
+
     }
 
     @Nested
-    @ActiveProfiles("https")
     class GivenProtectedHealthEndpointWithHttps {
         @Test
         void applicationHealthEndpointsWhenProtected() {
@@ -55,4 +49,5 @@ public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
                 .statusCode(is(HttpStatus.SC_OK));
         }
     }
+
 }

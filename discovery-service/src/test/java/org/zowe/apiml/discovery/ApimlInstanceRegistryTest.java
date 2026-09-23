@@ -10,7 +10,11 @@
 
 package org.zowe.apiml.discovery;
 
-import com.netflix.appinfo.*;
+import com.netflix.appinfo.ApplicationInfoManager;
+import com.netflix.appinfo.DataCenterInfo;
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.InstanceInfo;
+import com.netflix.appinfo.MyDataCenterInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.DefaultEurekaServerConfig;
@@ -32,22 +36,49 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.zowe.apiml.discovery.metadata.MetadataFilterService;
+import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
-import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ApimlInstanceRegistryTest {
+
+    /** Call counter for the test MethodHandle stub — replaces mock(MethodHandle.class) verify. */
+    static final AtomicInteger REPLICATE_CALL_COUNT = new AtomicInteger(0);
+
+    /**
+     * No-op stub for replicateToPeers that records invocations.
+     * Used to create a real MethodHandle via {@code MethodHandles.lookup().findStatic()}
+     * instead of {@code mock(MethodHandle.class)} which fails on Java 25 where MethodHandle is sealed.
+     */
+    static Object replicateToPeersTestStub(Object... args) { // NOSONAR - the Object[] parameter is required to match the replicateToPeers MethodHandle type
+        REPLICATE_CALL_COUNT.incrementAndGet();
+        return null;
+    }
 
     private ApimlInstanceRegistry apimlInstanceRegistry;
 
@@ -246,7 +277,9 @@ class ApimlInstanceRegistryTest {
         @Test
         @SuppressWarnings("unchecked")
         void givenStaticRegistration_thenSuccessful() throws Throwable {
-            var methodHandle = mock(MethodHandle.class);
+            var methodHandle = MethodHandles.lookup().findStatic(
+                ApimlInstanceRegistryTest.class, "replicateToPeersTestStub",
+                MethodType.methodType(Object.class, Object[].class));
             ReflectionTestUtils.setField(apimlInstanceRegistry, "replicateToPeersMethodHandle", methodHandle);
             var currentStaticIds = (Set<String>) ReflectionTestUtils.getField(apimlInstanceRegistry, "staticRegistrationIds");
             assertTrue(currentStaticIds.isEmpty());
@@ -256,7 +289,6 @@ class ApimlInstanceRegistryTest {
 
             Map<String, Lease<InstanceInfo>> leaseMap = new HashMap<>();
             when(registry.get(anyString())).thenReturn(leaseMap);
-            doReturn(new Object()).when(methodHandle).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
 
             apimlInstanceRegistry.registerStatically(standardInstance, false, true);
 
@@ -309,13 +341,15 @@ class ApimlInstanceRegistryTest {
 
         @Test
         void givenPeerReplicaHeartbeat_thenSuccess() throws Throwable {
-            var methodHandle = mock(MethodHandle.class);
+            REPLICATE_CALL_COUNT.set(0);
+            var methodHandle = MethodHandles.lookup().findStatic(
+                ApimlInstanceRegistryTest.class, "replicateToPeersTestStub",
+                MethodType.methodType(Object.class, Object[].class));
             ReflectionTestUtils.setField(apimlInstanceRegistry, "replicateToPeersMethodHandle", methodHandle);
             var instance = mock(InstanceInfo.class);
-            doReturn(new Object()).when(methodHandle).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
             apimlInstanceRegistry.peerAwareHeartbeat(instance);
 
-            verify(methodHandle, times(1)).invokeWithArguments(any(), any(), any(), any(), any(), any(), any());
+            assertEquals(1, REPLICATE_CALL_COUNT.get());
         }
 
     }

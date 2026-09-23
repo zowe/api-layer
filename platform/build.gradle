@@ -17,6 +17,7 @@ javaPlatform {
  */
 dependencies {
     api(platform(libs.spring.boot.dependencies))
+    api(platform(libs.opentelemetry.bom))
     api(platform(libs.netty.bom))
     api(platform(libs.aws.bom))
     api(platform(libs.micronaut.bom)) {
