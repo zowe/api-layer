@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.cache.PatRevocationStore;
 import org.zowe.apiml.cache.StorageException;
+import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -194,7 +195,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     // -------------------------------------------------------------------------------------------------
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
-        boolean result = false;
         byte[] salt = getSalt();
         QueryResponse parsedToken = authenticationService.parseJwtWithSignature(token);
         String hashedToken = getHash(token, salt);
