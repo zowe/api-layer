@@ -15,18 +15,21 @@ x-apiml-ha-env: &apiml-ha-env
 
 services:
 
-    # Three real apiml instances sharing the same real ports (10010/10011). The test runner
-    # (now host-based) reaches apiml-2/apiml-3 via different HOST ports instead, via
-    # -D*.connectPorts / -Ddiscovery.additionalConnectPorts on this job's gradle invocations
-    # (the shared environment-configuration-docker-modulith-ha.yml stays untouched - several
-    # other jobs also use it). See docker/integration-tests/README.md.
+    # Three apiml instances, each binding its own distinct real ports via APIML_SERVICE_PORT /
+    # APIML_INTERNAL_DISCOVERY_PORT (a consistent instance-number-followed-by-primary's-last-4-digits
+    # convention used across this repo's HA compose files), so each instance's host-published
+    # port and its real/identity port are the same number - no connect-vs-identity split needed
+    # anymore. environment-configuration-docker-modulith-ha.yml still only ever holds one `port`
+    # value per service though (it's shared by several other jobs), so -D*.connectPorts /
+    # -Ddiscovery.additionalConnectPorts on this job's gradle invocations still supply the
+    # per-host port list. See docker/integration-tests/README.md.
     apiml:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml
         environment:
             <<: *apiml-ha-env
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml-3:10011/eureka,https://apiml:10011/eureka
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml-3:10011/eureka,https://apiml:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:20011/eureka,https://apiml-3:30011/eureka,https://apiml:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:20011/eureka,https://apiml-3:30011/eureka,https://apiml:10011/eureka
             APIML_SERVICE_HOSTNAME: apiml
             logbackService: ZWEAGW1
             JGROUPS_BIND_ADDRESS: apiml
@@ -40,15 +43,17 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml-2
         environment:
+            APIML_SERVICE_PORT: "20010"
+            APIML_INTERNAL_DISCOVERY_PORT: "20011"
             <<: *apiml-ha-env
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-3:10011/eureka,https://apiml-2:10011/eureka
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-3:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-3:30011/eureka,https://apiml-2:20011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-3:30011/eureka,https://apiml-2:20011/eureka
             APIML_SERVICE_HOSTNAME: apiml-2
             logbackService: ZWEAGW2
             JGROUPS_BIND_ADDRESS: apiml-2
         ports:
-            - "127.0.0.1:20010:10010"
-            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:20010:20010"
+            - "127.0.0.1:20011:20011"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26310:6310"
 
@@ -56,15 +61,17 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml-3
         environment:
+            APIML_SERVICE_PORT: "30010"
+            APIML_INTERNAL_DISCOVERY_PORT: "30011"
             <<: *apiml-ha-env
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka,https://apiml-3:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka,https://apiml-3:30011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka,https://apiml-3:30011/eureka
             APIML_SERVICE_HOSTNAME: apiml-3
             logbackService: ZWEAGW3
             JGROUPS_BIND_ADDRESS: apiml-3
         ports:
-            - "127.0.0.1:30010:10010"
-            - "127.0.0.1:30011:10011"
+            - "127.0.0.1:30010:30010"
+            - "127.0.0.1:30011:30011"
             - "127.0.0.1:35130:5130"
             - "127.0.0.1:36310:6310"
 
@@ -72,7 +79,7 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
         hostname: discoverable-client
         environment:
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
         ports:
             - "127.0.0.1:10012:10012"
             - "127.0.0.1:5122:5122"
@@ -81,11 +88,12 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
         hostname: discoverable-client-2
         environment:
+            APIML_SERVICE_PORT: "20012"
             APIML_SERVICE_HOSTNAME: discoverable-client-2
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:20011/eureka,https://apiml:10011/eureka
             logbackService: ZWEADC2
         ports:
-            - "127.0.0.1:20012:10012"
+            - "127.0.0.1:20012:20012"
             - "127.0.0.1:25122:5122"
 
     mock-services:

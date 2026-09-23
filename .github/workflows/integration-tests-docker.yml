@@ -473,12 +473,12 @@ jobs:
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
-                    -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.connectPorts=30010
+                    -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.port=30010
 
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runGatewayProxyTest -Denvironment.config=-docker
-                    -Dcentralgateway.connectPorts=30010
+                    -Dcentralgateway.port=30010
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Dump CGW jacoco data
@@ -508,7 +508,7 @@ jobs:
         timeout-minutes: 10
 
         env:
-            CONNECT_PORT_FLAGS: -Dcentralgateway.connectPorts=20010 -Ddiscovery.additionalPort=20011
+            CONNECT_PORT_FLAGS: -Dcentralgateway.port=20010 -Ddiscovery.additionalPort=20011
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -590,7 +590,7 @@ jobs:
                     ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
                     -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Ddiscovery.additionalHost=central-gateway-service -Ddiscovery.additionalPort=20011
-                    -Dcentralgateway.connectPorts=20010
+                    -Dcentralgateway.port=20010
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Store results
@@ -828,7 +828,7 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker
-                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=20010
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=20010
                     -DcentralHosts=central-gateway-service
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
@@ -839,7 +839,7 @@ jobs:
                     -Doidc.client.id=$OIDC_CLIENT_ID -Doidc.client.secret=$OIDC_CLIENT_SECRET -Doidc.test.user=$OIDC_TEST_USER
                     -Doidc.test.pass=$OIDC_TEST_PASS -Doidc.test.alt_user=$OIDC_WINNIE_USER
                     -Doidc.test.alt_pass=$OIDC_WINNIE_PASS -Doidc.host=$OIDC_HOST
-                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.connectPorts=20010
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=20010
                     -DcentralHosts=central-gateway-service
                 env:
                     OIDC_CLIENT_ID: ${{ secrets.OIDC_CLIENT_ID }}
@@ -1620,12 +1620,11 @@ jobs:
         # cypress/browsers couldn't itself drive docker compose. Instead the compose file defines
         # cypress as a service using that same pinned image, invoked on demand via
         # `docker compose run` once the stack is up - same network, so hostnames resolve exactly
-        # like from the host. discovery-service-2 shares discovery-service's real port, so
-        # -Ddiscovery.additionalPort tells the test runner (host-based now) to reach it on the
-        # different HOST port the compose file publishes it to - without it the checker silently
-        # queries discovery-service's own port instead (same hostname-aliased loopback) and waits
-        # forever for discovery-service-2/zaas-service-2 to appear there. See
-        # docker/integration-tests/README.md.
+        # like from the host. discovery-service-2 binds its own distinct real port via
+        # APIML_SERVICE_PORT, so -Ddiscovery.additionalPort tells the test runner which port that
+        # is - without it the checker defaults to discovery-service's own port instead (same
+        # hostname-aliased loopback) and waits forever for discovery-service-2/zaas-service-2 to
+        # appear there. See docker/integration-tests/README.md.
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -1724,9 +1723,9 @@ jobs:
         # instead of GitHub Actions' native container/services orchestration. See the comment on
         # docker/integration-tests/e2e-ui-tests/docker-compose.yml's cypress service for why the
         # pinned Cypress/browser toolchain is a compose service instead of a `container:` job.
-        # gateway-service-2 shares gateway-service's real ports, so the gradle steps below pass
-        # -Dgateway.connectPorts / -Ddiscovery.additionalPort so the test runner (host-based now)
-        # reaches it on the different HOST ports the compose file publishes it to. See
+        # gateway-service-2 binds its own distinct real ports via APIML_SERVICE_PORT /
+        # APIML_INTERNAL_DISCOVERY_PORT, so the gradle steps below pass -Dgateway.connectPorts /
+        # -Ddiscovery.additionalPort to tell the test runner which ports those are. See
         # docker/integration-tests/README.md.
         env:
             CONNECT_PORT_FLAGS: -Dgateway.connectPorts=10010,20010 -Ddiscovery.additionalPort=20011

@@ -12,11 +12,11 @@ services:
             APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
             APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
             APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka
-            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://central-gateway-service:10011/eureka
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://central-gateway-service:20011/eureka
             ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
             ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
             APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
-            APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+            APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:20010/gateway/certificates
             logbackService: ZWEAGW1
             APIML_HEALTH_PROTECTED: "false"
             APIML_SECURITY_X509_ENABLED: "true"
@@ -26,28 +26,31 @@ services:
             - "127.0.0.1:5130:5130"
             - "127.0.0.1:6310:6310"
 
-    # Central apiml instance with central gateway registry - shares apiml's real ports, so the
-    # test runner (host-based now) reaches it via different HOST ports instead, via -Dgateway.port /
-    # -Ddiscovery.additionalPort on this job's gradle invocations. See docker/integration-tests/README.md.
+    # Central apiml instance with central gateway registry - binds its own distinct real ports via
+    # APIML_SERVICE_PORT / APIML_INTERNAL_DISCOVERY_PORT, so its host-published port and its
+    # real/identity port are the same number. -Dgateway.port / -Ddiscovery.additionalPort on this
+    # job's gradle invocations point at that same port. See docker/integration-tests/README.md.
     central-gateway-service:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: central-gateway-service
         environment:
+            APIML_SERVICE_PORT: "20010"
+            APIML_INTERNAL_DISCOVERY_PORT: "20011"
             APIML_SERVICE_APIMLID: central-apiml
             APIML_SERVICE_HOSTNAME: central-gateway-service
-            APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
+            APIML_SERVICE_EXTERNALURL: https://central-gateway-service:20010
             APIML_GATEWAY_REGISTRY_ENABLED: "true"
             APIML_SECURITY_X509_REGISTRY_ALLOWEDUSERS: USER,UNKNOWNUSER
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://central-gateway-service:10011/eureka
-            APIML_DISCOVERY_ALLPEERSURLS: https://central-gateway-service:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://central-gateway-service:20011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://central-gateway-service:20011/eureka
             logbackService: ZWEAGW2
             APIML_SECURITY_X509_ENABLED: "true"
             APIML_HEALTH_PROTECTED: "false"
             APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
-            APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+            APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:20010/gateway/certificates
         ports:
-            - "127.0.0.1:20010:10010"
-            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:20010:20010"
+            - "127.0.0.1:20011:20011"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26310:6310"
 

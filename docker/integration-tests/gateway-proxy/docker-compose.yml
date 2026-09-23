@@ -14,7 +14,7 @@ services:
             APIML_SERVICE_APIMLID: apiml1
             APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
             APIML_SERVICE_FORWARDCLIENTCERTENABLED: "true"
-            APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
+            APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:30010/gateway/certificates
             APIML_SECURITY_ENABLESTRICTURLVALIDATION: "false"
             logbackService: ZWEAGW1
         ports:
@@ -22,23 +22,25 @@ services:
             - "127.0.0.1:5130:5130"
             - "127.0.0.1:6300:6300"
 
-    # gateway-service-2 and central-gateway-service share gateway-service's real port (10010) -
-    # only central-gateway-service is checked directly by the generic startup checker in this job
-    # (via its own single-host CentralGatewayServiceConfiguration, remapped below with
-    # -Dcentralgateway.connectPorts), gateway-service-2 isn't part of the generic checker's scope
-    # here (matches original behaviour) but still gets its own host port for convenience/debugging.
-    # It's instance 2 (20010); central-gateway-service below is instance 3 (30010) since both
-    # would otherwise collide on the same instance-2 port. See docker/integration-tests/README.md.
+    # gateway-service-2 and central-gateway-service each bind their own distinct real port via
+    # APIML_SERVICE_PORT - only central-gateway-service is checked directly by the generic startup
+    # checker in this job (via its own single-host CentralGatewayServiceConfiguration, pointed at
+    # that port below with -Dcentralgateway.port), gateway-service-2 isn't part of the generic
+    # checker's scope here (matches original behaviour) but still gets its own real port for
+    # convenience/debugging. It's instance 2 (20010); central-gateway-service below is instance 3
+    # (30010) since both use the same underlying image and would otherwise collide on the same
+    # instance-2 port. See docker/integration-tests/README.md.
     gateway-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
         hostname: gateway-service-2
         environment:
+            APIML_SERVICE_PORT: "20010"
             APIML_SERVICE_HOSTNAME: gateway-service-2
             APIML_SERVICE_APIMLID: apiml2
             logbackService: ZWEAGW2
             APIML_SECURITY_ENABLESTRICTURLVALIDATION: "false"
         ports:
-            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20010:20010"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26300:6300"
 
@@ -57,12 +59,13 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
         hostname: zaas-service-2
         environment:
+            APIML_SERVICE_PORT: "20023"
             APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
-            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:20010/gateway/certificates
             APIML_SERVICE_HOSTNAME: zaas-service-2
             logbackService: ZWEAZS2
         ports:
-            - "127.0.0.1:20023:10023"
+            - "127.0.0.1:20023:20023"
             - "127.0.0.1:25120:5120"
             - "127.0.0.1:26301:6301"
 
@@ -70,13 +73,14 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
         hostname: central-gateway-service
         environment:
+            APIML_SERVICE_PORT: "30010"
             APIML_SERVICE_APIMLID: centralapiml
             APIML_CONNECTION_TIMEOUT: "2000"
             APIML_SERVICE_FORWARDCLIENTCERTENABLED: "true"
             APIML_SERVICE_HOSTNAME: central-gateway-service
             APIML_SECURITY_ENABLESTRICTURLVALIDATION: "false"
         ports:
-            - "127.0.0.1:30010:10010"
+            - "127.0.0.1:30010:30010"
             - "127.0.0.1:35130:5130"
             - "127.0.0.1:36300:6300"
 

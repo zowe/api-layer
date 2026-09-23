@@ -33,6 +33,7 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/caching-service:${APIML_TAG:-local}
         hostname: caching-service-2
         environment:
+            APIML_SERVICE_PORT: "20016"
             JGROUPS_BIND_PORT: "7600"
             SERVER_SSL_KEYSTORETYPE: "PKCS12"
             CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
@@ -42,7 +43,7 @@ services:
             APIML_SERVICE_HOSTNAME: "caching-service-2"
             logbackService: ZWEACS2
         ports:
-            - "127.0.0.1:20016:10016"
+            - "127.0.0.1:20016:20016"
             - "127.0.0.1:25126:5126"
             - "127.0.0.1:26306:6306"
 

@@ -6,7 +6,7 @@ services:
         environment:
             APIML_SECURITY_X509_ENABLED: "true"
             APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: "true"
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:20011/eureka,https://apiml:10011/eureka
             CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
             CACHING_STORAGE_MODE: "infinispan"
             CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
@@ -23,10 +23,12 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml-2
         environment:
+            APIML_SERVICE_PORT: "20010"
+            APIML_INTERNAL_DISCOVERY_PORT: "20011"
             APIML_SECURITY_X509_ENABLED: "true"
             APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
             APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: "true"
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
             APIML_SERVICE_HOSTNAME: "apiml-2"
             logbackService: ZWEAGW2
             CACHING_STORAGE_INFINISPAN_NUMSEGMENTS: "16"
@@ -36,8 +38,8 @@ services:
             JGROUPS_BIND_ADDRESS: "apiml-2"
             JGROUPS_KEYEXCHANGE_PORT: "7601"
         ports:
-            - "127.0.0.1:20010:10010"
-            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:20010:20010"
+            - "127.0.0.1:20011:20011"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26310:6310"
 
@@ -57,7 +59,7 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
         hostname: discoverable-client
         environment:
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
         ports:
             - "127.0.0.1:10012:10012"
             - "127.0.0.1:5122:5122"

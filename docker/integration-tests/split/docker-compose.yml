@@ -17,7 +17,7 @@ services:
             APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
             APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
             APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
-            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://discovery-service-2:20011/eureka
             SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: "16348"
             SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: "3145728"
             APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
@@ -90,21 +90,20 @@ services:
     # runStartUpCheck's ApiMediationLayerStartupChecker calls discovery-service-2 directly
     # from the test runner (it's environment-configuration-docker-compose.yml's
     # discoveryServiceConfiguration.additionalHost, split into its own "central" instance
-    # group via -DcentralHosts). It listens on the SAME real port (10011) as the primary
-    # discovery-service, so from the host it needs a different HOST port instead - published
-    # here as 20011 (instance 2's port = 2 followed by the primary's last 4 digits), matching
-    # that env-config file's additionalPort (the container's own internal port, and every
-    # other container's peer URLs referencing it, stay at 10011 - only the host-side publish
-    # differs). See docker/integration-tests/README.md.
+    # group via -DcentralHosts). It binds its own distinct real port (20011 - instance 2's
+    # port is always the instance number followed by the primary's last 4 digits) via
+    # APIML_SERVICE_PORT below, matching that env-config file's additionalPort. See
+    # docker/integration-tests/README.md.
     discovery-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
         hostname: discovery-service-2
         environment:
+            APIML_SERVICE_PORT: "20011"
             APIML_SERVICE_HOSTNAME: discovery-service-2
-            APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:20011/eureka
             logbackService: ZWEADS2
         ports:
-            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:20011:20011"
 
     gateway-service-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
@@ -112,8 +111,9 @@ services:
         mem_limit: 640m
         memswap_limit: 640m
         environment:
+            APIML_SERVICE_PORT: "20010"
             APIML_SERVICE_HOSTNAME: gateway-service-2
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:20011/eureka/
             logbackService: ZWEAGW2
             APIML_SERVICE_CORSENABLED: "true"
             APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
@@ -122,9 +122,10 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
         hostname: zaas-service-2
         environment:
+            APIML_SERVICE_PORT: "20023"
             APIML_SERVICE_HOSTNAME: zaas-service-2
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:20011/eureka/
             APIML_SECURITY_X509_ENABLED: "true"
             APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
-            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:20010/gateway/certificates
             logbackService: ZWEAZS2

@@ -50,7 +50,9 @@ services:
         volumes:
             - ./api-defs:/api-defs
         environment:
-            APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service-2:10011/eureka
+            APIML_SERVICE_PORT: "20010"
+            APIML_INTERNAL_DISCOVERY_PORT: "20011"
+            APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service-2:20011/eureka
             APIML_SERVICE_HOSTNAME: gateway-service-2
             APIML_SERVICE_APIMLID: apiml2
             APIML_HEALTH_PROTECTED: "false"
@@ -60,11 +62,11 @@ services:
             logbackService: ZWEAGW2
             APIML_SECURITY_X509_ENABLED: "true"
             APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
-            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:20010/gateway/certificates
             APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
         ports:
-            - "127.0.0.1:20010:10010"
-            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:20010:20010"
+            - "127.0.0.1:20011:20011"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26310:6310"
 

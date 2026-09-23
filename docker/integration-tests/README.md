@@ -33,7 +33,7 @@ is driven with plain `docker compose`.
 | `sticky-session-lb/`               | `StickySessionHALoadBalancing`      | Full split topology, every service has a `-2` peer (except `api-catalog-services`), sticky-session LB metadata |
 | `ha-caching-chaotic/`              | `CITestsHA_caching-chaotic`         | Full split topology, `-2` peers plus a third `caching-service-3` (3-way infinispan cluster) |
 | `ha/`                              | `CITestsHA` (matrix)                | Same as above minus `caching-service-3`; normal + 4 chaotic variants |
-| `gateway-proxy/`                   | `GatewayProxy`                      | `gateway-service`/`gateway-service-2` plus a separate `central-gateway-service`, all sharing one real port |
+| `gateway-proxy/`                   | `GatewayProxy`                      | `gateway-service`/`gateway-service-2` plus a separate `central-gateway-service`, each on its own real port |
 | `gateway-central-registry/`        | `GatewayCentralRegistry`            | Domain gateway/discovery/zaas/api-catalog plus a central-registry counterpart of each |
 | `zaas/`                            | `CITestsZaas`                       | Split topology + `central-gateway-service`, real external OIDC tenant secrets |
 | `e2e-ui-tests/`                    | `E2EUITests`                        | Split topology + a second discovery/gateway/zaas trio, Cypress E2E via a pinned browser image, real OIDC secrets |
@@ -138,54 +138,52 @@ either way.
 
 ## A note on multi-instance (HA / multi-tenancy) topologies
 
-Some topologies run a second instance of a service on the *same* real port as the primary
-(`discovery-service` / `discovery-service-2`, both listening on `10011` internally - the
-checked-in `environment-configuration-*.yml` files always used one `port` value per service,
-regardless of how many hosts share it). Aliasing both hostnames to plain `127.0.0.1` made the
-second instance's hostname silently resolve to the *first* instance's published port instead of
-failing outright - which is exactly what caused `CITests` to fail in CI.
+Every secondary/tertiary instance of a service binds its **own distinct real port** - it doesn't
+share the primary's. This is set via `APIML_SERVICE_PORT` (and, for a bundled `apiml` modulith
+image, `APIML_INTERNAL_DISCOVERY_PORT` for its embedded discovery role - see
+`ServerAddressPropertiesUpdater`/`apiml/src/main/resources/META-INF/spring.factories`, which binds
+that as a genuinely separate Tomcat connector, not just metadata) in that instance's `environment:`
+block, and the compose file then publishes that same real port straight through
+(`gateway-service-2` binds `20010` internally and publishes host port `20010:20010` - no
+translation in either direction).
 
-Publishing the second instance to a different **loopback address** (e.g. `127.0.0.2`) instead of
-a different port seemed like the fix, but doesn't actually work: Docker Desktop for both macOS
-and Windows can only publish a container port to `127.0.0.1` or `0.0.0.0`, not other loopback
-addresses ([moby/moby#33088](https://github.com/moby/moby/issues/33088),
-[docker/for-mac#4607](https://github.com/docker/for-mac/issues/4607)) - confirmed by hand on this
-project. WSL2 (real Linux underneath) doesn't have that limitation, but plain macOS/Windows do.
+The numbering convention is consistent everywhere: **instance N's port is N followed by the
+primary's own last 4 digits** (`gateway-service` `10010` → instance 2 `20010` → instance 3
+`30010`; `discovery-service`/an apiml image's internal-discovery role `10011` → instance 2
+`20011`; debug port `5130` → instance 2 `25130`; jacoco port `6300` → instance 2 `26300`) -
+applied identically to app, debug, and jacoco ports. The one wrinkle: a topology that has both a
+literal `-2` peer of a service *and* a same-image `central-gateway-service` counterpart (only
+`GatewayProxy`) numbers them 2 and 3 respectively, since both would otherwise land on the same
+instance-2 port - see that job's `docker-compose.yml` comments.
 
-The fix that works everywhere: publish the second (or third) instance to a **different host
-port** instead (e.g. `split/docker-compose.yml` maps `discovery-service-2`'s real, unchanged
-internal port `10011` to host port `20011`), and teach `ApiMediationLayerStartupChecker` to
-connect on a different port than the one it expects an instance to self-report as its identity in
-Eureka (`Instance.connectPort` vs `Instance.port` - see the class for details). This is exposed
-via `-D` system properties on the `./gradlew` invocations, matching each service's own naming:
+Because each instance's real port *is* its identity now, `ApiMediationLayerStartupChecker`
+doesn't need to distinguish "the port to connect on" from "the port an instance self-registers
+under in eureka" - one lookup, `ServiceConfiguration.getConnectPortForHost(host)`, answers both.
+The checked-in `environment-configuration-*.yml` files still only ever hold one `port` value per
+service, though (most are shared by several jobs, e.g. `environment-configuration-ha.yml` backs
+six of them), so a job whose topology has more than one host for that service still needs to say
+which port belongs to which host - passed as `-D` system properties on the `./gradlew`
+invocations, matching each service's own naming:
 
 - `discovery.additionalPort` (single value) / `discovery.additionalConnectPorts` (comma-list, for
   when there's more than one additional instance, e.g. `apiml-2` *and* `apiml-3`) -
   `discoveryServiceConfiguration` already had a separate `host`/`additionalHost` pair, so this
-  just gives the additional side its own connect port(s).
+  just gives the additional side its own port(s) (`DiscoveryServiceConfiguration` overrides
+  `getConnectPortForHost` to check `additionalHost`/`additionalConnectPorts` first, falling
+  through to the primary `host`/`connectPorts` lookup otherwise).
 - `gateway.connectPorts` / `zaas.connectPorts` / `apicatalog.connectPorts` /
   `caching.connectPorts` / `discoverableclient.connectPorts` (comma-list, positionally paired
   with that service's comma-separated `host` list) - these config classes only ever had one
-  combined `host` string for every instance, so this is a new `connectPorts` field added
-  alongside it (`ServiceConfiguration.getConnectPorts()`, defaulting to null = "use the same port
-  everywhere", so every already-existing environment-configuration-*.yml file is unaffected
-  unless a job explicitly passes one of these flags).
-- `centralgateway.connectPorts` (single value) - `centralGatewayServiceConfiguration` only ever
-  has one host, so no comma-list handling is needed there.
-
-Every job's `hosts:`/port table follows one convention throughout, chosen so the instance number
-is legible straight from the port: **a secondary/tertiary instance N's host-published port is N
-followed by the primary's own last 4 digits** (`gateway-service` `10010` → instance 2 `20010` →
-instance 3 `30010`; `discovery-service` `10011` → instance 2 `20011`; debug port `5130` →
-instance 2 `25130`; jacoco port `6300` → instance 2 `26300`), regardless of port category - app,
-debug, and jacoco ports all follow the exact same rule. The one wrinkle: a topology that has both
-a literal `-2` peer of a service *and* a same-image `central-gateway-service` counterpart (only
-`GatewayProxy`) numbers them 2 and 3 respectively, since both would otherwise land on the same
-instance-2 port - see that job's `docker-compose.yml` comments.
+  combined `host` string for every instance, so this is a `connectPorts` field alongside it
+  (`ServiceConfiguration.getConnectPorts()`, defaulting to null = "use the same port everywhere",
+  so every already-existing environment-configuration-*.yml file is unaffected unless a job
+  explicitly passes one of these flags).
+- `centralgateway.port` (single value) - `centralGatewayServiceConfiguration` only ever has one
+  host, so there's no per-host list to resolve; the job just points `port` straight at that
+  instance's real port.
 
 Passing `-D` flags keeps the checked-in `environment-configuration-*.yml` files completely
-untouched, since most of them are still shared by several jobs (e.g.
-`environment-configuration-ha.yml` backs six jobs). The one exception is `CITests`, which uses
-its own `environment-configuration-docker-compose.yml` - an exact copy of
+untouched. The one exception is `CITests`, which uses its own
+`environment-configuration-docker-compose.yml` - an exact copy of
 `environment-configuration-docker.yml` with `additionalPort: 20011` - predating the `-D` override
 approach; every later migration used the flag instead of forking another file.

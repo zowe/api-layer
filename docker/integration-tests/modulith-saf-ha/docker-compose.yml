@@ -19,7 +19,7 @@ services:
         hostname: apiml
         environment:
             <<: *apiml-ha-env
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:20011/eureka,https://apiml:10011/eureka
             APIML_SERVICE_HOSTNAME: apiml
             logbackService: ZWEAGW1
             JGROUPS_BIND_ADDRESS: apiml
@@ -33,14 +33,16 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml-2
         environment:
+            APIML_SERVICE_PORT: "20010"
+            APIML_INTERNAL_DISCOVERY_PORT: "20011"
             <<: *apiml-ha-env
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
             APIML_SERVICE_HOSTNAME: apiml-2
             logbackService: ZWEAGW2
             JGROUPS_BIND_ADDRESS: apiml-2
         ports:
-            - "127.0.0.1:20010:10010"
-            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:20010:20010"
+            - "127.0.0.1:20011:20011"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26310:6310"
 
@@ -48,7 +50,7 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
         hostname: discoverable-client
         environment:
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
         ports:
             - "127.0.0.1:10012:10012"
             - "127.0.0.1:5122:5122"

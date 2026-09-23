@@ -64,7 +64,7 @@ public class ConfigReader {
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
                             = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20, "zosmf", 5, null);
-                        CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010, null);
+                        CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010);
                         ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1, null);
                         DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,20011, 1, null);
                         DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1, null);
@@ -129,7 +129,6 @@ public class ConfigReader {
                             c.setScheme(System.getProperty("centralgateway.scheme", config.getScheme()));
                             c.setHost(System.getProperty("centralgateway.host", config.getHost()));
                             c.setPort(parseInt(System.getProperty("centralgateway.port", String.valueOf(config.getPort()))));
-                            c.setConnectPorts(System.getProperty("centralgateway.connectPorts", config.getConnectPorts()));
                         }
                     );
 

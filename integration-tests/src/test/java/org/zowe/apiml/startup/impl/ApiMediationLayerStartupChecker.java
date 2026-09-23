@@ -98,21 +98,18 @@ public class ApiMediationLayerStartupChecker {
         private final String scheme;
         private final String hostname;
         private final String serviceId;
+        // Each container binds its own distinct real port now (see docker-compose.yml's
+        // APIML_SERVICE_PORT/APIML_INTERNAL_DISCOVERY_PORT for the instance this host represents),
+        // which is also what it self-registers under as its eureka instance identity, so one
+        // field/lookup serves both purposes - see ServiceConfiguration.getConnectPortForHost().
         private final int port;
-        // The port the checker actually connects on. Normally the same as "port", which is
-        // also the identity port other services see this instance register under in eureka.
-        // They can differ for an additional discovery host (additionalPort): the container's
-        // real/identity port never changes, but a host-based test runner may only be able to
-        // reach it via a different published host port (see DiscoveryServiceConfiguration).
-        private final int connectPort;
         private final ServiceConfiguration serviceConfiguration;
 
-        private Instance(String hostname, int connectPort, ServiceConfiguration serviceConfiguration) {
+        private Instance(String hostname, ServiceConfiguration serviceConfiguration) {
             this.scheme = serviceConfiguration.getScheme();
             this.hostname = hostname;
             this.serviceId = serviceConfiguration.getServiceId();
-            this.port = serviceConfiguration.getPort();
-            this.connectPort = connectPort;
+            this.port = serviceConfiguration.getConnectPortForHost(hostname);
             this.serviceConfiguration = serviceConfiguration;
         }
 
@@ -121,57 +118,20 @@ public class ApiMediationLayerStartupChecker {
             this.hostname = instance.getHostname();
             this.serviceId = serviceId;
             this.port = instance.getPort();
-            this.connectPort = instance.getConnectPort();
             this.serviceConfiguration = instance.getServiceConfiguration();
         }
 
-        private record HostAddress(String host, int connectPort) {
-        }
-
-        /**
-         * Parses a comma-separated connectPorts string (see ServiceConfiguration.getConnectPorts())
-         * into an array, defaulting to fallbackPort when blank/unset entirely.
-         */
-        private static Integer[] parseConnectPorts(String connectPorts, int fallbackPort) {
-            if (StringUtils.isBlank(connectPorts)) {
-                return new Integer[]{fallbackPort};
-            }
-            return Arrays.stream(connectPorts.split("[,;]"))
-                .map(String::trim)
-                .map(Integer::parseInt)
-                .toArray(Integer[]::new);
-        }
-
-        private static List<HostAddress> getAllHosts(ServiceConfiguration serviceConfiguration) {
-            List<HostAddress> hosts = new ArrayList<>();
+        private static List<String> getAllHosts(ServiceConfiguration serviceConfiguration) {
+            List<String> hosts = new ArrayList<>();
             if (serviceConfiguration == null) {
                 return hosts;
             }
             if (StringUtils.isNotBlank(serviceConfiguration.getHost())) {
-                String[] primaryHosts = serviceConfiguration.getHost().split("[,;]");
-                Integer[] connectPorts = parseConnectPorts(serviceConfiguration.getConnectPorts(), serviceConfiguration.getPort());
-                for (int i = 0; i < primaryHosts.length; i++) {
-                    int connectPort = i < connectPorts.length ? connectPorts[i] : serviceConfiguration.getPort();
-                    hosts.add(new HostAddress(primaryHosts[i], connectPort));
-                }
+                hosts.addAll(Arrays.asList(serviceConfiguration.getHost().split("[,;]")));
             }
-            if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration) {
-                String additionalHost = discoveryServiceConfiguration.getAdditionalHost();
-                if (StringUtils.isNotBlank(additionalHost)) {
-                    int fallbackPort = discoveryServiceConfiguration.getAdditionalPort() > 0
-                        ? discoveryServiceConfiguration.getAdditionalPort()
-                        : serviceConfiguration.getPort();
-                    String[] additionalHosts = additionalHost.split("[,;]");
-                    // additionalConnectPorts is a comma-list paired positionally with
-                    // additionalHost, for when there's more than one additional instance (e.g.
-                    // apiml-2 AND apiml-3) and each needs a different connect port - falls back
-                    // to the single additionalPort value otherwise (e.g. the common 2-instance case).
-                    Integer[] connectPorts = parseConnectPorts(discoveryServiceConfiguration.getAdditionalConnectPorts(), fallbackPort);
-                    for (int i = 0; i < additionalHosts.length; i++) {
-                        int connectPort = i < connectPorts.length ? connectPorts[i] : fallbackPort;
-                        hosts.add(new HostAddress(additionalHosts[i], connectPort));
-                    }
-                }
+            if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration
+                && StringUtils.isNotBlank(discoveryServiceConfiguration.getAdditionalHost())) {
+                hosts.addAll(Arrays.asList(discoveryServiceConfiguration.getAdditionalHost().split("[,;]")));
             }
             return hosts;
         }
@@ -182,8 +142,8 @@ public class ApiMediationLayerStartupChecker {
 
         private static List<Instance> of(ServiceConfiguration serviceConfiguration) {
             return getAllHosts(serviceConfiguration).stream()
-                .filter(ha -> StringUtils.isNotBlank(ha.host()))
-                .map(ha -> new Instance(ha.host().trim().toLowerCase(), ha.connectPort(), serviceConfiguration))
+                .filter(StringUtils::isNotBlank)
+                .map(host -> new Instance(host.trim().toLowerCase(), serviceConfiguration))
                 .toList();
         }
 
@@ -208,7 +168,7 @@ public class ApiMediationLayerStartupChecker {
             return new DefaultUriBuilderFactory().builder()
                 .scheme("https")
                 .host(this.hostname)
-                .port(this.connectPort)
+                .port(this.port)
                 .path(this.serviceConfiguration.getServletContext() + basePath)
                 .toUriString();
         }
@@ -364,7 +324,7 @@ public class ApiMediationLayerStartupChecker {
                     ? authHeader(ds.getServiceConfiguration().isBasicAuthenticationSupported())
                     : EUREKA_CREDENTIALS_HEADER;
                 var documentContext = getDocumentAsContext(HttpRequestUtils.getUri(
-                    ds.getScheme(), ds.getHostname(), ds.getConnectPort(), "/eureka/apps"
+                    ds.getScheme(), ds.getHostname(), ds.getPort(), "/eureka/apps"
                 ), header);
                 if (documentContext == null || !areAllInstanceOnInEureka(ds, documentContext)) {
                     return false;
@@ -475,9 +435,9 @@ public class ApiMediationLayerStartupChecker {
         private boolean areDiscoveryPortsReachable() {
             for (var ds : get(CoreService.DISCOVERY)) {
                 try (var socket = new java.net.Socket()) {
-                    socket.connect(new java.net.InetSocketAddress(ds.getHostname(), ds.getConnectPort()), 5000);
+                    socket.connect(new java.net.InetSocketAddress(ds.getHostname(), ds.getPort()), 5000);
                 } catch (IOException e) {
-                    log.debug("Discovery service {}:{} is not yet reachable: {}", ds.getHostname(), ds.getConnectPort(), e.getMessage());
+                    log.debug("Discovery service {}:{} is not yet reachable: {}", ds.getHostname(), ds.getPort(), e.getMessage());
                     return false;
                 }
             }

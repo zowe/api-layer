@@ -12,8 +12,8 @@ services:
             - ./api-defs:/api-defs
         environment:
             <<: *basic-auth-env
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
             APIML_SERVICE_HOSTNAME: apiml
             logbackService: ZWEAGW1
             APIML_HEALTH_PROTECTED: "false"
@@ -34,9 +34,11 @@ services:
         volumes:
             - ./api-defs:/api-defs
         environment:
+            APIML_SERVICE_PORT: "20010"
+            APIML_INTERNAL_DISCOVERY_PORT: "20011"
             <<: *basic-auth-env
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
-            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
+            APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
             APIML_SERVICE_HOSTNAME: apiml-2
             logbackService: ZWEAGW2
             APIML_HEALTH_PROTECTED: "false"
@@ -46,8 +48,8 @@ services:
             JGROUPS_BIND_ADDRESS: apiml-2
             JGROUPS_KEYEXCHANGE_PORT: "7601"
         ports:
-            - "127.0.0.1:20010:10010"
-            - "127.0.0.1:20011:10011"
+            - "127.0.0.1:20010:20010"
+            - "127.0.0.1:20011:20011"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26310:6310"
 
@@ -56,7 +58,7 @@ services:
         hostname: discoverable-client
         environment:
             <<: *basic-auth-env
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
         ports:
             - "127.0.0.1:10012:10012"
             - "127.0.0.1:5122:5122"

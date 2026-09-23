@@ -17,12 +17,13 @@ services:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
         hostname: central-gateway-service
         environment:
+            APIML_SERVICE_PORT: "20010"
             APIML_SERVICE_APIMLID: central-apiml
             APIML_SERVICE_HOSTNAME: central-gateway-service
-            APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
+            APIML_SERVICE_EXTERNALURL: https://central-gateway-service:20010
             logbackService: ZWEAGW2
         ports:
-            - "127.0.0.1:20010:10010"
+            - "127.0.0.1:20010:20010"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26300:6300"
 

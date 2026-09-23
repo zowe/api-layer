@@ -33,21 +33,22 @@ public interface ServiceConfiguration {
     }
 
     /**
-     * Comma-separated ports, positionally paired with getHost()'s comma-separated hosts, that
-     * ApiMediationLayerStartupChecker should actually connect on - as opposed to getPort(), which
-     * stays the port every instance's own identity/self-registration is reported under in eureka.
-     * They're normally the same (real container-to-container traffic shares one real port
-     * regardless of hostname), but differ when a same-port secondary instance is published to a
-     * different host port for host-based test execution (see docker/integration-tests/README.md).
-     * Null/blank (the default) means every host uses getPort().
+     * Comma-separated ports, positionally paired with getHost()'s comma-separated hosts - each
+     * secondary/tertiary instance binds its own distinct real port (see docker-compose.yml's
+     * APIML_SERVICE_PORT), so a service with more than one host needs this to say which port
+     * belongs to which. Null/blank (the default) means every host uses getPort(), which is
+     * correct for every service that only ever has one instance/host.
      */
     default String getConnectPorts() {
         return null;
     }
 
     /**
-     * Resolve which port a test should actually connect on for a specific hostname taken from
-     * getHost()'s comma-separated list, pairing it positionally with getConnectPorts(). Falls
+     * Resolve the port for a specific hostname taken from getHost()'s comma-separated list,
+     * pairing it positionally with getConnectPorts(). This is both the port a test should
+     * connect on AND the port that hostname self-registers under as its eureka instance
+     * identity - the two are the same port, since each instance now binds its own real port
+     * directly rather than sharing one and being reached via a different published port. Falls
      * back to getPort() if connectPorts is blank, the host isn't found, or there's no
      * corresponding entry - so callers that only ever deal with the primary/default host are
      * unaffected.
