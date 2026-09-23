@@ -65,6 +65,10 @@ dependencies {
     api project(':apiml-tomcat-common')
     api project(':security-service-client-spring')
 
+    // The Catalog registers itself with the Discovery Service and looks other services up through Spring Cloud's
+    // DiscoveryClient. It used to get both from the Eureka starter; now it gets them from the registry client.
+    implementation project(':apiml-registry-client-spring')
+
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
