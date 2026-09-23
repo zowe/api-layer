@@ -58,7 +58,18 @@ spring:
         gateway:
             server:
                 webflux:
-                    trusted-proxies: "192.168.0.0/16,10.0.0.0/8"
+                    # Do NOT set spring.cloud.gateway.server.webflux.trusted-proxies here.
+                    #
+                    # Setting it (with any non-empty value) activates Spring Cloud Gateway's
+                    # TrustedProxies.XForwardedTrustedProxiesCondition, which registers
+                    # GatewayAutoConfiguration#xForwardedHeadersFilter. That definition overrides
+                    # APIML's own @Primary xForwardedHeadersFilter bean from WebSecurity, silently
+                    # replacing X509AndGwAwareXForwardedHeadersFilter with the stock upstream filter
+                    # and losing the CVE-2025-41235 trusted-proxy / Gateway-certificate hardening.
+                    #
+                    # APIML configures trusted proxies through apiml.security.forwardHeader.trustedProxies
+                    # instead, which X509AndGwAwareXForwardedHeadersFilter consumes directly. Keep this
+                    # property unset so the APIML filter remains the active XForwardedHeadersFilter.
                     x-forwarded:
                         prefix-append: false
                         prefix-enabled: true

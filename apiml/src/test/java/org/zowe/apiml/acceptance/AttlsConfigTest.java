@@ -229,6 +229,7 @@ class AttlsConfigTest {
     @ActiveProfiles({"attlsClient", "attlsServer", "WhenCorsEnabledService"})
     @DirtiesContext
     @AcceptanceTest
+    @ExtendWith(MockitoExtension.class)
     @TestInstance(Lifecycle.PER_CLASS)
     // this test requires a defined port to either match the default allowed origin or set apiml.corsDefaultAllowedOrigins property with the known port
     class WhenCorsEnabledService extends AcceptanceTestWithMockServices {
