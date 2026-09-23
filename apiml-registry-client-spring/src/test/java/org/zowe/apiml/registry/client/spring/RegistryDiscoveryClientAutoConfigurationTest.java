@@ -192,4 +192,29 @@ class RegistryDiscoveryClientAutoConfigurationTest {
         });
     }
 
+    /**
+     * The Discovery Service, the Caching Service and the discoverable client each serve this endpoint from
+     * their own registry. A second endpoint with the same id stops the application from starting, so this bean
+     * has to back off for all three.
+     * <p>
+     * The guards matter even though none of those services declares this module: the lite jar classpath the
+     * integration tests start them with bundles every module, so they see this autoconfiguration regardless.
+     * That is exactly how the Discovery Service failed to start here.
+     */
+    @Test
+    @DisplayName("a service that serves eurekaversion itself does not get a second one")
+    void versionEndpointBacksOff() {
+        for (String ownEndpoint : List.of(
+            "registryVersionEndpoint",
+            "cachingEurekaRegistryVersionEndpoint",
+            "clientEurekaRegistryVersionEndpoint")) {
+
+            runner.withBean(ownEndpoint, Object.class, Object::new)
+                .run(context -> {
+                    assertThat(context).hasNotFailed();
+                    assertThat(context).doesNotHaveBean(RegistryClientVersionEndpoint.class);
+                });
+        }
+    }
+
 }

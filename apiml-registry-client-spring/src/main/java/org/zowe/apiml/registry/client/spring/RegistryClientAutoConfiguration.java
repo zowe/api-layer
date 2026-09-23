@@ -232,13 +232,29 @@ public class RegistryClientAutoConfiguration {
          * instance to decide whether they have converged.
          * <p>
          * Guarded on actuator rather than declared unconditionally: a service without it has no actuator
-         * endpoints at all, and the endpoint type would not resolve. The Caching Service, the discoverable
-         * client and the Discovery Service serve this endpoint from their own registry and must not depend on
-         * this module - two endpoints with the same id stop the application from starting.
+         * endpoints at all, and the endpoint type would not resolve.
+         * <p>
+         * Guarded on the services that serve this endpoint from their own registry, because a second endpoint
+         * with the same id stops the application from starting:
+         * <pre>
+         *   Found two endpoints with the id 'eurekaversion':
+         *     'apimlRegistryVersionEndpoint' and 'registryVersionEndpoint'
+         * </pre>
+         * None of those three declares this module, so the guards look redundant - but they are not. The
+         * {@code liteLibJarAll} classpath used to start the services for the integration tests bundles every
+         * module, so the Discovery Service sees this autoconfiguration whether it declares it or not. The same
+         * leak put a {@code registryDiscoveryClient} bean of this module's naming into that service before.
+         * <p>
+         * The names are the bean names of those services' own endpoints, and the autoconfiguration test
+         * asserts this bean backs off for each of them, so the guards cannot be dropped unnoticed.
          */
         @Bean
         @ConditionalOnClass(org.springframework.boot.actuate.endpoint.annotation.Endpoint.class)
-        @ConditionalOnMissingBean
+        @ConditionalOnMissingBean(name = {
+            "registryVersionEndpoint",
+            "cachingEurekaRegistryVersionEndpoint",
+            "clientEurekaRegistryVersionEndpoint"
+        })
         RegistryClientVersionEndpoint apimlRegistryVersionEndpoint(RegistryClient registryClient) {
             return new RegistryClientVersionEndpoint(registryClient);
         }
