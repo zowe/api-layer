@@ -7,6 +7,13 @@ dependencies {
     implementation libs.apache.commons.lang3
     implementation libs.spring.boot.jackson2
 
+    // NettyServerProperties is needed by NettyServerPropertiesConfiguration, which re-declares the
+    // bean that Spring Cloud Gateway's NettyConfiguration requires when Netty's web-server
+    // auto-configuration is excluded (see that class). compileOnly because the class is supplied at
+    // runtime by the reactive services that pull in spring-boot-starter-reactor-netty, and the
+    // configuration guards itself with @ConditionalOnClass for services that do not.
+    compileOnly 'org.springframework.boot:spring-boot-reactor-netty'
+
     testImplementation libs.spring.boot.starter.test
 
     compileOnly libs.lombok

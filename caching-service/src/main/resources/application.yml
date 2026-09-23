@@ -122,6 +122,11 @@ spring:
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
+    autoconfigure:
+        # Netty must not become the reactive web server; see NettyServerPropertiesConfiguration
+        # in apiml-tomcat-common. This service runs on Tomcat, which APIML's servlet-based
+        # Tomcat customizers depend on.
+        exclude: org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration
 
 otel:
     sdk:
