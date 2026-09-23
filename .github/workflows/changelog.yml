@@ -39,6 +39,9 @@ jobs:
                   git config --global user.email "zowe-robot@users.noreply.github.com"
                   git config --global user.name "Zowe Robot"
                   cd scripts/release_docs
-                  npm install
-                  npm install -g conventional-changelog-cli
+                  # --ignore-scripts (SonarCloud githubactions:S6505): this directory
+                  # depends on octokit alone and no package in its tree declares an
+                  # install lifecycle script, so skipping them changes nothing.
+                  npm install --ignore-scripts
+                  npm install -g conventional-changelog-cli --ignore-scripts
                   node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.version }} ${{ github.event.inputs.release_date }} ${{ github.event.inputs.amount_of_versions }} ${{ github.ref_name }}
