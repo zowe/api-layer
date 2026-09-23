@@ -1,6 +1,15 @@
 # Copied verbatim from zaas-service/src/main/resources/application.yml so the comparison is against real
 # configuration rather than a convenient sample. Placeholders are resolved to concrete values because the
 # point of the test is the binding and the derivation, not property substitution.
+#
+# eureka.instance carries securePortEnabled and nothing else about ports: the real file says so in as many
+# words - "#ports are computed in code" - and leaves both ports to be derived. server.port is what they are
+# derived from, via apiml.service.port. Writing a port into this file would hide the derivation, and did:
+# with securePort and nonSecurePort spelled out here, the contract test passed while the service went on
+# registering itself on 80 and 443 instead of 10023.
+server:
+    port: 10023
+
 eureka:
     instance:
         instanceId: localhost:zaas:10023
@@ -11,8 +20,6 @@ eureka:
         statusPageUrl: https://localhost:10023/application/info
         healthCheckUrl: https://localhost:10023/application/health
         secureHealthCheckUrl: https://localhost:10023/application/health
-        securePort: 10023
-        nonSecurePort: 10023
         metadata-map:
             apiml:
                 routes:

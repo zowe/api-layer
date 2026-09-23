@@ -57,12 +57,28 @@ import java.util.List;
 @Slf4j
 @AutoConfiguration
 @ConditionalOnProperty(prefix = "eureka.client", name = "enabled", matchIfMissing = true)
-@EnableConfigurationProperties({RegistryInstanceProperties.class, RegistryFetchProperties.class})
+@EnableConfigurationProperties(RegistryFetchProperties.class)
 @AutoConfigureBefore({
     SimpleDiscoveryClientAutoConfiguration.class,
     SimpleReactiveDiscoveryClientAutoConfiguration.class
 })
 public class RegistryClientAutoConfiguration {
+
+    /**
+     * How this service describes itself.
+     * <p>
+     * Declared here rather than through {@code @EnableConfigurationProperties} so the ports can be set before
+     * {@code eureka.instance.*} is bound over them, which is the order Spring Cloud used and the only reason a
+     * service that does not configure a port still registers the one it listens on. See
+     * {@link RegistryInstanceDefaults#applyPorts} - ZAAS is the service that depends on it, and it registered
+     * itself on 80 and 443 without it.
+     */
+    @Bean
+    RegistryInstanceProperties registryInstanceProperties(Environment environment) {
+        RegistryInstanceProperties properties = new RegistryInstanceProperties();
+        RegistryInstanceDefaults.applyPorts(properties, environment);
+        return properties;
+    }
 
     /**
      * This service's registration.

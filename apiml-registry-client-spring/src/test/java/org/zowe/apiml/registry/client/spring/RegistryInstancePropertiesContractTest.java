@@ -329,4 +329,94 @@ class RegistryInstancePropertiesContractTest {
 
     }
 
+    /**
+     * The ports a service advertises when its configuration does not spell them out.
+     * <p>
+     * Spring Cloud's {@code EurekaClientAutoConfiguration} set both from {@code server.port} on the instance
+     * config bean, and Spring then bound {@code eureka.instance.*} over the top. So a service that configured a
+     * port kept it, and a service that did not still registered the port it actually listens on. ZAAS is the
+     * only API ML service in the second group - its YAML says the ports are computed in code - and dropping the
+     * derivation registered it on 80 and 443 while it listened on 10023.
+     * <p>
+     * That is not cosmetic. Nothing downstream could resolve ZAAS from the registry, and the Discovery Service
+     * authenticates {@code /application/**} through ZAAS, so the Discovery Service's own
+     * {@code eurekaversion} endpoint answered 401 and every integration test job failed its startup check
+     * waiting for a registry version it could never read.
+     */
+    @Nested
+    class GivenThePortsAreNotConfigured {
+
+        /**
+         * Builds the registration the way the autoconfiguration does, from a real service configuration.
+         */
+        private RegistryInstanceProperties asRegistered(String resource, String applicationName,
+                                                        int serverPort) throws IOException {
+            StandardEnvironment environment = new StandardEnvironment();
+            new YamlPropertySourceLoader().load(resource, new ClassPathResource(resource))
+                .forEach(source -> environment.getPropertySources().addFirst(source));
+            environment.getPropertySources().addFirst(
+                new org.springframework.core.env.MapPropertySource("testServerPort",
+                    java.util.Map.of("server.port", String.valueOf(serverPort))));
+
+            // The order the autoconfiguration uses: the ports come from server.port first, then the configured
+            // eureka.instance.* values are bound over them, so a configured port always wins.
+            RegistryInstanceProperties config = new RegistryInstanceProperties();
+            RegistryInstanceDefaults.applyPorts(config, environment);
+            Binder.get(environment).bind("eureka.instance",
+                org.springframework.boot.context.properties.bind.Bindable.ofInstance(config));
+            // null InetUtils: these assertions are about the ports, not the host, and the fixtures set one
+            RegistryInstanceDefaults.apply(config, applicationName, null);
+            return config;
+        }
+
+        @Test
+        @DisplayName("ZAAS advertises the port it listens on, as both its secure and its plain port")
+        void thenZaasAdvertisesItsRealPort() throws IOException {
+            RegistryInstanceProperties config = asRegistered("zaas-instance.yml", "zaas", 10023);
+
+            assertEquals(10023, config.getNonSecurePort());
+            assertEquals(10023, config.getSecurePort());
+
+            ServiceInstance instance = SelfInstanceFactory.create(config, 1L);
+            assertEquals(10023, instance.port().port());
+            assertEquals(10023, instance.securePort().port());
+            assertEquals("localhost:zaas:10023", instance.instanceId());
+        }
+
+        @Test
+        @DisplayName("ZAAS registers on the port it serves, not on the ports of a service that never ran")
+        void thenZaasIsReachableFromTheRegistry() throws IOException {
+            RegistryInstanceProperties config = asRegistered("zaas-instance.yml", "zaas", 10023);
+            ServiceInstance instance = SelfInstanceFactory.create(config, 1L);
+
+            // The URLs the registry hands to every consumer, which resolved to 80 and 443 before.
+            assertTrue(instance.homePageUrl().contains(":10023"), instance.homePageUrl());
+            assertTrue(instance.statusPageUrl().contains(":10023"), instance.statusPageUrl());
+            assertTrue(instance.secureHealthCheckUrl().contains(":10023"), instance.secureHealthCheckUrl());
+        }
+
+        @Test
+        @DisplayName("The API Catalog keeps the port it configured")
+        void thenAnExplicitSecurePortStillWins() throws IOException {
+            // The Catalog sets eureka.instance.securePort: ${apiml.service.port}, so binding must beat the
+            // server.port default - exactly as it did when Netflix's bean was bound after its construction.
+            RegistryInstanceProperties config = asRegistered("catalog-instance.yml", "apicatalog", 19999);
+
+            assertEquals(10014, config.getSecurePort());
+            assertFalse(config.isNonSecurePortEnabled());
+            // ... and the port it did not configure still comes from server.port rather than staying at 80.
+            assertEquals(19999, config.getNonSecurePort());
+        }
+
+        @Test
+        @DisplayName("The Gateway keeps the port it configured")
+        void thenTheGatewayKeepsItsPort() throws IOException {
+            RegistryInstanceProperties config = asRegistered("gateway-instance.yml", "gateway", 19999);
+
+            assertEquals(10010, config.getSecurePort());
+            assertEquals(10010, config.getNonSecurePort());
+        }
+
+    }
+
 }
