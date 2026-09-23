@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -101,8 +102,12 @@ class RegistryClientLifecycleTest {
                 "a health-driven status change must not be written as a status override");
             assertEquals(1, transport.fullFetches, "The first view must be fetched before serving requests");
 
-            assertInstanceOf(RegistryRegisteredEvent.class, events.get(1));
             assertInstanceOf(RegistryCacheRefreshedEvent.class, events.get(0));
+            // Spring Cloud's own discovery event, published on every cache refresh exactly as Eureka's client
+            // did. GatewayInstanceInitializer re-resolves the Gateway on it and RouteRefreshListener rebuilds
+            // the Gateway's routes, so dropping it removes both behaviours without failing to compile.
+            assertInstanceOf(HeartbeatEvent.class, events.get(1));
+            assertInstanceOf(RegistryRegisteredEvent.class, events.get(2));
 
             lifecycle.stop();
 

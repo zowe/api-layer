@@ -11,6 +11,7 @@
 package org.zowe.apiml.registry.client.spring;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cloud.client.discovery.event.HeartbeatEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.SmartLifecycle;
 import org.zowe.apiml.registry.client.RegistryClient;
@@ -43,6 +44,9 @@ public class RegistryClientLifecycle implements SmartLifecycle {
 
     /** Null when {@code eureka.client.healthcheck.enabled} is off, or actuator is not on the classpath. */
     private final HealthStatusSource healthStatusSource;
+
+    /** Passed as the heartbeat's value; consumers use it to tell one refresh from the next. */
+    private final java.util.concurrent.atomic.AtomicLong heartbeatCount = new java.util.concurrent.atomic.AtomicLong();
 
     private final AtomicReference<InstanceStatus> advertisedStatus = new AtomicReference<>();
     private volatile ScheduledExecutorService scheduler;
@@ -186,8 +190,25 @@ public class RegistryClientLifecycle implements SmartLifecycle {
         }
     }
 
+    /**
+     * Tells the application that the registry view changed.
+     * <p>
+     * Two events, because two audiences listen. {@link RegistryCacheRefreshedEvent} is this module's own, for
+     * consumers that know they are on the registry client. Spring Cloud's {@link HeartbeatEvent} is what the
+     * components written before the replacement listen for, and they are still here:
+     * {@code GatewayInstanceInitializer} re-resolves the Gateway on it, and {@code RouteRefreshListener}
+     * rebuilds the Gateway's routes. Eureka's client published it on every cache refresh, so leaving it out
+     * silently removed both behaviours.
+     * <p>
+     * The Gateway lookup is the one that bites. It also runs once on {@code ApplicationReadyEvent}, but the
+     * Discovery Service is ready long before the Gateway has registered, so that first attempt finds nothing -
+     * and with no heartbeat to retry on, it never finds anything. The Discovery Service authenticates
+     * {@code /application/**} through a gateway login provider, so its own {@code eurekaversion} endpoint then
+     * answered 401 for the rest of the run and every integration test job failed its startup check.
+     */
     private void publishRefreshed() {
         publisher.publishEvent(new RegistryCacheRefreshedEvent(this, client.cache()));
+        publisher.publishEvent(new HeartbeatEvent(this, heartbeatCount.incrementAndGet()));
     }
 
     /**
