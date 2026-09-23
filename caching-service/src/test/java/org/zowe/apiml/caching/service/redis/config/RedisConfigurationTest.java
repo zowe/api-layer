@@ -71,7 +71,7 @@ class RedisConfigurationTest {
         RedisURI result = underTest.createRedisUri();
 
         assertThat(result.getCredentialsProvider().resolveCredentials().block().getUsername(), is(USERNAME));
-        assertThat(new String(result.getCredentialsProvider().resolveCredentials().block().getPassword()), is(PASSWORD));
+        assertThat(result.getCredentialsProvider().resolveCredentials().block().getPassword(), is(PASSWORD));
         assertThat(result.getHost(), is(MASTER_IP));
         assertThat(result.getPort(), is(MASTER_PORT));
         assertThat(result.getTimeout(), is(Duration.ofSeconds(TIMEOUT)));
@@ -124,7 +124,7 @@ class RedisConfigurationTest {
 
             RedisURI result = underTest.createRedisUri();
             assertThat(result.getCredentialsProvider().resolveCredentials().block().getUsername(), is(USERNAME));
-            assertThat(new String(result.getCredentialsProvider().resolveCredentials().block().getPassword()), is(PASSWORD));
+            assertThat(result.getCredentialsProvider().resolveCredentials().block().getPassword(), is(PASSWORD));
             assertThat(result.getSentinelMasterId(), is(MASTER));
 
             List<RedisURI> sentinelUris = result.getSentinels();
