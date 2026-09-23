@@ -122,26 +122,32 @@ allprojects {
             substitute(module('com.sun.mail:mailapi')).using(module("jakarta.mail:jakarta.mail-api:${libs.versions.mailapi}"))
         }
 
-        // Keep the whole Jersey stack on one line. eureka-client-jersey3:2.0.6 declares jersey-client:3.0.5,
-        // which Gradle otherwise resolves up to 4.0.x because another path asks for 4.0.2. Measured on the
-        // actual jars: jersey 3.1.x is major 55, 4.0.0/4.0.2 are major 61 (both Java 17-loadable), but
-        // jersey-common:4.0.1 is major 65 -- Java 21 only. That one patch version is the whole Java 17
-        // hazard, and an unpinned range can land on it. 3.1.12 is Java 17-loadable, is what Eureka's
-        // jersey3 connector was compiled against, and is what the pre-SB4 v3.x.x runtime used.
+        // Keep the whole Jersey stack on one line. eureka-client-jersey3:2.0.6 declares
+        // jersey-client:3.0.5, swagger-inflector:2.0.17 declares the 2.46 line, and
+        // spring-boot-dependencies:4.1.1 manages Jersey 4.0.2, which Gradle otherwise resolves up to.
+        // Measured on the actual jars: jersey 3.1.x is major 55, 4.0.0/4.0.2 are major 61 (both
+        // Java 17-loadable), but jersey-common:4.0.1 is major 65 -- Java 21 only. That one patch
+        // version is the whole Java 17 hazard, and an unpinned range can land on it. 3.1.12 is
+        // Java 17-loadable, is what Eureka's jersey3 connector was compiled against, and is what the
+        // pre-SB4 v3.x.x runtime used.
+        //
+        // The rule covers every module of the group, not just the core ones. Pinning only the core
+        // artifacts left org.glassfish.jersey.media:jersey-media-multipart (pulled in by
+        // swagger-inflector) on 4.0.2, and its FormDataParamInjectionFeature needs
+        // org.glassfish.jersey.innate.inject.InternalBinder, which only exists on the 4.x line. The
+        // shared lite-lib folder puts that jar on discovery-service's classpath, whose Jersey filter
+        // then died with NoClassDefFoundError and never opened its port.
         // Revisit together with the Java 17 -> 21 baseline decision; do not bump this in isolation.
-        resolutionStrategy.force(
-            "org.glassfish.jersey.core:jersey-common:${libs.versions.jersey3.get()}",
-            "org.glassfish.jersey.core:jersey-client:${libs.versions.jersey3.get()}",
-            "org.glassfish.jersey.core:jersey-server:${libs.versions.jersey3.get()}",
-            "org.glassfish.jersey.inject:jersey-hk2:${libs.versions.jersey3.get()}",
-            "org.glassfish.jersey.containers:jersey-container-servlet:${libs.versions.jersey3.get()}",
-            "org.glassfish.jersey.containers:jersey-container-servlet-core:${libs.versions.jersey3.get()}",
-            "org.glassfish.jersey.connectors:jersey-apache-connector:${libs.versions.jersey3.get()}",
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group.startsWith('org.glassfish.jersey.')) {
+                details.useVersion libs.versions.jersey3.get()
+                details.because 'API ML runs on Java 17; the whole Jersey stack has to stay on the 3.1.x line'
+            }
 
             // Groovy is intentionally NOT pinned: REST Assured 6.x requires Groovy 5, which is what the
             // Spring Boot 4.1 BOM manages. (The earlier pin back to Groovy 4 existed only because REST
             // Assured 5.5.7 was compiled against Groovy 4 — that incompatibility is gone now.)
-        )
+        }
     }
 
 }
