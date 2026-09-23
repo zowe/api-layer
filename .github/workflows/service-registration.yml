@@ -10,8 +10,35 @@ on:
         paths-ignore:
             - '**.md'
     workflow_dispatch:
+        inputs:
+            collect_resources:
+                description: "Collect runner/container resource metrics for this run (see docs/testing-resource-budgets.md)"
+                type: boolean
+                default: false
+
+concurrency:
+    # Supersede in-flight runs for the same pull request. Push and release runs are
+    # never cancelled: they are intentional branch builds. The group is keyed on the
+    # pull request number, never on a fork-controlled branch name, so a fork cannot
+    # collide with (or cancel) a branch build.
+    group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
+    # Resource collection is opt-in per run and never affects the job result.
+    CI_RESOURCE_COLLECTION: ${{ inputs.collect_resources }}
+    # Every Gradle invocation in this workflow gets real build-cache credentials through
+    # Gradle's ORG_GRADLE_PROJECT_ convention, so no command line has to repeat them.
+    # Without credentials settings.gradle falls back to the placeholder values in
+    # gradle.properties, the remote cache answers 403 and Gradle disables it for the whole
+    # build ("The remote build cache was disabled during the build due to errors"), which
+    # turns every cacheable task into a miss. Secrets are empty for fork pull requests, so
+    # the remote cache disables itself cleanly there instead of failing.
+    ORG_GRADLE_PROJECT_artifactory_user: ${{ secrets.ARTIFACTORY_USERNAME }}
+    ORG_GRADLE_PROJECT_artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+    # Read-only by default. Only the trusted producer jobs override this, and only on a
+    # push event, so unmerged pull request code never writes to the shared cache.
+    GRADLE_REMOTE_CACHE_PUSH: "false"
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
@@ -23,6 +50,8 @@ jobs:
             matrix:
                 javaVersion: ['17', '21', '25']
 
+        env:
+            GRADLE_REMOTE_CACHE_PUSH: ${{ github.event_name == 'push' }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -31,6 +60,7 @@ jobs:
             -   uses: ./.github/actions/setup
                 with:
                     jdkVersion: ${{ matrix.javaVersion }}
+                    setupNode: 'true'
 
             -   name: Install BATS to test the shell scripts
                 run: |
@@ -53,18 +83,22 @@ jobs:
                         */build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     Register:
         runs-on: ubuntu-latest
         timeout-minutes: 20
         env:
             EUREKA_INSTANCE_IPADDRESS: 127.0.0.1
+            GRADLE_REMOTE_CACHE_PUSH: ${{ github.event_name == 'push' }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'true'
 
             -   name: Build with Gradle
                 run: >
@@ -99,3 +133,4 @@ jobs:
                         otel/**
 
             -   uses: ./.github/actions/teardown
+                if: always()

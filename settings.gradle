@@ -26,19 +26,44 @@ pluginManagement {
 
 rootProject.name = 'api-layer'
 
+// Remote build cache ---------------------------------------------------------
+// gradle.properties ships placeholder credentials so that a build without real
+// credentials still configures. Sending those placeholders produces an HTTP 403,
+// after which Gradle disables the remote cache for the whole build ("The remote
+// build cache was disabled during the build due to errors") and every cacheable
+// task silently becomes a miss. So the remote cache is registered only when
+// usable credentials are present; a missing credential degrades to an explicitly
+// reported local-only build instead of a 403 storm.
+//
+// Push is an explicit strict boolean and is granted only to trusted producers
+// (see GRADLE_REMOTE_CACHE_PUSH in the workflows); everything else is read-only.
 ext.isPush = getProperty('gradle.cache.push')
 ext.artifactory_user = getProperty('artifactory_user')
 ext.artifactory_password = getProperty('artifactory_password')
 
+def cacheCredentialPlaceholders = ['', 'user', 'password'] as Set
+def hasRemoteCacheCredentials = !cacheCredentialPlaceholders.contains(artifactory_user?.toString()?.trim()) &&
+    !cacheCredentialPlaceholders.contains(artifactory_password?.toString()?.trim())
+def pushToRemoteCache = hasRemoteCacheCredentials &&
+    (System.getenv('GRADLE_REMOTE_CACHE_PUSH') == 'true' || isPush?.toString()?.trim()?.toBoolean())
+
 buildCache {
-    remote(HttpBuildCache) {
-        url = 'https://zowe.jfrog.io/zowe/cache/'
-        credentials {
-            username = "${artifactory_user}"
-            password = "${artifactory_password}"
+    if (hasRemoteCacheCredentials) {
+        remote(HttpBuildCache) {
+            url = 'https://zowe.jfrog.io/zowe/cache/'
+            credentials {
+                username = "${artifactory_user}"
+                password = "${artifactory_password}"
+            }
+            push = pushToRemoteCache
         }
-        push = isPush
     }
+}
+
+if (gradle.startParameter.buildCacheEnabled) {
+    println hasRemoteCacheCredentials
+        ? "Remote build cache: enabled (push=${pushToRemoteCache})"
+        : "Remote build cache: disabled - no usable credentials provided, using the local cache only"
 }
 
 apply from: './gradle/versions.gradle'

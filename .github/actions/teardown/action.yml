@@ -1,14 +1,53 @@
 name: "Tear down action"
 description: "General clean up after jobs are finished"
 
+inputs:
+    cleanBuildCache:
+        description: >-
+            Delete the Gradle local task-output cache (~/.gradle/caches/build-cache-1)
+            entirely. Off by default: the entries are content addressed and immutable,
+            keyed on task inputs and outputs, so they are safe to persist and re-use
+            between runs. Set to 'true' only when a deliberately cold task-output cache
+            is wanted.
+        required: false
+        default: "false"
+
 runs:
     using: "composite"
     steps:
+        # Resource measurement is opt-in per run and must be reported even when the
+        # job failed, which is why the call sites invoke this action with
+        # `if: always()`. See docs/testing-resource-budgets.md.
+        -   name: Stop resource collection
+            if: always() && env.CI_RESOURCE_COLLECTION == 'true'
+            run: |
+                if [ ! -x scripts/ci/collect-resources.sh ]; then
+                    echo "::warning::scripts/ci/collect-resources.sh not found - resource collection skipped"
+                    exit 0
+                fi
+                scripts/ci/collect-resources.sh stop --label "${GITHUB_JOB:-job}" || \
+                    echo "::warning::resource collection failed to summarize - this does not affect the job result"
+            shell: bash
+
         -   name: Cleanup Gradle Cache
-            # Remove some files from the Gradle cache, so they aren't cached by GitHub Actions.
-            # Restoring these files from a GitHub Actions cache might cause problems for future builds.
+            # Remove the files that must not be restored from a GitHub Actions cache,
+            # so they aren't cached by GitHub Actions. Restoring the lock and gc files
+            # might cause problems for future builds.
+            #
+            # The content addressed task outputs in build-cache-1 are deliberately NOT
+            # removed: deleting them here made the task-output cache useless (it was
+            # saved empty on every run), which is why eligible compile tasks never came
+            # back FROM-CACHE. Only the lock and gc bookkeeping files are removed.
             shell: bash
             run: |
                 rm -f ~/.gradle/caches/modules-2/modules-2.lock
                 rm -f ~/.gradle/caches/modules-2/gc.properties
+                rm -f ~/.gradle/caches/build-cache-1/build-cache-1.lock
+                rm -f ~/.gradle/caches/build-cache-1/gc.properties
+
+        -   name: Remove Gradle task-output cache
+            if: inputs.cleanBuildCache == 'true'
+            shell: bash
+            run: |
+                echo "Removing the Gradle local task-output cache (cleanBuildCache=true)"
                 rm -rf ~/.gradle/caches/build-cache-1
