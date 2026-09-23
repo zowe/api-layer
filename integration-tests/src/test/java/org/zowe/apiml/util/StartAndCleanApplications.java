@@ -21,6 +21,10 @@ public class StartAndCleanApplications implements TestExecutionListener {
     private FullApiMediationLayer fullApiMediationLayer;
 
     public StartAndCleanApplications() {
+        RestAssured.config = RestAssured.config().logConfig(
+            LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails()
+        );
+
         if (FullApiMediationLayer.startServices()) {
             fullApiMediationLayer = FullApiMediationLayer.getInstance();
         }
