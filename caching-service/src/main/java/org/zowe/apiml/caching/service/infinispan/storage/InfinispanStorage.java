@@ -355,7 +355,7 @@ public class InfinispanStorage implements Storage {
             if (container == null || container.getExpiresAt() == null) {
                 return false;
             }
-            return container.getExpiresAt().isBefore(LocalDateTime.now());
+            return container.getExpiresAt().atZone(ZoneId.systemDefault()).isBefore(ZonedDateTime.now(ZoneId.systemDefault()));
         } catch (JsonProcessingException e) {
             log.debug("Cannot parse an invalidated token record, keeping it", e);
             return false;

@@ -32,6 +32,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.cache.PatRevocationStore;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.audit.RauditxService;
@@ -63,7 +64,7 @@ public class ReactivePATController {
     private final ObjectMapper mapper;
 
     @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS}}")
-    private long ruleTimestampSkewAllowanceMillis;
+    private long ruleTimestampSkewAllowanceMillis = PatRevocationStore.DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
 
     @Data
     @NoArgsConstructor
