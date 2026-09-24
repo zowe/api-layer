@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.gateway.acceptance;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,7 +17,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
@@ -27,14 +24,16 @@ import org.zowe.apiml.gateway.MockService;
 import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import org.zowe.apiml.gateway.acceptance.common.MicroservicesAcceptanceTest;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.registry.client.RegistryServiceInstance;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import static org.apache.http.HttpStatus.SC_NO_CONTENT;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
@@ -176,7 +175,7 @@ class RetryPerServiceTest {
                         assertNotNull(he);
                         queryCounter.incrementAndGet();
                     })
-                    .contentType(APPLICATION_JSON)
+                    .contentType(APPLICATION_JSON_VALUE)
                     .body("{\"status\":\"valid\"}")
                     .and()
                 .addEndpoint("/zaas/api/v1/auth/access-token/revoke")
@@ -255,13 +254,8 @@ class RetryPerServiceTest {
         }
 
         private ServiceInstance buildZaasInfo(int port) {
-            var info = InstanceInfo.Builder.newBuilder();
-            info.setAppName("ZAAS");
-            info.setPort(port);
-            info.setHostName(zaasService.getHostname());
-            info.setStatus(InstanceStatus.UP);
-            info.setInstanceId("localhost:zaas:" + port);
-            return new EurekaServiceInstance(info.build());
+            return new RegistryServiceInstance(
+                "localhost:zaas:" + port, "zaas", zaasService.getHostname(), port, false, Map.of());
         }
 
     }

@@ -1,0 +1,37 @@
+# From gateway-service/src/main/resources/application.yml. The Gateway is the one service that registers under
+# a different address than it binds to, so its configuration is what exercises the advertised-URL path.
+eureka:
+    instance:
+        instanceId: localhost:gateway:10010
+        hostname: localhost
+        homePageUrl: https://localhost:10010/
+        healthCheckUrl: https://localhost:10010/application/health
+        healthCheckUrlPath: /application/health
+        securePort: 10010
+        nonSecurePort: 10010
+        nonSecurePortEnabled: false
+        securePortEnabled: true
+        statusPageUrl: https://localhost:10010/application/info
+        statusPageUrlPath: /application/info
+        metadata-map:
+            apiml:
+                registrationType: primary
+                apiBasePath: /gateway/api/v1
+                catalog:
+                    tile:
+                        id: apimediationlayer
+                        title: API Mediation Layer API
+                        version: 1.0.0
+                routes:
+                    api_v1:
+                        gatewayUrl: /
+                        serviceUrl: /
+                apiInfo:
+                    - apiId: zowe.apiml.gateway
+                      version: 1.0.0
+                      gatewayUrl: api/v1
+                      swaggerUrl: https://localhost:10010/gateway/api-docs
+                service:
+                    title: API Gateway
+                    apimlId: apiml1
+                    externalUrl: https://localhost:10010

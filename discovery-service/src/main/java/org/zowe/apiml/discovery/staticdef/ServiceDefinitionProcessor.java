@@ -13,11 +13,8 @@ package org.zowe.apiml.discovery.staticdef;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.netflix.appinfo.DataCenterInfo;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.LeaseInfo;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.auth.Authentication;
 import org.zowe.apiml.auth.AuthenticationScheme;
@@ -29,6 +26,10 @@ import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.discovery.*;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.registry.model.DataCenterInfo;
+import org.zowe.apiml.registry.model.Lease;
+import org.zowe.apiml.registry.model.PortInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.zowe.apiml.util.MapUtils;
 import org.zowe.apiml.util.UrlUtils;
 
@@ -55,7 +56,11 @@ public class ServiceDefinitionProcessor {
     private ApimlLogger apimlLog = ApimlLogger.empty();
 
     private static final String STATIC_INSTANCE_ID_PREFIX = "STATIC-";
-    private static final DataCenterInfo DEFAULT_INFO = () -> DataCenterInfo.Name.MyOwn;
+
+    /** Eureka's LeaseInfo defaults, kept so the wire representation of a static instance is unchanged. */
+    private static final int DEFAULT_LEASE_RENEWAL_INTERVAL_SECS = 30;
+    private static final int DEFAULT_LEASE_DURATION_SECS = 90;
+    private static final DataCenterInfo DEFAULT_INFO = DataCenterInfo.MY_OWN;
     private static final String DEFAULT_TILE_VERSION = "1.0.0";
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
 
@@ -212,7 +217,7 @@ public class ServiceDefinitionProcessor {
         return null;
     }
 
-    private List<InstanceInfo> createInstances(StaticRegistrationResult context, String ymlFileName, Service service, Map<String, CatalogUiTile> tiles) {
+    private List<ServiceInstance> createInstances(StaticRegistrationResult context, String ymlFileName, Service service, Map<String, CatalogUiTile> tiles) {
         try {
             if (service.getServiceId() == null || !SERVICE_ID_PATTERN.matcher(service.getServiceId()).matches()) {
                 throw new ServiceDefinitionException(String.format("ServiceId is either not defined in the file '%s' or not conformant. The instance will not be created.", ymlFileName));
@@ -223,9 +228,9 @@ public class ServiceDefinitionProcessor {
             }
 
             final CatalogUiTile tile = getTile(context, ymlFileName, tiles, service);
-            final List<InstanceInfo> output = new ArrayList<>(service.getInstanceBaseUrls().size());
+            final List<ServiceInstance> output = new ArrayList<>(service.getInstanceBaseUrls().size());
             for (final String instanceBaseUrl : service.getInstanceBaseUrls()) {
-                final InstanceInfo instanceInfo = buildInstanceInfo(context, service, tile, instanceBaseUrl);
+                final ServiceInstance instanceInfo = buildInstanceInfo(context, service, tile, instanceBaseUrl);
                 if (instanceInfo != null) output.add(instanceInfo);
             }
 
@@ -238,7 +243,7 @@ public class ServiceDefinitionProcessor {
         return Collections.emptyList();
     }
 
-    private InstanceInfo buildInstanceInfo(StaticRegistrationResult context,
+    private ServiceInstance buildInstanceInfo(StaticRegistrationResult context,
                                            Service service,
                                            CatalogUiTile tile, String instanceBaseUrl) throws ServiceDefinitionException {
         if (instanceBaseUrl == null || instanceBaseUrl.isEmpty()) {
@@ -255,10 +260,10 @@ public class ServiceDefinitionProcessor {
                 throw new ServiceDefinitionException(String.format("The URL %s does not contain a port number. The instance of %s will not be created",
                     instanceBaseUrl, serviceId));
             } else {
-                InstanceInfo.Builder builder = InstanceInfo.Builder.newBuilder();
+                ServiceInstance.Builder builder = ServiceInstance.builder();
 
                 String instanceId = String.format("%s%s:%s:%s", STATIC_INSTANCE_ID_PREFIX, url.getHost(), serviceId, url.getPort());
-                String ipAddress = InetAddress.getByName(url.getHost()).getHostAddress();
+                String ipAddress = resolveAddress(url.getHost(), instanceId);
 
                 setInstanceAttributes(builder, service, instanceId, instanceBaseUrl, url, ipAddress, tile);
 
@@ -266,15 +271,12 @@ public class ServiceDefinitionProcessor {
                 log.debug("Adding static instance {} for service ID {} mapped to URL {}", instanceId, serviceId,
                     url);
 
-                final InstanceInfo instance = builder.build();
+                final ServiceInstance instance = builder.build();
                 context.getInstances().add(instance);
                 return instance;
             }
         } catch (MalformedURLException e) {
             throw new ServiceDefinitionException(String.format("The URL %s is malformed. The instance of %s will not be created: %s",
-                instanceBaseUrl, serviceId, e.getMessage()));
-        } catch (UnknownHostException e) {
-            throw new ServiceDefinitionException(String.format("The hostname of URL %s is unknown. The instance of %s will not be created: %s",
                 instanceBaseUrl, serviceId, e.getMessage()));
         } catch (MetadataValidationException mve) {
             throw new ServiceDefinitionException(String.format("Metadata creation failed. The instance of %s will not be created: %s",
@@ -282,7 +284,35 @@ public class ServiceDefinitionProcessor {
         }
     }
 
-    private void setInstanceAttributes(InstanceInfo.Builder builder,
+    /**
+     * The address to advertise for a static instance, falling back to the hostname when it cannot be resolved.
+     * <p>
+     * Resolving is deliberately not allowed to fail the definition. This parse runs once, when the Discovery
+     * Service becomes ready, and nothing retries it - so a hostname that is momentarily unresolvable (a peer
+     * container still starting, embedded DNS briefly unavailable) would drop every static instance in the file
+     * for the lifetime of the process. The integration tests hit exactly that: the GatewayCentralRegistry job's
+     * primary discovery reported <em>Temporary failure in name resolution</em> for both {@code discoverable-client}
+     * and {@code mock-services}, and every one of the thirteen static instances was lost with it -
+     * {@code instances=[], registeredServices=[]} - so the startup check polled for eight minutes for
+     * {@code STATIC-mock-services:mockzosmf:10013} and never saw it, in a job that otherwise had all of its
+     * dynamic registrations. A sibling node in the same job, whose lookup happened to succeed, produced its
+     * instances normally, which is why this presented as flakiness rather than as a bug.
+     * <p>
+     * Keeping the instance is the right trade: the registry routes by hostname and port, the address is advisory
+     * (the domain allow list interceptor rewrites it outright), and the instance ID does not contain it. Losing a
+     * declared API to keep a strict address would be the worse failure. The fallback is logged rather than silent.
+     */
+    private String resolveAddress(String host, String instanceId) {
+        try {
+            return InetAddress.getByName(host).getHostAddress();
+        } catch (UnknownHostException e) {
+            log.warn("Cannot resolve the address of host {} ({}). The static instance {} will be registered with its "
+                + "hostname in place of an address.", host, e.getMessage(), instanceId);
+            return host;
+        }
+    }
+
+    private void setInstanceAttributes(ServiceInstance.Builder builder,
                                        Service service,
                                        String instanceId, String instanceBaseUrl,
                                        URL url,
@@ -290,41 +320,48 @@ public class ServiceDefinitionProcessor {
                                        CatalogUiTile tile) throws ServiceDefinitionException {
         String serviceId = service.getServiceId();
 
-        builder.setAppName(serviceId).setInstanceId(instanceId).setHostName(url.getHost()).setIPAddr(ipAddress)
-            .setDataCenterInfo(DEFAULT_INFO).setVIPAddress(serviceId).setSecureVIPAddress(serviceId)
-            .setLeaseInfo(LeaseInfo.Builder.newBuilder()
-                .setRenewalIntervalInSecs(LeaseInfo.DEFAULT_LEASE_RENEWAL_INTERVAL)
-                .setDurationInSecs(LeaseInfo.DEFAULT_LEASE_DURATION).build())
-            .setMetadata(createMetadata(service, url, tile));
+        builder.appName(serviceId).instanceId(instanceId).hostName(url.getHost()).ipAddr(ipAddress)
+            .dataCenterInfo(DEFAULT_INFO).vipAddress(serviceId).secureVipAddress(serviceId)
+            // The lease values are carried for the wire representation only. The registry gives a static
+            // registration a PERMANENT lease regardless, so these are never used to decide expiry.
+            .lease(Lease.builder()
+                .kind(Lease.Kind.PERMANENT)
+                .renewalIntervalSecs(DEFAULT_LEASE_RENEWAL_INTERVAL_SECS)
+                .durationSecs(DEFAULT_LEASE_DURATION_SECS)
+                .build())
+            .metadata(createMetadata(service, url, tile));
 
         if (service.getHomePageRelativeUrl() == null) {
-            builder.setHomePageUrl(null, instanceBaseUrl);
+            builder.homePageUrl(instanceBaseUrl);
         } else {
-            builder.setHomePageUrl(null, instanceBaseUrl + service.getHomePageRelativeUrl());
+            builder.homePageUrl(instanceBaseUrl + service.getHomePageRelativeUrl());
         }
 
         if (service.getStatusPageRelativeUrl() != null) {
-            builder.setStatusPageUrl(null, instanceBaseUrl + service.getStatusPageRelativeUrl());
+            builder.statusPageUrl(instanceBaseUrl + service.getStatusPageRelativeUrl());
         }
     }
 
-    private void setPort(InstanceInfo.Builder builder,
+    private void setPort(ServiceInstance.Builder builder,
                          Service service,
                          String instanceBaseUrl,
                          URL url) throws MalformedURLException {
         switch (url.getProtocol()) {
             case "http":
-                builder.enablePort(InstanceInfo.PortType.SECURE, false).enablePort(InstanceInfo.PortType.UNSECURE, true)
-                    .setPort(url.getPort()).setSecurePort(0);
+                // securePort 0, not the 7002 default - matches what the Eureka-based processor emitted, and a
+                // client reading securePort must see that there is no secure port rather than a plausible one.
+                builder.port(new PortInfo(url.getPort(), true))
+                    .securePort(new PortInfo(0, false));
                 if (service.getHealthCheckRelativeUrl() != null) {
-                    builder.setHealthCheckUrls(null, instanceBaseUrl + service.getHealthCheckRelativeUrl(), null);
+                    builder.healthCheckUrl(instanceBaseUrl + service.getHealthCheckRelativeUrl());
                 }
                 break;
             case "https":
-                builder.enablePort(InstanceInfo.PortType.SECURE, true).enablePort(InstanceInfo.PortType.UNSECURE, false)
-                    .setSecurePort(url.getPort()).setPort(url.getPort());
+                // Both carry the URL port; only the secure one is enabled.
+                builder.port(new PortInfo(url.getPort(), false))
+                    .securePort(new PortInfo(url.getPort(), true));
                 if (service.getHealthCheckRelativeUrl() != null) {
-                    builder.setHealthCheckUrls(null, null, instanceBaseUrl + service.getHealthCheckRelativeUrl());
+                    builder.secureHealthCheckUrl(instanceBaseUrl + service.getHealthCheckRelativeUrl());
                 }
                 break;
             default:

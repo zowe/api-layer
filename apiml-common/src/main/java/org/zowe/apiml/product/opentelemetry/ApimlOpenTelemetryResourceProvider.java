@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.Nonnull;
+import jakarta.annotation.Nonnull;
 
 @Slf4j
 public abstract class ApimlOpenTelemetryResourceProvider implements ResourceProvider {

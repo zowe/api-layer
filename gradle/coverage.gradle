@@ -24,7 +24,13 @@ ext.javaProjectsWithUnitTests = [
     'zosmf-jwt-check',
     'apiml-tomcat-common',
     'apiml-extension-loader',
-    'zaas-service'
+    'zaas-service',
+    // The registry that replaced Eureka. Listed here for the same reason as every other module: without it
+    // these modules are compiled, tested and shipped but left out of the aggregate coverage report, so the
+    // project's headline number silently excludes the largest new body of code in the cut-over.
+    'apiml-registry',
+    'apiml-registry-client',
+    'apiml-registry-client-spring'
 ]
 
 ext.jacocoProjects = subprojects.findAll { it.name in javaProjectsWithUnitTests }
@@ -90,3 +96,9 @@ task jacocoFullReport(type: JacocoReport) {
 task coverage() {
     dependsOn jacocoFullReport, ":api-catalog-ui:test", "zowe-cli-id-federation-plugin:test"
 }
+
+// The aggregate report reads every module's XML, so those have to be produced before it is written - but
+// jacocoProjects.jacocoTestReport only orders the modules that were listed when the task graph was built.
+// Chaining the other way as well makes a single `jacocoFullReport` invocation reliable, instead of leaving a
+// stale aggregate behind whenever a module's report happens to be scheduled after it.
+jacocoFullReport.mustRunAfter(jacocoProjects.jacocoTestReport)

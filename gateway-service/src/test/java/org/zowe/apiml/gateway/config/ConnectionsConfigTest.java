@@ -10,28 +10,17 @@
 
 package org.zowe.apiml.gateway.config;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.appinfo.EurekaInstanceConfig;
-import com.netflix.appinfo.HealthCheckHandler;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClientConfig;
 import io.netty.handler.ssl.util.KeyManagerFactoryWrapper;
-import org.apache.hc.client5.http.io.HttpClientConnectionManager;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.invocation.InvocationOnMock;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -49,7 +38,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509KeyManager;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.Socket;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -58,19 +46,14 @@ import java.security.PrivateKey;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
@@ -80,7 +63,6 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -98,35 +80,6 @@ class ConnectionsConfigTest {
         @Test
         void thenIsNotNull() {
             assertThat(connectionsConfig).isNotNull();
-        }
-
-    }
-
-    @Nested
-    @SpringBootTest
-    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
-    @ActiveProfiles("test")
-    class WhenInitializeEurekaClient {
-
-        @Autowired
-        private ConnectionsConfig connectionsConfig;
-
-        @Autowired
-        @Qualifier("discoveryRestTemplatePooledConnectionManager")
-        private HttpClientConnectionManager httpClientConnectionManager;
-
-        @Mock
-        private ApplicationInfoManager applicationInfoManager;
-
-        @Mock
-        private EurekaClientConfig config;
-
-        @Mock
-        private HealthCheckHandler healthCheckHandler;
-
-        @Test
-        void thenCreateIt() {
-            assertThat(connectionsConfig.primaryEurekaClient(applicationInfoManager, config, healthCheckHandler, httpClientConnectionManager)).isNotNull();
         }
 
     }
@@ -302,120 +255,6 @@ class ConnectionsConfigTest {
 
     }
 
-    @Nested
-    class AdditionalRegistration {
-
-        private EurekaInstanceConfig createConfig() {
-            var config = mock(EurekaInstanceConfig.class);
-            doReturn(30).when(config).getLeaseRenewalIntervalInSeconds();
-            doReturn(90).when(config).getLeaseExpirationDurationInSeconds();
-            doReturn("namespace").when(config).getNamespace();
-            doReturn("serviceId").when(config).getAppname();
-            doReturn("instanceId").when(config).getInstanceId();
-            doReturn("/").when(config).getHomePageUrlPath();
-            doReturn("/application/health").when(config).getHealthCheckUrlPath();
-            doReturn("/application/status").when(config).getStatusPageUrlPath();
-            doReturn("https://localhost:10010/").when(config).getHomePageUrl();
-            doReturn(10010).when(config).getSecurePort();
-            doReturn(true).when(config).getSecurePortEnabled();
-
-            return config;
-        }
-
-        @Test
-        void givenInvalidUrl_whenCreate_thenThrowAnException() {
-            var connectionsConfig = new ConnectionsConfig(null, null, Collections.emptyList());
-            ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "invalidUrl");
-            var e = assertThrows(RuntimeException.class, () -> connectionsConfig.create(createConfig()));
-            assertInstanceOf(MalformedURLException.class, e.getCause());
-        }
-
-        @Test
-        void givenValidInputs_whenCreate_thenCreateIt() {
-            var config = createConfig();
-            var connectionsConfig = new ConnectionsConfig(null, null, Collections.emptyList());
-            ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
-
-            InstanceInfo instanceInfo = connectionsConfig.create(config);
-
-            assertNotNull(instanceInfo);
-            assertEquals("https://domain:1234/", instanceInfo.getHomePageUrl());
-            assertEquals("https://domain:1234/application/health", instanceInfo.getSecureHealthCheckUrl());
-            assertEquals("https://domain:1234/application/status", instanceInfo.getStatusPageUrl());
-        }
-
-        @Test
-        void givenMetadataWithUrl_whenCreate_thenUpdateThem() {
-            Map<String, String> metadata = new HashMap<>();
-            metadata.put("swaggerUrl", "https://localhost:10010/swagger");
-            metadata.put("otherKey", "otherValue");
-
-            var config = createConfig();
-            doReturn(metadata).when(config).getMetadataMap();
-
-            var connectionsConfig = new ConnectionsConfig(null, null, Collections.emptyList());
-            ReflectionTestUtils.setField(connectionsConfig, "externalUrl", "https://domain:1234/");
-
-            InstanceInfo instanceInfo = connectionsConfig.create(config);
-
-            assertNotNull(instanceInfo);
-            assertEquals("https://domain:1234/swagger", instanceInfo.getMetadata().get("swaggerUrl"));
-            assertEquals("otherValue", instanceInfo.getMetadata().get("otherKey"));
-        }
-
-    }
-
-    @Nested
-    class ConfigDelegator {
-
-        private final EurekaInstanceConfig eurekaInstanceConfig = mock(EurekaInstanceConfig.class);
-        private final InstanceInfo instanceInfo = mock(InstanceInfo.class);
-        private final ConnectionsConfig.AdditionalEurekaConfiguration delegator = new ConnectionsConfig.AdditionalEurekaConfiguration(eurekaInstanceConfig, instanceInfo);
-
-        @ParameterizedTest
-        @ValueSource(booleans = {true, false})
-        void givenDelegator_whenGetHostName_thenCallConfigButReturnInstanceInfo(boolean refresh) {
-            doReturn("hostname").when(instanceInfo).getHostName();
-            assertEquals("hostname", delegator.getHostName(refresh));
-            verify(eurekaInstanceConfig, times(1)).getHostName(refresh);
-            verify(instanceInfo, times(1)).getHostName();
-        }
-
-        @Test
-        void givenUnsecuredConfiguration_whenGetHealthCheckUrl_thenCallGetHealthCheckUrl() {
-            doReturn(true).when(instanceInfo).isPortEnabled(InstanceInfo.PortType.UNSECURE);
-            doReturn("unsecuredUrl").when(instanceInfo).getHealthCheckUrl();
-            assertEquals("unsecuredUrl", delegator.getHealthCheckUrl());
-        }
-
-        @Test
-        void givenSecuredConfiguration_whenGetHealthCheckUrl_thenCallGetSecureHealthCheckUrl() {
-            doReturn(false).when(instanceInfo).isPortEnabled(InstanceInfo.PortType.UNSECURE);
-            doReturn("securedUrl").when(instanceInfo).getSecureHealthCheckUrl();
-            assertEquals("securedUrl", delegator.getHealthCheckUrl());
-        }
-
-        @Test
-        void givenDelegator_whenGetSecureHealthCheckUrl_thenCallInstanceInfo() {
-            doReturn("securedUrl").when(instanceInfo).getSecureHealthCheckUrl();
-            assertEquals("securedUrl", delegator.getSecureHealthCheckUrl());
-        }
-
-        @Test
-        void givenDelegator_whenGetHomePageUrl_thenCallInstanceInfo() {
-            doReturn("homepageUrl").when(instanceInfo).getHomePageUrl();
-            assertEquals("homepageUrl", delegator.getHomePageUrl());
-        }
-
-        @Test
-        void givenDelegator_whenGetStatusPageUrl_thenCallInstanceInfo() {
-            doReturn("statuspageUrl").when(instanceInfo).getStatusPageUrl();
-            assertEquals("statuspageUrl", delegator.getStatusPageUrl());
-        }
-
-    }
-
-    @Configuration
     static class SslDetectorConfig {
 
         static final AtomicReference<SslInfo> sslInfoHolder = new AtomicReference<>();
@@ -482,37 +321,6 @@ class ConnectionsConfigTest {
 
         }
 
-    }
-
-    @Nested
-    class AdditionalRegistrationBasicAuthFallback {
-
-        private String withBasicAuthFallback(boolean verify, String url) {
-            HttpConfig httpConfig = mock(HttpConfig.class);
-            doReturn(verify).when(httpConfig).isVerifySslCertificatesOfServices();
-            var connectionsConfig = new ConnectionsConfig(null, httpConfig, Collections.emptyList());
-            ReflectionTestUtils.setField(connectionsConfig, "discoveryUserid", "eureka");
-            ReflectionTestUtils.setField(connectionsConfig, "discoveryPassword", "password".toCharArray());
-            return ReflectionTestUtils.invokeMethod(connectionsConfig, "withBasicAuthFallback", url);
-        }
-
-        @Test
-        void givenVerificationDisabled_thenCredentialsAreEmbedded() {
-            assertEquals("https://eureka:password@localhost:10011/eureka/",
-                withBasicAuthFallback(false, "https://localhost:10011/eureka/"));
-        }
-
-        @Test
-        void givenVerificationDisabledAndMultipleUrls_thenAllAreRewritten() {
-            assertEquals("https://eureka:password@host1:10011/eureka/,https://eureka:password@host2:10011/eureka/",
-                withBasicAuthFallback(false, "https://host1:10011/eureka/,https://host2:10011/eureka/"));
-        }
-
-        @Test
-        void givenVerificationEnabled_thenUrlIsUnchanged() {
-            assertEquals("https://localhost:10011/eureka/",
-                withBasicAuthFallback(true, "https://localhost:10011/eureka/"));
-        }
     }
 
 }

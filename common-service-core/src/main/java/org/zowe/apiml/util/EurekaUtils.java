@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.util;
 
-import com.netflix.appinfo.InstanceInfo;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
@@ -71,19 +70,6 @@ public class EurekaUtils {
                 serviceId
             );
             throw new InvalidServiceIdException(message);
-        }
-    }
-
-    /**
-     * Construct base URL for specific InstanceInfo
-     * @param instanceInfo Instance of service, for which we want to get an URL
-     * @return URL to the instance
-     */
-    public String getUrl(InstanceInfo instanceInfo) {
-        if (instanceInfo.getSecurePort() == 0 || !instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)) {
-            return "http://" + instanceInfo.getHostName() + ":" + instanceInfo.getPort();
-        } else {
-            return "https://" + instanceInfo.getHostName() + ":" + instanceInfo.getSecurePort();
         }
     }
 

@@ -13,17 +13,22 @@ package org.zowe.apiml.discovery.health;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.zowe.apiml.discovery.DiscoveryServiceApplication;
+import org.zowe.apiml.discovery.registry.RegistryConfiguration;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
-@TestPropertySource(properties = {
-    "apiml.health.protected=false"
-})
-class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
-
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = {
+        "apiml.health.protected=false"
+    },
+    classes = {DiscoveryServiceApplication.class, RegistryConfiguration.class}
+)
+public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
     @Nested
     class GivenProtectedHealthEndpointWithHttp {
 

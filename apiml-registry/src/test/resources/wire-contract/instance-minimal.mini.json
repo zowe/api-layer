@@ -1,0 +1,1 @@
+{"instance":{"instanceId":"localhost:minimal:10099","app":"MINIMAL","ipAddr":"127.0.0.1","vipAddress":"minimal","dataCenterInfo":{"@class":"com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo","name":"MyOwn"},"hostName":"localhost","status":"OUT_OF_SERVICE","lastUpdatedTimestamp":1700000002000,"port":{"$":10099,"@enabled":"true"},"securePort":{"$":7002,"@enabled":"false"}}}

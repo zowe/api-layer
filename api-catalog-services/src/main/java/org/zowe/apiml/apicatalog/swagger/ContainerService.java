@@ -17,8 +17,9 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
+import org.zowe.apiml.registry.model.DiscoveryMetadata;
+import org.zowe.apiml.registry.model.InstanceStatus;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.apicatalog.config.ApiLayerServices;
 import org.zowe.apiml.apicatalog.model.APIContainer;
@@ -39,7 +40,6 @@ import org.zowe.apiml.util.EurekaUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.netflix.appinfo.InstanceInfo.InstanceStatus.UP;
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 import static org.zowe.apiml.product.constants.CoreService.GATEWAY;
 
@@ -98,20 +98,44 @@ public class ContainerService {
             .supportsSso();
     }
 
+    /**
+     * The service's advertised home page.
+     * <p>
+     * Read from the reserved metadata key the registry adapters populate, because Spring Cloud's
+     * {@code ServiceInstance} has nowhere to carry it and {@code getUri()} loses the path - a catalog tile
+     * linking to {@code https://host:port} instead of {@code https://host:port/myservice/} is a broken link.
+     * Falls back to the URI for any discovery client that does not supply it.
+     */
     private String getHomePageUrl(ServiceInstance serviceInstance) {
-        if (serviceInstance instanceof EurekaServiceInstance eurekaServiceInstance) {
-            return eurekaServiceInstance.getInstanceInfo().getHomePageUrl();
+        String advertised = serviceInstance.getMetadata() == null
+            ? null
+            : serviceInstance.getMetadata().get(DiscoveryMetadata.HOME_PAGE_URL);
+        if (advertised != null && !advertised.isBlank()) {
+            return advertised;
         }
 
         return serviceInstance.getUri().toString();
     }
 
+    /**
+     * Whether the instance is up.
+     * <p>
+     * Reads the effective status from the reserved metadata key the registry adapters populate, defaulting to up
+     * when a discovery client does not supply it.
+     * <p>
+     * Note this path is normally unreachable: a {@code DiscoveryClient} only reports instances available for
+     * traffic, and Spring Cloud's Eureka client filtered to UP by default too
+     * ({@code eureka.client.filter-only-up-instances}), so the previous check against the Netflix instance status
+     * could only ever have returned true in production. Kept working rather than replaced with a constant, so
+     * that a container genuinely reports DOWN if a client is ever configured to return non-UP instances.
+     */
     private boolean isUp(ServiceInstance serviceInstance) {
-        if (serviceInstance instanceof EurekaServiceInstance eurekaServiceInstance) {
-            return eurekaServiceInstance.getInstanceInfo().getStatus() == UP;
+        var metadata = serviceInstance.getMetadata();
+        if (metadata == null) {
+            return true;
         }
-
-        return true;
+        String status = metadata.get(DiscoveryMetadata.INSTANCE_STATUS);
+        return status == null || InstanceStatus.UP.name().equals(status);
     }
 
     private boolean hasHomePage(ServiceInstance serviceInstance) {

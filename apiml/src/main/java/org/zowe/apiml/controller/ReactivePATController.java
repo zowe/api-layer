@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static jakarta.servlet.http.HttpServletResponse.SC_SERVICE_UNAVAILABLE;
 import static org.zowe.apiml.zaas.controllers.AuthController.*;
 
 @RestController

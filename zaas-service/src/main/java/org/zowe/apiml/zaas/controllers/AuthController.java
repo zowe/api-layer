@@ -60,7 +60,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.http.HttpStatus.*;
+// The same constants the servlet API already declares, and which line 132 below was already using from
+// there; the Apache HttpClient 4 copy only reached the classpath through the Eureka starter.
+import static jakarta.servlet.http.HttpServletResponse.*;
 
 /**
  * Controller offer method to control security. It can contain method for user and also method for calling services
