@@ -263,7 +263,7 @@ public class ServiceDefinitionProcessor {
                 ServiceInstance.Builder builder = ServiceInstance.builder();
 
                 String instanceId = String.format("%s%s:%s:%s", STATIC_INSTANCE_ID_PREFIX, url.getHost(), serviceId, url.getPort());
-                String ipAddress = InetAddress.getByName(url.getHost()).getHostAddress();
+                String ipAddress = resolveAddress(url.getHost(), instanceId);
 
                 setInstanceAttributes(builder, service, instanceId, instanceBaseUrl, url, ipAddress, tile);
 
@@ -278,12 +278,37 @@ public class ServiceDefinitionProcessor {
         } catch (MalformedURLException e) {
             throw new ServiceDefinitionException(String.format("The URL %s is malformed. The instance of %s will not be created: %s",
                 instanceBaseUrl, serviceId, e.getMessage()));
-        } catch (UnknownHostException e) {
-            throw new ServiceDefinitionException(String.format("The hostname of URL %s is unknown. The instance of %s will not be created: %s",
-                instanceBaseUrl, serviceId, e.getMessage()));
         } catch (MetadataValidationException mve) {
             throw new ServiceDefinitionException(String.format("Metadata creation failed. The instance of %s will not be created: %s",
                 serviceId, mve));
+        }
+    }
+
+    /**
+     * The address to advertise for a static instance, falling back to the hostname when it cannot be resolved.
+     * <p>
+     * Resolving is deliberately not allowed to fail the definition. This parse runs once, when the Discovery
+     * Service becomes ready, and nothing retries it - so a hostname that is momentarily unresolvable (a peer
+     * container still starting, embedded DNS briefly unavailable) would drop every static instance in the file
+     * for the lifetime of the process. The integration tests hit exactly that: the GatewayCentralRegistry job's
+     * primary discovery reported <em>Temporary failure in name resolution</em> for both {@code discoverable-client}
+     * and {@code mock-services}, and every one of the thirteen static instances was lost with it -
+     * {@code instances=[], registeredServices=[]} - so the startup check polled for eight minutes for
+     * {@code STATIC-mock-services:mockzosmf:10013} and never saw it, in a job that otherwise had all of its
+     * dynamic registrations. A sibling node in the same job, whose lookup happened to succeed, produced its
+     * instances normally, which is why this presented as flakiness rather than as a bug.
+     * <p>
+     * Keeping the instance is the right trade: the registry routes by hostname and port, the address is advisory
+     * (the domain allow list interceptor rewrites it outright), and the instance ID does not contain it. Losing a
+     * declared API to keep a strict address would be the worse failure. The fallback is logged rather than silent.
+     */
+    private String resolveAddress(String host, String instanceId) {
+        try {
+            return InetAddress.getByName(host).getHostAddress();
+        } catch (UnknownHostException e) {
+            log.warn("Cannot resolve the address of host {} ({}). The static instance {} will be registered with its "
+                + "hostname in place of an address.", host, e.getMessage(), instanceId);
+            return host;
         }
     }
 

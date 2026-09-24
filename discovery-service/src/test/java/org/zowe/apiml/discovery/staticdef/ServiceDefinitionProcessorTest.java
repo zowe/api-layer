@@ -102,6 +102,34 @@ class ServiceDefinitionProcessorTest {
         }
 
         @Test
+        void givenAnInstanceHostThatCannotBeResolved_whenTheDefinitionIsLoaded_thenTheInstanceIsStillCreated() {
+            // ".invalid" is reserved by RFC 2606 and never resolves. A hostname that is momentarily unresolvable
+            // is what the integration tests actually hit - "Temporary failure in name resolution" for hosts whose
+            // containers were still starting - and it used to drop every instance in the file, permanently,
+            // because the parse runs once at startup and nothing retries it.
+            String unresolvableHostYaml = "services:\n" +
+                "    - serviceId: casamplerestapiservice\n" +
+                "      instanceBaseUrls:\n" +
+                "        - https://unresolvable-host.invalid:10019/casamplerestapiservice/\n" +
+                "      homePageRelativeUrl: api/v1/pets\n" +
+                "      routes:\n" +
+                "        - gatewayUrl: api/v1\n" +
+                "          serviceRelativeUrl: api/v1\n";
+
+            StaticRegistrationResult result = processServicesData(unresolvableHostYaml);
+
+            assertEquals(0, result.getErrors().size());
+            List<ServiceInstance> instances = result.getInstances();
+            assertEquals(1, instances.size(),
+                "a hostname that cannot be resolved must not remove the instance that declares it");
+            assertEquals("STATIC-unresolvable-host.invalid:casamplerestapiservice:10019",
+                instances.get(0).instanceId());
+            assertEquals("unresolvable-host.invalid", instances.get(0).hostName());
+            assertEquals("unresolvable-host.invalid", instances.get(0).ipAddr(),
+                "the hostname stands in for the address, and the registry routes by hostname and port");
+        }
+
+        @Test
         void processServicesDataWithEmptyHomepage() {
             String routedServiceYamlEmptyRelativeUrls = "services:\n" +
                 "    - serviceId: casamplerestapiservice\n" +
