@@ -34,6 +34,22 @@ configs:
   debug: false
   sslDebug: ""
 
+  apiml:
+    security:
+      personalAccessToken:
+        # 'enabled' is deliberately absent: leaving it unset is what lets the value be taken from
+        # components.gateway.apiml.security.personalAccessToken.enabled, as it has been up to now.
+        maxScopes: 64
+        # empty means "not configured" - the value is then read from the Caching Service, and created there
+        # on first use. Set it to pin the cutover fleet-wide.
+        cutoverEpoch:
+        cutoverSkewAllowanceSeconds: 300
+        revocationLookupTimeoutMillis: 2000
+        revocationLookupFailureThreshold: 5
+        revocationLookupCircuitOpenMillis: 10000
+        revocationLookupBatchKeys: 66
+        revokeRuleSkewAllowanceMillis: 60000
+
 
   server:
     ssl:

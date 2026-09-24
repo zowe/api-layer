@@ -32,6 +32,7 @@ import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.lang.JoseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,12 +40,14 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.cache.PatRevocationStore;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.util.JwtUtils;
+import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
@@ -99,6 +102,9 @@ public class AuthController {
     public static final String CURRENT_PUBLIC_KEYS_PATH = PUBLIC_KEYS_PATH + "/current";
     public static final String OIDC_TOKEN_VALIDATE = "/oidc-token/validate"; // NOSONAR
     public static final String OIDC_WEBFINGER_PATH = "/oidc/webfinger";
+
+    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS}}")
+    private long ruleTimestampSkewAllowanceMillis = PatRevocationStore.DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
 
     @DeleteMapping(path = INVALIDATE_PATH)
     @Hidden
@@ -193,6 +199,9 @@ public class AuthController {
         if (rulesRequestModel != null) {
             timeStamp = rulesRequestModel.getTimestamp();
         }
+        if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -226,7 +235,7 @@ public class AuthController {
     public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
-        if (userId == null) {
+        if (userId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return badRequestForPATInvalidation();
         }
         log.debug("revokeAccessTokensForUser: userId={}", userId);
@@ -264,7 +273,7 @@ public class AuthController {
     public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
-        if (serviceId == null) {
+        if (serviceId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
@@ -531,6 +540,28 @@ public class AuthController {
         pemWriter.flush();
         pemWriter.close();
         return stringWriter.toString();
+    }
+
+    public static boolean isFutureRuleTimestamp(long timestamp, long skewAllowanceMillis) {
+        return timestamp > System.currentTimeMillis() + skewAllowanceMillis;
+    }
+
+    /**
+     * Without this the revocation endpoints answer 500 with a stack trace for something that is simply the
+     * revocation store being unreachable - which is also how a caching service too old to serve point
+     * lookups surfaces.
+     */
+    @ExceptionHandler(CachingServiceClientException.class)
+    public ResponseEntity<ApiMessageView> handleCachingServiceClientException(CachingServiceClientException e) {
+        log.debug("The caching service could not be reached", e);
+        ApiMessageView message = messageService
+            .createMessage("org.zowe.apiml.zaas.pat.cachingServiceUnavailable", e.getMessage())
+            .mapToView();
+        // pinned rather than negotiated: Jackson XML is on the classpath, so a client that sends no Accept
+        // header would otherwise get this error as XML while every other error here is JSON
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(message);
     }
 
     private ResponseEntity<String> badRequestForPATInvalidation() throws JsonProcessingException {

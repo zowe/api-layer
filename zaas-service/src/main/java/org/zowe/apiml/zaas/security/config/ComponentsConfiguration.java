@@ -32,6 +32,7 @@ import javax.net.ssl.SSLContext;
 import org.zowe.apiml.passticket.PassTicketService;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
 
 /**
@@ -90,8 +91,8 @@ public class ComponentsConfiguration {
     }
 
     @Bean
-    SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider, RauditxService rauditxService) {
-        return new SuccessfulAccessTokenHandler(apimlAccessTokenProvider, rauditxService);
+    SuccessfulAccessTokenHandler successfulAccessTokenHandler(ApimlAccessTokenProvider apimlAccessTokenProvider, RauditxService rauditxService, AuthExceptionHandler authExceptionHandler) {
+        return new SuccessfulAccessTokenHandler(apimlAccessTokenProvider, rauditxService, authExceptionHandler);
     }
 
     @Bean

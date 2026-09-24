@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +33,10 @@ import org.zowe.apiml.security.common.filter.CategorizeCertsFilter;
 import reactor.core.publisher.Mono;
 
 import java.security.cert.X509Certificate;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
@@ -41,6 +46,9 @@ import java.util.Optional;
 public class CachingController {
     private final Storage storage;
     private final MessageService messageService;
+
+    @Value("${caching.storage.maxQueryKeys:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
+    int maxQueryKeys;
 
     @Autowired(required = false)
     ApplicationInfo applicationInfo;
@@ -125,10 +133,15 @@ public class CachingController {
         return Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(storageException.getKey());
     }
 
+    /**
+     * * @deprecated superseded by the per-item layout; scheduled for removal with the legacy read path.
+     */
     @GetMapping(value = "/cache-list/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the items in the cache map",
-        description = "Values returned for the calling service and specific cache map.")
-    @ResponseBody
+        description = "Values returned for the calling service and specific cache map. Deprecated: this " +
+            "scans every item of the map. Use /cache-query to look up specific items.",
+        deprecated = true)
+    @Deprecated(since = "3.6.0")
     public Mono<ResponseEntity<Object>> getAllMapItems(@PathVariable String mapKey, ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {
@@ -145,16 +158,84 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
+    /**
+     * * @deprecated superseded by the per-item layout; scheduled for removal with the legacy read path.
+     */
     @GetMapping(value = {"/cache-list", "/cache-list/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the maps in the cache",
-        description = "Values returned for the calling service")
-    @ResponseBody
+        description = "Values returned for the calling service. Deprecated: this scans every item of every " +
+            "map, so its cost grows with the size of the store. Use /cache-query to look up specific items.",
+        deprecated = true)
+    @Deprecated(since = "3.6.0")
     public Mono<ResponseEntity<Object>> getAllMaps(ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {
                 log.debug("Get all for serviceId: {}", s);
                 try {
                     return new ResponseEntity<>(storage.getAllMaps(s), HttpStatus.OK);
+                } catch (Exception exception) {
+                    if (isStorageIncompatible(exception)) {
+                        return handleIncompatibleStorageMethod(exception, exchange);
+                    }
+                    return handleInternalError(exception, exchange);
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse));
+    }
+
+    /**
+     * Point lookup of specific items across several maps, in one call.
+     * <p>
+     * A read expressed as a POST is slightly unidiomatic, but the keys are SHA-512 hashes of 128 hex
+     * characters each and a multi-scope token needs several of them, which does not fit a URL reliably.
+     * <p>
+     * Deliberately mapped at {@code /cache-query} and not at {@code /cache-list/query}: the latter would win
+     * Spring's pattern comparison against the existing {@code /cache-list/&#123;mapKey&#125;} mapping and
+     * silently make the map key "query" unreachable.
+     */
+    @PostMapping(value = {"/cache-query", "/cache-query/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Looks up specific items across cache maps",
+        description = "Takes the item keys to look up grouped by map key, and returns only the entries that " +
+            "exist. A map with no matching item is omitted from the response.")
+    public Mono<ResponseEntity<Object>> getMapItems(@RequestBody Map<String, List<String>> keysByMapKey, ServerWebExchange exchange) {
+        return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
+            s -> {
+                try {
+                    Map<String, Collection<String>> request = checkQueryPayload(keysByMapKey);
+                    return new ResponseEntity<>(storage.getMapItems(s, request), HttpStatus.OK);
+                } catch (StorageException exception) {
+                    if (isStorageIncompatible(exception)) {
+                        return handleIncompatibleStorageMethod(exception, exchange);
+                    }
+                    return exceptionToResponse(exception);
+                } catch (Exception exception) {
+                    return handleInternalError(exception, exchange);
+                }
+            }
+        ).orElseGet(this::getUnauthorizedResponse));
+    }
+
+    /**
+     * Reads the pre-cutover, whole-map revocation layout.
+     * <p>
+     * Separate from {@code GET /cache-list} on purpose: that endpoint now serves the per-item layout, so it
+     * cannot double as the legacy read. Isolating the legacy read behind its own path means retiring it is a
+     * deletion rather than a change to an endpoint that survives.
+     *
+     * @deprecated exists only until every token issued before the cutover has expired.
+     */
+    @GetMapping(value = {"/cache-list-legacy", "/cache-list-legacy/"}, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "Retrieves all the maps stored in the pre-cutover layout",
+        description = "Only for personal access tokens issued before the per-item revocation store was " +
+            "introduced. Removed once every such token has expired.",
+        deprecated = true)
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    public Mono<ResponseEntity<Object>> getAllLegacyMaps(ServerWebExchange exchange) {
+        return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
+            s -> {
+                log.debug("Get all legacy maps for serviceId: {}", s);
+                try {
+                    return new ResponseEntity<>(storage.getAllLegacyMaps(s), HttpStatus.OK);
                 } catch (Exception exception) {
                     if (isStorageIncompatible(exception)) {
                         return handleIncompatibleStorageMethod(exception, exchange);
@@ -360,6 +441,34 @@ public class CachingController {
         if (keyValue.getKey() == null) {
             throw invalidPayloadException(keyValue.toString(), "No key provided in the payload");
         }
+    }
+
+    /**
+     * The limit protects the caching service from an unbounded scan, but rejecting a request is not free:
+     * ZAAS fails closed on the resulting error, so an over-limit token stops authenticating altogether. The
+     * matching cap at issuance is what keeps a legitimately-issued token below this bound.
+     */
+    private Map<String, Collection<String>> checkQueryPayload(Map<String, List<String>> keysByMapKey) {
+        if (keysByMapKey == null) {
+            throw invalidPayloadException(null, "No map keys provided in the payload");
+        }
+
+        int total = 0;
+        Map<String, Collection<String>> request = new LinkedHashMap<>();
+        for (Map.Entry<String, List<String>> entry : keysByMapKey.entrySet()) {
+            if (entry.getKey() == null) {
+                throw invalidPayloadException(keysByMapKey.toString(), "No map key provided in the payload");
+            }
+            List<String> keys = entry.getValue() == null ? List.of() : entry.getValue();
+            total += keys.size();
+            request.put(entry.getKey(), keys);
+        }
+
+        if (total > maxQueryKeys) {
+            throw invalidPayloadException(String.valueOf(total),
+                "Too many keys requested at once, the limit is " + maxQueryKeys);
+        }
+        return request;
     }
 
     @FunctionalInterface

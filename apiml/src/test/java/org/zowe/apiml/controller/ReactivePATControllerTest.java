@@ -41,6 +41,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -371,6 +373,109 @@ class ReactivePATControllerTest {
             .verifyComplete();
 
         verify(tokenProvider, times(1)).evictNonRelevantTokensAndRules();
+    }
+
+
+    /**
+     * A revocation rule reads "invalidate every token created at or before this instant", and its retention is
+     * derived from that same instant. A future timestamp claims authority for longer than the rule is kept,
+     * which is not a state the store can represent - so it is rejected rather than silently stored.
+     */
+    @Test
+    void revokeAllUserAccessTokens_futureTimestamp_rejected() {
+        var requestModel = new RulesRequestModel();
+        requestModel.setTimestamp(System.currentTimeMillis() + java.time.Duration.ofDays(1).toMillis());
+
+        Authentication mockAuth = mock(Authentication.class);
+        when(mockAuth.getPrincipal()).thenReturn("testUser");
+        when(securityContext.getAuthentication()).thenReturn(mockAuth);
+
+        try (MockedStatic<ReactiveSecurityContextHolder> mockedContextHolder = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
+            mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
+
+            StepVerifier.create(controller.revokeAllUserAccessTokens(requestModel))
+                .expectNextMatches(response -> HttpStatus.BAD_REQUEST.equals(response.getStatusCode()))
+                .verifyComplete();
+        }
+        verify(tokenProvider, never()).invalidateAllTokensForUser(anyString(), anyLong());
+    }
+
+    @Test
+    void revokeAccessTokensForUser_futureTimestamp_rejected() throws JsonProcessingException {
+        var requestModel = new RulesRequestModel();
+        requestModel.setUserId("userToRevoke");
+        requestModel.setTimestamp(System.currentTimeMillis() + java.time.Duration.ofDays(1).toMillis());
+
+        var mockApiMessage = mock(Message.class);
+        var mockApiMessageView = mock(ApiMessageView.class);
+        when(messageService.createMessage(anyString())).thenReturn(mockApiMessage);
+        when(mockApiMessage.mapToView()).thenReturn(mockApiMessageView);
+
+        StepVerifier.create(controller.revokeAccessTokensForUser(requestModel))
+            .expectNextMatches(response -> HttpStatus.BAD_REQUEST.equals(response.getStatusCode()))
+            .verifyComplete();
+        verify(tokenProvider, never()).invalidateAllTokensForUser(anyString(), anyLong());
+    }
+
+    @Test
+    void revokeAccessTokensForScope_futureTimestamp_rejected() throws JsonProcessingException {
+        var requestModel = new RulesRequestModel();
+        requestModel.setServiceId("serviceToRevoke");
+        requestModel.setTimestamp(System.currentTimeMillis() + java.time.Duration.ofDays(1).toMillis());
+
+        var mockApiMessage = mock(Message.class);
+        var mockApiMessageView = mock(ApiMessageView.class);
+        when(messageService.createMessage(anyString())).thenReturn(mockApiMessage);
+        when(mockApiMessage.mapToView()).thenReturn(mockApiMessageView);
+
+        StepVerifier.create(controller.revokeAccessTokensForScope(requestModel))
+            .expectNextMatches(response -> HttpStatus.BAD_REQUEST.equals(response.getStatusCode()))
+            .verifyComplete();
+        verify(tokenProvider, never()).invalidateAllTokensForService(anyString(), anyLong());
+    }
+
+    /**
+     * A clock difference of a few seconds between the caller and this node must not turn a perfectly ordinary
+     * revocation into a 400.
+     */
+    @Test
+    void revokeAccessTokensForScope_timestampWithinClockSkew_accepted() throws JsonProcessingException {
+        var timestamp = System.currentTimeMillis() + 5_000L;
+        var requestModel = new RulesRequestModel();
+        requestModel.setServiceId("serviceToRevoke");
+        requestModel.setTimestamp(timestamp);
+
+        StepVerifier.create(controller.revokeAccessTokensForScope(requestModel))
+            .expectNextMatches(response -> HttpStatus.NO_CONTENT.equals(response.getStatusCode()))
+            .verifyComplete();
+        verify(tokenProvider).invalidateAllTokensForService("serviceToRevoke", timestamp);
+    }
+
+    /**
+     * The cap lives in the provider so no issuance path can bypass it; the controller's job is to let the
+     * exception through so the handler can turn it into a 400 that names the limit.
+     */
+    @Test
+    void generatePat_tooManyScopes_propagatesSoTheHandlerCanAnswerBadRequest() {
+        var request = new ReactivePATController.AccessTokenRequest(10, Set.of("a", "b", "c"));
+        Authentication mockAuth = mock(Authentication.class);
+        when(mockAuth.getName()).thenReturn("testUser");
+        when(securityContext.getAuthentication()).thenReturn(mockAuth);
+
+        var mockRauditBuilder = mock(RauditxService.RauditxBuilder.class, Mockito.RETURNS_SELF);
+        when(rauditxService.builder()).thenReturn(mockRauditBuilder);
+        doThrow(new org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException("too many", 2))
+            .when(tokenProvider).getToken(anyString(), anyInt(), any());
+
+        try (MockedStatic<ReactiveSecurityContextHolder> mockedContextHolder = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
+            mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
+
+            StepVerifier.create(controller.generatePat(request))
+                .expectErrorMatches(e -> e instanceof org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException tooMany
+                    && tooMany.getLimit() == 2)
+                .verify();
+        }
+        verify(mockRauditBuilder).failure();
     }
 
 }

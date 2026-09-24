@@ -330,3 +330,45 @@ messages:
       text: "z/OSMF is not available or z/OSMF response does not contain any token. Reason: %s"
       reason: z/OSMF does not return JWT or LTPA tokens.
       action: Make sure z/OSMF is available to API ML or review your z/OSMF configuration.
+
+    - key: org.zowe.apiml.zaas.pat.cachingServiceTooOld
+      number: ZWEAZ602
+      type: ERROR
+      text: "The Caching Service does not support point lookups of revoked personal access tokens. Personal access token validation falls back to reading the whole revocation store on every request, which requires Caching Service %s or later."
+      reason: "ZAAS was upgraded but the Caching Service it talks to was not. Zowe components are installed individually, so the two can be at different versions."
+      action: "Upgrade the Caching Service to the named version or later. Personal access tokens keep working in the meantime, only more slowly."
+
+    - key: org.zowe.apiml.zaas.pat.cutoverEpochMinted
+      number: ZWEAZ603
+      type: WARNING
+      text: "A new personal access token cutover epoch (%s) was created because none was configured or stored."
+      reason: "The stored cutover epoch was not found. On a first start after enabling personal access tokens this is expected. At any other time it means the Caching Service store was wiped, this node could not join the cluster, or its HA instance id changed."
+      action: "If this is not a first start, investigate why the stored value is gone - the same event destroys the hashing salt and with it every existing revocation. Set 'components.zaas.apiml.security.personalAccessToken.cutoverEpoch' to pin the value fleet-wide."
+
+    - key: org.zowe.apiml.zaas.pat.saltRegenerated
+      number: ZWEAZ604
+      type: ERROR
+      text: "A new hashing salt was generated for personal access tokens because none was found in the Caching Service."
+      reason: "The Caching Service store that holds the salt was wiped, this node could not join the cluster, or its HA instance id changed. Hashes computed under the previous salt can never match again."
+      action: "Treat this as an incident: every existing personal access token revocation has silently stopped being enforced. Re-issue any revocation that still matters, and investigate why the Caching Service store was lost."
+
+    - key: org.zowe.apiml.zaas.pat.legacyStoreConsulted
+      number: ZWEAZ605
+      type: WARNING
+      text: "Personal access tokens issued before the cutover epoch (%s) are still being validated against the pre-cutover revocation store, which is read in full on each such request."
+      reason: "The token presented was issued before this release was installed, or the cutover epoch could not be resolved."
+      action: "None. This message stops on its own within 90 days of the cutover, as the tokens concerned expire. If it does not stop, the cutover epoch is failing to resolve - set 'components.zaas.apiml.security.personalAccessToken.cutoverEpoch' explicitly."
+
+    - key: org.zowe.apiml.zaas.pat.cachingServiceUnavailable
+      number: ZWEAZ606
+      type: ERROR
+      text: "The personal access token revocation store could not be reached: %s"
+      reason: "The Caching Service did not answer, or answered with an error. Revocation state can neither be written nor read."
+      action: "Check that the Caching Service is running and reachable, and that its storage mode is 'infinispan' - personal access tokens are only supported on that backend."
+
+    - key: org.zowe.apiml.zaas.pat.cutoverSettingRejected
+      number: ZWEAZ607
+      type: ERROR
+      text: "The configured personal access token setting '%s' (%s) was ignored: %s."
+      reason: "The value cannot be right. Taken at face value it would stop enforcing revocations made before the upgrade, so a safe value is used instead: for the cutover epoch, the one stored in the Caching Service, or the current time if there is none."
+      action: "Correct 'components.zaas.apiml.security.personalAccessToken.<setting>'. The cutover epoch is in milliseconds since the epoch and should be at or shortly before the upgrade; remove it to have it created automatically."

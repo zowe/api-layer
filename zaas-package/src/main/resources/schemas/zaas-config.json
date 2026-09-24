@@ -278,6 +278,54 @@
                                     "type": "boolean",
                                     "description": "To enable Personal Access Tokens.",
                                     "default": false
+                                },
+                                "maxScopes": {
+                                    "type": "integer",
+                                    "description": "Maximum number of scopes a single personal access token may be issued with. Validating a token looks up one revocation entry per scope, so this must stay at least two below 'components.caching-service.storage.maxQueryKeys'. Lowering it below what has already been issued makes those tokens unusable.",
+                                    "minimum": 1,
+                                    "default": 64
+                                },
+                                "cutoverEpoch": {
+                                    "type": "integer",
+                                    "description": "Milliseconds since the epoch that splits personal access tokens into those issued before the per-item revocation store existed and those issued after. Leave unset to have the value created in the Caching Service on first use; set it to pin one value across every node. A value that is too low silently stops enforcing revocations made before the upgrade. A value earlier than 2026-01-01 (typically seconds instead of milliseconds) or more than a day in the future is rejected with ZWEAZ607, and the stored or a newly created value is used instead.",
+                                    "minimum": 0
+                                },
+                                "cutoverSkewAllowanceSeconds": {
+                                    "type": "integer",
+                                    "description": "Margin after 'cutoverEpoch' within which a token still counts as issued before it, to absorb clock differences between nodes and a configured epoch that is slightly early. Tokens within the margin take the slower pre-cutover read path. A negative value is replaced by the default, and one above 3600 is capped there with ZWEAZ607.",
+                                    "minimum": 0,
+                                    "maximum": 3600,
+                                    "default": 300
+                                },
+                                "revocationLookupTimeoutMillis": {
+                                    "type": "integer",
+                                    "description": "Connect and read timeout for the revocation lookup made on every personal access token request. Bounded separately from the shared HTTP client so that a slow Caching Service cannot hold a request thread per personal access token user.",
+                                    "minimum": 1,
+                                    "default": 2000
+                                },
+                                "revocationLookupFailureThreshold": {
+                                    "type": "integer",
+                                    "description": "How many consecutive Caching Service failures put the revocation lookup into fail-fast mode, so that request threads return instead of each waiting out a timeout. Personal access tokens are rejected either way while the Caching Service is down.",
+                                    "minimum": 1,
+                                    "default": 5
+                                },
+                                "revocationLookupCircuitOpenMillis": {
+                                    "type": "integer",
+                                    "description": "How long the revocation lookup keeps failing fast after the failure threshold is reached, before one request is let through to test whether the Caching Service is back.",
+                                    "minimum": 1,
+                                    "default": 10000
+                                },
+                                "revocationLookupBatchKeys": {
+                                    "type": "integer",
+                                    "description": "Most keys one revocation lookup may ask for. A token with more scopes than fit is split across several lookups rather than rejected, so a token already issued above 'maxScopes' still validates. Keep this at or below 'components.caching-service.storage.maxQueryKeys'.",
+                                    "minimum": 3,
+                                    "default": 66
+                                },
+                                "revokeRuleSkewAllowanceMillis": {
+                                    "type": "integer",
+                                    "description": "How far in the future the 'timestamp' of a revoke-for-user or revoke-for-scope request may be before it is rejected with 400. Previous releases accepted any value; widen this if a client's clock runs ahead of the server's.",
+                                    "minimum": 0,
+                                    "default": 60000
                                 }
                             }
                         },

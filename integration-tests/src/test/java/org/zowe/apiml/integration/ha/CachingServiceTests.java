@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 
@@ -39,6 +40,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.http.HttpStatus.SC_OK;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.CLIENT_CERT_HEADER;
@@ -152,6 +154,21 @@ class CachingServiceTests {
             .log().ifValidationFails()
             .statusCode(200)
             .body(MAP_KEY, equalTo(MAP_VALUE));
+
+        // the point lookup: one round trip for exactly the keys asked for, which is the read personal access
+        // token validation uses. Asking for one key that exists and one that does not proves both halves.
+        given()
+            .config(SslContext.clientCertApiml)
+            .contentType(JSON)
+            .header(CLIENT_CERT_HEADER, clientCertValue)
+            .body(Map.of(MAP, List.of(MAP_KEY, "aKeyThatDoesNotExist")))
+        .when()
+            .post(baseUrls.get(index) + "/cachingservice/api/v1/cache-query")
+        .then()
+            .log().ifValidationFails()
+            .statusCode(200)
+            .body(MAP + "." + MAP_KEY, equalTo(MAP_VALUE))
+            .body(MAP + ".aKeyThatDoesNotExist", is(nullValue()));
 
         // check the concrete record (cache)
         given()

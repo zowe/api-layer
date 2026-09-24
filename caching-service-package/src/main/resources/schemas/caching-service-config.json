@@ -158,10 +158,46 @@
                     "description": "The number of records stored before the eviction strategy is initiated",
                     "default": 10000
                 },
+                "maxQueryKeys": {
+                    "type": "integer",
+                    "description": "Maximum number of keys a single /cache-query request may look up. Must stay at least two above 'components.zaas.apiml.security.personalAccessToken.maxScopes', because validating a personal access token looks up one key per scope plus the token and user hashes.",
+                    "minimum": 3,
+                    "default": 66
+                },
                 "infinispan": {
                     "type": "object",
                     "description": "Use Infinispan as the selected storage solution",
                     "properties": {
+                        "distributedSyncTimeoutSecs": {
+                            "type": "integer",
+                            "description": "How long (in seconds) a cluster-wide operation may take before Infinispan gives up on it.",
+                            "minimum": 1,
+                            "default": 360
+                        },
+                        "numSegments": {
+                            "type": "integer",
+                            "description": "Number of hash segments each persistent cache is split into. Changing it on an existing installation invalidates the data already on disk.",
+                            "minimum": 1,
+                            "default": 256
+                        },
+                        "revocationStore": {
+                            "type": "object",
+                            "description": "The store of revoked personal access tokens. Entries expire on their own; these bound how large it may get first.",
+                            "properties": {
+                                "maxCount": {
+                                    "type": "integer",
+                                    "description": "Maximum number of revocation entries kept in memory. Beyond this, entries are evicted from memory only - reads fall back to the persistent store, so no revocation is lost.",
+                                    "minimum": 1,
+                                    "default": 100000
+                                },
+                                "sizeWarningThreshold": {
+                                    "type": "integer",
+                                    "description": "Log ZWECS704 once the store holds more entries than this. Set to 0 to disable the warning.",
+                                    "minimum": 0,
+                                    "default": 50000
+                                }
+                            }
+                        },
                         "jgroups": {
                             "type": "object",
                             "description": "Data synchronization between Caching instances.",

@@ -216,6 +216,27 @@ apiml:
         jwtInitializerTimeout: 5
         personalAccessToken:
             enabled: false
+            # Cap on scopes per token. Validating one looks up a revocation entry per scope plus two, so
+            # this has to stay at least two below caching.storage.maxQueryKeys.
+            maxScopes: 64
+            # Splits tokens into those issued before the per-item revocation store existed and those after.
+            # 0 means unset: the value is read from the caching service, and created there on first use.
+            cutoverEpoch: 0
+            cutoverSkewAllowanceSeconds: 300
+            # Bounded separately from the shared HTTP client: this lookup happens on every request and is
+            # PAT's only synchronous dependency in a split deployment.
+            revocationLookupTimeoutMillis: 2000
+            # Past this many consecutive failures the lookup fails fast instead of waiting out a timeout
+            # each time, so request threads come back rather than piling up behind a store that is down.
+            revocationLookupFailureThreshold: 5
+            revocationLookupCircuitOpenMillis: 10000
+            # Scopes beyond this per lookup are split across several, so a token issued with more scopes
+            # than maxScopes - by a previous release, say - still validates. Keep at or below the caching
+            # service's caching.storage.maxQueryKeys.
+            revocationLookupBatchKeys: 66
+            # How far in the future a revoke rule's timestamp may be before it is rejected. Widen it if a
+            # client's clock runs ahead; previous releases accepted any value.
+            revokeRuleSkewAllowanceMillis: 60000
         useInternalMapper: false
         auth:
             provider: zosmf

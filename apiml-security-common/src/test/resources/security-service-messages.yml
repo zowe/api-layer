@@ -104,6 +104,13 @@ messages:
       reason: "The request body is not valid"
       action: "Provide a list of services for which this token will be valid"
 
+    - key: org.zowe.apiml.security.token.accessTokenTooManyScopes
+      number: ZWEAT612
+      type: ERROR
+      text: "The HTTP request for Personal Access Token asks for more scopes than the limit of %s"
+      reason: "Validating a personal access token looks up one entry per scope plus two. A token issued above that limit could not be validated, so it is rejected at issuance instead."
+      action: "Request fewer scopes, or issue several tokens."
+
     # Revoke personal access token
     - key: org.zowe.apiml.security.query.invalidRevokeRequestBody
       number: ZWEAT607
