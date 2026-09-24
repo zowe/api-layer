@@ -11,11 +11,8 @@
 package org.zowe.apiml;
 
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.actuate.autoconfigure.logging.OpenTelemetryLoggingAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.metrics.cache.CacheMetricsAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
+import org.springframework.boot.security.oauth2.client.autoconfigure.reactive.ReactiveOAuth2ClientAutoConfiguration;
 import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -25,11 +22,7 @@ import org.zowe.apiml.enable.register.RegisterToApiLayer;
 import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 
 @SpringBootApplication(exclude = {
-    ReactiveOAuth2ClientAutoConfiguration.class,
-    OpenTelemetryAutoConfiguration.class,
-    OpenTelemetryLoggingAutoConfiguration.class,
-    io.opentelemetry.instrumentation.spring.autoconfigure.OpenTelemetryAutoConfiguration.class,
-    CacheMetricsAutoConfiguration.class
+    ReactiveOAuth2ClientAutoConfiguration.class
 })
 @ComponentScan(
     excludeFilters = {

@@ -14,8 +14,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebSecurityAutoConfiguration;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -24,7 +24,9 @@ import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExcept
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 
-import static org.hamcrest.Matchers.contains;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
@@ -32,7 +34,7 @@ import static org.mockito.Mockito.when;
     ApiCatalogControllerExceptionHandler.class,
     BeanConfig.class
 })
-@WebFluxTest(controllers = ServicesControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = ServicesControllerMicroservice.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServicesControllerContainerRetrievalTest {
 
@@ -56,7 +58,7 @@ class ServicesControllerContainerRetrievalTest {
         webTestClient.get().uri("/apicatalog/containers").exchange()
             .expectStatus().is5xxServerError()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent")
-                .value(contains("Could not retrieve container statuses, java.lang.NullPointerException"));
+                .value(List.class, contents -> assertThat(contents).contains("Could not retrieve container statuses, java.lang.NullPointerException"));
     }
 
 }

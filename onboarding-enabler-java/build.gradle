@@ -2,6 +2,9 @@ dependencies {
     api project(':apiml-utility')
 
     implementation libs.eureka.jersey.client
+    // Spring Cloud Netflix 5.0.x excludes archaius-core, but the Eureka client initialises
+    // Archaius's DynamicPropertyFactory when EurekaClientConfiguration is constructed.
+    implementation libs.archaius.core
     implementation libs.jackson.dataformat.yaml
     implementation libs.guava
 

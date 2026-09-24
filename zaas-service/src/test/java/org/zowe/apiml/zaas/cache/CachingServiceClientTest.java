@@ -23,7 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.util.MultiValueMap;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -280,7 +280,7 @@ class CachingServiceClientTest {
             // Verify that no warning is logged
             verify(apimlLogger, times(0)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
             // Verify that Basic authHeader is in the defaultHeaders map
-            var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
+            var headers = (HttpHeaders) ReflectionTestUtils.getField(service, "defaultHeaders");
             assertEquals("Basic dXNlcjpwYXNzd29yZA==", headers.get(HttpHeaders.AUTHORIZATION).get(0));
         }
 
@@ -301,7 +301,7 @@ class CachingServiceClientTest {
             // Verify that warning is logged
             verify(apimlLogger, times(1)).log("org.zowe.apiml.security.common.auth.missingDefaultCredentials");
             // Verify that Basic authHeader is not in the defaultHeaders map
-            var headers = (MultiValueMap<String, String>) ReflectionTestUtils.getField(service, "defaultHeaders");
+            var headers = (HttpHeaders) ReflectionTestUtils.getField(service, "defaultHeaders");
             assertNull(headers.get(HttpHeaders.AUTHORIZATION));
         }
 

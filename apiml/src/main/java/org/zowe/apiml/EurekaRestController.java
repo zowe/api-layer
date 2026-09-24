@@ -382,6 +382,15 @@ public class EurekaRestController {
         }
 
         @Override
+        public String getMatchedResourceTemplate() {
+            // Added as an abstract method in Jakarta REST 4.0 (Jersey 4).
+            // The adapter only exists to feed Eureka's peer-replication code, which
+            // does not use resource templates; mirror the empty convention of
+            // getMatchedURIs()/getMatchedResources() below.
+            return "";
+        }
+
+        @Override
         public List<String> getMatchedURIs(boolean decode) {
             return List.of();
         }

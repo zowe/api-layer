@@ -23,6 +23,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.samePropertyValuesAs;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -67,8 +70,8 @@ class RedisConfigurationTest {
         when(redisConfig.usesSentinel()).thenReturn(false);
         RedisURI result = underTest.createRedisUri();
 
-        assertThat(result.getUsername(), is(USERNAME));
-        assertThat(result.getPassword(), is(PASSWORD));
+        assertThat(result.getCredentialsProvider().resolveCredentials().block().getUsername(), is(USERNAME));
+        assertThat(result.getCredentialsProvider().resolveCredentials().block().getPassword(), is(PASSWORD));
         assertThat(result.getHost(), is(MASTER_IP));
         assertThat(result.getPort(), is(MASTER_PORT));
         assertThat(result.getTimeout(), is(Duration.ofSeconds(TIMEOUT)));
@@ -120,8 +123,8 @@ class RedisConfigurationTest {
             when(sentinelConfig.getNodes()).thenReturn(nodesList);
 
             RedisURI result = underTest.createRedisUri();
-            assertThat(result.getUsername(), is(USERNAME));
-            assertThat(result.getPassword(), is(PASSWORD));
+            assertThat(result.getCredentialsProvider().resolveCredentials().block().getUsername(), is(USERNAME));
+            assertThat(result.getCredentialsProvider().resolveCredentials().block().getPassword(), is(PASSWORD));
             assertThat(result.getSentinelMasterId(), is(MASTER));
 
             List<RedisURI> sentinelUris = result.getSentinels();
@@ -131,12 +134,12 @@ class RedisConfigurationTest {
             RedisURI sentinel1 = sentinelUris.get(0);
             assertThat(sentinel1.getHost(), is(ip1));
             assertThat(sentinel1.getPort(), is(port1));
-            assertThat(sentinel1.getPassword(), is(password1));
+            assertThat(sentinel1.getCredentialsProvider().resolveCredentials().block().getPassword(), is(password1));
 
             RedisURI sentinel2 = sentinelUris.get(1);
             assertThat(sentinel2.getHost(), is(ip2));
             assertThat(sentinel2.getPort(), is(port2));
-            assertThat(sentinel2.getPassword(), is(password2));
+            assertThat(sentinel2.getCredentialsProvider().resolveCredentials().block().getPassword(), is(password2));
         }
     }
 }

@@ -5,16 +5,20 @@ dependencyResolutionManagement {
             version('projectNode', '24.10.0')
             version('projectNpm', '10.9.0')
 
-            version('springBoot', '3.5.16')
-            version('springBootGraphQl', '3.5.16')
-            version('springCloudNetflix', '4.3.3')
-            version('springCloudCommons', '4.3.3')
-            version('springCloudCB', '3.3.3')
-            version('springCloudGateway', '4.3.5')
-            version('springFramework', '6.2.19')
+            version('springBoot', '4.1.1')
+            // Jersey 3.1.x is Java 17-loadable (major 55). Only jersey-common:4.0.1 is Java 21 (major 65).
+            // Pinned via resolutionStrategy.force in build.gradle -- see the comment there.
+            version('jersey3', '3.1.12')
+            version('springCloudNetflix', '5.0.2')
+            version('springCloudCommons', '5.0.3')
+            version('springCloudCB', '5.0.3')
+            version('springCloudGateway', '5.0.3')
+            version('springCloud', '2025.1.3')
+            version('springFramework', '7.0.9')
             version('springRetry', '2.0.13')
 
-            version('modulith', '1.4.13')
+            // Spring Modulith 2.1.x is the line aligned with Spring Boot 4.1; 1.4.x targets Boot 3.4.
+            version('modulith', '2.1.1')
             version('jmolecules', '2023.3.4')
 
             version('glassfishHk2', '3.1.1')
@@ -34,6 +38,10 @@ dependencyResolutionManagement {
             version('eureka', '2.0.6')
             version('fileupload', '1.6.0')
             version('netflixServo', '0.13.2')
+            // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
+            // DynamicPropertyFactory, but Spring Cloud Netflix 5.0.x excludes archaius-core from
+            // eureka-client/eureka-core. Declared explicitly to replace what 4.3.3 pulled in.
+            version('archaius', '0.7.6')
             version('googleErrorprone', '2.50.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.14.0')
@@ -42,7 +50,7 @@ dependencyResolutionManagement {
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6.4')
             version('infinispan', '16.2.3')
-            version('jacksonAnnotations', '2.22')
+            version('jacksonAnnotations', '2.22')  // Jackson 2 shim track: review when SB 4.3 lands
             version('jacksonCore', '2.22.3')
             version('jacksonDatabind', '2.22.3')
             version('jacksonDataformatYaml', '2.22.3')
@@ -76,7 +84,6 @@ dependencyResolutionManagement {
             version('junitPlatform', '1.14.4')
             version('jxpath', '1.4.0')
             version('kotlinStdlib', '2.4.20')
-            version('lettuce', '6.8.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.26.1')
             version('lombok', '1.18.48')
@@ -89,15 +96,20 @@ dependencyResolutionManagement {
             version('picocli', '4.7.7')
 
             version('reactor', '3.8.7')
-            version('restAssured', '5.5.7')
+            // REST Assured 6.x is the Spring Framework 7 line (its spring-web-test-client declares
+            // spring 7.0.1) and requires Groovy 5, which is what the SB 4.1 BOM already manages.
+            // 5.5.7 is compiled against Spring 6 and Groovy 4 and fails on both.
+            version('restAssured', '6.0.1')
             version('rhino', '1.9.1')
-            version('springDoc', '2.9.1')
+            // springdoc 3.x is the Spring Boot 4 line. 2.9.1 references the SB3-only
+            // org.springframework.boot.autoconfigure.web.reactive.WebFluxProperties from
+            // org.springdoc.webflux.ui.SwaggerConfig, which breaks ApplicationContext startup on SB4.
+            version('springDoc', '3.1.1')
             version('swaggerCore', '2.2.55')
             version('swaggerInflector', '2.0.17')
             version('swagger2Parser', '1.0.76')
             version('swagger3Parser', '2.1.48')
             version('thymeleaf', '3.1.5.RELEASE')
-            version('tomcat', '10.1.60')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.2')
             version('jgit', '7.8.0.202609011348-r')
@@ -106,7 +118,9 @@ dependencyResolutionManagement {
             version('gradleRelease', '3.1.0')
             version('gradleLicencer', '0.6.1')
             version('gradleJibPlugin', '3.5.4')
-            version('reactorBom', '2023.0')
+            // spring-boot-dependencies:4.1.1 manages reactor-bom 2025.0.7, which is what resolves
+            // (reactor-core 3.8.7, reactor-netty 1.3.7). 2023.0 named a train this build does not use.
+            version('reactorBom', '2025.0.7')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
@@ -115,7 +129,9 @@ dependencyResolutionManagement {
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
             version('jacoco', '0.8.15')
-            version('gradle', '9.0')
+            // Must match gradle/wrapper/gradle-wrapper.properties: gateway-service's wrapper task reads
+            // this, so a stale value downgrades the committed wrapper on the next :gateway-service:wrapper.
+            version('gradle', '9.7.1')
             version('commonsCompress', '1.28.0')
             version('bucket4j', '8.20.0')
             version('xstream', '1.4.21')
@@ -137,27 +153,31 @@ dependencyResolutionManagement {
             library('spring_boot_starter_actuator', 'org.springframework.boot', 'spring-boot-starter-actuator').versionRef('springBoot')
             library('spring_boot_starter_security', 'org.springframework.boot', 'spring-boot-starter-security').versionRef('springBoot')
             library('spring_boot_starter_validation', 'org.springframework.boot', 'spring-boot-starter-validation').versionRef('springBoot')
-            library('spring_boot_starter_web', 'org.springframework.boot', 'spring-boot-starter-web').versionRef('springBoot')
+            library('spring_boot_starter_webmvc', 'org.springframework.boot', 'spring-boot-starter-webmvc').versionRef('springBoot')
             library('spring_boot_starter_websocket', 'org.springframework.boot', 'spring-boot-starter-websocket').versionRef('springBoot')
             library('spring_boot_starter_test', 'org.springframework.boot', 'spring-boot-starter-test').versionRef('springBoot')
-            library('spring_boot_starter_aop', 'org.springframework.boot', 'spring-boot-starter-aop').versionRef('springBoot')
+            library('spring_boot_starter_aspectj', 'org.springframework.boot', 'spring-boot-starter-aspectj').versionRef('springBoot')
             library('spring_boot_starter_thymeleaf', 'org.springframework.boot', 'spring-boot-starter-thymeleaf').versionRef('springBoot')
             library('spring_boot_starter_cache', 'org.springframework.boot', 'spring-boot-starter-cache').versionRef('springBoot')
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
-            library('spring_boot_starter_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-oauth2-client').versionRef('springBoot')
+            library('spring_boot_starter_security_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-security-oauth2-client').versionRef('springBoot')
+            library('spring_boot_starter_webmvc_test', 'org.springframework.boot', 'spring-boot-starter-webmvc-test').versionRef('springBoot')
+            library('spring_boot_starter_webflux_test', 'org.springframework.boot', 'spring-boot-starter-webflux-test').versionRef('springBoot')
+            library('spring_boot_starter_security_test', 'org.springframework.boot', 'spring-boot-starter-security-test').versionRef('springBoot')
+            library('spring_boot_jackson2', 'org.springframework.boot', 'spring-boot-jackson2').versionRef('springBoot')
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
             library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudNetflix')
             library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway-server-webflux').versionRef('springCloudGateway')
-            library('spring_cloud_gateway_server', 'org.springframework.cloud', 'spring-cloud-gateway-server').versionRef('springCloudGateway')
+            library('spring_cloud_gateway_server', 'org.springframework.cloud', 'spring-cloud-gateway-server-webflux').versionRef('springCloudGateway')
             library('spring_cloud_commons', 'org.springframework.cloud', 'spring-cloud-commons').versionRef('springCloudCommons')
             library('spring_cloud_circuit_breaker', 'org.springframework.cloud', 'spring-cloud-starter-circuitbreaker-reactor-resilience4j').versionRef('springCloudCB')
+            library('spring_cloud_dependencies', 'org.springframework.cloud', 'spring-cloud-dependencies').versionRef('springCloud')
 
             library('spring_retry', 'org.springframework.retry', 'spring-retry').versionRef('springRetry')
             library('spring_context', 'org.springframework', 'spring-context').versionRef('springFramework')
             library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFramework')
             library('spring_bom', 'org.springframework', 'spring-framework-bom').versionRef('springFramework')
             library('spring_web', 'org.springframework', 'spring-web').versionRef('springFramework')
-            library('spring_tx', 'org.springframework', 'spring-tx').versionRef('springFramework')
             library('spring_webmvc', 'org.springframework', 'spring-webmvc').versionRef('springFramework')
             library('spring_context_support', 'org.springframework', 'spring-context-support').versionRef('springFramework')
             library('spring_beans', 'org.springframework', 'spring-beans').versionRef('springFramework')
@@ -189,6 +209,7 @@ dependencyResolutionManagement {
             library('http_client5', 'org.apache.httpcomponents.client5', 'httpclient5').versionRef('httpClient5')
             library('javax_annotation', 'javax.annotation', 'javax.annotation-api').versionRef('javaxAnnotation') // to define minimum version and avoid duplicity libraries in the classpath
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
+            library('archaius_core', 'com.netflix.archaius', 'archaius-core').versionRef('archaius')
 
             library('infinispan_spring_boot3_starter_embedded', 'org.infinispan', 'infinispan-spring-boot3-starter-embedded').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')
@@ -219,7 +240,8 @@ dependencyResolutionManagement {
             library('junit_platform_engine', 'org.junit.platform', 'junit-platform-engine').versionRef('junitPlatform')
             library('jxpath', 'commons-jxpath', 'commons-jxpath').versionRef('jxpath')
             library('kotlin_stdlib', 'org.jetbrains.kotlin', 'kotlin-stdlib').versionRef('kotlinStdlib')
-            library('lettuce', 'io.lettuce', 'lettuce-core').versionRef('lettuce')
+            // version managed by spring-boot-dependencies
+            library('lettuce', 'io.lettuce', 'lettuce-core').withoutVersion()
             library('log4j_api', 'org.apache.logging.log4j', 'log4j-api').versionRef('log4j')
             library('log4j_to_slf4j', 'org.apache.logging.log4j', 'log4j-to-slf4j').versionRef('log4j')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
@@ -251,11 +273,9 @@ dependencyResolutionManagement {
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf_spring6', 'org.thymeleaf', 'thymeleaf-spring6').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
-            library('tomcat_embed_core', 'org.apache.tomcat.embed', 'tomcat-embed-core').versionRef('tomcat')
-            library('tomcat_embed_el', 'org.apache.tomcat.embed', 'tomcat-embed-el').versionRef('tomcat')
-            library('tomcat_embed_websocket', 'org.apache.tomcat.embed', 'tomcat-embed-websocket').versionRef('tomcat')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
-            library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').versionRef('springBootGraphQl')
+            // version managed by spring-boot-dependencies
+            library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').withoutVersion()
             library('bucket4j_core', 'com.bucket4j', 'bucket4j_jdk17-core').versionRef('bucket4j')
             library('xstren', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream') // to avoid security vulnerability CVE-2024-47072
             library('opentelemetry_bom', 'io.opentelemetry', 'opentelemetry-bom').versionRef('openTelemetry-core')

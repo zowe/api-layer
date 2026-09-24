@@ -40,7 +40,7 @@ class NonCompulsoryAuthenticationProcessingFilterTest {
         private final Supplier<Authentication> authenticationFunction;
 
         protected FilterImpl(Supplier<Authentication> authenticationFunction) {
-            super("/");
+            super("/**");
             this.authenticationFunction = authenticationFunction;
         }
 

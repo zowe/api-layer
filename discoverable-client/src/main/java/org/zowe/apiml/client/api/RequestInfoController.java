@@ -32,6 +32,7 @@ import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -85,11 +86,29 @@ public class RequestInfoController {
         }
     }
 
+    /**
+     * Copies the request headers into the response under their lower-case names.
+     *
+     * <p>The diagnostic response is a stable contract consumed by the integration tests, which look
+     * headers up by their lower-case spelling ({@code headers.authorization},
+     * {@code headers.x-zowe-auth-failure}, {@code headers.x-forwarded-proto}, ...). The names handed
+     * back by {@link HttpServletRequest#getHeaderNames()} are the ones as they arrived on the wire:
+     * Tomcat 10.1 normalised them to lower case, Tomcat 11 preserves the client's spelling. Relying on
+     * the container to do the normalising therefore makes the contract depend on the Tomcat version, so
+     * it is done here instead.
+     *
+     * <p>{@link Locale#ROOT} is required rather than the default locale: in a Turkish locale
+     * {@code "X-Id".toLowerCase()} yields {@code "x-ıd"} with a dotless i, which would break the lookup
+     * on a host running with that locale.
+     *
+     * <p>Only the diagnostic response is normalised - the case of headers forwarded between API ML
+     * components is untouched.
+     */
     private void setHeaders(HttpServletRequest httpServletRequest, RequestInfo requestInfo) {
         for (Enumeration<String> e = httpServletRequest.getHeaderNames(); e.hasMoreElements(); ) {
             final String name = e.nextElement();
             final String value = httpServletRequest.getHeader(name);
-            requestInfo.headers.put(name, value);
+            requestInfo.headers.put(name.toLowerCase(Locale.ROOT), value);
         }
     }
 

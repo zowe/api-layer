@@ -17,7 +17,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.zowe.apiml.filter.AttlsHttpHandler;
 import org.zowe.apiml.product.config.NonModulithApplicationInfoConfig;
@@ -38,11 +37,6 @@ public class GeneralConfig implements WebMvcConfigurer {
     private String evictionStrategy;
     @Value("${caching.storage.size:100}")
     private int maxDataSize;
-
-    @Override
-    public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.setUseTrailingSlashMatch(true);
-    }
 
     @Bean
     @ConditionalOnMissingBean(name = "modulithConfig")

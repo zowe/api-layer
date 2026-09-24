@@ -60,10 +60,11 @@ dependencies {
     api project(':onboarding-enabler-spring')
     api project(':apiml-security-common')
 
-    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.aspectj
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.actuator
+    implementation libs.spring.boot.starter.cache
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
     implementation libs.eureka.jersey.client
@@ -90,6 +91,22 @@ dependencies {
 jar {
     enabled true
     archiveClassifier = ""
+}
+
+test {
+    // ApimlSslKeyExchangeTest asserts on the text of OS/JVM network errors
+    // ("Connection refused", "Address already in use"). Those strings come from the OS
+    // strerror() via the process LC_MESSAGES locale, not from the JVM locale, so on a machine
+    // with a non-English LANG they arrive translated (a Czech locale reports "Spojeni
+    // odmitnuto" and "Adresa je uzivana") and the assertions fail even though nothing is wrong.
+    // The test already accepts the Windows, Linux and macOS wording of these messages, so this
+    // only removes the host-locale dependency rather than changing what is asserted.
+    //
+    // LC_MESSAGES is set rather than LANG/LC_ALL so that only the message catalogue changes:
+    // LC_CTYPE and the JVM's own default locale are left as the developer configured them, and
+    // CI (already English) is unaffected. The "C" catalogue always exists, unlike an en_US
+    // locale which is not installed everywhere.
+    environment 'LC_MESSAGES', 'C'
 }
 
 bootRun {

@@ -62,11 +62,12 @@ dependencies {
     implementation libs.zowe.zos.utils
     implementation libs.spring.boot.starter.webflux
     implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
     implementation libs.spring.boot.starter.cache
-    implementation libs.spring.boot.starter.aop
+    implementation libs.spring.boot.starter.aspectj
     implementation libs.spring.boot.starter.security
     implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.boot.jackson2
     implementation libs.spring.retry
 
     implementation libs.jackson.annotations
@@ -108,6 +109,7 @@ dependencies {
     testImplementation libs.mockito.core
     testImplementation libs.spring.mock.mvc
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.webmvc.test
     testImplementation libs.rest.assured
     testImplementation libs.rest.assured.json.path
     testImplementation libs.rest.assured.xml.path

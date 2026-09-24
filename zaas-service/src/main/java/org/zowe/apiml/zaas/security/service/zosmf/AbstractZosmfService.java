@@ -173,9 +173,9 @@ public abstract class AbstractZosmfService {
         if (re instanceof RestClientResponseException) {
             RestClientResponseException responseException = (RestClientResponseException) re;
             if (log.isTraceEnabled()) {
-                log.trace("z/OSMF request {} failed with status code {}, server response: {}", url, responseException.getRawStatusCode(), responseException.getResponseBodyAsString());
+                log.trace("z/OSMF request {} failed with status code {}, server response: {}", url, responseException.getStatusCode().value(), responseException.getResponseBodyAsString());
             } else {
-                log.debug("z/OSMF request {} failed with status code {}", url, responseException.getRawStatusCode());
+                log.debug("z/OSMF request {} failed with status code {}", url, responseException.getStatusCode().value());
             }
         }
 

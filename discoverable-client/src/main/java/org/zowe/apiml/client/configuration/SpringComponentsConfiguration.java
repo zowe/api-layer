@@ -10,11 +10,11 @@
 
 package org.zowe.apiml.client.configuration;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
+import tools.jackson.databind.DeserializationFeature;
 
 /**
  * Configuration for Spring Boot components.
@@ -23,10 +23,17 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 @SpringBootConfiguration
 public class SpringComponentsConfiguration {
 
+    /**
+     * Spring Boot 4 builds the web message converters from a Jackson 3 {@code JsonMapper}, so the
+     * customization has to target the Jackson 3 builder. The previous Jackson 2
+     * {@code Jackson2ObjectMapperBuilderCustomizer} is still on the classpath (kept for the Jackson 2
+     * shim) but is no longer applied to the HTTP converters, which silently dropped this setting and
+     * turned the expected 400 into a 404.
+     */
     @Bean
-    Jackson2ObjectMapperBuilderCustomizer failOnUnknownProperties() {
-        return jacksonObjectMapperBuilder -> jacksonObjectMapperBuilder
-            .featuresToEnable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    JsonMapperBuilderCustomizer failOnUnknownProperties() {
+        return jsonMapperBuilder -> jsonMapperBuilder
+            .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
     }
 
     @Bean

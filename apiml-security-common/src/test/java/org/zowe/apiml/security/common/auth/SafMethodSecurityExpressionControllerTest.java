@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
@@ -153,7 +153,7 @@ class SafMethodSecurityExpressionControllerTest {
             HttpSecurity http,
             FailedAuthenticationHandler failedAuthenticationHandler,
             ResourceAccessExceptionHandler resourceAccessExceptionHandler
-        ) throws Exception {
+        ) {
             return http
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .with(new CustomSecurityFilters(failedAuthenticationHandler, resourceAccessExceptionHandler), Customizer.withDefaults())
@@ -198,7 +198,7 @@ class SafMethodSecurityExpressionControllerTest {
         }
 
         @Autowired
-        public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        public void configureGlobal(AuthenticationManagerBuilder auth) {
             auth.inMemoryAuthentication().withUser(USERNAME).password("{noop}" + PASSWORD).roles("TEST");
         }
 

@@ -12,10 +12,10 @@ package org.zowe.apiml.zaas.cache;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -226,17 +226,33 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     /**
      * Data POJO that represents entry in caching service
      */
-    @RequiredArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Data
     public static class KeyValue {
         private final String key;
         private final String value;
 
-        @JsonCreator
         public KeyValue() {
-            key = "";
-            value = "";
+            this("", "");
+        }
+
+        /**
+         * Binds a caching service response.
+         *
+         * <p>The creator has to be explicit: the fields are final, and Jackson 3 no longer populates
+         * final fields by default ({@code ALLOW_FINAL_FIELDS_AS_MUTATORS} is {@code false}, where
+         * Jackson 2 had it {@code true}). Relying on the no-argument constructor instead binds every
+         * response to empty strings - which is how a stored salt came to look absent, so ZAAS wrote the
+         * empty value back and then tried to create the key again, and the caching service answered
+         * {@code ZWECS133E} (409, key collision).
+         *
+         * @param key   the cache key
+         * @param value the stored value
+         */
+        @JsonCreator
+        public KeyValue(@JsonProperty("key") String key, @JsonProperty("value") String value) {
+            this.key = key;
+            this.value = value;
         }
     }
 
