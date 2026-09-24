@@ -69,8 +69,8 @@ class XForwardHeadersProxyTest {
         cgwConf = ConfigReader.environmentConfiguration().getCentralGatewayServiceConfiguration();
         dgwConf = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
 
-        cgwUrl = String.format("%s://%s:%s%s", cgwConf.getScheme(), cgwConf.getHost(), cgwConf.getConnectPortForHost(cgwConf.getHost()), REQUEST_INFO_ENDPOINT);
-        dgwUrl = String.format("%s://%s:%s%s", dgwConf.getScheme(), dgwConf.getHost(), dgwConf.getPort(), REQUEST_INFO_ENDPOINT);
+        cgwUrl = String.format("%s://%s:%s%s", cgwConf.getScheme(), cgwConf.getHost(), cgwConf.getPortForHost(cgwConf.getHost()), REQUEST_INFO_ENDPOINT);
+        dgwUrl = String.format("%s://%s:%s%s", dgwConf.getScheme(), dgwConf.getHost(), dgwConf.getPortForHost(dgwConf.getHost()), REQUEST_INFO_ENDPOINT);
 
         jwt = gatewayToken();
     }
@@ -94,7 +94,7 @@ class XForwardHeadersProxyTest {
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", emptyOrNullString())
-            .body("headers.x-forwarded-port", is(cgwConf.getConnectPortForHost(cgwConf.getHost()) + "," + dgwConf.getInternalPorts()))
+            .body("headers.x-forwarded-port", is(cgwConf.getPortForHost(cgwConf.getHost()) + "," + dgwConf.getInternalPorts()))
             .body("headers.x-forwarded-for", matchesPattern(IPV4 + "," + IPV4))
             .body("headers.x-forwarded-host", containsString(cgwConf.getHost()))
             .body("headers.x-forwarded-host", containsString(dgwConf.getHost()));
@@ -118,7 +118,7 @@ class XForwardHeadersProxyTest {
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https,https"))
             .body("headers.x-forwarded-prefix", emptyOrNullString())
-            .body("headers.x-forwarded-port", is(cgwConf.getConnectPortForHost(cgwConf.getHost()) + "," + dgwConf.getInternalPorts()))
+            .body("headers.x-forwarded-port", is(cgwConf.getPortForHost(cgwConf.getHost()) + "," + dgwConf.getInternalPorts()))
             .body("headers.x-forwarded-for", not(containsString("6.6.6.6")))
             .body("headers.x-forwarded-for", matchesPattern(IPV4))
             .body("headers.x-forwarded-host", not(containsString("9.9.9.9")))
@@ -141,7 +141,7 @@ class XForwardHeadersProxyTest {
             .statusCode(HttpStatus.SC_OK)
             .body("headers.x-forwarded-proto", is("https"))
             .body("headers.x-forwarded-prefix", emptyOrNullString())
-            .body("headers.x-forwarded-port", is(String.valueOf(dgwConf.getPort())))
+            .body("headers.x-forwarded-port", is(String.valueOf(dgwConf.getPortForHost(dgwConf.getHost()))))
             .body("headers.x-forwarded-for", emptyOrNullString())
             .body("headers.x-forwarded-host", not(containsString("9.9.9.9")))
             .body("headers.x-forwarded-host", containsString(dgwConf.getHost()));

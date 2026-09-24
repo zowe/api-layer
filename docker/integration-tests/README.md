@@ -158,7 +158,7 @@ instance-2 port - see that job's `docker-compose.yml` comments.
 
 Because each instance's real port *is* its identity now, `ApiMediationLayerStartupChecker`
 doesn't need to distinguish "the port to connect on" from "the port an instance self-registers
-under in eureka" - one lookup, `ServiceConfiguration.getConnectPortForHost(host)`, answers both.
+under in eureka" - one lookup, `ServiceConfiguration.getPortForHost(host)`, answers both.
 The checked-in `environment-configuration-*.yml` files still only ever hold one `port` value per
 service, though (most are shared by several jobs, e.g. `environment-configuration-ha.yml` backs
 six of them), so a job whose topology has more than one host for that service still needs to say
@@ -169,7 +169,7 @@ invocations, matching each service's own naming:
   when there's more than one additional instance, e.g. `apiml-2` *and* `apiml-3`) -
   `discoveryServiceConfiguration` already had a separate `host`/`additionalHost` pair, so this
   just gives the additional side its own port(s) (`DiscoveryServiceConfiguration` overrides
-  `getConnectPortForHost` to check `additionalHost`/`additionalConnectPorts` first, falling
+  `getPortForHost` to check `additionalHost`/`additionalConnectPorts` first, falling
   through to the primary `host`/`connectPorts` lookup otherwise).
 - `gateway.connectPorts` / `zaas.connectPorts` / `apicatalog.connectPorts` /
   `caching.connectPorts` / `discoverableclient.connectPorts` (comma-list, positionally paired

@@ -10,31 +10,32 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import lombok.*;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Data
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class DiscoveryServiceConfiguration implements ServiceConfiguration {
-    private String scheme;
+public class DiscoveryServiceConfiguration extends ServiceConfiguration {
     private String user;
     private String password;
-    private String host;
     private String additionalHost;
-    private int port;
-    private int additionalPort;
-    private int instances;
-    private String additionalConnectPorts;
+    private String additionalPort;
+
+    DiscoveryServiceConfiguration(String scheme, String user, String password, String host, String additionalHost, String port, String additionalPort, int instances) {
+        super(scheme, null, host, port, instances);
+        this.user = user;
+        this.password = password;
+        this.additionalHost = additionalHost;
+        this.additionalPort = additionalPort;
+    }
 
     @Override
     public String getServiceId() {
         return CoreService.DISCOVERY.getServiceId();
     }
 
+    //TODO - make additional host single
     /**
      * additionalHost is a second host list, separate from getHost(), so it needs its own
      * lookup against additionalConnectPorts (comma-list, for more than one additional instance,
@@ -42,23 +43,19 @@ public class DiscoveryServiceConfiguration implements ServiceConfiguration {
      * falling through to the primary host/connectPorts lookup for anything else.
      */
     @Override
-    public int getConnectPortForHost(String host) {
-        if (host != null && StringUtils.isNotBlank(additionalHost)) {
-            String[] hostArr = additionalHost.split("[,;]");
-            for (int i = 0; i < hostArr.length; i++) {
-                if (hostArr[i].trim().equalsIgnoreCase(host.trim())) {
-                    int fallback = additionalPort > 0 ? additionalPort : getPort();
-                    if (StringUtils.isNotBlank(additionalConnectPorts)) {
-                        String[] portArr = additionalConnectPorts.split("[,;]");
-                        if (i < portArr.length) {
-                            return Integer.parseInt(portArr[i].trim());
-                        }
-                    }
-                    return fallback;
-                }
+    public int getPortForHost(String host) {
+        String[] hostArr = getAdditionalHost().split(",");
+        String[] portArr = getAdditionalPort().split(",");
+
+        if (hostArr.length != portArr.length) { throw new IllegalArgumentException("Host and port must have same length"); }
+
+        for (int i = 0; i < hostArr.length; i++) {
+            if (hostArr[i].trim().equalsIgnoreCase(host.trim())) {
+                return Integer.parseInt(portArr[i].trim());
             }
         }
-        return ServiceConfiguration.super.getConnectPortForHost(host);
+
+        return super.getPortForHost(host);
     }
 
 }

@@ -10,20 +10,17 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Data
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class ZaasConfiguration implements ServiceConfiguration {
-    private String scheme;
-    private String host;
-    private int port;
-    private int instances;
-    private String connectPorts;
+public class ZaasConfiguration extends ServiceConfiguration {
+
+    ZaasConfiguration(String scheme, String host, String port, int instances) {
+        super(scheme, null, host, port, instances);
+    }
 
     @Override
     public String getServiceId() {

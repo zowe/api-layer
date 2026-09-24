@@ -10,67 +10,61 @@
 
 package org.zowe.apiml.util.config;
 
-public interface ServiceConfiguration {
+import lombok.*;
 
-    String getScheme();
+import java.util.Locale;
 
-    String getHost();
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public abstract class ServiceConfiguration {
 
-    int getPort();
+    private String scheme;
+    private String url;
+    private String host;
+    @Getter(AccessLevel.NONE)
+    // holds comma separated list of gw ports, hence String
+    private String port;
+    private int instances;
 
-    String getServiceId();
+    public abstract String getServiceId();
 
-    default boolean isStaticallyRegistred() {
+    public boolean isStaticallyRegistred() {
         return false;
     }
 
-    default String getServletContext() {
+    public String getServletContext() {
         return "/";
     }
 
-    default boolean isBasicAuthenticationSupported() {
+    public boolean isBasicAuthenticationSupported() {
         return true;
     }
 
-    /**
-     * Comma-separated ports, positionally paired with getHost()'s comma-separated hosts - each
-     * secondary/tertiary instance binds its own distinct real port (see docker-compose.yml's
-     * APIML_SERVICE_PORT), so a service with more than one host needs this to say which port
-     * belongs to which. Null/blank (the default) means every host uses getPort(), which is
-     * correct for every service that only ever has one instance/host.
-     */
-    default String getConnectPorts() {
-        return null;
-    }
-
-    /**
-     * Resolve the port for a specific hostname taken from getHost()'s comma-separated list,
-     * pairing it positionally with getConnectPorts(). This is both the port a test should
-     * connect on AND the port that hostname self-registers under as its eureka instance
-     * identity - the two are the same port, since each instance now binds its own real port
-     * directly rather than sharing one and being reached via a different published port. Falls
-     * back to getPort() if connectPorts is blank, the host isn't found, or there's no
-     * corresponding entry - so callers that only ever deal with the primary/default host are
-     * unaffected.
-     */
-    default int getConnectPortForHost(String host) {
-        return getConnectPortForHost(host, getPort());
-    }
-
-    default int getConnectPortForHost(String host, int fallbackPort) {
-        String connectPorts = getConnectPorts();
-        String hosts = getHost();
-        if (org.apache.commons.lang3.StringUtils.isBlank(connectPorts) || org.apache.commons.lang3.StringUtils.isBlank(hosts) || host == null) {
-            return fallbackPort;
+    public int getPort() {
+        if (port.split(",").length == 1) {
+            return Integer.parseInt(port);
         }
-        String[] hostArr = hosts.split(",");
-        String[] portArr = connectPorts.split("[,;]");
+        throw new IllegalArgumentException("Multiple hosts defined, use getPortForHost(String host) instead");
+    }
+
+    /**
+     * Resolve the port for a specific hostname taken from host's comma-separated list,
+     * pairing it positionally with ports defined.
+     */
+    public int getPortForHost(String host) {
+        String[] hostArr = host.split(",");
+        String[] portArr = port.split(",");
+
+        if (hostArr.length != portArr.length) { throw new IllegalArgumentException("Host and port must have same length"); }
+
         for (int i = 0; i < hostArr.length; i++) {
             if (hostArr[i].trim().equalsIgnoreCase(host.trim())) {
-                return i < portArr.length ? Integer.parseInt(portArr[i].trim()) : fallbackPort;
+                return Integer.parseInt(portArr[i].trim());
             }
         }
-        return fallbackPort;
+
+        throw new IllegalArgumentException("Hostname %s not found in service configuration".toLowerCase(Locale.ROOT));
     }
 
 }

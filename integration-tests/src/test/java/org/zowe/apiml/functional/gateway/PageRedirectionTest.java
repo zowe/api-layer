@@ -138,7 +138,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         gatewayScheme = gatewayServiceConfiguration.getScheme();
         gatewayHost = gatewayServiceConfiguration.getHost();
-        gatewayPort = gatewayServiceConfiguration.getExternalPort();
+        gatewayPort = gatewayServiceConfiguration.getPortForHost(gatewayHost);
         RestAssured.port = gatewayPort;
         RestAssured.useRelaxedHTTPSValidation();
 

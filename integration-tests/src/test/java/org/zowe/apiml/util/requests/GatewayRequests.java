@@ -46,15 +46,15 @@ public class GatewayRequests {
     private final String instance;
 
     public GatewayRequests() {
-        this(gatewayServiceConfiguration.getScheme(), gatewayServiceConfiguration.getHost(), gatewayServiceConfiguration.getExternalPort());
+        this(gatewayServiceConfiguration.getScheme(), gatewayServiceConfiguration.getHost());
     }
 
-    public GatewayRequests(String scheme, String host, int port) {
+    public GatewayRequests(String scheme, String host) {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         this.scheme = scheme;
         this.host = host;
-        this.port = port;
+        this.port = gatewayServiceConfiguration.getPortForHost(host);
 
         instance = String.format("%s://%s:%s", scheme, host, port);
         log.info("Created gateway requests for: {}", instance);

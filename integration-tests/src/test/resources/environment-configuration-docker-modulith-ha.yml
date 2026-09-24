@@ -17,10 +17,8 @@ discoveryServiceConfiguration:
     scheme: https
     user: user
     password: user
-    host: apiml
-    additionalHost: apiml-2,apiml-3
-    additionalPort: 10011
-    port: 10011
+    host: apiml,apiml-2,apiml-3
+    port: 10011,20011,30011
     instances: 3
 discoverableClientConfiguration:
     scheme: https

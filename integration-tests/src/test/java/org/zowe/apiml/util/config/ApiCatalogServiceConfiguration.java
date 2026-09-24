@@ -10,21 +10,13 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Data
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class ApiCatalogServiceConfiguration implements ServiceConfiguration {
-    private String scheme;
-    private String url;
-    private String host;
-    private int port;
-    private int instances;
-    private String connectPorts;
+public class ApiCatalogServiceConfiguration extends ServiceConfiguration {
 
     @Override
     public String getServiceId() {

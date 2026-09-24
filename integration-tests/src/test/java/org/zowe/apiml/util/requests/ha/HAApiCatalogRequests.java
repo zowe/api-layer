@@ -31,7 +31,7 @@ public class HAApiCatalogRequests {
         var apiCatalogServiceConfiguration = environmentConfiguration().getApiCatalogServiceConfiguration();
         String[] apiCatalogHosts = apiCatalogServiceConfiguration.getHost().split(",");
         for (String host: apiCatalogHosts) {
-            int port = apiCatalogServiceConfiguration.getConnectPortForHost(host);
+            int port = apiCatalogServiceConfiguration.getPortForHost(host);
             apiCatalogServices.add(new ApiCatalogRequests(apiCatalogServiceConfiguration.getScheme(), host, port));
         }
         log.info("Created HAApiCatalogRequests");

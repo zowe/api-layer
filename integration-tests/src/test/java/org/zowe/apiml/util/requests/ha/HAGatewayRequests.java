@@ -33,11 +33,8 @@ public class HAGatewayRequests {
     public HAGatewayRequests(String scheme) {
         var gatewayServiceConfiguration = environmentConfiguration().getGatewayServiceConfiguration();
         String[] gatewayHosts = gatewayServiceConfiguration.getHost().split(",");
-        int externalPort = gatewayServiceConfiguration.getExternalPort();
         for (String host : gatewayHosts) {
-            int port = gatewayServiceConfiguration.getConnectPortForHost(host, externalPort);
-
-            gatewayServices.add(new GatewayRequests(scheme, host, port));
+            gatewayServices.add(new GatewayRequests(scheme, host));
         }
 
         log.info("Created HAGatewayRequests");

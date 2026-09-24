@@ -101,7 +101,7 @@ public class ApiMediationLayerStartupChecker {
         // Each container binds its own distinct real port now (see docker-compose.yml's
         // APIML_SERVICE_PORT/APIML_INTERNAL_DISCOVERY_PORT for the instance this host represents),
         // which is also what it self-registers under as its eureka instance identity, so one
-        // field/lookup serves both purposes - see ServiceConfiguration.getConnectPortForHost().
+        // field/lookup serves both purposes - see ServiceConfiguration.getPortForHost().
         private final int port;
         private final ServiceConfiguration serviceConfiguration;
 
@@ -109,7 +109,7 @@ public class ApiMediationLayerStartupChecker {
             this.scheme = serviceConfiguration.getScheme();
             this.hostname = hostname;
             this.serviceId = serviceConfiguration.getServiceId();
-            this.port = serviceConfiguration.getConnectPortForHost(hostname);
+            this.port = serviceConfiguration.getPortForHost(hostname);
             this.serviceConfiguration = serviceConfiguration;
         }
 

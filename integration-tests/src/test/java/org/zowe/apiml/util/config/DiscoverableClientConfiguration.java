@@ -10,24 +10,22 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 /**
  * Configuration parameters for DiscoverableClient
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-@AllArgsConstructor
-public class DiscoverableClientConfiguration implements ServiceConfiguration {
+public class DiscoverableClientConfiguration extends ServiceConfiguration {
 
-    private String scheme;
     private String applId;
-    private String host;
-    private int port;
-    private int instances;
-    private String connectPorts;
+
+    DiscoverableClientConfiguration(String scheme, String applId, String host, String port, int instances) {
+        super(scheme, null, host, port, instances);
+        this.applId = applId;
+    }
 
     @Override
     public String getServiceId() {
