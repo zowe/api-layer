@@ -48,6 +48,13 @@ public class ReplicationConfiguration {
     private int servicePort;
 
     /**
+     * The hostname this node is reachable on, and the only thing that distinguishes it from its peer in the
+     * deployments that matter - see {@link #isLocal}.
+     */
+    @Value("${apiml.service.hostname:localhost}")
+    private String serviceHostname;
+
+    /**
      * The port this node is actually reachable on.
      * <p>
      * Checked ahead of {@code apiml.service.port} because in the modulith the Discovery endpoint listens on its
@@ -129,23 +136,57 @@ public class ReplicationConfiguration {
     /**
      * Whether a configured peer URL is in fact this node.
      * <p>
-     * Both candidate ports have to be considered. In the standalone Discovery Service the URL carries
-     * {@code apiml.service.port}; in the modulith the same node's URL is built from the <em>Gateway's</em>
-     * {@code apiml.service.port} while the Discovery endpoint listens on {@code apiml.internal-discovery.port}.
-     * Checking only the internal port - which is what a literal reading of
-     * {@code RefreshablePeerEurekaNodes.getPort} suggests - makes the modulith treat itself as a peer and POST a
-     * replication batch to its own Gateway port every flush interval.
+     * <b>Both the hostname and the port have to match.</b> Deciding it on the port alone is wrong, and wrong in
+     * the deployment that matters most: an HA pair configured the documented Zowe way is two nodes on
+     * <em>different hostnames listening on the same port</em> - one APIML per LPAR, or one container per node in
+     * the integration tests, where both are on 10011 and only the hostname differs:
+     * <pre>
+     *   APIML_SERVICE_HOSTNAME: discovery-service
+     *   APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
+     * </pre>
+     * A port-only test calls <em>both</em> of those URLs local, {@link #peerUrls()} then returns nothing, and the
+     * node runs "standalone" while believing it is configured as a peer. Nothing replicates in either direction,
+     * so each node holds only what registered directly with it - which is exactly what the HA jobs showed: the
+     * primary had {@code caching-service-2} but not {@code caching-service}, and the {@code -1} form of the
+     * others but not the {@code -2}s, so the startup check reported four instances as never having onboarded.
      * <p>
-     * The hostname is not compared: an HA pair on one LPAR shares a hostname and differs only by port, so
-     * requiring a hostname difference would wrongly filter out the real peer.
+     * The other candidate port still has to be considered: in the standalone Discovery Service a peer URL carries
+     * {@code apiml.service.port}, while in the modulith the same node's URL is built from the <em>Gateway's</em>
+     * {@code apiml.service.port} and the Discovery endpoint listens on
+     * {@code apiml.internal-discovery.port}.
+     * <p>
+     * The hostname is compared rather than required to <em>differ</em>. The distinction matters, and is what the
+     * previous implementation got wrong: a peer on the same hostname with a different port is not this node
+     * (different port), and a peer on the same port with a different hostname is not this node either (different
+     * host). Requiring a hostname <em>difference</em> would drop the second case along with the first.
      */
     private boolean isLocal(String url) {
         try {
-            int urlPort = URI.create(url).getPort();
-            if (urlPort == servicePort) {
-                return true;
+            URI uri = URI.create(url);
+            int urlPort = uri.getPort();
+            if (urlPort == -1) {
+                // No explicit port: falls back to the scheme's default, which is never how a peer URL is built.
+                log.warn("Peer URL {} has no port; it will be treated as a remote peer", url);
+                return false;
             }
-            return internalDiscoveryPort != null && urlPort == internalDiscoveryPort;
+            // Compared as primitives, deliberately. internalDiscoveryPort is a boxed Integer, and comparing two
+            // Integers with == compares references: 10011 is outside the Integer cache, so the comparison is
+            // false and this node stops recognising its own internal-discovery URL - which is the
+            // replicate-to-yourself failure below, arrived at by accident.
+            boolean portIsOurs = urlPort == servicePort
+                || (internalDiscoveryPort != null && urlPort == internalDiscoveryPort.intValue());
+            if (!portIsOurs) {
+                return false;
+            }
+            String host = uri.getHost();
+            boolean hostIsOurs = host != null && host.equalsIgnoreCase(serviceHostname);
+            if (!hostIsOurs) {
+                // Logged at debug rather than silently accepted: a node whose own URL is not recognised as local
+                // replicates to itself, which doubles its registry traffic and skews the self-preservation
+                // counters. That is the failure this branch exists to avoid, so it is worth being able to see.
+                log.debug("Peer URL {} is not this node ({}:{})", url, serviceHostname, urlPort);
+            }
+            return hostIsOurs;
         } catch (RuntimeException e) {
             log.warn("Cannot parse peer URL {}; it will be treated as a remote peer", url);
             return false;
