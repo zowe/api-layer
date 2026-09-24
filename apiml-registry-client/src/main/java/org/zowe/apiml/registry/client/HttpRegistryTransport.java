@@ -34,13 +34,8 @@ import org.zowe.apiml.registry.model.InstanceStatus;
 import org.zowe.apiml.registry.model.ServiceInstance;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -109,12 +104,8 @@ public final class HttpRegistryTransport implements RegistryTransport, AutoClose
                 (effectiveUserid + ":" + (effectivePassword == null ? "" : effectivePassword))
                     .getBytes(StandardCharsets.UTF_8));
 
-        // Only the hostname verifier was relaxed before, which is half of the job: the trust manager is consulted
-        // about the chain and runs before the verifier is consulted about the name. See trustAllContext.
-        var effectiveSslContext = effectiveSslContext(strictHostnameVerification, sslContext);
-
         var socketFactory = SSLConnectionSocketFactoryBuilder.create()
-            .setSslContext(effectiveSslContext)
+            .setSslContext(sslContext)
             .setHostnameVerifier(strictHostnameVerification
                 ? new DefaultHostnameVerifier()
                 : NoopHostnameVerifier.INSTANCE)
@@ -178,67 +169,6 @@ public final class HttpRegistryTransport implements RegistryTransport, AutoClose
             // an URL this method cannot make sense of is left for the transport to report on as it always has
             return new Address(configuredUrl, null, null);
         }
-    }
-
-    /**
-     * The context to actually connect with: the supplied one when certificates are verified, and a lenient one when
-     * they are not. See {@link #trustAllContext()} for why the supplied context cannot simply be reused with the
-     * hostname verifier switched off.
-     */
-    static SSLContext effectiveSslContext(boolean verifyCertificates, SSLContext supplied) {
-        return verifyCertificates ? supplied : trustAllContext();
-    }
-
-    /**
-     * A context that accepts any certificate chain, for when certificate verification is switched off.
-     * <p>
-     * Relaxing the hostname verifier alone is not enough, and believing it was is what lost every registration in
-     * the integration job that runs with {@code apiml.security.ssl.verifySslCertificatesOfServices=false}. The
-     * verifier is asked about the name in the certificate; the trust manager is asked about the chain, and it runs
-     * first. Handing in the strict context and switching the verifier off therefore still failed the handshake with
-     * a PKIX error whenever the Discovery Service's certificate was not in the truststore - which is the very
-     * situation that switch exists to tolerate. Every request then surfaced as "Discovery Service ... is
-     * unreachable", a message naming neither TLS nor the certificate, and the service simply never appeared in any
-     * registry.
-     * <p>
-     * This is what the rest of the product does under the same flag: {@code HttpsFactory.getSslContext()} returns
-     * its ignoring context when verification is off. It is built here rather than injected because this module
-     * deliberately carries no dependency on {@code apiml-common}.
-     */
-    private static SSLContext trustAllContext() {
-        try {
-            var context = SSLContext.getInstance("TLS");
-            context.init(null, new TrustManager[]{trustAllTrustManager()}, new SecureRandom());
-            return context;
-        } catch (GeneralSecurityException e) {
-            throw new IllegalStateException(
-                "Cannot build the context used when certificate verification is switched off", e);
-        }
-    }
-
-    /**
-     * Accepts any chain. Extracted from the context so that what it does can be asserted directly - an
-     * {@code SSLContext} will not hand its trust managers back, and completing a real handshake needs a certificate
-     * that cannot be produced in a unit test.
-     */
-    static X509TrustManager trustAllTrustManager() {
-        return new X509TrustManager() {
-
-            @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType) {
-                // certificate verification is switched off by configuration
-            }
-
-            @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType) {
-                // certificate verification is switched off by configuration
-            }
-
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-        };
     }
 
     // ---------------------------------------------------------------------------------------------------------
