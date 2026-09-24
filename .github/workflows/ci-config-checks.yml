@@ -1,0 +1,37 @@
+name: CI configuration checks
+
+# Gate for the CI configuration invariants (scripts/ci/check-ci-config.py)
+
+on:
+    # No path filters: a filtered-out PR would leave a required check "Expected" forever
+    push:
+        branches: [ v2.x.x, v3.x.x ]
+    pull_request:
+        branches: [ v2.x.x, v3.x.x ]
+    workflow_dispatch:
+
+concurrency:
+    # Supersede in-flight runs for the same pull request. Push runs are never cancelled.
+    group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+    CIConfigChecks:
+        name: CI configuration checks
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   name: Check the CI configuration invariants
+                run: python3 scripts/ci/check-ci-config.py
+
+            -   name: Install BATS to test the CI scripts
+                run: |
+                    git clone --depth 1 https://github.com/bats-core/bats-core.git
+                    sudo bats-core/install.sh /usr/local
+
+            -   name: Run the CI script tests
+                run: bats scripts/test/ci_config_check_test.bats scripts/test/collect_resources_test.bats

@@ -10,8 +10,25 @@ on:
         paths-ignore:
             - '**.md'
     workflow_dispatch:
+        inputs:
+            collect_resources:
+                description: "Collect runner/container resource metrics for this run (see docs/testing-resource-budgets.md)"
+                type: boolean
+                default: false
+
+concurrency:
+    # Supersede in-flight PR runs; keyed on the PR number, never a branch name
+    group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
+    # Opt-in measurement; never affects the job result (docs/testing-resource-budgets.md)
+    CI_RESOURCE_COLLECTION: ${{ inputs.collect_resources }}
+    # Build-cache credentials for every Gradle call (docs/testing-resource-budgets.md)
+    ORG_GRADLE_PROJECT_artifactory_user: ${{ secrets.ARTIFACTORY_USERNAME }}
+    ORG_GRADLE_PROJECT_artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+    # Read-only by default; only trusted producer jobs override it, and only on push
+    GRADLE_REMOTE_CACHE_PUSH: "false"
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
@@ -27,6 +44,8 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
 
             -   name: Generate certificates
                 run: ./gradlew generateCertificates
@@ -49,11 +68,15 @@ jobs:
         needs: GenerateCertificates
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        env:
+            GRADLE_REMOTE_CACHE_PUSH: ${{ github.event_name == 'push' }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'true'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Build Nodejs Sample App
@@ -88,6 +111,7 @@ jobs:
                     ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }} -Pzowe.docker.password=${{ secrets.PERSONAL_JB_TOKEN }} -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsModulithUnknownHostnames:
         needs: PublishJibContainers
@@ -118,6 +142,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -150,6 +176,7 @@ jobs:
                         integration-tests/build/test-results/runUnknownHostnamesTests/binary/**
                         integration-tests/build/test-results/runStartUpCheck/binary/**
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsModulith:
         needs: PublishJibContainers
@@ -196,6 +223,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -230,6 +259,7 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsModulithSAFProviderHA:
         needs: PublishJibContainers
@@ -286,6 +316,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -320,6 +352,7 @@ jobs:
                         integration-tests/build/test-results/runStartUpCheck/binary/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsModulithHA:
         needs: PublishJibContainers
@@ -412,6 +445,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -487,6 +522,7 @@ jobs:
                         integration-tests/build/test-results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITests:
         needs: PublishJibContainers
@@ -569,6 +605,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -601,6 +639,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsSAFProviderHA:
         needs: PublishJibContainers
@@ -679,6 +718,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -710,6 +751,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     GatewayProxy:
         needs: PublishJibContainers
@@ -767,6 +809,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -799,6 +843,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     GatewayCentralRegistry:
         needs: PublishJibContainers
@@ -882,6 +927,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -916,6 +963,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CentralRegistryModulith:
         needs: PublishJibContainers
@@ -974,6 +1022,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -1001,6 +1051,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsRegistration:
         needs: PublishJibContainers
@@ -1034,6 +1085,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -1062,6 +1115,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsDiscoveryBasicAuth:
         needs: PublishJibContainers
@@ -1109,6 +1163,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -1134,6 +1190,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsDiscoveryBasicAuthModulith:
         needs: PublishJibContainers
@@ -1194,6 +1251,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -1220,6 +1279,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
     CITestsRegistrationModulith:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
@@ -1246,6 +1306,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -1275,6 +1337,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsZaas:
         needs: PublishJibContainers
@@ -1335,6 +1398,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -1371,6 +1436,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsZosmfWithoutJwt:
         needs: PublishJibContainers
@@ -1413,6 +1479,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -1440,6 +1508,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsZosmfWithoutJwtModulith:
         needs: PublishJibContainers
@@ -1473,6 +1542,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -1501,6 +1572,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsWithRedisReplica:
         needs: PublishJibContainers
@@ -1513,6 +1585,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run APIML and Redis Containers
@@ -1582,6 +1656,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsWithRedisSentinel:
         needs: PublishJibContainers
@@ -1594,6 +1669,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run APIML and Redis Containers
@@ -1669,6 +1746,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     DeterministicHALoadBalancing:
         needs: PublishJibContainers
@@ -1738,6 +1816,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Setup Docker
@@ -1791,6 +1871,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     DeterministicHALoadBalancingModulith:
         needs: PublishJibContainers
@@ -1835,6 +1916,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Setup Docker
@@ -1886,6 +1969,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     StickySessionHALoadBalancing:
         needs: PublishJibContainers
@@ -1960,6 +2044,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Setup Docker
@@ -2012,6 +2098,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     StickySessionHALoadBalancingModulith:
         needs: PublishJibContainers
@@ -2054,6 +2141,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Setup Docker
@@ -2103,6 +2192,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
 
     CITestsHA_caching-chaotic:
@@ -2222,6 +2312,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -2256,6 +2348,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
 
     CITestsHA:
@@ -2365,6 +2458,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -2449,6 +2544,7 @@ jobs:
                         integration-tests/build/reports/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsWithInfinispan:
         needs: PublishJibContainers
@@ -2504,6 +2600,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -2537,6 +2635,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsModulithWithInfinispan:
         needs: PublishJibContainers
@@ -2591,6 +2690,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -2626,6 +2727,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     E2EUITests:
         needs: PublishJibContainers
@@ -2702,6 +2804,8 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'true'
             -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
@@ -2762,6 +2866,7 @@ jobs:
                     name: cypress-snapshots
                     path: api-catalog-ui/frontend/cypress/screenshots
             -   uses: ./.github/actions/teardown
+                if: always()
 
     E2EUITestsModulith:
         # This stage needs to use modulith with gateway-service hostname due to the current OIDC provider setup
@@ -2823,6 +2928,8 @@ jobs:
                 with:
                     ref: ${{ github.head_ref }}
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'true'
             -   uses: ./.github/actions/restore-certificates
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
@@ -2883,6 +2990,7 @@ jobs:
                     name: cypress-snapshots-modulith
                     path: api-catalog-ui/frontend/cypress/screenshots
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsServicePrefixReplacer:
         needs: PublishJibContainers
@@ -2915,6 +3023,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'false'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -2947,6 +3057,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     CITestsNodeJsAndPythonServices:
         needs: PublishJibContainers
@@ -2973,6 +3084,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'true'
             -   uses: ./.github/actions/restore-certificates
 
             -   name: Run Startup Check
@@ -3001,6 +3114,7 @@ jobs:
                         results/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
 
     PublishResults:
         needs: [
@@ -3017,6 +3131,8 @@ jobs:
                     ref: ${{ github.head_ref }}
 
             -   uses: ./.github/actions/setup
+                with:
+                    setupNode: 'true'
             -   uses: ./.github/actions/restore-certificates
 
             -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -3066,3 +3182,4 @@ jobs:
                         **/build/reports/tests/**
 
             -   uses: ./.github/actions/teardown
+                if: always()
