@@ -49,9 +49,14 @@ public class RegistryClientLifecycle implements SmartLifecycle {
     private final java.util.concurrent.atomic.AtomicLong heartbeatCount = new java.util.concurrent.atomic.AtomicLong();
 
     private final AtomicReference<InstanceStatus> advertisedStatus = new AtomicReference<>();
-    private volatile ScheduledExecutorService scheduler;
-    private volatile ScheduledFuture<?> heartbeatTask;
-    private volatile ScheduledFuture<?> refreshTask;
+    /**
+     * Only {@link #start()} and {@link #stop()} touch these three, and both are synchronized, so they are
+     * deliberately not volatile - which would not have made them thread-safe in the first place.
+     */
+    private ScheduledExecutorService scheduler;
+    private ScheduledFuture<?> heartbeatTask;
+    private ScheduledFuture<?> refreshTask;
+    /** Read by {@link #isRunning()} without taking the lock, so this one has to be volatile. */
     private volatile boolean running;
 
     /**
