@@ -140,7 +140,7 @@ public class NewSecurityConfiguration {
         private final CompoundAuthProvider compoundAuthProvider;
 
         @Bean
-        SecurityFilterChain authenticationFunctionalityFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain authenticationFunctionalityFilterChain(HttpSecurity http) {
             baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                 authConfigurationProperties.getZaasLoginEndpoint(),
                 authConfigurationProperties.getZaasLogoutEndpoint()
@@ -221,7 +221,7 @@ public class NewSecurityConfiguration {
         private final AuthenticationProvider tokenAuthenticationProvider;
 
         @Bean
-        SecurityFilterChain accessTokenFilterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain accessTokenFilterChain(HttpSecurity http) {
             baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                 authConfigurationProperties.getZaasAccessTokenEndpoint()
             )))
@@ -283,7 +283,7 @@ public class NewSecurityConfiguration {
             private final CompoundAuthProvider compoundAuthProvider;
 
             @Bean
-            SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain authProtectedEndpointsFilterChain(HttpSecurity http) {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                         authConfigurationProperties.getZaasRevokeMultipleAccessTokens() + "/**",
                         authConfigurationProperties.getZaasEvictAccessTokensAndRules()
@@ -328,7 +328,7 @@ public class NewSecurityConfiguration {
         class ZaasEndpoints {
 
             @Bean
-            SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain authZaasEndpointsFilterChain(HttpSecurity http) {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers( // no http method to catch all attempts to login and handle them here. Otherwise it falls to default filterchain and tries to route the calls, which doesnt make sense
                         "/zaas/scheme/**"
                 )))
@@ -357,7 +357,7 @@ public class NewSecurityConfiguration {
             private final TokenAuthenticationProvider tokenAuthenticationProvider;
 
             @Bean
-            SecurityFilterChain queryFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain queryFilterChain(HttpSecurity http) {
                 return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                         authConfigurationProperties.getZaasQueryEndpoint()
                     )))
@@ -401,7 +401,7 @@ public class NewSecurityConfiguration {
             private final AuthenticationProvider tokenAuthenticationProvider;
 
             @Bean
-            SecurityFilterChain ticketFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain ticketFilterChain(HttpSecurity http) {
                 return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                     authConfigurationProperties.getZaasTicketEndpoint()
                 ))).authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
@@ -447,7 +447,7 @@ public class NewSecurityConfiguration {
             private final AuthenticationProvider tokenAuthenticationProvider;
 
             @Bean
-            SecurityFilterChain refreshFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain refreshFilterChain(HttpSecurity http) {
                 baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers(
                         authConfigurationProperties.getZaasRefreshEndpoint()
                 ))).authorizeHttpRequests(requests -> requests
@@ -490,7 +490,7 @@ public class NewSecurityConfiguration {
         @Order(4)
         class CertificateProtectedEndpoints {
             @Bean
-            SecurityFilterChain certificateEndpointsFilterChain(HttpSecurity http) throws Exception {
+            SecurityFilterChain certificateEndpointsFilterChain(HttpSecurity http) {
                 return baseConfigure(http.securityMatchers(matchers -> matchers
                     .requestMatchers(AuthController.CONTROLLER_PATH + AuthController.INVALIDATE_PATH, AuthController.CONTROLLER_PATH + AuthController.DISTRIBUTE_PATH))
                 ).authorizeHttpRequests(requests -> requests
@@ -515,7 +515,7 @@ public class NewSecurityConfiguration {
             private final AuthenticationProvider tokenAuthenticationProvider;
 
             @Bean
-            public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) throws Exception {
+            public SecurityFilterChain certificateOrAuthEndpointsFilterChain(HttpSecurity http) {
                 baseConfigure(
                     http.securityMatchers(matchers -> matchers
                         .requestMatchers("/application/**")
@@ -620,7 +620,7 @@ public class NewSecurityConfiguration {
         }
 
         @Bean
-        SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        SecurityFilterChain filterChain(HttpSecurity http) {
             return baseConfigure(http.securityMatchers(matchers -> matchers.requestMatchers("/**", "/gateway/version")))
                 .authorizeHttpRequests(requests -> requests
                     .anyRequest()
