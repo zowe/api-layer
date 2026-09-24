@@ -36,6 +36,8 @@ import org.zowe.apiml.registry.model.ServiceInstance;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
@@ -72,6 +74,15 @@ public final class HttpRegistryTransport implements RegistryTransport, AutoClose
      */
     private final AtomicInteger preferredUrl = new AtomicInteger();
 
+    /** The URLs as configured but without embedded credentials, and the header those credentials became. */
+    List<String> serviceUrls() {
+        return serviceUrls;
+    }
+
+    String basicAuthHeader() {
+        return basicAuthHeader;
+    }
+
     public HttpRegistryTransport(
         List<String> serviceUrls,
         SSLContext sslContext,
@@ -85,12 +96,18 @@ public final class HttpRegistryTransport implements RegistryTransport, AutoClose
         if (serviceUrls == null || serviceUrls.isEmpty()) {
             throw new IllegalArgumentException("At least one Discovery Service URL is required");
         }
-        this.serviceUrls = List.copyOf(serviceUrls);
+        // Credentials can arrive embedded in these URLs; they have to come out before the URL is called.
+        var addresses = serviceUrls.stream().map(HttpRegistryTransport::withoutEmbeddedCredentials).toList();
+        this.serviceUrls = addresses.stream().map(Address::url).toList();
+        var embedded = addresses.stream().filter(address -> address.userid() != null).findFirst().orElse(null);
+        var effectiveUserid = embedded == null ? userid : embedded.userid();
+        var effectivePassword = embedded == null ? password : embedded.password();
         this.codec = codec;
-        this.basicAuthHeader = (userid == null || userid.isEmpty())
+        this.basicAuthHeader = (effectiveUserid == null || effectiveUserid.isEmpty())
             ? null
             : "Basic " + Base64.getEncoder().encodeToString(
-                (userid + ":" + (password == null ? "" : password)).getBytes(StandardCharsets.UTF_8));
+                (effectiveUserid + ":" + (effectivePassword == null ? "" : effectivePassword))
+                    .getBytes(StandardCharsets.UTF_8));
 
         // Only the hostname verifier was relaxed before, which is half of the job: the trust manager is consulted
         // about the chain and runs before the verifier is consulted about the name. See trustAllContext.
@@ -115,6 +132,52 @@ public final class HttpRegistryTransport implements RegistryTransport, AutoClose
                 .setResponseTimeout(Timeout.ofMilliseconds(readTimeoutMs))
                 .build())
             .build();
+    }
+
+    /** A configured Discovery Service URL and whatever credentials were embedded in it. */
+    record Address(String url, String userid, String password) {
+    }
+
+    /**
+     * Takes any credentials out of a configured Discovery Service URL, returning the URL as it may be called.
+     * <p>
+     * {@code EurekaBasicAuthEnvironmentPostProcessor} injects {@code userid:password@} into
+     * {@code eureka.client.serviceUrl.defaultZone} whenever {@code apiml.discovery.userid} and
+     * {@code apiml.discovery.password} are set, so that Eureka clients authenticate. The legacy client accepts such
+     * a URL, so the injection went unnoticed; this transport calls the registry with Apache HttpClient 5, which
+     * refuses a request URI whose authority carries a userinfo component:
+     * <pre>
+     *   ClientProtocolException: Request URI authority contains deprecated userinfo component
+     * </pre>
+     * Every registration and every renewal then failed, and the service never appeared in any registry - while the
+     * failure was reported as "is unreachable" and read as a network problem, a TLS problem and a credential
+     * problem in turn before the cause was named.
+     * <p>
+     * The credentials are not thrown away: they are used the way this transport sends credentials, as a basic
+     * authentication header, taking precedence over the separately configured ones because they are the more
+     * specific statement of intent.
+     */
+    static Address withoutEmbeddedCredentials(String configuredUrl) {
+        if (configuredUrl == null || configuredUrl.indexOf('@') < 0) {
+            return new Address(configuredUrl, null, null);
+        }
+        try {
+            var uri = URI.create(configuredUrl);
+            var userInfo = uri.getUserInfo();
+            if (userInfo == null) {
+                return new Address(configuredUrl, null, null);
+            }
+            var withoutUserInfo = new URI(uri.getScheme(), null, uri.getHost(), uri.getPort(),
+                uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+            var separator = userInfo.indexOf(':');
+            return new Address(
+                withoutUserInfo,
+                separator < 0 ? userInfo : userInfo.substring(0, separator),
+                separator < 0 ? "" : userInfo.substring(separator + 1));
+        } catch (IllegalArgumentException | URISyntaxException e) {
+            // an URL this method cannot make sense of is left for the transport to report on as it always has
+            return new Address(configuredUrl, null, null);
+        }
     }
 
     /**
