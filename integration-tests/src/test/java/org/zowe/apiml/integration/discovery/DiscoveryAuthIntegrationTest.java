@@ -50,7 +50,7 @@ class DiscoveryAuthIntegrationTest implements TestWithStartedInstances {
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
         host = discoveryServiceConfiguration.getHost();
-        port = discoveryServiceConfiguration.getPort();
+        port = discoveryServiceConfiguration.getPortForHost(host);
     }
 
     @ParameterizedTest(name = "testApplicationInfoEndpoints_Cookie {index} {0} ")

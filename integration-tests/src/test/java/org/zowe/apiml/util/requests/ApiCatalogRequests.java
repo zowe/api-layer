@@ -39,13 +39,13 @@ public class ApiCatalogRequests {
     private final String instance;
 
     public ApiCatalogRequests(String host) {
-        this(apiCatalogServiceConfiguration.getScheme(), host, apiCatalogServiceConfiguration.getPort());
+        this(apiCatalogServiceConfiguration.getScheme(), host);
     }
 
-    public ApiCatalogRequests(String scheme, String host, int port) {
+    public ApiCatalogRequests(String scheme, String host) {
         this.scheme = scheme;
         this.host = host;
-        this.port = port;
+        this.port = apiCatalogServiceConfiguration.getPortForHost(host);
 
         instance = String.format("%s://%s:%s", scheme, host, port);
 

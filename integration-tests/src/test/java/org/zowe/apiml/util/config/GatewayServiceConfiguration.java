@@ -24,6 +24,7 @@ public class GatewayServiceConfiguration extends ServiceConfiguration {
     //TODO remove external port from config - not used in v3
     // and from Integration tests
     //private int externalPort;
+    // Remove internal ports - config, it, code
     private String internalPorts;
     private String servicesEndpoint;
     private int bucketCapacity;

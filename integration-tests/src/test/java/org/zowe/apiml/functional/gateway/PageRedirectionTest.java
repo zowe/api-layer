@@ -156,7 +156,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
         final String username = discoveryServiceConfiguration.getUser();
         final String password = discoveryServiceConfiguration.getPassword();
         final String host = discoveryServiceConfiguration.getHost();
-        final int port = discoveryServiceConfiguration.getPort();
+        final int port = discoveryServiceConfiguration.getPortForHost(host);
         URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(APPLICATIONS).build();
 
         RestAssured.config = RestAssured.config().sslConfig(SecurityUtils.getConfiguredSslConfig());

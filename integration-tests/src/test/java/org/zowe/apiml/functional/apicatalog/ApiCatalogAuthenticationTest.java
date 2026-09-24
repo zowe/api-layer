@@ -115,7 +115,7 @@ class ApiCatalogAuthenticationTest {
         var apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
         if (StringUtils.isEmpty(apiCatalogServiceUrl)) {
             apiCatalogServiceUrl = apiCatalogInstances.stream()
-                .filter(catalogInstance -> catalogInstance.getPort() == catalogConfig.getPort())
+                .filter(catalogInstance -> catalogInstance.getPort() == catalogConfig.getPortForHost(catalogInstance.getHostName()))
                 .findFirst()
                 .map(i -> String.format("%s", i.getUrl()).replace("https://", "http://").replace("http://", ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getScheme() + "://"))
                 .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));

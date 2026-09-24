@@ -11,6 +11,7 @@
 package org.zowe.apiml.util.config;
 
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Data
@@ -19,7 +20,9 @@ import org.zowe.apiml.product.constants.CoreService;
 public class DiscoveryServiceConfiguration extends ServiceConfiguration {
     private String user;
     private String password;
+    @Setter(AccessLevel.NONE)
     private String additionalHost;
+    @Setter(AccessLevel.NONE)
     private String additionalPort;
 
     DiscoveryServiceConfiguration(String scheme, String user, String password, String host, String additionalHost, String port, String additionalPort, int instances) {
@@ -30,12 +33,30 @@ public class DiscoveryServiceConfiguration extends ServiceConfiguration {
         this.additionalPort = additionalPort;
     }
 
+    public void setAdditionalHost(String additionalHost) {
+        if (additionalHost == null) {
+            this.additionalHost = "";
+        } else {
+            this.additionalHost = additionalHost.trim();
+        }
+    }
+
+    public void setAdditionalPort(String additionalPort) {
+        if (additionalPort == null) {
+            this.additionalPort = "";
+        } else {
+            this.additionalPort = additionalPort.trim();
+        }
+    }
+
     @Override
     public String getServiceId() {
         return CoreService.DISCOVERY.getServiceId();
     }
 
     //TODO - make additional host single
+    //Reconsider complexity of supporting multiple values for the additional hosts
+
     /**
      * additionalHost is a second host list, separate from getHost(), so it needs its own
      * lookup against additionalConnectPorts (comma-list, for more than one additional instance,
@@ -44,17 +65,22 @@ public class DiscoveryServiceConfiguration extends ServiceConfiguration {
      */
     @Override
     public int getPortForHost(String host) {
+        if(StringUtils.isBlank(getAdditionalHost()) || StringUtils.isBlank(getAdditionalPort())) {
+            super.getPortForHost(host);
+        }
+
         String[] hostArr = getAdditionalHost().split(",");
         String[] portArr = getAdditionalPort().split(",");
 
-        if (hostArr.length != portArr.length) { throw new IllegalArgumentException("Host and port must have same length"); }
+        if (hostArr.length != portArr.length) {
+            throw new IllegalArgumentException("Host and port must have same length");
+        }
 
         for (int i = 0; i < hostArr.length; i++) {
             if (hostArr[i].trim().equalsIgnoreCase(host.trim())) {
                 return Integer.parseInt(portArr[i].trim());
             }
         }
-
         return super.getPortForHost(host);
     }
 

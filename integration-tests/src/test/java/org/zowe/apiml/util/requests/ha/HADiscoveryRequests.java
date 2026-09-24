@@ -30,8 +30,8 @@ public class HADiscoveryRequests {
     public HADiscoveryRequests() {
         var discoveryServiceConfiguration = environmentConfiguration().getDiscoveryServiceConfiguration();
         String scheme = discoveryServiceConfiguration.getScheme();
-        discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getHost(), discoveryServiceConfiguration.getPortForHost(discoveryServiceConfiguration.getHost()), new Requests()));
-        discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getAdditionalHost(), discoveryServiceConfiguration.getPortForHost(discoveryServiceConfiguration.getAdditionalHost()), new Requests()));
+        discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getHost(), new Requests()));
+        discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getAdditionalHost(), new Requests()));
         log.info("Created HADiscoveryRequests");
     }
 

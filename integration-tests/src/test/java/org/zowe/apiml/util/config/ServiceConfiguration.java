@@ -12,8 +12,6 @@ package org.zowe.apiml.util.config;
 
 import lombok.*;
 
-import java.util.Locale;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,7 +20,6 @@ public abstract class ServiceConfiguration {
     private String scheme;
     private String url;
     private String host;
-    @Getter(AccessLevel.NONE)
     // holds comma separated list of gw ports, hence String
     private String port;
     private int instances;
@@ -41,30 +38,32 @@ public abstract class ServiceConfiguration {
         return true;
     }
 
-    public int getPort() {
-        if (port.split(",").length == 1) {
-            return Integer.parseInt(port);
-        }
-        throw new IllegalArgumentException("Multiple hosts defined, use getPortForHost(String host) instead");
-    }
+//    public int getPort() {
+//        if (port.split(",").length == 1) {
+//            return Integer.parseInt(port);
+//        }
+//        throw new IllegalArgumentException("Multiple hosts defined, use getPortForHost(String host) instead");
+//    }
 
     /**
      * Resolve the port for a specific hostname taken from host's comma-separated list,
      * pairing it positionally with ports defined.
      */
-    public int getPortForHost(String host) {
-        String[] hostArr = host.split(",");
-        String[] portArr = port.split(",");
+    public int getPortForHost(String hostToMatch) {
+        String[] hostArr = this.host.split(",");
+        String[] portArr = this.port.split(",");
 
-        if (hostArr.length != portArr.length) { throw new IllegalArgumentException("Host and port must have same length"); }
+        if (hostArr.length != portArr.length) {
+            throw new IllegalArgumentException("Host and port must have same length");
+        }
 
         for (int i = 0; i < hostArr.length; i++) {
-            if (hostArr[i].trim().equalsIgnoreCase(host.trim())) {
+            if (hostArr[i].trim().equalsIgnoreCase(hostToMatch.trim())) {
                 return Integer.parseInt(portArr[i].trim());
             }
         }
 
-        throw new IllegalArgumentException("Hostname %s not found in service configuration".toLowerCase(Locale.ROOT));
+        throw new IllegalArgumentException("Hostname %s not found in service configuration".formatted(hostToMatch));
     }
 
 }

@@ -95,11 +95,11 @@ public class SecurityUtils {
 
     private static final String GATEWAY_SCHEME = serviceConfiguration.getScheme();
     private static final String GATEWAY_HOST = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
-    private static final int GATEWAY_PORT = serviceConfiguration.getPort();
+    private static final int GATEWAY_PORT = serviceConfiguration.getPortForHost(GATEWAY_HOST);
 
     private static final String ZOSMF_SCHEME = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
     private static final String ZOSMF_HOST = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
-    private static final int ZOSMF_PORT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
+    private static final int ZOSMF_PORT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPortForHost(ZOSMF_HOST);
 
     public static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     public static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
