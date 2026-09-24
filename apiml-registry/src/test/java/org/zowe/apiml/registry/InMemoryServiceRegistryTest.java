@@ -467,6 +467,69 @@ class InMemoryServiceRegistryTest {
                 () -> guarded.register(instance("gateway", 10010), RegistrationKind.DYNAMIC));
             assertEquals(0, guarded.size());
         }
+
+        /**
+         * The metadata write path runs the same chain as registration, which it did not use to.
+         * <p>
+         * Eureka validated through this chain on the metadata path because its metadata resource updated the
+         * instance and re-registered it. The replacement wrote straight into the map, so a client that had
+         * registered a conformant instance could then PUT any address into its own metadata and the domain allow
+         * list never saw it - seen in {@code CITestsRegistrationModulith} as
+         * {@code whenUpdateMetadataWithUrlNotInAllowList_thenReject} expecting 500 and getting 200.
+         */
+        @Test
+        void runTheChainOnAMetadataUpdateToo() {
+            List<String> seen = new ArrayList<>();
+            RegistrationInterceptor recorder = instance -> {
+                seen.add(instance.instanceId());
+                return instance;
+            };
+            InMemoryServiceRegistry guarded = newRegistry(RegistrySettings.defaults(), List.of(recorder));
+            guarded.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
+            seen.clear();
+
+            assertTrue(guarded.updateMetadata("GATEWAY", "localhost:gateway:10010",
+                Map.of("apiml.externalUrl", "https://example.org")));
+
+            assertEquals(List.of("localhost:gateway:10010"), seen,
+                "an interceptable write must be presented to every interceptor");
+        }
+
+        @Test
+        void refuseAMetadataUpdateThatTheChainRejectsAndKeepTheOldValue() {
+            RegistrationInterceptor denyList = instance -> {
+                if (instance.metadata().values().stream().anyMatch(value -> value.contains("baddomain.net"))) {
+                    throw new RegistrationRejectedException("URLs not allowed found for instance " + instance.instanceId());
+                }
+                return instance;
+            };
+            InMemoryServiceRegistry guarded = newRegistry(RegistrySettings.defaults(), List.of(denyList));
+            guarded.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
+
+            assertThrows(RegistrationRejectedException.class, () -> guarded.updateMetadata(
+                "GATEWAY", "localhost:gateway:10010",
+                Map.of("apiml.externalUrl", "https://baddomain.net")));
+
+            ServiceInstance stored = guarded.instance("GATEWAY", "localhost:gateway:10010").orElseThrow();
+            assertFalse(stored.metadata().containsKey("apiml.externalUrl"),
+                "a refused update must not reach the registry");
+        }
+
+        @Test
+        void storeWhatTheChainAcceptedRatherThanWhatWasSubmitted() {
+            RegistrationInterceptor rewriter = instance -> instance.toBuilder()
+                .putMetadata("seen.by", "registry")
+                .build();
+            InMemoryServiceRegistry guarded = newRegistry(RegistrySettings.defaults(), List.of(rewriter));
+            guarded.register(instance("gateway", 10010), RegistrationKind.DYNAMIC);
+
+            assertTrue(guarded.updateMetadata("GATEWAY", "localhost:gateway:10010",
+                Map.of("apiml.externalUrl", "https://example.org")));
+
+            ServiceInstance stored = guarded.instance("GATEWAY", "localhost:gateway:10010").orElseThrow();
+            assertEquals("registry", stored.metadata().get("seen.by"));
+            assertEquals("https://example.org", stored.metadata().get("apiml.externalUrl"));
+        }
     }
 
     @Nested

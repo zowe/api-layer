@@ -11,7 +11,10 @@
 package org.zowe.apiml.discovery.registry;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.registry.RegistrationKind;
+import org.zowe.apiml.registry.RegistrationRejectedException;
 import org.zowe.apiml.registry.ServiceRegistry;
 import org.zowe.apiml.registry.codec.RegistryCodec;
 import org.zowe.apiml.registry.codec.WireFormat;
@@ -43,6 +46,7 @@ import java.util.Map;
  * Eureka-based service.
  */
 @RequiredArgsConstructor
+@Slf4j
 public class RegistryEndpoints {
 
     /**
@@ -174,8 +178,30 @@ public class RegistryEndpoints {
             : Result.notFound();
     }
 
+    /**
+     * Applies a metadata update, and answers 500 when the allow list refuses it.
+     * <p>
+     * 500 rather than the 400 the registration path uses, because this endpoint is not part of the public API and
+     * the registration tests pin the status:
+     * {@code DiscoverableClientIntegrationTest.whenUpdateMetadataWithUrlNotInAllowList_thenReject} expects
+     * {@code SC_INTERNAL_SERVER_ERROR}, with the comment "Not public API, 500 is fine". Eureka answered 500 here
+     * for the same reason - the rejection surfaced out of the metadata resource rather than through the
+     * exception mapper that shaped the registration response. What matters, and what was missing, is that the
+     * write is <em>refused</em>: before this, a disallowed URL was accepted and stored.
+     * <p>
+     * The exception is caught here rather than left to {@link RegistryExceptionHandler} so that the two paths can
+     * keep answering differently, which is the behaviour being preserved.
+     */
     public Result updateMetadata(String appId, String instanceId, Map<String, String> metadata) {
-        return registry.updateMetadata(appId, instanceId, metadata) ? Result.empty(200) : Result.notFound();
+        try {
+            return registry.updateMetadata(appId, instanceId, metadata) ? Result.empty(200) : Result.notFound();
+        } catch (MetadataValidationException | RegistrationRejectedException e) {
+            // Both types, because they come from different places in the chain: the allow list raises the
+            // metadata validation exception, and an interceptor that refuses outright raises the other.
+            log.debug("Metadata update for {}:{} was refused by the registry: {}",
+                appId, instanceId, e.getMessage());
+            return Result.empty(500);
+        }
     }
 
     // ---------------------------------------------------------------------------------------------------------

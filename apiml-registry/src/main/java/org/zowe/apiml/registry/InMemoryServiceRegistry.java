@@ -290,12 +290,26 @@ public class InMemoryServiceRegistry implements ServiceRegistry {
         Map<String, String> merged = new TreeMap<>(entry.instance().metadata());
         merged.putAll(metadata);
 
-        ServiceInstance updated = entry.instance().toBuilder()
+        // The interceptor chain runs here too. It used to run only on registration, which left this the one
+        // write path that could put an address into the registry without the domain allow list ever seeing it:
+        // a client that registered a conformant instance could then PUT any URL into its own metadata. Eureka's
+        // own metadata resource validated through this chain because it updated the instance and re-registered
+        // it, and dropping that is what turned DiscoverableClientIntegrationTest's allow-list case from a
+        // rejection into a 200.
+        //
+        // Interceptors may transform the instance as well as refuse it, so the result - not the candidate - is
+        // what gets stored, exactly as in register().
+        ServiceInstance candidate = entry.instance().toBuilder()
             .metadata(merged)
             .lastUpdatedTimestamp(now)
             .actionType(ActionType.MODIFIED)
             .build();
-        registry.get(key(appName)).put(instanceId, new Entry(updated, entry.lease(), entry.kind()));
+        ServiceInstance accepted = candidate;
+        for (RegistrationInterceptor interceptor : interceptors) {
+            accepted = interceptor.intercept(accepted);
+        }
+
+        registry.get(key(appName)).put(instanceId, new Entry(accepted, entry.lease(), entry.kind()));
         recordChange(now, key(appName), instanceId);
         return true;
     }
