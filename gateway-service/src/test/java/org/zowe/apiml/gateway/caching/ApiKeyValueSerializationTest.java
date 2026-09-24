@@ -43,6 +43,18 @@ class ApiKeyValueSerializationTest {
             assertEquals("{\"instanceId\":\"host:service:10010\"}", keyValue.getValue());
         }
 
+        /**
+         * The no-argument constructor is what Jackson 3 uses for the response envelope before it
+         * applies the creator; it must produce a well-defined empty entry rather than null fields.
+         */
+        @Test
+        void whenCreatedWithoutArguments_thenKeyAndValueAreEmpty() {
+            CachingServiceClient.ApiKeyValue keyValue = new CachingServiceClient.ApiKeyValue();
+
+            assertEquals("", keyValue.getKey());
+            assertEquals("", keyValue.getValue());
+        }
+
     }
 
 }

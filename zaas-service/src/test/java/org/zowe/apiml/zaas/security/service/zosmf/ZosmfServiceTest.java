@@ -917,6 +917,50 @@ class ZosmfServiceTest {
                 verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.connectError", "resource access exception");
             }
 
+            /**
+             * With trace enabled the z/OSMF failure has to report both the status code and the server
+             * response body. Spring Framework 7 removed {@code getRawStatusCode()} in favour of
+             * {@code getStatusCode().value()}; this pins the code that ends up in the log.
+             */
+            @Test
+            void givenZosmfServerErrorAndTraceEnabled_thenStatusCodeAndResponseAreLogged() {
+                prepareZosmfServerError();
+
+                assertThat(underTest.isAccessible(), is(false));
+
+                verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
+                String values = loggedValues();
+                assertTrue(values.contains("failed with status code 500"), values);
+                assertTrue(values.contains("returnCode"), values);
+            }
+
+            /**
+             * Below trace the same failure still has to report the status code, but not the response
+             * body; this is the other half of the same conditional.
+             */
+            @Test
+            void givenZosmfServerErrorAndTraceDisabled_thenStatusCodeIsLogged() {
+                logger.setLevel(Level.DEBUG);
+
+                prepareZosmfServerError();
+
+                assertThat(underTest.isAccessible(), is(false));
+
+                verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
+                String values = loggedValues();
+                assertTrue(values.contains("failed with status code 500"), values);
+                assertFalse(values.contains("returnCode"), values);
+            }
+
+            void prepareZosmfServerError() {
+                when(restTemplate.exchange(
+                    eq(ZOSMF_URL + AbstractZosmfService.ZOSMF_INFO_END_POINT),
+                    eq(HttpMethod.GET),
+                    any(HttpEntity.class),
+                    eq(ZosmfService.ZosmfInfo.class)
+                )).thenThrow(new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal error", "{\"returnCode\": 4}".getBytes(), Charset.defaultCharset()));
+            }
+
             @Test
             void givenUnexpectedStatusCode_thenFalseAndException() {
                 when(restTemplate.exchange(
