@@ -52,10 +52,11 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     private final RestTemplate restTemplate;
 
     /**
-     * Used only for the revocation lookup. With no local caching of the answer, that lookup is on every
-     * personal access token request and is this service's sole synchronous dependency in a split deployment,
-     * so it gets its own short timeouts rather than the shared client's - a caching service that is merely
-     * slow would otherwise tie up a request thread per personal access token user at the same time.
+     * Used for the revocation lookup and for {@link #read}. With no local caching of the answer, that lookup
+     * is on every personal access token request and is this service's sole synchronous dependency in a split
+     * deployment, so it gets its own short timeouts rather than the shared client's - a caching service that
+     * is merely slow would otherwise tie up a request thread per personal access token user at the same time.
+     * The salt and cutover epoch reads are on the same path, so they share it.
      */
     private final RestTemplate lookupRestTemplate;
 
@@ -419,6 +420,9 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     /**
      * Reads {@link KeyValue} from Caching Service
+     * <p>
+     * Uses the short-timeout lookup client: the only reads are of the hashing salt and the cutover epoch,
+     * and both are made on the personal access token request path.
      *
      * @param key Key to read
      * @return {@link KeyValue}
@@ -426,7 +430,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
      */
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
-            ResponseEntity<KeyValue> response = restTemplate.exchange(getGatewayAddress() + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
+            ResponseEntity<KeyValue> response = lookupRestTemplate.exchange(getGatewayAddress() + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
             if (response.hasBody()) {
                 return response.getBody();
             }

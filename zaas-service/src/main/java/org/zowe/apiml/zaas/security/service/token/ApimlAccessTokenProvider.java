@@ -66,6 +66,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
      */
     static final long SALT_REFRESH_INTERVAL_MILLIS = 5L * 60 * 1000;
 
+    /** How long to wait before reading the salt again after a failed attempt. */
+    static final long SALT_RETRY_INTERVAL_MILLIS = 60L * 1000;
+
     /**
      * How long after the cutover the pre-cutover store is still consulted. Set beyond the 90-day token
      * lifetime on purpose: overshooting costs only a later deletion, whereas undershooting would stop
@@ -129,6 +132,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     private volatile byte[] memoizedSalt;
     private volatile long saltReadAt;
+    private final AtomicLong saltAttemptedAt = new AtomicLong();
+    private volatile RuntimeException lastSaltFailure;
 
     // -------------------------------------------------------------------------------------------------
     // revocation
@@ -604,40 +609,75 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
      * store has none: after a store wipe a permanent memo would leave nodes hashing with divergent salts
      * indefinitely, where a refresh interval bounds the divergence. The array is copied on the way out
      * because it is handed straight to {@code MessageDigest.update} by callers.
+     * <p>
+     * Once a salt is known, no caller ever waits for the store. A due refresh is made by the one caller that
+     * claims it, while everyone else carries on with the last known salt - which is safe, because the refresh
+     * interval already accepts that much divergence. A failed refresh is retried only after
+     * {@link #SALT_RETRY_INTERVAL_MILLIS}, so a store that is down costs one read per interval rather than one
+     * per request.
      */
     public byte[] getSalt() throws CachingServiceClientException {
         byte[] current = memoizedSalt;
-        if (current != null && System.currentTimeMillis() - saltReadAt < SALT_REFRESH_INTERVAL_MILLIS) {
-            return current.clone();
+        if (current == null) {
+            return loadFirstSalt().clone();
         }
-        return refreshSalt(current).clone();
+        long now = System.currentTimeMillis();
+        if (now - saltReadAt >= SALT_REFRESH_INTERVAL_MILLIS && claimSaltAttempt(now)) {
+            refreshSalt();
+            current = memoizedSalt;
+        }
+        return current.clone();
+    }
+
+    private boolean claimSaltAttempt(long now) {
+        long attemptedAt = saltAttemptedAt.get();
+        return now - attemptedAt >= SALT_RETRY_INTERVAL_MILLIS && saltAttemptedAt.compareAndSet(attemptedAt, now);
     }
 
     /**
-     * Neither an empty result nor a failure is ever memoized. On a refresh error the previous salt keeps
-     * being served <em>without</em> advancing the timestamp, so the next call retries - which stays fail
-     * closed, because the store lookup that follows is going to fail too and
+     * Neither an empty result nor a failure is ever memoized. On an error the previous salt keeps being
+     * served - which stays fail closed, because the store lookup that follows is going to fail too and
      * {@code PATAuthSourceService.isValid} denies on the exception.
      */
-    private synchronized byte[] refreshSalt(byte[] previous) {
-        // another thread may have refreshed while this one waited on the monitor
-        if (memoizedSalt != null && System.currentTimeMillis() - saltReadAt < SALT_REFRESH_INTERVAL_MILLIS) {
-            return memoizedSalt;
-        }
+    private void refreshSalt() {
         try {
             byte[] decoded = decodeSalt(initializeSalt());
             if (decoded.length > 0) {
                 memoizedSalt = decoded;
                 saltReadAt = System.currentTimeMillis();
-                return decoded;
             }
-            return previous == null ? decoded : previous;
         } catch (RuntimeException e) {
-            if (previous == null) {
-                throw e;
-            }
             log.warn("Cannot refresh the personal access token hashing salt, keeping the last known one", e);
-            return previous;
+        }
+    }
+
+    /**
+     * With no salt known yet there is nothing to hash with, so callers have to wait here - but only for an
+     * attempt in progress. After a failure, callers fail at once until the retry interval has passed,
+     * rather than each queuing up for a read of their own against a store that is not answering.
+     */
+    private synchronized byte[] loadFirstSalt() {
+        if (memoizedSalt != null) {
+            return memoizedSalt;
+        }
+        long now = System.currentTimeMillis();
+        RuntimeException previousFailure = lastSaltFailure;
+        if (previousFailure != null && now - saltAttemptedAt.get() < SALT_RETRY_INTERVAL_MILLIS) {
+            throw new CachingServiceClientException("The personal access token hashing salt is not available yet, " +
+                "the last attempt to read it failed: " + previousFailure.getMessage(), previousFailure);
+        }
+        saltAttemptedAt.set(now);
+        try {
+            byte[] decoded = decodeSalt(initializeSalt());
+            lastSaltFailure = null;
+            if (decoded.length > 0) {
+                memoizedSalt = decoded;
+                saltReadAt = System.currentTimeMillis();
+            }
+            return decoded;
+        } catch (RuntimeException e) {
+            lastSaltFailure = e;
+            throw e;
         }
     }
 

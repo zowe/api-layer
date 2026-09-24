@@ -79,8 +79,9 @@ at most 90 days — everything older is pure waste.
   is deterministic, identical fleet-wide, survives a store wipe, and doubles as an incident kill
   switch.
 - **No dual-write.** Revocations go only to the new per-item cache. The legacy map is read during the
-  sunset window but never written, so it can only shrink. The cost is that a downgrade — and an
-  un-upgraded ZAAS peer mid-rollout — loses revocations made on the new version; see 2.6.
+  sunset window, and nothing on this release writes to it. The cost is that a downgrade — and a
+  previous-release caching-service or modulith instance mid-rollout — loses revocations made on the new
+  version; see 2.6.
 - **No data migration.** The two bounded rule maps (`invalidUsers`/`invalidScopes`) are not copied
   into the new cache. The residual gap that leaves is stated in 2.4.
 - **No maintenance job, and disposal of the legacy store is the operator's call.** The legacy map is
@@ -204,11 +205,19 @@ salts indefinitely — every existing revocation would stop matching and new rev
 node would be invisible to another. A refresh interval bounds that divergence while still removing
 essentially all the round trips.
 
-Never memoize an empty or failed result. On a refresh error, keep serving the last known salt without
-advancing the timestamp so the next call retries — this stays fail-closed, because `isInvalidated`
-goes straight on to the store lookup, which will fail too, and `PATAuthSourceService.isValid:92`
-catches and denies. Return a `clone()`; `getSalt()` is public and the array is handed to
-`MessageDigest.update`.
+Never memoize an empty or failed result. On a refresh error, keep serving the last known salt — this
+stays fail-closed, because `isInvalidated` goes straight on to the store lookup, which will fail too,
+and `PATAuthSourceService.isValid:92` catches and denies. Return a `clone()`; `getSalt()` is public and
+the array is handed to `MessageDigest.update`.
+
+**Keep the store read off every request once a salt is known.** A due refresh is claimed by one
+caller (compare-and-set on the last attempt time); every other caller is served the last known salt
+at once rather than waiting behind a lock for the store. A failed attempt is retried only after a
+cooldown (60s, as for the cutover epoch), so a store that is down or slow costs one read per interval,
+not one per request. With no salt known yet (a cold start), callers do have to wait for the attempt in
+progress, but after a failure they fail at once until the cooldown passes. The read goes through the
+short-timeout lookup client (`revocationLookupTimeoutMillis`), not the shared client and its 60s
+socket timeout.
 
 **A refresh interval bounds cross-node divergence, not data loss.** If the salt is ever actually
 *regenerated* (the store was wiped, not merely a memo expiring), every hash computed under the old
@@ -636,8 +645,9 @@ PR description, the release note and support all say the same thing.
 |---|---|---|
 | PAT issued before the upgrade | keeps working; consults the legacy store as well as the new one | none — this is the point of 2.4 |
 | Revocation made before the upgrade | still enforced, via the legacy read path, until the token expires | none |
-| Revocation made after the upgrade | written only to the new cache; enforced by every upgraded node immediately | none |
-| ZAAS peer not yet upgraded, mid rolling restart | reads the legacy store only, so it misses revocations written by upgraded nodes | none; window closes as the rollout completes. Release-note it |
+| Revocation made after the upgrade | written only to the new cache; enforced immediately once every caching-service instance (or every modulith instance, in HA) runs this release | none |
+| ZAAS peer not yet upgraded, caching-service already upgraded (split deployment) | writes through `POST /cache-list/{mapKey}`, which lands in the new cache, and reads through `GET /cache-list`, which the upgraded caching-service answers from both layouts, so it misses nothing | none |
+| Caching-service cluster, or HA modulith, running two releases (rolling upgrade) | a revocation made through a previous-release instance goes into the legacy layout. Upgraded instances see the write (`ZWECS705`), set a marker in the revocation store, and from then on also check the legacy layout on every `cache-query`, until 90 days after the last such write, so the revocation is enforced. The reverse cannot be fixed: previous-release instances cannot read revocations made through upgraded ones | upgrade the instances back to back; once all run this release, repeat any revocation made while they did not. Release-note it |
 | **Downgrade to the previous release** | revocations made while on this release are in the new cache, which the old code cannot read — those PATs become valid again | re-run the revocations after a downgrade. This is the accepted cost of not dual-writing |
 | caching-service older than ZAAS | startup probe fails, catalogued error, ZAAS falls back to `readAllMaps()` for all tokens (2.3) | upgrade the caching-service; the log names the minimum version |
 | Store wiped / epoch re-minted | pre-cutover tokens revert to the legacy path; the wipe itself has already destroyed the salt and every revocation | investigate the wipe; PAT auth keeps working |

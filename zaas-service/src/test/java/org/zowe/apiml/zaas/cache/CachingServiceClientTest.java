@@ -108,6 +108,19 @@ class CachingServiceClientTest {
         }
 
         @Test
+        void readUsesTheShortTimeoutLookupClient() {
+            RestTemplate lookupRestTemplate = mock(RestTemplate.class);
+            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", lookupRestTemplate);
+            ResponseEntity<CachingServiceClient.KeyValue> responseEntity = mock(ResponseEntity.class);
+            doReturn(true).when(responseEntity).hasBody();
+            doReturn(new CachingServiceClient.KeyValue(keyToRead, "Wonder")).when(responseEntity).getBody();
+            doReturn(responseEntity).when(lookupRestTemplate).exchange(eq(urlBase + "/" + keyToRead), eq(HttpMethod.GET), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
+
+            assertThat(underTest.read(keyToRead).getValue(), is("Wonder"));
+            verifyNoInteractions(restTemplate);
+        }
+
+        @Test
         void readWithoutProblem() throws CachingServiceClientException {
             ResponseEntity<CachingServiceClient.KeyValue> responseEntity = mock(ResponseEntity.class);
             doReturn(true).when(responseEntity).hasBody();

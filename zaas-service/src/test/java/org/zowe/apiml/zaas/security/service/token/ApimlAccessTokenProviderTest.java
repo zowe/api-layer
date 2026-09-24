@@ -39,6 +39,8 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -786,7 +788,7 @@ class ApimlAccessTokenProviderTest {
          * otherwise a transient store outage would freeze a stale answer for the whole refresh interval.
          */
         @Test
-        void givenARefreshFailure_thenTheLastKnownSaltIsServedAndTheNextCallRetries() {
+        void givenARefreshFailure_thenTheLastKnownSaltIsServedAndRetriedAfterTheInterval() {
             byte[] original = accessTokenProvider.getSalt();
             expireTheMemo();
             doThrow(new CachingServiceClientException("timeout", new IOException())).when(cachingServiceClient).read(SALT_KEY);
@@ -794,8 +796,60 @@ class ApimlAccessTokenProviderTest {
             assertArrayEquals(original, accessTokenProvider.getSalt());
             verify(cachingServiceClient, times(2)).read(SALT_KEY);
 
+            // within the retry interval the store is left alone
+            assertArrayEquals(original, accessTokenProvider.getSalt());
+            verify(cachingServiceClient, times(2)).read(SALT_KEY);
+
+            expireTheLastAttempt();
             assertArrayEquals(original, accessTokenProvider.getSalt());
             verify(cachingServiceClient, times(3)).read(SALT_KEY);
+        }
+
+        /**
+         * A due refresh is made by one caller; the others carry on with the last known salt rather than
+         * waiting for the store.
+         */
+        @Test
+        void givenARefreshInProgress_thenOtherCallersAreServedTheLastKnownSaltWithoutWaiting() throws Exception {
+            byte[] original = accessTokenProvider.getSalt();
+            expireTheMemo();
+            CountDownLatch refreshStarted = new CountDownLatch(1);
+            CountDownLatch releaseRefresh = new CountDownLatch(1);
+            doAnswer(invocation -> {
+                refreshStarted.countDown();
+                releaseRefresh.await(10, TimeUnit.SECONDS);
+                return new CachingServiceClient.KeyValue(SALT_KEY, Base64.getEncoder().encodeToString(ApimlAccessTokenProvider.generateSalt()));
+            }).when(cachingServiceClient).read(SALT_KEY);
+
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            try {
+                Future<byte[]> refreshing = executor.submit(() -> accessTokenProvider.getSalt());
+                assertTrue(refreshStarted.await(10, TimeUnit.SECONDS));
+
+                assertTimeoutPreemptively(Duration.ofSeconds(2), () -> assertArrayEquals(original, accessTokenProvider.getSalt()));
+
+                releaseRefresh.countDown();
+                assertNotNull(refreshing.get(10, TimeUnit.SECONDS));
+            } finally {
+                releaseRefresh.countDown();
+                executor.shutdownNow();
+            }
+            verify(cachingServiceClient, times(2)).read(SALT_KEY);
+        }
+
+        @Test
+        void givenNoSaltYetAndAFailedAttempt_thenCallersFailFastUntilTheRetryInterval() {
+            doThrow(new CachingServiceClientException("timeout", new IOException())).when(cachingServiceClient).read(SALT_KEY);
+
+            assertThrows(CachingServiceClientException.class, accessTokenProvider::getSalt);
+            assertThrows(CachingServiceClientException.class, accessTokenProvider::getSalt);
+            verify(cachingServiceClient, times(1)).read(SALT_KEY);
+
+            expireTheLastAttempt();
+            doReturn(new CachingServiceClient.KeyValue(SALT_KEY, Base64.getEncoder().encodeToString(ApimlAccessTokenProvider.generateSalt())))
+                .when(cachingServiceClient).read(SALT_KEY);
+            assertNotNull(accessTokenProvider.getSalt());
+            verify(cachingServiceClient, times(2)).read(SALT_KEY);
         }
 
         @Test
@@ -851,6 +905,13 @@ class ApimlAccessTokenProviderTest {
         private void expireTheMemo() {
             ReflectionTestUtils.setField(accessTokenProvider, "saltReadAt",
                 System.currentTimeMillis() - ApimlAccessTokenProvider.SALT_REFRESH_INTERVAL_MILLIS - 1);
+            // in real time the last attempt is at least that old too
+            expireTheLastAttempt();
+        }
+
+        private void expireTheLastAttempt() {
+            ((AtomicLong) ReflectionTestUtils.getField(accessTokenProvider, "saltAttemptedAt"))
+                .set(System.currentTimeMillis() - ApimlAccessTokenProvider.SALT_RETRY_INTERVAL_MILLIS - 1);
         }
     }
 

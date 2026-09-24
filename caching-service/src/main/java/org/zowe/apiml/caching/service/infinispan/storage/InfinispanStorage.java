@@ -112,7 +112,7 @@ public class InfinispanStorage implements Storage {
      * @deprecated read-only access to the pre-cutover layout; removed together with the legacy read path.
      */
     @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
-    private ConcurrentMap<String, Map<String, String>> getLegacyTokenCache() {
+    private Cache<String, Map<String, String>> getLegacyTokenCache() {
         return defaultCacheManager.getCache(CACHE_ZOWE_INVALIDATED_TOKEN);
     }
 
