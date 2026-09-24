@@ -514,11 +514,55 @@ class ApimlAccessTokenProviderTest {
 
         @Test
         void givenAConfiguredEpoch_thenItWinsOverTheStoredValueAndOverMinting() {
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", 42L);
+            long configured = System.currentTimeMillis() - Duration.ofDays(1).toMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", configured);
 
-            assertEquals(42L, accessTokenProvider.getCutoverEpoch());
+            assertEquals(configured, accessTokenProvider.getCutoverEpoch());
             verify(cachingServiceClient, never()).read(CUTOVER_EPOCH_KEY);
             verify(cachingServiceClient, never()).create(any());
+        }
+
+        /**
+         * Seconds where milliseconds are expected is the likeliest mistake, and taken at face value it puts
+         * the cutover in January 1970 - past its sunset, so no pre-cutover revocation would be enforced.
+         */
+        @Test
+        void givenAConfiguredEpochInSeconds_thenItIsIgnoredAndTheStoredValueUsed() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", System.currentTimeMillis() / 1000);
+
+            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverEpoch"), any(), any());
+        }
+
+        @Test
+        void givenAConfiguredEpochFarInTheFuture_thenItIsIgnored() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", System.currentTimeMillis() * 1000);
+
+            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverEpoch"), any(), any());
+        }
+
+        @Test
+        void givenAnIgnoredConfiguredEpochAndNothingStored_thenOneIsMinted() {
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", 42L);
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("not found"));
+
+            long before = System.currentTimeMillis();
+            assertTrue(accessTokenProvider.getCutoverEpoch() >= before);
+        }
+
+        @Test
+        void thenOnlyCertainlyWrongEpochsAreImplausible() {
+            long now = System.currentTimeMillis();
+            assertNotNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_EPOCH - 1));
+            assertNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_EPOCH));
+            assertNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(now));
+            assertNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(now + Duration.ofHours(1).toMillis()));
+            assertNotNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(now + Duration.ofDays(2).toMillis()));
         }
 
         @Test
@@ -675,6 +719,41 @@ class ApimlAccessTokenProviderTest {
 
             assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(120).toMillis())));
             assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(600).toMillis())));
+        }
+
+        /**
+         * A negative allowance would lower the threshold, dropping the revocations of tokens issued just
+         * before the cutover, so the default is used instead.
+         */
+        @Test
+        void givenANegativeSkewAllowance_thenTheDefaultIsUsed() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            long epoch = System.currentTimeMillis() - Duration.ofHours(1).toMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "cutoverSkewAllowanceSeconds", -3600L);
+
+            assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch - 1000)));
+            assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(120).toMillis())));
+            assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(600).toMillis())));
+            verify(apimlLog, times(1)).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverSkewAllowanceSeconds"), any(), any());
+        }
+
+        /**
+         * A value above the maximum is a units mistake; it is capped rather than trusted, and an overflowing
+         * one must not throw and deny every token.
+         */
+        @Test
+        void givenASkewAllowanceAboveTheMaximum_thenItIsCappedAndReported() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            long epoch = System.currentTimeMillis() - Duration.ofDays(1).toMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "cutoverSkewAllowanceSeconds", Long.MAX_VALUE);
+
+            assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofMinutes(30).toMillis())));
+            assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofHours(2).toMillis())));
+            verify(apimlLog, times(1)).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverSkewAllowanceSeconds"), any(), any());
         }
 
         /**

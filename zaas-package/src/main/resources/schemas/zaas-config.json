@@ -287,13 +287,14 @@
                                 },
                                 "cutoverEpoch": {
                                     "type": "integer",
-                                    "description": "Milliseconds since the epoch that splits personal access tokens into those issued before the per-item revocation store existed and those issued after. Leave unset to have the value created in the Caching Service on first use; set it to pin one value across every node. A value that is too low silently stops enforcing revocations made before the upgrade.",
+                                    "description": "Milliseconds since the epoch that splits personal access tokens into those issued before the per-item revocation store existed and those issued after. Leave unset to have the value created in the Caching Service on first use; set it to pin one value across every node. A value that is too low silently stops enforcing revocations made before the upgrade. A value earlier than 2026-01-01 (typically seconds instead of milliseconds) or more than a day in the future is rejected with ZWEAZ607, and the stored or a newly created value is used instead.",
                                     "minimum": 0
                                 },
                                 "cutoverSkewAllowanceSeconds": {
                                     "type": "integer",
-                                    "description": "How much clock difference between nodes to tolerate when comparing a token against 'cutoverEpoch'. Tokens within the allowance take the slower pre-cutover read path.",
+                                    "description": "Margin after 'cutoverEpoch' within which a token still counts as issued before it, to absorb clock differences between nodes and a configured epoch that is slightly early. Tokens within the margin take the slower pre-cutover read path. A negative value is replaced by the default, and one above 3600 is capped there with ZWEAZ607.",
                                     "minimum": 0,
+                                    "maximum": 3600,
                                     "default": 300
                                 },
                                 "revocationLookupTimeoutMillis": {

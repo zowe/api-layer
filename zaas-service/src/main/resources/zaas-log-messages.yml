@@ -365,3 +365,10 @@ messages:
       text: "The personal access token revocation store could not be reached: %s"
       reason: "The Caching Service did not answer, or answered with an error. Revocation state can neither be written nor read."
       action: "Check that the Caching Service is running and reachable, and that its storage mode is 'infinispan' - personal access tokens are only supported on that backend."
+
+    - key: org.zowe.apiml.zaas.pat.cutoverSettingRejected
+      number: ZWEAZ607
+      type: ERROR
+      text: "The configured personal access token setting '%s' (%s) was ignored: %s."
+      reason: "The value cannot be right. Taken at face value it would stop enforcing revocations made before the upgrade, so a safe value is used instead: for the cutover epoch, the one stored in the Caching Service, or the current time if there is none."
+      action: "Correct 'components.zaas.apiml.security.personalAccessToken.<setting>'. The cutover epoch is in milliseconds since the epoch and should be at or shortly before the upgrade; remove it to have it created automatically."

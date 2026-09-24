@@ -37,9 +37,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 @Service
@@ -77,6 +79,25 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
      */
     static final Duration LEGACY_SUNSET = Duration.ofDays(120);
 
+    /**
+     * No genuine cutover can predate this: it is earlier than this release existed. A configured value below
+     * it is a mistake - most often seconds given where milliseconds are expected - and taking it at face
+     * value would stop enforcing every pre-cutover revocation.
+     */
+    static final long EARLIEST_PLAUSIBLE_CUTOVER_EPOCH = Instant.parse("2026-01-01T00:00:00Z").toEpochMilli();
+
+    /** How far ahead of this node's clock a configured cutover may lie, for clocks that disagree. */
+    static final Duration CUTOVER_FUTURE_TOLERANCE = Duration.ofDays(1);
+
+    static final long DEFAULT_CUTOVER_SKEW_ALLOWANCE_SECONDS = 300;
+
+    /**
+     * No real clock difference, nor a configured epoch that is only slightly off, needs more than this. A
+     * larger value is a mistake - typically milliseconds given where seconds are expected - and would silently
+     * send every token issued in that window down the legacy path for its whole life.
+     */
+    static final long MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS = Duration.ofHours(1).toSeconds();
+
     private static final long EPOCH_UNRESOLVED = -1L;
     private static final long LEGACY_ROUTE_LOG_INTERVAL_MILLIS = 30L * 60 * 1000;
 
@@ -109,7 +130,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
      * while the pre-cutover store is at its largest.
      */
     @Value("${apiml.security.personalAccessToken.cutoverSkewAllowanceSeconds:300}")
-    private long cutoverSkewAllowanceSeconds = 300;
+    private long cutoverSkewAllowanceSeconds = DEFAULT_CUTOVER_SKEW_ALLOWANCE_SECONDS;
 
     /**
      * Cap on scopes at issuance. Advisory rather than load-bearing: validation chunks its lookups
@@ -129,6 +150,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private final AtomicLong cutoverEpoch = new AtomicLong(EPOCH_UNRESOLVED);
     private final AtomicLong cutoverEpochAttemptedAt = new AtomicLong();
     private final AtomicLong legacyRouteLoggedAt = new AtomicLong();
+    private final AtomicBoolean skewAllowanceRejectionLogged = new AtomicBoolean();
 
     private volatile byte[] memoizedSalt;
     private volatile long saltReadAt;
@@ -373,7 +395,36 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (System.currentTimeMillis() >= epoch + LEGACY_SUNSET.toMillis()) {
             return false;
         }
-        return creation.getTime() <= epoch + Duration.ofSeconds(cutoverSkewAllowanceSeconds).toMillis();
+        return creation.getTime() <= epoch + skewAllowanceMillis();
+    }
+
+    /**
+     * The allowance is a margin after the cutover inside which a token still counts as pre-cutover: it
+     * absorbs clock differences between the node that stamped the token and the one that set the epoch, and
+     * a configured epoch that is a little early.
+     * <p>
+     * A negative one would lower the threshold - the one direction that drops pre-cutover revocations - so
+     * it is replaced by the default. One above {@link #MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS} is capped there,
+     * which also keeps {@code Duration.toMillis} from overflowing and denying every token.
+     */
+    private long skewAllowanceMillis() {
+        long seconds = cutoverSkewAllowanceSeconds;
+        if (seconds < 0) {
+            logSkewAllowanceRejected(seconds, "it is negative, which would stop enforcing revocations of tokens "
+                + "issued just before the cutover; using " + DEFAULT_CUTOVER_SKEW_ALLOWANCE_SECONDS + " instead");
+            seconds = DEFAULT_CUTOVER_SKEW_ALLOWANCE_SECONDS;
+        } else if (seconds > MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS) {
+            logSkewAllowanceRejected(seconds, "it is above the maximum of " + MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS
+                + " - check that it is in seconds, not milliseconds; using " + MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS + " instead");
+            seconds = MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS;
+        }
+        return Duration.ofSeconds(seconds).toMillis();
+    }
+
+    private void logSkewAllowanceRejected(long seconds, String problem) {
+        if (skewAllowanceRejectionLogged.compareAndSet(false, true)) {
+            apimlLog.log("org.zowe.apiml.zaas.pat.cutoverSettingRejected", "cutoverSkewAllowanceSeconds", seconds, problem);
+        }
     }
 
     long getCutoverEpoch() {
@@ -399,8 +450,14 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     private long resolveCutoverEpoch() {
         if (configuredCutoverEpoch > 0) {
-            logCutoverEpoch("configuration", configuredCutoverEpoch);
-            return configuredCutoverEpoch;
+            String problem = implausibleCutoverEpoch(configuredCutoverEpoch);
+            if (problem == null) {
+                logCutoverEpoch("configuration", configuredCutoverEpoch);
+                return configuredCutoverEpoch;
+            }
+            // Falling back is safe: a stored value is the moment this release first ran, and a minted one is
+            // now - either is at or after the real cutover, and a higher epoch only costs latency.
+            apimlLog.log("org.zowe.apiml.zaas.pat.cutoverSettingRejected", "cutoverEpoch", configuredCutoverEpoch, problem);
         }
 
         Long stored = readCutoverEpoch();
@@ -431,6 +488,23 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             log.debug("Cannot resolve the personal access token cutover epoch", e);
         }
         return EPOCH_UNRESOLVED;
+    }
+
+    /**
+     * @return why the value cannot be a real cutover, or null when it can. Only values that are certainly
+     *         wrong are caught: one that is merely somewhat too low is indistinguishable from a real one.
+     */
+    static String implausibleCutoverEpoch(long epoch) {
+        if (epoch < EARLIEST_PLAUSIBLE_CUTOVER_EPOCH) {
+            return "it is earlier than " + Instant.ofEpochMilli(EARLIEST_PLAUSIBLE_CUTOVER_EPOCH)
+                + ", before this release existed - check that it is in milliseconds, not seconds";
+        }
+        long latest = System.currentTimeMillis() + CUTOVER_FUTURE_TOLERANCE.toMillis();
+        if (epoch > latest) {
+            return "it is more than " + CUTOVER_FUTURE_TOLERANCE.toHours() + " hours in the future ("
+                + Instant.ofEpochMilli(epoch) + ") - check that it is in milliseconds, not microseconds";
+        }
+        return null;
     }
 
     private Long readCutoverEpoch() {

@@ -508,7 +508,12 @@ changing what a wrong value costs:
 Only the last row is equal, and it is the one that deserves engineering attention: a *too low* epoch is
 a security bug in both designs. That is what the skew allowance is for, and why it is added to the
 comparison rather than baked into the stored value — the stored epoch stays audit-meaningful while the
-tolerance is tunable. Keep the allowance small (minutes, not days): under routing a high threshold is
+tolerance is tunable. It is less a clock-skew setting than a margin: it absorbs both clock differences
+between the node that stamps a token's `iat` and the one that set the epoch, and a configured epoch
+that is a few minutes early. A minted epoch needs no margin, being taken at or after the real
+cutover. The default is 300 seconds; a value above 3600 is capped there and reported (`ZWEAZ607`),
+because no real clock difference needs that much and a larger value is typically milliseconds given as
+seconds. Keep the allowance small (minutes, not days): under routing a high threshold is
 free in correctness terms but not in latency, and it sends post-cutover tokens down the legacy path at
 exactly the moment the legacy map is at its largest.
 
@@ -516,7 +521,11 @@ exactly the moment the legacy map is at its largest.
 
 1. `apiml.security.personalAccessToken.cutoverEpoch`, if set. This is the primary path — one value,
    identical on every node, unaffected by anything that happens to the cache, and settable again later
-   as a real kill switch (see below).
+   as a real kill switch (see below). A value that is certainly wrong — earlier than this release
+   existed (typically seconds instead of milliseconds) or more than a day ahead — is rejected with a
+   catalogued error and resolution falls through to steps 2 and 3. That is safe because both yield a
+   value at or after the real cutover, and a high epoch costs only latency. A value that is merely
+   somewhat too low cannot be told apart from a real one and is still taken as given.
 2. Otherwise the value stored under a well-known key in the same generic `zoweCache` the salt already
    lives in, via `CachingServiceClient.create`/`read` — no new `Storage` or client method needed.
 3. Otherwise mint `System.currentTimeMillis()`, store it with `create()` and fall back to `read()` on
