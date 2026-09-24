@@ -17,7 +17,8 @@ dependencyResolutionManagement {
             version('springFramework', '7.0.9')
             version('springRetry', '2.0.13')
 
-            version('modulith', '1.4.13')
+            // Spring Modulith 2.1.x is the line aligned with Spring Boot 4.1; 1.4.x targets Boot 3.4.
+            version('modulith', '2.1.1')
             version('jmolecules', '2023.3.4')
 
             version('glassfishHk2', '3.1.1')
