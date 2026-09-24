@@ -24,7 +24,9 @@ import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExc
 import org.zowe.apiml.apicatalog.exceptions.ApiDocNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 
-import static org.hamcrest.Matchers.contains;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
@@ -56,7 +58,7 @@ class ApiDocControllerApiDocNotFoundTest {
         webTestClient.get().uri("/apicatalog/apidoc/service2/v1").exchange()
             .expectStatus().isNotFound()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC103E')].messageContent")
-                .value(contains("API Documentation not retrieved, Really bad stuff happened"));
+                .value(List.class, contents -> assertThat(contents).contains("API Documentation not retrieved, Really bad stuff happened"));
     }
 
 }

@@ -26,9 +26,9 @@ import org.zowe.apiml.apicatalog.staticapi.StaticDefinitionGenerator;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.List;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
@@ -67,11 +67,11 @@ class StaticDefinitionControllerTest {
                 .exchange()
                     .expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
                     .expectBody()
-                        .jsonPath("$.messages").value(hasSize(1))
-                        .jsonPath("$.messages[0].messageType").value(equalTo("ERROR"))
-                        .jsonPath("$.messages[0].messageNumber").value(equalTo("ZWEAC709E"))
-                        .jsonPath("$.messages[0].messageContent").value(equalTo("Static definition generation failed, caused by exception: java.io.IOException: Exception"))
-                        .jsonPath("$.messages[0].messageKey").value(equalTo("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed"));
+                        .jsonPath("$.messages").value(List.class, messages -> assertThat(messages).hasSize(1))
+                        .jsonPath("$.messages[0].messageType").isEqualTo("ERROR")
+                        .jsonPath("$.messages[0].messageNumber").isEqualTo("ZWEAC709E")
+                        .jsonPath("$.messages[0].messageContent").isEqualTo("Static definition generation failed, caused by exception: java.io.IOException: Exception")
+                        .jsonPath("$.messages[0].messageKey").isEqualTo("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed");
             }
 
         }
@@ -111,11 +111,11 @@ class StaticDefinitionControllerTest {
                     .bodyValue("invalid")
                 .exchange()
                     .expectBody()
-                        .jsonPath("$.messages").value(hasSize(1))
-                        .jsonPath("$.messages[0].messageType").value(equalTo("ERROR"))
-                        .jsonPath("$.messages[0].messageNumber").value(equalTo("ZWEAC709E"))
-                        .jsonPath("$.messages[0].messageContent").value(equalTo("Static definition generation failed, caused by exception: java.nio.file.FileAlreadyExistsException: Exception"))
-                        .jsonPath("$.messages[0].messageKey").value(equalTo("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed"));
+                        .jsonPath("$.messages").value(List.class, messages -> assertThat(messages).hasSize(1))
+                        .jsonPath("$.messages[0].messageType").isEqualTo("ERROR")
+                        .jsonPath("$.messages[0].messageNumber").isEqualTo("ZWEAC709E")
+                        .jsonPath("$.messages[0].messageContent").isEqualTo("Static definition generation failed, caused by exception: java.nio.file.FileAlreadyExistsException: Exception")
+                        .jsonPath("$.messages[0].messageKey").isEqualTo("org.zowe.apiml.apicatalog.StaticDefinitionGenerationFailed");
             }
 
         }

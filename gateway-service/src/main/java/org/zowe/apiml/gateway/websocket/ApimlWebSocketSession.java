@@ -45,7 +45,7 @@ public class ApimlWebSocketSession extends TomcatWebSocketSession {
         if (LOG.isDebugEnabled()) {
             LOG.debug("WebSocket session completed with error", ex);
         } else if (LOG.isInfoEnabled()) {
-            LOG.info("WebSocket session completed with error: " + ex.getMessage());
+            LOG.info("WebSocket session completed with error: {}", ex.getMessage());
         }
         // Jakarta implementation
         if (ex.getCause() instanceof AuthenticationException) {

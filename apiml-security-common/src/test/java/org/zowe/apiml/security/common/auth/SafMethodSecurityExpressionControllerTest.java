@@ -153,7 +153,7 @@ class SafMethodSecurityExpressionControllerTest {
             HttpSecurity http,
             FailedAuthenticationHandler failedAuthenticationHandler,
             ResourceAccessExceptionHandler resourceAccessExceptionHandler
-        ) throws Exception {
+        ) {
             return http
                 .authorizeHttpRequests(requests -> requests.anyRequest().authenticated())
                 .with(new CustomSecurityFilters(failedAuthenticationHandler, resourceAccessExceptionHandler), Customizer.withDefaults())
@@ -198,7 +198,7 @@ class SafMethodSecurityExpressionControllerTest {
         }
 
         @Autowired
-        public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        public void configureGlobal(AuthenticationManagerBuilder auth) {
             auth.inMemoryAuthentication().withUser(USERNAME).password("{noop}" + PASSWORD).roles("TEST");
         }
 

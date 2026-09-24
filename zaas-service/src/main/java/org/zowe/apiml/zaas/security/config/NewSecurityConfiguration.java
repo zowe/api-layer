@@ -632,7 +632,7 @@ public class NewSecurityConfiguration {
     /**
      * Common configuration for all filterchains
      */
-    protected HttpSecurity baseConfigure(HttpSecurity http) throws Exception {
+    protected HttpSecurity baseConfigure(HttpSecurity http) {
         if (isServerAttlsEnabled) {
             http.addFilterBefore(new AttlsFilter(), org.springframework.security.web.authentication.preauth.x509.X509AuthenticationFilter.class);
             http.addFilterBefore(new SecureConnectionFilter(), AttlsFilter.class);

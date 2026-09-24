@@ -24,7 +24,9 @@ import org.zowe.apiml.apicatalog.controllers.handlers.ApiCatalogControllerExcept
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 import org.zowe.apiml.apicatalog.swagger.ContainerService;
 
-import static org.hamcrest.Matchers.contains;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
@@ -56,7 +58,7 @@ class ServicesControllerContainerRetrievalTest {
         webTestClient.get().uri("/apicatalog/containers").exchange()
             .expectStatus().is5xxServerError()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC104E')].messageContent")
-                .value(contains("Could not retrieve container statuses, java.lang.NullPointerException"));
+                .value(List.class, contents -> assertThat(contents).contains("Could not retrieve container statuses, java.lang.NullPointerException"));
     }
 
 }

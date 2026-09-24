@@ -24,7 +24,9 @@ import org.zowe.apiml.apicatalog.controllers.handlers.CatalogApiDocControllerExc
 import org.zowe.apiml.apicatalog.exceptions.ServiceNotFoundException;
 import org.zowe.apiml.apicatalog.swagger.ApiDocService;
 
-import static org.hamcrest.Matchers.contains;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @WebFluxTest(controllers = ApiDocControllerMicroservice.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
@@ -53,7 +55,7 @@ class ApiDocControllerServiceNotFoundTest {
         webTestClient.get().uri("/apicatalog/apidoc/service1/v1").exchange()
             .expectStatus().isNotFound()
             .expectBody().jsonPath("$.messages[?(@.messageNumber == 'ZWEAC706E')].messageContent")
-                .value(contains("Service not located, API Documentation not retrieved, The service is running."));
+                .value(List.class, contents -> assertThat(contents).contains("Service not located, API Documentation not retrieved, The service is running."));
     }
 
 }
