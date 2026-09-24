@@ -62,9 +62,8 @@ public class ReactivePATController {
     private final MessageService messageService;
     private final ObjectMapper mapper;
 
-    /** @see org.zowe.apiml.zaas.controllers.AuthController#DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS */
-    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:60000}")
-    private long ruleTimestampSkewAllowanceMillis = DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
+    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS}}")
+    private long ruleTimestampSkewAllowanceMillis;
 
     @Data
     @NoArgsConstructor

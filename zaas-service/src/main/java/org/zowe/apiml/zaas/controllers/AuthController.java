@@ -102,6 +102,9 @@ public class AuthController {
     public static final String OIDC_TOKEN_VALIDATE = "/oidc-token/validate"; // NOSONAR
     public static final String OIDC_WEBFINGER_PATH = "/oidc/webfinger";
 
+    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS}}")
+    private long ruleTimestampSkewAllowanceMillis;
+
     @DeleteMapping(path = INVALIDATE_PATH)
     @Hidden
     @Operation(summary = "Logout JWT token.",
@@ -195,7 +198,7 @@ public class AuthController {
         if (rulesRequestModel != null) {
             timeStamp = rulesRequestModel.getTimestamp();
         }
-        if (isFutureRuleTimestamp(timeStamp)) {
+        if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
@@ -231,7 +234,7 @@ public class AuthController {
     public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
-        if (userId == null || isFutureRuleTimestamp(timeStamp)) {
+        if (userId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return badRequestForPATInvalidation();
         }
         log.debug("revokeAccessTokensForUser: userId={}", userId);
@@ -269,7 +272,7 @@ public class AuthController {
     public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
-        if (serviceId == null || isFutureRuleTimestamp(timeStamp)) {
+        if (serviceId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
@@ -538,29 +541,8 @@ public class AuthController {
         return stringWriter.toString();
     }
 
-    /**
-     * A revocation rule reads "invalidate every token created at or before this instant", and its own
-     * retention is derived from the same instant. A future timestamp therefore claims authority over tokens
-     * for longer than the rule itself is kept, which is not a state the store can represent. Small clock
-     * differences between the caller and this node are still tolerated.
-     */
-    public static final long DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS = 60_000L;
-
-    /**
-     * Configurable because rejecting a future timestamp is a change in behaviour - this used to be accepted -
-     * and a caller whose clock runs further ahead than the allowance would otherwise have no remedy but to
-     * fix its time source. Widening this is the lesser evil against an automation that stops working on
-     * upgrade.
-     */
-    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:60000}")
-    private long ruleTimestampSkewAllowanceMillis = DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
-
     public static boolean isFutureRuleTimestamp(long timestamp, long skewAllowanceMillis) {
         return timestamp > System.currentTimeMillis() + skewAllowanceMillis;
-    }
-
-    private boolean isFutureRuleTimestamp(long timestamp) {
-        return isFutureRuleTimestamp(timestamp, ruleTimestampSkewAllowanceMillis);
     }
 
     /**

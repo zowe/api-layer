@@ -47,11 +47,6 @@ public class CachingController {
     private final Storage storage;
     private final MessageService messageService;
 
-    /**
-     * Upper bound on how many keys one {@code /cache-query} call may ask for. Defaults to the shared
-     * constant rather than a literal so that it cannot drift away from the scope cap applied at issuance -
-     * a lookup limit below that cap would make a legitimately-issued token permanently unauthenticatable.
-     */
     @Value("${caching.storage.maxQueryKeys:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
     int maxQueryKeys;
 
@@ -138,13 +133,15 @@ public class CachingController {
         return Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(storageException.getKey());
     }
 
+    /**
+     * * @deprecated superseded by the per-item layout; scheduled for removal with the legacy read path.
+     */
     @GetMapping(value = "/cache-list/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the items in the cache map",
         description = "Values returned for the calling service and specific cache map. Deprecated: this " +
             "scans every item of the map. Use /cache-query to look up specific items.",
         deprecated = true)
     @Deprecated(since = "3.6.0")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> getAllMapItems(@PathVariable String mapKey, ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {
@@ -161,13 +158,15 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
+    /**
+     * * @deprecated superseded by the per-item layout; scheduled for removal with the legacy read path.
+     */
     @GetMapping(value = {"/cache-list", "/cache-list/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the maps in the cache",
         description = "Values returned for the calling service. Deprecated: this scans every item of every " +
             "map, so its cost grows with the size of the store. Use /cache-query to look up specific items.",
         deprecated = true)
     @Deprecated(since = "3.6.0")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> getAllMaps(ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {
@@ -198,7 +197,6 @@ public class CachingController {
     @Operation(summary = "Looks up specific items across cache maps",
         description = "Takes the item keys to look up grouped by map key, and returns only the entries that " +
             "exist. A map with no matching item is omitted from the response.")
-    @ResponseBody
     public Mono<ResponseEntity<Object>> getMapItems(@RequestBody Map<String, List<String>> keysByMapKey, ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {
@@ -232,7 +230,6 @@ public class CachingController {
             "introduced. Removed once every such token has expired.",
         deprecated = true)
     @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
-    @ResponseBody
     public Mono<ResponseEntity<Object>> getAllLegacyMaps(ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {

@@ -58,6 +58,14 @@ public final class PatRevocationStore {
      */
     public static final int DEFAULT_MAX_QUERY_KEYS = DEFAULT_MAX_SCOPES_PER_TOKEN + 2;
 
+    /**
+     * A revocation rule reads "invalidate every token created at or before this instant", and its own
+     * retention is derived from the same instant. A future timestamp therefore claims authority over tokens
+     * for longer than the rule itself is kept, which is not a state the store can represent. Small clock
+     * differences between the caller and this node are still tolerated.
+     */
+    public static final long DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS = 60_000L;
+
     private PatRevocationStore() {
         // constants only
     }

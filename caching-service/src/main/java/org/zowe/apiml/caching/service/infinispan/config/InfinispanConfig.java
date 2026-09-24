@@ -303,8 +303,6 @@ public class InfinispanConfig implements InitializingBean {
         var caches = new HashMap<String, ConfigurationBuilder>();
         caches.put(CACHE_ZOWE, getDistributedCacheConfig());
         caches.put(CACHE_ZOWE_INVALIDATED_TOKEN_ITEM, getRevocationCacheConfig());
-        // kept defined, and only ever read: an undefined name would be silently recreated by
-        // DefaultCacheManager.getCache from the default configuration, which is replicated and persisted
         caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
 
         if (applicationInfo.isModulith()) {

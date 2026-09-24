@@ -24,8 +24,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -142,8 +141,6 @@ public class InfinispanStorage implements Storage {
             return null;
         }
 
-        // Infinispan reads a non-positive lifespan as "never expire" (-1) or "already gone" (0); an entry
-        // whose retention has already run out must not become the one entry that lives forever.
         if (ttlSeconds <= 0) {
             log.debug("Item {} of map {} is already past its retention, removing instead of storing", toCreate.getKey(), mapKey);
             cache.remove(cacheKey);
@@ -166,7 +163,6 @@ public class InfinispanStorage implements Storage {
         for (String key : keysOf(cache)) {
             if (!key.startsWith(prefix)) continue;
             String value = cache.get(key);
-            // null means the entry expired between the scan and the read
             if (value != null) {
                 result.put(key.substring(prefix.length()), value);
             }
@@ -181,8 +177,6 @@ public class InfinispanStorage implements Storage {
         Cache<String, String> cache = getTokenItemCache();
 
         Map<String, Map<String, String>> result = new HashMap<>();
-        // copied rather than referenced: the legacy layout stores the inner map as the entry value, so
-        // writing into what getAllLegacyMaps handed back would mutate the cached object in place
         getAllLegacyMaps(serviceId).forEach((legacyMapKey, items) -> result.put(legacyMapKey, new HashMap<>(items)));
 
         for (String key : keysOf(cache)) {
@@ -250,7 +244,6 @@ public class InfinispanStorage implements Storage {
         log.debug("Reading all records from the legacy token cache for service {}", serviceId);
         ConcurrentMap<String, Map<String, String>> legacy = getLegacyTokenCache();
 
-        // bare concatenation, because that is how the pre-cutover data was actually keyed
         Map<String, Map<String, String>> result = new HashMap<>();
         for (String key : legacy.keySet()) {
             if (!key.startsWith(serviceId)) continue;
@@ -430,7 +423,7 @@ public class InfinispanStorage implements Storage {
                 if (container == null || container.getExpiresAt() == null) {
                     return null;
                 }
-                return Duration.between(LocalDateTime.now(), container.getExpiresAt()).getSeconds();
+                return Duration.between(ZonedDateTime.now(ZoneId.systemDefault()), container.getExpiresAt().atZone(ZoneId.systemDefault())).getSeconds();
             }
             if (INVALID_USERS_KEY.equals(mapKey) || INVALID_SCOPES_KEY.equals(mapKey)) {
                 long relevantUntil = Long.parseLong(value.trim()) + Duration.ofDays(RULE_RETENTION_DAYS).toMillis();

@@ -75,11 +75,6 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.token.accessTokenTooManyScopes", ex.getLimit());
     }
 
-    /**
-     * Without this the personal access token endpoints answer 500 with a stack trace for something that is
-     * simply the revocation store being unreachable - which is also how a caching service too old to serve
-     * point lookups surfaces.
-     */
     @ExceptionHandler(CachingServiceClientException.class)
     public Mono<Void> handleCachingServiceClientException(ServerWebExchange exchange, CachingServiceClientException ex) {
         log.debug("The caching service could not be reached: {}", ex.getMessage());
