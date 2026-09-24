@@ -41,6 +41,11 @@
 # Options:
 #   --workspace <dir>   override the workspace directory (default: $ZWE_zowe_workspaceDirectory)
 #   --instance <id>     override the HA instance id     (default: $ZWE_haInstance_id, else 'localhost')
+#   --force             proceed although Infinispan's lock file is present - only for an instance that is
+#                       known to be stopped after an unclean shutdown
+#
+# Works for both the Caching Service and the API Mediation Layer modulith, which keeps its store in the
+# same place. The instance must be stopped first.
 ################################################################################
 
 set -e
@@ -58,14 +63,16 @@ instance="${ZWE_haInstance_id:-localhost}"
 cache_name=""
 do_list="false"
 do_delete="false"
+do_force="false"
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --list)      do_list="true" ;;
         --delete)    do_delete="true" ;;
+        --force)     do_force="true" ;;
         --workspace) shift; workspace="$1" ;;
         --instance)  shift; instance="$1" ;;
-        -h|--help)   sed -n '13,43p' "$0"; exit 0 ;;
+        -h|--help)   sed -n '13,49p' "$0"; exit 0 ;;
         -*)          echo "Unknown option: $1" >&2; exit 2 ;;
         *)
             if [ -n "${cache_name}" ]; then
@@ -87,16 +94,6 @@ fi
 if [ ! -d "${root}" ]; then
     echo "No Caching Service data directory at ${root}" >&2
     echo "Set ZWE_zowe_workspaceDirectory, or pass --workspace <dir>." >&2
-    exit 1
-fi
-
-# Best effort, and it has to be checked: the directory must not be live when it is moved. Infinispan keeps
-# open file handles into it, and renaming underneath a running instance corrupts the store rather than
-# retiring it.
-service_pid=$(ps -ef 2>/dev/null | grep '[c]aching-service.*\.jar' | awk '{print $2}' | head -1 || true)
-if [ -n "${service_pid}" ]; then
-    echo "The Caching Service still looks to be running (pid ${service_pid})." >&2
-    echo "Stop it before retiring a cache directory - Infinispan holds open handles into it." >&2
     exit 1
 fi
 
@@ -143,6 +140,29 @@ fi
 if is_protected "${cache_name}"; then
     echo "Refusing to touch '${cache_name}': it is either shared cache-manager state or holds data that" >&2
     echo "cannot be regenerated (the personal access token hashing salt)." >&2
+    exit 1
+fi
+
+# The directory must not be live when it is moved. Infinispan keeps open file handles into it, and renaming
+# underneath a running instance corrupts the store rather than retiring it.
+#
+# The authoritative check is Infinispan's own lock file: the cache manager holds it for as long as it runs and
+# deletes it on a clean stop, so it covers exactly this directory, whichever process owns it. It is also left
+# behind by an unclean shutdown, which is what --force is for.
+if [ -e "${root}/___global.lck" ] && [ "${do_force}" != "true" ]; then
+    echo "Infinispan's lock file is present: ${root}/___global.lck" >&2
+    echo "Either the Caching Service (or the API Mediation Layer, in a modulith deployment) is still running" >&2
+    echo "against this directory, or it was not shut down cleanly. Stop it before retiring a cache directory." >&2
+    echo "If it is certainly stopped, start and stop it once to clear the lock, or pass --force." >&2
+    exit 1
+fi
+
+# A second, best-effort check by process name, for a store whose lock file is missing for any other reason.
+# The modulith runs apiml-lite.jar rather than caching-service.jar, and uses the same directory.
+service_pid=$(ps -ef 2>/dev/null | grep -E '[c]aching-service.*\.jar|[a]piml-lite.*\.jar' | awk '{print $2}' | head -1 || true)
+if [ -n "${service_pid}" ] && [ "${do_force}" != "true" ]; then
+    echo "The Caching Service or the API Mediation Layer still looks to be running (pid ${service_pid})." >&2
+    echo "Stop it before retiring a cache directory - Infinispan holds open handles into it." >&2
     exit 1
 fi
 

@@ -231,9 +231,13 @@ product ships a script rather than deleting anything:
     bin/retire-cache.sh zoweInvalidatedTokenCache    # rename it aside (reversible)
     bin/retire-cache.sh zoweInvalidatedTokenCache --delete
 
-The service must be stopped: Infinispan holds open handles into the directory, and moving it underneath a
-running instance corrupts the store rather than retiring it. `zoweCache` is refused outright - it holds the
-hashing salt, and losing that silently un-enforces every revocation there is.
+The service must be stopped - or, in a modulith deployment, the API Mediation Layer, which keeps its store in
+the same directory: Infinispan holds open handles into it, and moving it underneath a running instance
+corrupts the store rather than retiring it. The script refuses while Infinispan's lock file
+`___global.lck` is present, which it is for as long as the instance runs. An unclean shutdown leaves it
+behind too; start and stop the instance once to clear it, or pass `--force` if it is certainly stopped.
+`zoweCache` is refused outright - it holds the hashing salt, and losing that silently un-enforces every
+revocation there is.
 
 There are two moments to run it, with different consequences, and the script cannot tell them apart:
 
