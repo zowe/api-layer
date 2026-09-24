@@ -14,7 +14,6 @@ import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.zowe.apiml.discovery.DiscoveryServiceApplication;
 import org.zowe.apiml.discovery.registry.RegistryConfiguration;
 import org.zowe.apiml.discovery.functional.DiscoveryFunctionalTest;
@@ -31,20 +30,20 @@ import static org.hamcrest.core.Is.is;
 )
 public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
     @Nested
-    @ActiveProfiles("http")
     class GivenProtectedHealthEndpointWithHttp {
-    @Test
-    void applicationHealthEndpointsWhenProtected() {
-        given()
-            .when()
-            .get(getDiscoveryUriWithPath("/application/health"))
-            .then()
-            .statusCode(is(HttpStatus.SC_OK));
-      }
+
+        @Test
+        void applicationHealthEndpointsWhenProtected() {
+            given()
+                .when()
+                .get(getDiscoveryUriWithPath("/application/health"))
+                .then()
+                .statusCode(is(HttpStatus.SC_OK));
+        }
+
     }
 
     @Nested
-    @ActiveProfiles("https")
     class GivenProtectedHealthEndpointWithHttps {
         @Test
         void applicationHealthEndpointsWhenProtected() {
@@ -55,4 +54,5 @@ public class ProtectedHealthEndpointTest extends DiscoveryFunctionalTest {
                 .statusCode(is(HttpStatus.SC_OK));
         }
     }
+
 }
