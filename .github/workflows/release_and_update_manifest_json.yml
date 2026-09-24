@@ -28,9 +28,6 @@ jobs:
                   git config --global user.name "Zowe Robot"
                   git clone https://zowe-robot:${{ secrets.ZOWE_ROBOT_TOKEN }}@github.com/zowe/zowe-install-packaging.git
                   cd scripts/release_components
-                  # npm ci installs the committed lockfile instead of resolving fresh
-                  # versions, and --ignore-scripts keeps lifecycle scripts from running.
-                  # Together they satisfy githubactions:S8543 and githubactions:S6505.
                   npm ci --ignore-scripts
                   node index.js ${{ secrets.ZOWE_ROBOT_TOKEN }} ${{ github.event.inputs.release_version }}
             - uses: ./.github/actions/teardown
