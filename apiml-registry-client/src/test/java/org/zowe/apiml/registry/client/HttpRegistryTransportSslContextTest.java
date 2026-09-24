@@ -7,12 +7,12 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
+
 package org.zowe.apiml.registry.client;
 
 import org.junit.jupiter.api.Test;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
 import java.security.cert.X509Certificate;
 
 import static org.assertj.core.api.Assertions.assertThat;
