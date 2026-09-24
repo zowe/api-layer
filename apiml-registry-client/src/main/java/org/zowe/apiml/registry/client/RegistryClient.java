@@ -14,6 +14,8 @@ import org.zowe.apiml.registry.model.Applications;
 import org.zowe.apiml.registry.model.InstanceStatus;
 import org.zowe.apiml.registry.model.ServiceInstance;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -29,6 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * threads inside a Spring context that is about to be torn down. Eureka's client spawned several, and shutting
  * them down cleanly in tests was a recurring problem.
  */
+@Slf4j
 public final class RegistryClient {
 
     private final RegistryTransport transport;
@@ -138,6 +141,7 @@ public final class RegistryClient {
     /** Registers this service. No-op when the client was built without a self instance. */
     public boolean register() {
         if (self == null) {
+            log.debug("Not registering: this client was built without a self instance, so it is read-only.");
             return false;
         }
         try {
@@ -145,6 +149,11 @@ public final class RegistryClient {
             registered.set(true);
             return true;
         } catch (RegistryTransport.RegistryTransportException e) {
+            // Logged, deliberately. Swallowing this made two very different failures - a registry that rejects the
+            // registration and a client that never even sent one - look identical from the outside: the caller only
+            // sees "false", the service silently never appears in any routing table, and the only evidence is a
+            // service that is up and missing. The status and the path are in the message.
+            log.debug("The registry rejected this service's registration: {}", e.getMessage());
             registered.set(false);
             return false;
         }
@@ -161,6 +170,7 @@ public final class RegistryClient {
      */
     public boolean heartbeat() {
         if (self == null) {
+            log.debug("Not renewing: this client was built without a self instance, so it has no lease to renew.");
             return false;
         }
         try {
@@ -170,6 +180,7 @@ public final class RegistryClient {
             }
             return register();
         } catch (RegistryTransport.RegistryTransportException e) {
+            log.debug("The registry rejected this service's lease renewal: {}", e.getMessage());
             registered.set(false);
             return false;
         }
