@@ -18,6 +18,9 @@
   "author": "",
   "license": "(EPL-2.0 OR Apache-2.0)",
   "homepage": ".",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "dependencies": {
     "async": "3.2.6",
     "js-yaml": "4.3.2",
