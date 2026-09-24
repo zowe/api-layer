@@ -9,13 +9,12 @@ dependencyResolutionManagement {
             // Jersey 3.1.x is Java 17-loadable (major 55). Only jersey-common:4.0.1 is Java 21 (major 65).
             // Pinned via resolutionStrategy.force in build.gradle -- see the comment there.
             version('jersey3', '3.1.12')
-            version('springBootGraphQl', '4.0.2')
             version('springCloudNetflix', '5.0.2')
             version('springCloudCommons', '5.0.3')
             version('springCloudCB', '5.0.3')
             version('springCloudGateway', '5.0.3')
             version('springCloud', '2025.1.3')
-            version('springFramework', '7.0.7')
+            version('springFramework', '7.0.9')
             version('springRetry', '2.0.13')
 
             version('modulith', '1.4.13')
@@ -84,7 +83,6 @@ dependencyResolutionManagement {
             version('junitPlatform', '1.14.4')
             version('jxpath', '1.4.0')
             version('kotlinStdlib', '2.4.20')
-            version('lettuce', '6.8.2.RELEASE')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.26.1')
             version('lombok', '1.18.48')
@@ -111,7 +109,6 @@ dependencyResolutionManagement {
             version('swagger2Parser', '1.0.76')
             version('swagger3Parser', '2.1.48')
             version('thymeleaf', '3.1.5.RELEASE')
-            version('tomcat', '10.1.60')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.2.2')
             version('jgit', '7.8.0.202609011348-r')
@@ -120,7 +117,9 @@ dependencyResolutionManagement {
             version('gradleRelease', '3.1.0')
             version('gradleLicencer', '0.6.1')
             version('gradleJibPlugin', '3.5.4')
-            version('reactorBom', '2023.0')
+            // spring-boot-dependencies:4.1.1 manages reactor-bom 2025.0.7, which is what resolves
+            // (reactor-core 3.8.7, reactor-netty 1.3.7). 2023.0 named a train this build does not use.
+            version('reactorBom', '2025.0.7')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
@@ -129,7 +128,9 @@ dependencyResolutionManagement {
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
             version('jacoco', '0.8.15')
-            version('gradle', '9.0')
+            // Must match gradle/wrapper/gradle-wrapper.properties: gateway-service's wrapper task reads
+            // this, so a stale value downgrades the committed wrapper on the next :gateway-service:wrapper.
+            version('gradle', '9.7.1')
             version('commonsCompress', '1.28.0')
             version('bucket4j', '8.20.0')
             version('xstream', '1.4.21')
@@ -176,7 +177,6 @@ dependencyResolutionManagement {
             library('spring_webflux', 'org.springframework', 'spring-webflux').versionRef('springFramework')
             library('spring_bom', 'org.springframework', 'spring-framework-bom').versionRef('springFramework')
             library('spring_web', 'org.springframework', 'spring-web').versionRef('springFramework')
-            library('spring_tx', 'org.springframework', 'spring-tx').versionRef('springFramework')
             library('spring_webmvc', 'org.springframework', 'spring-webmvc').versionRef('springFramework')
             library('spring_context_support', 'org.springframework', 'spring-context-support').versionRef('springFramework')
             library('spring_beans', 'org.springframework', 'spring-beans').versionRef('springFramework')
@@ -239,7 +239,8 @@ dependencyResolutionManagement {
             library('junit_platform_engine', 'org.junit.platform', 'junit-platform-engine').versionRef('junitPlatform')
             library('jxpath', 'commons-jxpath', 'commons-jxpath').versionRef('jxpath')
             library('kotlin_stdlib', 'org.jetbrains.kotlin', 'kotlin-stdlib').versionRef('kotlinStdlib')
-            library('lettuce', 'io.lettuce', 'lettuce-core').versionRef('lettuce')
+            // version managed by spring-boot-dependencies
+            library('lettuce', 'io.lettuce', 'lettuce-core').withoutVersion()
             library('log4j_api', 'org.apache.logging.log4j', 'log4j-api').versionRef('log4j')
             library('log4j_to_slf4j', 'org.apache.logging.log4j', 'log4j-to-slf4j').versionRef('log4j')
             library('lombok', 'org.projectlombok', 'lombok').versionRef('lombok')
@@ -271,11 +272,9 @@ dependencyResolutionManagement {
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf_spring6', 'org.thymeleaf', 'thymeleaf-spring6').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
-            library('tomcat_embed_core', 'org.apache.tomcat.embed', 'tomcat-embed-core').versionRef('tomcat')
-            library('tomcat_embed_el', 'org.apache.tomcat.embed', 'tomcat-embed-el').versionRef('tomcat')
-            library('tomcat_embed_websocket', 'org.apache.tomcat.embed', 'tomcat-embed-websocket').versionRef('tomcat')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
-            library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').versionRef('springBootGraphQl')
+            // version managed by spring-boot-dependencies
+            library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').withoutVersion()
             library('bucket4j_core', 'com.bucket4j', 'bucket4j_jdk17-core').versionRef('bucket4j')
             library('xstren', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream') // to avoid security vulnerability CVE-2024-47072
             library('opentelemetry_bom', 'io.opentelemetry', 'opentelemetry-bom').versionRef('openTelemetry-core')
