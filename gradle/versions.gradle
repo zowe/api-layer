@@ -151,7 +151,6 @@ dependencyResolutionManagement {
             library('spring_boot_starter_webflux', 'org.springframework.boot', 'spring-boot-starter-webflux').versionRef('springBoot')
             library('spring_boot_starter_oauth2_client', 'org.springframework.boot', 'spring-boot-starter-oauth2-client').versionRef('springBoot')
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
-            library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudNetflix')
             library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway-server-webflux').versionRef('springCloudGateway')
             library('spring_cloud_gateway_server', 'org.springframework.cloud', 'spring-cloud-gateway-server').versionRef('springCloudGateway')
             library('spring_cloud_commons', 'org.springframework.cloud', 'spring-cloud-commons').versionRef('springCloudCommons')

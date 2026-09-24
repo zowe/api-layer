@@ -2,6 +2,11 @@
 
 All notable changes to the Zowe API Mediation Layer package will be documented in this file.
 
+## Unreleased
+
+* **BREAKING CHANGE:** The API Mediation Layer's service registry is no longer Netflix Eureka. The Discovery Service now runs an in-sourced registry (`apiml-registry`, `apiml-registry-client`, `apiml-registry-client-spring`), and the Gateway, ZAAS and API Catalog no longer use the Netflix client. **The Eureka HTTP API is unchanged** — the frozen wire contract was captured from Eureka 2.0.6 / Spring Cloud Netflix 4.3.3 and is reproduced byte-for-byte, so external services and the five onboarding enablers register and query Discovery exactly as before. What has changed is what clients must not rely on: the `/eureka/` Freemarker dashboard is replaced by a JSON status document at `/eureka/status`, `/eureka/status` and `/eureka/lastn` are no longer HTML, and `GET /eureka/peerreplication` is not served. The `eureka.*` configuration property names are kept unchanged, so no `zowe.yaml` needs editing. `/application/eurekaversion` keeps reporting the Eureka-compatible UP-count until the enablers migrate, which is a separate, later step. See [docs/service-registry-adr.md](docs/service-registry-adr.md) for the decision record, the frozen contract and the deliberately excluded paths. (#4950)
+* Feature: The Caching Service and the discoverable client still use the Netflix client; they onboard through the Java/Spring enablers, which are unchanged in this release and are migrated in the phase after this one. Named in the ADR, along with the other remaining `com.netflix` users. (#4950)
+
 ## `APIML 3.5.19 / Zowe 3.5.0 (2026-05-20)`
 
 * Feature:  OpenTelemetry configuration has been configured with API ML's `SSLContext` to handle secure connections to external OTel collectors. (#4537) ([a6d6863](https://github.com/zowe/api-layer/commit/a6d6863)), closes [#4537](https://github.com/zowe/api-layer/issues/4537)
