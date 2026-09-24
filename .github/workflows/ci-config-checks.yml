@@ -1,18 +1,9 @@
 name: CI configuration checks
 
-# Cheap, always-on gate for the CI configuration invariants that the resource-reduction
-# work depends on. Each invariant encodes a defect that was observed in this repository:
-# missing build-cache credentials (which make Gradle answer 403 and then disable the
-# remote cache for the whole build), a teardown step that made the local task-output
-# cache useless, Java-only jobs paying for Node/npm, and workflows using the disabled
-# :integration-tests:test task as a success proxy.
-#
-# See docs/testing-resource-budgets.md and scripts/ci/check-ci-config.py.
+# Gate for the CI configuration invariants (scripts/ci/check-ci-config.py)
 
 on:
-    # Deliberately no path filters: if this job is ever made a required status check, a
-    # filtered-out pull request would leave the check "Expected" forever and block the
-    # merge. The job takes well under a minute.
+    # No path filters: a filtered-out PR would leave a required check "Expected" forever
     push:
         branches: [ v2.x.x, v3.x.x ]
     pull_request:

@@ -17,27 +17,17 @@ on:
                 default: false
 
 concurrency:
-    # Supersede in-flight runs for the same pull request. Push and release runs are
-    # never cancelled: they are intentional branch builds. The group is keyed on the
-    # pull request number, never on a fork-controlled branch name, so a fork cannot
-    # collide with (or cancel) a branch build.
+    # Supersede in-flight PR runs; keyed on the PR number, never a branch name
     group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
     cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-    # Resource collection is opt-in per run and never affects the job result.
+    # Opt-in measurement; never affects the job result (docs/testing-resource-budgets.md)
     CI_RESOURCE_COLLECTION: ${{ inputs.collect_resources }}
-    # Every Gradle invocation in this workflow gets real build-cache credentials through
-    # Gradle's ORG_GRADLE_PROJECT_ convention, so no command line has to repeat them.
-    # Without credentials settings.gradle falls back to the placeholder values in
-    # gradle.properties, the remote cache answers 403 and Gradle disables it for the whole
-    # build ("The remote build cache was disabled during the build due to errors"), which
-    # turns every cacheable task into a miss. Secrets are empty for fork pull requests, so
-    # the remote cache disables itself cleanly there instead of failing.
+    # Build-cache credentials for every Gradle call (docs/testing-resource-budgets.md)
     ORG_GRADLE_PROJECT_artifactory_user: ${{ secrets.ARTIFACTORY_USERNAME }}
     ORG_GRADLE_PROJECT_artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
-    # Read-only by default. Only the trusted producer jobs override this, and only on a
-    # push event, so unmerged pull request code never writes to the shared cache.
+    # Read-only by default; only trusted producer jobs override it, and only on push
     GRADLE_REMOTE_CACHE_PUSH: "false"
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
 

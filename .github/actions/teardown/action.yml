@@ -15,9 +15,7 @@ inputs:
 runs:
     using: "composite"
     steps:
-        # Resource measurement is opt-in per run and must be reported even when the
-        # job failed, which is why the call sites invoke this action with
-        # `if: always()`. See docs/testing-resource-budgets.md.
+        # Opt-in measurement; call sites use `if: always()` so failed jobs are reported too
         -   name: Stop resource collection
             if: always() && env.CI_RESOURCE_COLLECTION == 'true'
             run: |
@@ -30,14 +28,7 @@ runs:
             shell: bash
 
         -   name: Cleanup Gradle Cache
-            # Remove the files that must not be restored from a GitHub Actions cache,
-            # so they aren't cached by GitHub Actions. Restoring the lock and gc files
-            # might cause problems for future builds.
-            #
-            # The content addressed task outputs in build-cache-1 are deliberately NOT
-            # removed: deleting them here made the task-output cache useless (it was
-            # saved empty on every run), which is why eligible compile tasks never came
-            # back FROM-CACHE. Only the lock and gc bookkeeping files are removed.
+            # Remove only lock/gc files; keep build-cache-1 entries so tasks can come FROM-CACHE
             shell: bash
             run: |
                 rm -f ~/.gradle/caches/modules-2/modules-2.lock
