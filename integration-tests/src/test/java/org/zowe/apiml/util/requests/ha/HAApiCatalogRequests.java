@@ -29,10 +29,7 @@ public class HAApiCatalogRequests {
 
     public HAApiCatalogRequests() {
         var apiCatalogServiceConfiguration = environmentConfiguration().getApiCatalogServiceConfiguration();
-        String[] apiCatalogHosts = apiCatalogServiceConfiguration.getHost().split(",");
-        for (String host: apiCatalogHosts) {
-            apiCatalogServices.add(new ApiCatalogRequests(apiCatalogServiceConfiguration.getScheme(), host));
-        }
+        apiCatalogServiceConfiguration.getHosts().forEach( host -> apiCatalogServices.add(new ApiCatalogRequests(apiCatalogServiceConfiguration.getScheme(), host)));
         log.info("Created HAApiCatalogRequests");
     }
 

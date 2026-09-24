@@ -37,7 +37,7 @@ class CheckEnvironmentTest {
         EnvironmentConfiguration config = ConfigReader.environmentConfiguration();
         username = config.getCredentials().getUser();
         password = config.getCredentials().getPassword();
-        zosmfHost = config.getZosmfServiceConfiguration().getHost();
+        zosmfHost = config.getZosmfServiceConfiguration().getFirstHost();
         zosmfPort = config.getZosmfServiceConfiguration().getPortForHost(zosmfHost);
         zosmfProtectedEndpoint = "/zosmf/restfiles/ds?dslevel=sys1.p*";
         zosmfScheme = config.getZosmfServiceConfiguration().getScheme();

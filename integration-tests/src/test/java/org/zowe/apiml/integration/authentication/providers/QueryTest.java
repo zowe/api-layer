@@ -43,7 +43,7 @@ class QueryTest implements TestWithStartedInstances {
 
     private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
     private static final String SCHEME = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getScheme();
-    private static final String HOST = StringUtils.isBlank(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost()) ? ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost() : ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost();
+    private static final String HOST = StringUtils.isBlank(ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost()) ? ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getFirstHost() : ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getDvipaHost();
     private static final int PORT = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPortForHost(HOST);
     private static final String BASE_PATH = "/gateway/api/v1";
     private static final String QUERY_ENDPOINT = "/auth/query";

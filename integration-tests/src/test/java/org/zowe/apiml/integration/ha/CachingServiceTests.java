@@ -112,8 +112,8 @@ class CachingServiceTests {
 
         KEY_VALUE.setServiceId(SERVICE);
 
-        assumeTrue(cachingServiceConfiguration.getHost() != null);
-        baseUrls = Arrays.stream(cachingServiceConfiguration.getHost().split("[,;]"))
+        assumeTrue(cachingServiceConfiguration.getFirstHost() != null);
+        baseUrls = cachingServiceConfiguration.getHosts().stream()
             .map(host -> String.format("%s://%s:%d", cachingServiceConfiguration.getScheme(), host, cachingServiceConfiguration.getPortForHost(host)))
             .toList();
         baseUrls = baseUrls.subList(0, Integer.getInteger("caching.instances", baseUrls.size()));

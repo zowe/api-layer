@@ -46,7 +46,7 @@ public class GatewayRequests {
     private final String instance;
 
     public GatewayRequests() {
-        this(gatewayServiceConfiguration.getScheme(), gatewayServiceConfiguration.getHost());
+        this(gatewayServiceConfiguration.getScheme(), gatewayServiceConfiguration.getFirstHost());
     }
 
     public GatewayRequests(String scheme, String host) {

@@ -79,7 +79,7 @@ class ApiCatalogEndpointIntegrationTest implements TestWithStartedInstances {
         unauthorizedGatewayToken = gatewayToken(UNAUTHORIZED_USERNAME, UNAUTHORIZED_PASSWORD);
 
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        Stream.of(gatewayServiceConfiguration.getHost().split(","))
+        gatewayServiceConfiguration.getHosts()
             .forEach(host -> baseHosts.add(host + ":" + gatewayServiceConfiguration.getPortForHost(host)));
     }
 

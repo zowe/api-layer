@@ -49,7 +49,7 @@ class DiscoveryAuthIntegrationTest implements TestWithStartedInstances {
         scheme = discoveryServiceConfiguration.getScheme();
         username = ConfigReader.environmentConfiguration().getCredentials().getUser();
         password = ConfigReader.environmentConfiguration().getCredentials().getPassword();
-        host = discoveryServiceConfiguration.getHost();
+        host = discoveryServiceConfiguration.getFirstHost();
         port = discoveryServiceConfiguration.getPortForHost(host);
     }
 

@@ -137,7 +137,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
     private void initGatewayProperties() {
         GatewayServiceConfiguration gatewayServiceConfiguration = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
         gatewayScheme = gatewayServiceConfiguration.getScheme();
-        gatewayHost = gatewayServiceConfiguration.getHost();
+        gatewayHost = gatewayServiceConfiguration.getFirstHost();
         gatewayPort = gatewayServiceConfiguration.getPortForHost(gatewayHost);
         RestAssured.port = gatewayPort;
         RestAssured.useRelaxedHTTPSValidation();
@@ -155,7 +155,7 @@ class PageRedirectionTest implements TestWithStartedInstances {
         final String scheme = discoveryServiceConfiguration.getScheme();
         final String username = discoveryServiceConfiguration.getUser();
         final String password = discoveryServiceConfiguration.getPassword();
-        final String host = discoveryServiceConfiguration.getHost();
+        final String host = discoveryServiceConfiguration.getFirstHost();
         final int port = discoveryServiceConfiguration.getPortForHost(host);
         URI uri = new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(APPLICATIONS).build();
 

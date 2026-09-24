@@ -11,6 +11,7 @@
 package org.zowe.apiml.util.requests.ha;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.zowe.apiml.util.requests.DiscoveryRequests;
 import org.zowe.apiml.util.requests.Requests;
 
@@ -30,8 +31,13 @@ public class HADiscoveryRequests {
     public HADiscoveryRequests() {
         var discoveryServiceConfiguration = environmentConfiguration().getDiscoveryServiceConfiguration();
         String scheme = discoveryServiceConfiguration.getScheme();
-        discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getHost(), new Requests()));
-        discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getAdditionalHost(), new Requests()));
+
+        discoveryServiceConfiguration.getHosts().forEach(host->
+                    discoveryServices.add(new DiscoveryRequests(scheme, host, new Requests())));
+
+        if (StringUtils.isNotBlank(discoveryServiceConfiguration.getAdditionalHost())) {
+            discoveryServices.add(new DiscoveryRequests(scheme, discoveryServiceConfiguration.getAdditionalHost(), new Requests()));
+        }
         log.info("Created HADiscoveryRequests");
     }
 

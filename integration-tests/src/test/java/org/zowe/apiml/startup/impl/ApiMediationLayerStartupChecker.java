@@ -126,8 +126,8 @@ public class ApiMediationLayerStartupChecker {
             if (serviceConfiguration == null) {
                 return hosts;
             }
-            if (StringUtils.isNotBlank(serviceConfiguration.getHost())) {
-                hosts.addAll(Arrays.asList(serviceConfiguration.getHost().split("[,;]")));
+            if (StringUtils.isNotBlank(serviceConfiguration.getFirstHost())) {
+                hosts.addAll(serviceConfiguration.getHosts());
             }
             if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration
                 && StringUtils.isNotBlank(discoveryServiceConfiguration.getAdditionalHost())) {

@@ -32,10 +32,8 @@ public class HAGatewayRequests {
 
     public HAGatewayRequests(String scheme) {
         var gatewayServiceConfiguration = environmentConfiguration().getGatewayServiceConfiguration();
-        String[] gatewayHosts = gatewayServiceConfiguration.getHost().split(",");
-        for (String host : gatewayHosts) {
-            gatewayServices.add(new GatewayRequests(scheme, host));
-        }
+        gatewayServiceConfiguration.getHosts().forEach(host->
+            gatewayServices.add(new GatewayRequests(scheme, host)));
 
         log.info("Created HAGatewayRequests");
     }

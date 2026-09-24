@@ -12,6 +12,9 @@ package org.zowe.apiml.util.config;
 
 import lombok.*;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -38,6 +41,20 @@ public abstract class ServiceConfiguration {
         return true;
     }
 
+    /**
+     * Returns the first host in the list
+     */
+    public String getFirstHost() {
+        return getHosts().get(0);
+    }
+
+    /**
+     * Returns the first host in the list
+     */
+    public List<String> getHosts() {
+        return Arrays.asList(host.split(","));
+    }
+
 //    public int getPort() {
 //        if (port.split(",").length == 1) {
 //            return Integer.parseInt(port);
@@ -50,16 +67,16 @@ public abstract class ServiceConfiguration {
      * pairing it positionally with ports defined.
      */
     public int getPortForHost(String hostToMatch) {
-        String[] hostArr = this.host.split(",");
-        String[] portArr = this.port.split(",");
+        var hosts = getHosts();
+        var ports = Arrays.asList(this.port.split(","));
 
-        if (hostArr.length != portArr.length) {
+        if (hosts.size() != ports.size()) {
             throw new IllegalArgumentException("Host and port must have same length");
         }
 
-        for (int i = 0; i < hostArr.length; i++) {
-            if (hostArr[i].trim().equalsIgnoreCase(hostToMatch.trim())) {
-                return Integer.parseInt(portArr[i].trim());
+        for (int i = 0; i < hosts.size(); i++) {
+            if (hosts.get(i).trim().equalsIgnoreCase(hostToMatch.trim())) {
+                return Integer.parseInt(ports.get(i).trim());
             }
         }
 

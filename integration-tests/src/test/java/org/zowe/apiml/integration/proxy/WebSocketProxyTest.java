@@ -104,7 +104,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
     protected String discoverableClientGatewayUrl(String gatewayUrl) throws URISyntaxException {
         String scheme = gatewayServiceConfiguration.getScheme().equals("http") ? "ws" : "wss";
-        String host = StringUtils.isNotBlank(gatewayServiceConfiguration.getDvipaHost()) ? gatewayServiceConfiguration.getDvipaHost() : gatewayServiceConfiguration.getHost();
+        String host = StringUtils.isNotBlank(gatewayServiceConfiguration.getDvipaHost()) ? gatewayServiceConfiguration.getDvipaHost() : gatewayServiceConfiguration.getFirstHost();
         int port = gatewayServiceConfiguration.getPortForHost(host);
 
         return new URIBuilder().setScheme(scheme).setHost(host).setPort(port).setPath(gatewayUrl).build().toString();

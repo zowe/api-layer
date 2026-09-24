@@ -26,10 +26,9 @@ public class HADiscoverableClientRequests {
 
     public HADiscoverableClientRequests() {
         var discoverableClientConfiguration = environmentConfiguration().getDiscoverableClientConfiguration();
-        String[] discoverableClientHosts = discoverableClientConfiguration.getHost().split(",");
-        for (String host: discoverableClientHosts) {
-            discoverableClients.add(new DiscoverableClientRequests(discoverableClientConfiguration.getScheme(), host, new org.zowe.apiml.util.requests.Requests()));
-        }
+        discoverableClientConfiguration.getHosts().forEach( host ->
+            discoverableClients.add(new DiscoverableClientRequests(discoverableClientConfiguration.getScheme(), host, new org.zowe.apiml.util.requests.Requests())));
+
         log.info("Created HADiscoverableClientRequests");
     }
 
