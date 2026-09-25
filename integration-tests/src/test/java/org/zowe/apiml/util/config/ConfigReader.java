@@ -29,13 +29,19 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_SERVICE;
 @Slf4j
 public class ConfigReader {
 
-    public static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+    public static final boolean IS_MODULITH_ENABLED;
 
     private static final String PASSWORD = "password";
     private static String configurationFile;
 
     static {
         configurationFile = "environment-configuration" + System.getProperty("environment.config", "") + ".yml";
+
+        if (configurationFile.contains("-modulith")) {
+             IS_MODULITH_ENABLED = true;
+        } else {
+            IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+        }
     }
 
     private static volatile EnvironmentConfiguration instance;
@@ -141,7 +147,7 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setHost(System.getProperty("discovery.host", configuration.getDiscoveryServiceConfiguration().getHost()));
                     configuration.getDiscoveryServiceConfiguration().setAdditionalHost(System.getProperty("discovery.additionalHost", configuration.getDiscoveryServiceConfiguration().getAdditionalHost()));
                     configuration.getDiscoveryServiceConfiguration().setPort(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort())));
-                    configuration.getDiscoveryServiceConfiguration().setAdditionalPort(System.getProperty("discovery.additionalPort", String.valueOf(configuration.getDiscoveryServiceConfiguration().getAdditionalPort())));
+                    configuration.getDiscoveryServiceConfiguration().setAdditionalPort(System.getProperty("discovery.additionalPort", configuration.getDiscoveryServiceConfiguration().getAdditionalPort() == null ? null : String.valueOf(configuration.getDiscoveryServiceConfiguration().getAdditionalPort())));
                     configuration.getDiscoveryServiceConfiguration().setInstances(parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
                     if (configuration.getAuxiliaryUserList() != null) {

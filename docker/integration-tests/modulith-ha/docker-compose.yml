@@ -10,8 +10,6 @@ x-apiml-ha-env: &apiml-ha-env
     APIML_HEALTH_PROTECTED: "false"
     CACHING_STORAGE_MODE: infinispan
     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[27600],apiml-3[37600]"
-    JGROUPS_BIND_PORT: "7600"
-    JGROUPS_KEYEXCHANGE_PORT: "7601"
 
 services:
 
@@ -33,6 +31,8 @@ services:
             APIML_SERVICE_HOSTNAME: apiml
             logbackService: ZWEAGW1
             JGROUPS_BIND_ADDRESS: apiml
+            JGROUPS_BIND_PORT: "7600"
+            JGROUPS_KEYEXCHANGE_PORT: "7601"
         ports:
             - "127.0.0.1:10010:10010"
             - "127.0.0.1:10011:10011"
@@ -40,7 +40,7 @@ services:
             - "127.0.0.1:6310:6310"
             - "127.0.0.1:7600:7600"
             - "127.0.0.1:7601:7601"
-
+## TODO: check jgroups ports in all HA docker compose files
     apiml-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
         hostname: apiml-2
@@ -53,13 +53,15 @@ services:
             APIML_SERVICE_HOSTNAME: apiml-2
             logbackService: ZWEAGW2
             JGROUPS_BIND_ADDRESS: apiml-2
+            JGROUPS_BIND_PORT: "27600"
+            JGROUPS_KEYEXCHANGE_PORT: "27601"
         ports:
             - "127.0.0.1:20010:20010"
             - "127.0.0.1:20011:20011"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26310:6310"
-            - "127.0.0.1:27600:7600"
-            - "127.0.0.1:27601:7601"
+            - "127.0.0.1:27600:27600"
+            - "127.0.0.1:27601:27601"
 
     apiml-3:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
@@ -73,19 +75,21 @@ services:
             APIML_SERVICE_HOSTNAME: apiml-3
             logbackService: ZWEAGW3
             JGROUPS_BIND_ADDRESS: apiml-3
+            JGROUPS_BIND_PORT: "37600"
+            JGROUPS_KEYEXCHANGE_PORT: "37601"
         ports:
             - "127.0.0.1:30010:30010"
             - "127.0.0.1:30011:30011"
             - "127.0.0.1:35130:5130"
             - "127.0.0.1:36310:6310"
-            - "127.0.0.1:37600:7600"
-            - "127.0.0.1:37601:7601"
+            - "127.0.0.1:37600:37600"
+            - "127.0.0.1:37601:37601"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
         hostname: discoverable-client
         environment:
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka,https://apiml-3:30011/eureka
         ports:
             - "127.0.0.1:10012:10012"
             - "127.0.0.1:5122:5122"
@@ -96,7 +100,7 @@ services:
         environment:
             APIML_SERVICE_PORT: "20012"
             APIML_SERVICE_HOSTNAME: discoverable-client-2
-            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:20011/eureka,https://apiml:10011/eureka
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:20011/eureka,https://apiml-3:30011/eureka
             logbackService: ZWEADC2
         ports:
             - "127.0.0.1:20012:20012"

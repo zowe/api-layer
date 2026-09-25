@@ -20,9 +20,9 @@ import org.zowe.apiml.product.constants.CoreService;
 public class DiscoveryServiceConfiguration extends ServiceConfiguration {
     private String user;
     private String password;
-    //@Setter(AccessLevel.NONE)
+//    @Setter(AccessLevel.NONE)
     private String additionalHost;
-    @Getter(AccessLevel.NONE)
+//    @Getter(AccessLevel.NONE)
     private String additionalPort;
 
     DiscoveryServiceConfiguration(String scheme, String user, String password, String host, String additionalHost, String port, String additionalPort, int instances) {
@@ -33,6 +33,15 @@ public class DiscoveryServiceConfiguration extends ServiceConfiguration {
         this.additionalPort = additionalPort;
     }
 //
+//    public void setAdditionalHost(String additionalHost) {
+//        this.additionalHost = Objects.requireNonNullElse(additionalHost, "");
+//    }
+//
+//    public void setAdditionalPort(String additionalPort) {
+//        this.additionalHost = Objects.requireNonNullElse(additionalPort, "");
+//    }
+//
+//    //
 //    public void setAdditionalHost(String additionalHost) {
 //        if (additionalHost == null) {
 //            this.additionalHost = "";

@@ -18,8 +18,6 @@ discoveryServiceConfiguration:
     host: apiml,apiml-2,apiml-3
     port: 10011,20011,30011
     instances: 2
-    additionalHost: #Used only for additional gateway registration - central gateway setup
-    additionalPort:
 discoverableClientConfiguration:
     scheme: https
     port: 10012,20012

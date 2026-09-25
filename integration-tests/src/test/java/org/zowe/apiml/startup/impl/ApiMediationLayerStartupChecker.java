@@ -51,7 +51,7 @@ public class ApiMediationLayerStartupChecker {
 
     private static final long POOL_INTERVAL = 5;
 
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
     private static final boolean VERIFY_SSL_CERTIFICATES = Boolean.parseBoolean(
         System.getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true")
     );

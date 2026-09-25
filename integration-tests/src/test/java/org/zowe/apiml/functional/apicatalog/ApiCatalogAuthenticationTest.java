@@ -50,7 +50,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 @Slf4j
 class ApiCatalogAuthenticationTest {
 
-    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
 
     private static final String UNAUTHENTICATED_ERROR_NUMBER = IS_MODULITH_ENABLED ? "ZWEAG120E" : "ZWEAS120E";
 

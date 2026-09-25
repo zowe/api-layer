@@ -22,7 +22,6 @@ import org.zowe.apiml.util.TestWithStartedInstances;
 import org.zowe.apiml.util.categories.CachingServiceTest;
 import org.zowe.apiml.util.categories.NonModulithTest;
 import org.zowe.apiml.util.categories.NotAttlsTest;
-import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.service.DiscoveryUtils;

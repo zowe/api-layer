@@ -28,7 +28,7 @@ import static org.hamcrest.core.Is.is;
 @Slf4j
 public class ApiCatalogRequests {
 
-    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
 
     private static final ApiCatalogServiceConfiguration apiCatalogServiceConfiguration = ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration();
     private static final Credentials credentials = ConfigReader.environmentConfiguration().getCredentials();

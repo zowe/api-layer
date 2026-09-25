@@ -32,7 +32,7 @@ public class HADiscoveryRequests {
         var discoveryServiceConfiguration = environmentConfiguration().getDiscoveryServiceConfiguration();
         String scheme = discoveryServiceConfiguration.getScheme();
 
-        discoveryServiceConfiguration.getHosts().forEach(host->
+        discoveryServiceConfiguration.getHosts().forEach(host ->
                     discoveryServices.add(new DiscoveryRequests(scheme, host, new Requests())));
 
         if (StringUtils.isNotBlank(discoveryServiceConfiguration.getAdditionalHost())) {

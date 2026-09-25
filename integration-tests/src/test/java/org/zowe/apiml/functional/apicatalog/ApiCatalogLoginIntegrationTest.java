@@ -37,7 +37,7 @@ import static org.zowe.apiml.security.SecurityUtils.readPassword;
 @GeneralAuthenticationTest
 class ApiCatalogLoginIntegrationTest implements TestWithStartedInstances {
 
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
 
     private static final String API_PREFIX = "/api/v1";
     private static final String GATEWAY_SERVICE_ID = "/gateway";

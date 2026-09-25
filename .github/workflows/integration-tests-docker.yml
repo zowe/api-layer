@@ -117,13 +117,13 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-unknown-hostnames -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-unknown-hostnames
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run CI Tests with Unknown Hostnames
                 run: >
                     ./gradlew :integration-tests:runUnknownHostnamesTests
-                    -Denvironment.config=-docker-modulith-unknown-hostnames -Denvironment.modulith=true --info
+                    -Denvironment.config=-docker-modulith-unknown-hostnames --info
 
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -165,13 +165,13 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run Modulith CI Tests
                 run: >
                     ./gradlew :integration-tests:runContainerModulithTests -Dtest.hostname=testrunner
-                    -Denvironment.config=-docker-modulith -Denvironment.modulith=true --info
+                    -Denvironment.config=-docker-modulith --info
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -214,15 +214,15 @@ jobs:
 
             -   name: Run Startup Check
                 if: always()
+                # check GWCount
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-saf-ha -Denvironment.modulith=true
-                    -Denvironment.gwCount=2
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-saf-ha -Denvironment.gwCount=2
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run Modulith CI Tests with SAF Provider in HA
                 run: >
                     ./gradlew :integration-tests:runContainerSAFProviderTests --info
-                    -Denvironment.config=-docker-modulith-saf-ha -Denvironment.modulith=true
+                    -Denvironment.config=-docker-modulith-saf-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
@@ -253,11 +253,7 @@ jobs:
             fail-fast: false
             matrix:
                 type: [ "normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic" ]
-        env:
-            CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,20010,30010 -Dapicatalog.connectPorts=10010,20010,30010
-                -Dcaching.connectPorts=10010,20010,30010 -Ddiscovery.additionalConnectPorts=20011,30011
-                -Ddiscoverableclient.connectPorts=10012,20012
+
         steps:
             -   uses: actions/checkout@v4
                 with:
@@ -274,44 +270,41 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
-                    ${{ env.CONNECT_PORT_FLAGS }}
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run Normal HA Tests in Modulith
                 if: ${{ 'normal' == matrix.type }}
                 run: >
                     ./gradlew runHATests -Denvironment.config=-docker-modulith-ha -Denvironment.gwCount=3
-                    ${{ env.CONNECT_PORT_FLAGS }}
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run Gateway Service Chaotic HA Tests in Modulith
                 if: ${{ 'gateway-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
-                    -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                    -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run Discoverable Client Chaotic HA Tests in Modulith
                 if: ${{ 'discoverableclient-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
-                    -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                    -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run WebSocket Chaotic HA Tests in Modulith
                 if: ${{ 'websocket-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
-                    -Denvironment.config=-docker-modulith-ha ${{ env.CONNECT_PORT_FLAGS }}
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                    -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run Caching Chaotic HA Tests
                 if: ${{ 'caching-chaotic' == matrix.type }}
                 run: >
                     ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
-                    -Denvironment.config=-docker-modulith-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false
-                    -Denvironment.modulith=true -Denvironment.chaotic=true ${{ env.CONNECT_PORT_FLAGS }}
+                    -Denvironment.config=-docker-modulith-ha -Denvironment.chaotic=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Correct Permisions
@@ -570,14 +563,14 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0
-                    -Denvironment.modulith=true -Dgateway.host=central-gateway-service -Dgateway.port=20010
+                    -Dgateway.host=central-gateway-service -Dgateway.port=20010
                     -DcentralHosts=central-gateway-service
 
             -   name: Run CI Tests
                 timeout-minutes: 4
                 run: >
                     ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
-                    -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Denvironment.config=-docker-modulith
                     -Ddiscovery.additionalHost=central-gateway-service -Ddiscovery.additionalPort=20011
                     -Dcentralgateway.port=20010
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
@@ -718,14 +711,12 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-2-instances
-                    -Denvironment.modulith=true ${{ env.CONNECT_PORT_FLAGS }}
                     -Dapiml.security.ssl.verifySslCertificatesOfServices=false
                     -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
 
             -   name: Run Discovery Basic Auth Tests
                 run: >
                     ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker-modulith-2-instances
-                    -Denvironment.modulith=true ${{ env.CONNECT_PORT_FLAGS }}
 
             -   name: Store results
                 uses: actions/upload-artifact@v4
@@ -764,14 +755,13 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Ddiscovery.instances=1 -DcentralGateway.instances=0
 
             -   name: Run CI Tests
                 run: >
                     ./gradlew :integration-tests:runRegistrationTests -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             # Coverage results are not stored in this job as it would not provide much additional data
 
@@ -926,14 +916,14 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -DcentralGateway.instances=0
 
             -   name: Build with Gradle
                 run: >
                     ./gradlew :integration-tests:runZosmfAuthTest --info
-                    -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Denvironment.config=-docker-modulith
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             # Coverage results are not stored in this job as it would not provide much additional data
             -   name: Store results
@@ -1199,7 +1189,7 @@ jobs:
                     -Dcaching.instances=2 -Dapicatalog.instances=2
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
                     -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run HA Tests
                 run: >
@@ -1207,7 +1197,7 @@ jobs:
                     -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
                     -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Correct Permisions
                 run: |
@@ -1307,7 +1297,7 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
@@ -1318,7 +1308,7 @@ jobs:
                     ./gradlew runStickySessionLbHaTests -Denvironment.config=-docker-modulith-ha
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
                     -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Correct Permisions
                 run: |
@@ -1568,13 +1558,13 @@ jobs:
                     -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
                     -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
                     -Ddiscovery.additionalPort=20011
-                    -Denvironment.modulith=true -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
+                    -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Build with Gradle
                 run: >
                     ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests --info
-                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   uses: ./.github/actions/dump-jacoco
@@ -1752,7 +1742,7 @@ jobs:
 
             -   name: Run startup check
                 run: >
-                    ./gradlew runStartUpCheck --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.modulith=true -Denvironment.gwCount=1
+                    ./gradlew runStartUpCheck --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.gwCount=1
                     -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
                     ${{ env.CONNECT_PORT_FLAGS }}
                     -DcentralHosts=discoverable-client,gateway-service
@@ -1877,13 +1867,12 @@ jobs:
                 if: always()
                 run: >
                     ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true -Ddiscoverableclient.instances=0 -DcentralGateway.instances=0
+                    -Ddiscoverableclient.instances=0 -DcentralGateway.instances=0
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run Node.JS and Python Services Tests
                 run: >
                     ./gradlew :integration-tests:runNodeAndPythonSampleServiceTests -Denvironment.config=-docker-modulith
-                    -Denvironment.modulith=true
 
             -   name: Store results
                 uses: actions/upload-artifact@v4

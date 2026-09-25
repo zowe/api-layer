@@ -26,7 +26,6 @@ import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.requests.Endpoints;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -49,7 +48,7 @@ import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CachingServiceTests {
 
-    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
     private static final String SERVLET_PATH = IS_MODULITH_ENABLED ? "" : "/cachingservice";
 
     private static final String SERVICE = "service";
