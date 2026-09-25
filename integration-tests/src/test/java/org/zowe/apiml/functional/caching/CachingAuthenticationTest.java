@@ -43,7 +43,7 @@ class CachingAuthenticationTest implements TestWithStartedInstances {
     private static final String INFO_PATH = "/cachingservice/application/info";
     private static final String APIDOC_PATH = "/cachingservice/v3/api-docs";
 
-    private String caching_url = ConfigReader.environmentConfiguration().getCachingServiceConfiguration().getUrl();
+    private String caching_url;
     private static final String CERT_HEADER_NAME = "X-Certificate-DistinguishedName";
     private static String clientCertValue;
 
