@@ -205,12 +205,14 @@ public class ConfigReader {
     }
 
     private static void setZosmfConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
-        ZosmfServiceConfiguration zosmfConfiguration = configuration.getZosmfServiceConfiguration();
-        zosmfConfiguration.setHost(System.getProperty("zosmf.host", zosmfConfiguration.getHost()));
-        String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
-        zosmfConfiguration.setPort(port);
-        zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));
-        zosmfConfiguration.setServiceId(System.getProperty("zosmf.serviceId", zosmfConfiguration.getServiceId()));
+        if (configuration.getZosmfServiceConfiguration() != null) {
+            ZosmfServiceConfiguration zosmfConfiguration = configuration.getZosmfServiceConfiguration();
+            zosmfConfiguration.setHost(System.getProperty("zosmf.host", zosmfConfiguration.getHost()));
+            String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
+            zosmfConfiguration.setPort(port);
+            zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));
+            zosmfConfiguration.setServiceId(System.getProperty("zosmf.serviceId", zosmfConfiguration.getServiceId()));
+        }
     }
 
     private static char[] getSystemPropertyCharArray(String name, char[] defaultValue) {

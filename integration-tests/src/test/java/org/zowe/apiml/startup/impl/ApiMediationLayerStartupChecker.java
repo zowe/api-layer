@@ -264,10 +264,13 @@ public class ApiMediationLayerStartupChecker {
                     CoreService.CACHING.getServiceId()
                 ));
             }
-            instances = instances.filter(instance -> !Strings.CI.equalsAny(instance.getServiceId(),
-                CoreService.DISCOVERY.getServiceId(), // the source of version
-                ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId() // does not support the endpoint
-            ));
+            if (ConfigReader.environmentConfiguration().getZosmfServiceConfiguration() != null) {
+                instances = instances.filter(instance -> !Strings.CI.equalsAny(instance.getServiceId(),
+                    CoreService.DISCOVERY.getServiceId(), // the source of version
+                    ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId() // does not support the endpoint
+                ));
+            }
+
             return instances.toList();
         }
 

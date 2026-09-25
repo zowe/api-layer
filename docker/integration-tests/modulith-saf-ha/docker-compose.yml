@@ -8,9 +8,7 @@ x-apiml-ha-env: &apiml-ha-env
     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
     APIML_SECURITY_AUTH_PROVIDER: saf
-    JGROUPS_BIND_PORT: "7600"
-    JGROUPS_KEYEXCHANGE_PORT: "7601"
-    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[7600]"
+    CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[27600]"
 
 services:
 
@@ -23,11 +21,15 @@ services:
             APIML_SERVICE_HOSTNAME: apiml
             logbackService: ZWEAGW1
             JGROUPS_BIND_ADDRESS: apiml
+            JGROUPS_BIND_PORT: "7600"
+            JGROUPS_KEYEXCHANGE_PORT: "7601"
         ports:
             - "127.0.0.1:10010:10010"
             - "127.0.0.1:10011:10011"
             - "127.0.0.1:5130:5130"
             - "127.0.0.1:6310:6310"
+            - "127.0.0.1:7600:7600"
+            - "127.0.0.1:7601:7601"
 
     apiml-2:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
@@ -40,11 +42,15 @@ services:
             APIML_SERVICE_HOSTNAME: apiml-2
             logbackService: ZWEAGW2
             JGROUPS_BIND_ADDRESS: apiml-2
+            JGROUPS_BIND_PORT: "27600"
+            JGROUPS_KEYEXCHANGE_PORT: "27601"
         ports:
             - "127.0.0.1:20010:20010"
             - "127.0.0.1:20011:20011"
             - "127.0.0.1:25130:5130"
             - "127.0.0.1:26310:6310"
+            - "127.0.0.1:27600:7600"
+            - "127.0.0.1:27601:7601"
 
     discoverable-client:
         image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}

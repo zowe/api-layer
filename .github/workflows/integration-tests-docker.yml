@@ -198,10 +198,6 @@ jobs:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
         timeout-minutes: 15
-        env:
-            CONNECT_PORT_FLAGS: >-
-                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
-                -Ddiscovery.additionalPort=20011
 
         steps:
             -   uses: actions/checkout@v4
@@ -219,17 +215,14 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1
-                    -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
-                    ${{ env.CONNECT_PORT_FLAGS }}
-                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Denvironment.modulith=true
-                    -Dzosmf.instances=0
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-saf-ha -Denvironment.modulith=true
+                    -Denvironment.gwCount=2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run Modulith CI Tests with SAF Provider in HA
                 run: >
-                    ENV_CONFIG=docker-modulith-ha ./gradlew :integration-tests:runContainerSAFProviderTests --info
-                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith-ha -Denvironment.modulith=true
-                    ${{ env.CONNECT_PORT_FLAGS }}
+                    ./gradlew :integration-tests:runContainerSAFProviderTests --info
+                    -Denvironment.config=-docker-modulith-saf-ha -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
             -   uses: ./.github/actions/dump-jacoco
                 if: always()

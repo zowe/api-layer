@@ -49,9 +49,3 @@ tlsConfiguration:
     trustStoreType: PKCS12
     trustStore: ../keystore/service/service.truststore.p12
     trustStorePassword: password
-zosmfServiceConfiguration:
-    scheme: https
-    host: mock-services
-    port: 10013
-    serviceId: mockzosmf
-    instances: 1
