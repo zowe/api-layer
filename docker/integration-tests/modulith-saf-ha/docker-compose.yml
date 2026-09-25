@@ -9,6 +9,8 @@ x-apiml-ha-env: &apiml-ha-env
     APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
     APIML_SECURITY_AUTH_PROVIDER: saf
     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "apiml[7600],apiml-2[27600]"
+    JGROUPS_BIND_PORT: "7600"
+    JGROUPS_KEYEXCHANGE_PORT: "7601"
 
 services:
 
@@ -21,8 +23,7 @@ services:
             APIML_SERVICE_HOSTNAME: apiml
             logbackService: ZWEAGW1
             JGROUPS_BIND_ADDRESS: apiml
-            JGROUPS_BIND_PORT: "7600"
-            JGROUPS_KEYEXCHANGE_PORT: "7601"
+
         ports:
             - "127.0.0.1:10010:10010"
             - "127.0.0.1:10011:10011"
@@ -42,8 +43,6 @@ services:
             APIML_SERVICE_HOSTNAME: apiml-2
             logbackService: ZWEAGW2
             JGROUPS_BIND_ADDRESS: apiml-2
-            JGROUPS_BIND_PORT: "27600"
-            JGROUPS_KEYEXCHANGE_PORT: "27601"
         ports:
             - "127.0.0.1:20010:20010"
             - "127.0.0.1:20011:20011"
