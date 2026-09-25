@@ -22,7 +22,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.discovery.config.EurekaConfig;
-import org.zowe.apiml.discovery.metadata.MetadataFilterService;
+import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

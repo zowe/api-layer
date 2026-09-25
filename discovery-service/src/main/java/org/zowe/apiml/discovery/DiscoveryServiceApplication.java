@@ -30,7 +30,8 @@ import javax.annotation.Nonnull;
 @ComponentScan({
     "org.zowe.apiml.discovery",
     "org.zowe.apiml.product.security",
-    "org.zowe.apiml.product.web"
+    "org.zowe.apiml.product.web",
+    "org.zowe.apiml.product.eureka.web"
 })
 @EnableApimlLogger
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {

@@ -22,6 +22,9 @@ dependencies {
     implementation libs.janino
     implementation libs.xstream
     implementation libs.jetty.util
+    implementation libs.caffeine
+    implementation libs.guava
+    implementation libs.spring.security.web
 
     implementation libs.spring.security.crypto
 
