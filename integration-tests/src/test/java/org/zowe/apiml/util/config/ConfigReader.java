@@ -144,7 +144,9 @@ public class ConfigReader {
                     configuration.getDiscoveryServiceConfiguration().setAdditionalPort(System.getProperty("discovery.additionalPort", String.valueOf(configuration.getDiscoveryServiceConfiguration().getAdditionalPort())));
                     configuration.getDiscoveryServiceConfiguration().setInstances(parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
-                    configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", String.valueOf(configuration.getAuxiliaryUserList().getValue())));
+                    if (configuration.getAuxiliaryUserList() != null) {
+                        configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", String.valueOf(configuration.getAuxiliaryUserList().getValue())));
+                    }
 
                     configuration.getApiCatalogServiceConfiguration().setUrl(System.getProperty("apicatalog.url", configuration.getApiCatalogServiceConfiguration().getUrl()));
                     configuration.getApiCatalogServiceConfiguration().setHost(System.getProperty("apicatalog.host", configuration.getApiCatalogServiceConfiguration().getHost()));
@@ -158,22 +160,28 @@ public class ConfigReader {
                     configuration.getDiscoverableClientConfiguration().setScheme(System.getProperty("discoverableclient.scheme", configuration.getDiscoverableClientConfiguration().getScheme()));
                     configuration.getDiscoverableClientConfiguration().setPort(System.getProperty("discoverableclient.port", String.valueOf(configuration.getDiscoverableClientConfiguration().getPort())));
 
-                    configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
-
-                    configuration.getOidcConfiguration().setProviderName(System.getProperty("oidc.providerName", String.valueOf(configuration.getOidcConfiguration().getProviderName())));
-                    configuration.getOidcConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getOidcConfiguration().getUser()));
-                    configuration.getOidcConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getOidcConfiguration().getPassword()));
-                    configuration.getOidcConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getOidcConfiguration().getAlternateUser()));
-                    configuration.getOidcConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getOidcConfiguration().getAlternatePassword()));
-                    configuration.getOidcConfiguration().setHost(System.getProperty("oidc.host", configuration.getOidcConfiguration().getHost()));
-                    configuration.getOidcConfiguration().setClientId(System.getProperty("oidc.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
-                    configuration.getOidcConfiguration().setClientSecret(System.getProperty("oidc.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
-                    var oidcProviderName = configuration.getOidcConfiguration().getProviderName();
-                    if (!("keycloak".equalsIgnoreCase(oidcProviderName) || "okta".equalsIgnoreCase(oidcProviderName) || "auth0".equalsIgnoreCase(oidcProviderName))) {
-                        throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", oidcProviderName));
+                    if (configuration.getCachingServiceConfiguration() != null) {
+                        configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
                     }
 
-                    configuration.getSafIdtConfiguration().setEnabled(Boolean.parseBoolean(System.getProperty("safidt.enabled", String.valueOf(configuration.getSafIdtConfiguration().isEnabled()))));
+                    if (configuration.getOidcConfiguration() != null) {
+                        configuration.getOidcConfiguration().setProviderName(System.getProperty("oidc.providerName", String.valueOf(configuration.getOidcConfiguration().getProviderName())));
+                        configuration.getOidcConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getOidcConfiguration().getUser()));
+                        configuration.getOidcConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getOidcConfiguration().getPassword()));
+                        configuration.getOidcConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getOidcConfiguration().getAlternateUser()));
+                        configuration.getOidcConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getOidcConfiguration().getAlternatePassword()));
+                        configuration.getOidcConfiguration().setHost(System.getProperty("oidc.host", configuration.getOidcConfiguration().getHost()));
+                        configuration.getOidcConfiguration().setClientId(System.getProperty("oidc.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
+                        configuration.getOidcConfiguration().setClientSecret(System.getProperty("oidc.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
+                        var oidcProviderName = configuration.getOidcConfiguration().getProviderName();
+                        if (!("keycloak".equalsIgnoreCase(oidcProviderName) || "okta".equalsIgnoreCase(oidcProviderName) || "auth0".equalsIgnoreCase(oidcProviderName))) {
+                            throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", oidcProviderName));
+                        }
+                    }
+
+                    if (configuration.getSafIdtConfiguration() != null) {
+                        configuration.getSafIdtConfiguration().setEnabled(Boolean.parseBoolean(System.getProperty("safidt.enabled", String.valueOf(configuration.getSafIdtConfiguration().isEnabled()))));
+                    }
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);

@@ -126,9 +126,8 @@ public class ApiMediationLayerStartupChecker {
             if (serviceConfiguration == null) {
                 return hosts;
             }
-            if (StringUtils.isNotBlank(serviceConfiguration.getFirstHost())) {
-                hosts.addAll(serviceConfiguration.getHosts());
-            }
+            hosts.addAll(serviceConfiguration.getHosts());
+
             if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration
                 && StringUtils.isNotBlank(discoveryServiceConfiguration.getAdditionalHost())) {
                 hosts.addAll(Arrays.asList(discoveryServiceConfiguration.getAdditionalHost().split("[,;]")));
@@ -149,7 +148,7 @@ public class ApiMediationLayerStartupChecker {
 
         private static List<Instance> of(ServiceConfiguration serviceConfiguration, String countProperty) {
             List<Instance> allInstances = of(serviceConfiguration);
-            String countString = System.getProperty(countProperty);
+            String countString = System.getProperty(countProperty, String.valueOf(serviceConfiguration.getInstances()));
             if (StringUtils.isNotBlank(countString)) {
                 try {
                     int count = Integer.parseInt(countString);
@@ -199,14 +198,31 @@ public class ApiMediationLayerStartupChecker {
             var config = ConfigReader.environmentConfiguration();
 
             var instances = new ArrayList<Instance>();
-            instances.addAll(Instance.of(config.getDiscoveryServiceConfiguration(), "discovery.instances"));
-            instances.addAll(Instance.of(config.getApiCatalogServiceConfiguration(), "apicatalog.instances"));
-            instances.addAll(Instance.of(config.getGatewayServiceConfiguration(), "gateway.instances"));
-            instances.addAll(Instance.of(config.getDiscoverableClientConfiguration(), "discoverableclient.instances"));
-            instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
-            instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
-            instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
-            instances.addAll(Instance.of(config.getCentralGatewayServiceConfiguration(), "centralGateway.instances"));
+            if (config.getDiscoveryServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getDiscoveryServiceConfiguration(), "discovery.instances"));
+            }
+            if (config.getApiCatalogServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getApiCatalogServiceConfiguration(), "apicatalog.instances"));
+            }
+            if (config.getGatewayServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getGatewayServiceConfiguration(), "gateway.instances"));
+            }
+            if (config.getDiscoverableClientConfiguration() != null) {
+                instances.addAll(Instance.of(config.getDiscoverableClientConfiguration(), "discoverableclient.instances"));
+            }
+            if (config.getCachingServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
+            }
+            if (config.getZosmfServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
+            }
+            if (config.getZaasConfiguration() != null) {
+                instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
+            }
+            if (config.getCentralGatewayServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getCentralGatewayServiceConfiguration(), "centralGateway.instances"));
+            }
+
             allInstances = instances.stream()
                 .map(i -> {
                     String replacement = System.getProperty("serviceIdReplaced", "");

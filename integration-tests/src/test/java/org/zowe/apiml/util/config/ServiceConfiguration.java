@@ -11,8 +11,10 @@
 package org.zowe.apiml.util.config;
 
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Data
@@ -52,6 +54,9 @@ public abstract class ServiceConfiguration {
      * Returns the first host in the list
      */
     public List<String> getHosts() {
+        if (StringUtils.isBlank(this.host)) {
+            return Collections.emptyList();
+        }
         return Arrays.asList(host.split(","));
     }
 

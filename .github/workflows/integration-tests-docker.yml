@@ -117,15 +117,13 @@ jobs:
             -   name: Run Startup Check
                 if: always()
                 run: >
-                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Denvironment.modulith=true
-                    -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
-                    -Ddiscoverableclient.host=discoverable-client-unknown -Dzosmf.host=mock-services-unknown
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-unknown-hostnames -Denvironment.modulith=true
                     -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
 
             -   name: Run CI Tests with Unknown Hostnames
                 run: >
-                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runUnknownHostnamesTests --info
-                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    ./gradlew :integration-tests:runUnknownHostnamesTests --info
+                    -Denvironment.config=-docker-modulith-unknown-hostnames -Denvironment.modulith=true
 
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
