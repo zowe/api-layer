@@ -100,7 +100,6 @@ dependencies {
     implementation libs.logback.core
     implementation libs.logback.classic
 
-
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 
