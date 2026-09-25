@@ -1,0 +1,58 @@
+services:
+
+    apiml:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml
+        # The memory is constrained to test large file upload memory issues (#4265).
+        # If the container runs oom, it is hard killed without printing any reasonable
+        # message in the log.
+        mem_limit: 640m
+        memswap_limit: 640m
+        environment:
+            APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+            APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+            APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+            APIML_SECURITY_X509_ENABLED: "true"
+            SERVER_MAX_HTTP_REQUEST_HEADER_SIZE: "16348"
+            SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_HTTPCLIENT_WEBSOCKET_MAXFRAMEPAYLOADLENGTH: "3145728"
+            APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
+            APIML_GATEWAY_SERVICESTODISABLERETRY: discoverableclient
+            APIML_GATEWAY_COOKIENAMEFORRATELIMIT: apimlAuthenticationToken
+            APIML_SERVICE_CORSENABLED: "true"
+            APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            # Application (gateway + discovery), fixed JDWP debug port, jacoco coverage port.
+            # Bound explicitly to 127.0.0.1 so this never competes for a real network
+            # interface - same convention on Linux, macOS and Windows.
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+        extra_hosts:
+            # A handful of tests make the gateway call back into the test runner
+            # (e.g. websocket tests), which now runs on the host instead of inside
+            # a job container. "host-gateway" is a Docker-provided alias for the
+            # host's own address and works the same way on Linux/macOS/Windows.
+            - "testrunner:host-gateway"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
+            SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"

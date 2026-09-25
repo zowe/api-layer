@@ -55,7 +55,7 @@ class GatewayProxyTest {
 
     @Test
     void givenRequestHeader_thenRouteToProvidedHost() throws URISyntaxException {
-        var scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "gateway/version");
+        var scgUrl = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), "gateway/version");
         given()
             .auth().preemptive().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
             .header(HEADER_X_FORWARD_TO, "apiml1")
@@ -75,8 +75,8 @@ class GatewayProxyTest {
 
     @Test
     void givenBasePath_thenRouteToProvidedHost() throws URISyntaxException {
-        String scgUrl1 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1/gateway/version");
-        String scgUrl2 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml2/gateway/version");
+        String scgUrl1 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), "apiml1/gateway/version");
+        String scgUrl2 = String.format("%s://%s:%s/%s", conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), "apiml2/gateway/version");
         given()
             .auth().preemptive().basic(CREDENTIALS.getUser(), CREDENTIALS.getPassword())
         .when()
@@ -95,7 +95,7 @@ class GatewayProxyTest {
 
     @Test
     void givenRequestTimeoutIsReached_thenDropConnection() {
-        String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
+        String scgUrl = String.format("%s://%s:%s%s?%s=%d", conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), DISCOVERABLE_GREET, "delayMs", DEFAULT_TIMEOUT + SECOND);
         assertTimeout(Duration.ofMillis(DEFAULT_TIMEOUT * 3), () -> {
             given()
                 .header(HEADER_X_FORWARD_TO, "discoverableclient")
@@ -111,7 +111,7 @@ class GatewayProxyTest {
 
         @Test
         void givenRequestHeader_thenCertPassedToDomainGateway() {
-            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), X509_ENDPOINT);
             given()
                 .config(SslContext.clientCertValid)
                 .header(HEADER_X_FORWARD_TO, "apiml1")
@@ -126,7 +126,7 @@ class GatewayProxyTest {
 
         @Test
         void givenBasePath_thenCertPassedToDomainGateway() {
-            String scgUrl = String.format("%s://%s:%s/%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "apiml1", X509_ENDPOINT);
+            String scgUrl = String.format("%s://%s:%s/%s%s", conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), "apiml1", X509_ENDPOINT);
             given()
                 .config(SslContext.clientCertValid)
             .when()
@@ -172,7 +172,7 @@ class GatewayProxyTest {
 
         @Test
         void thenCertificatesChainProvided() throws URISyntaxException {
-            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), CLOUD_GATEWAY_CERTIFICATES);
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), CLOUD_GATEWAY_CERTIFICATES);
             String response =
                 given()
                 .when()

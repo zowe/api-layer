@@ -6,9 +6,7 @@ credentials:
 gatewayServiceConfiguration:
     scheme: https
     host: apiml,apiml-2,apiml-3
-    port: 10010
-    internalPorts: 10010
-    externalPort: 10010
+    port: 10010,20010,30010
     instances: 3
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 40
@@ -17,28 +15,25 @@ discoveryServiceConfiguration:
     scheme: https
     user: user
     password: user
-    host: apiml
-    additionalHost: apiml-2,apiml-3
-    additionalPort: 10011
-    port: 10011
-    instances: 3
+    host: apiml,apiml-2,apiml-3
+    port: 10011,20011,30011
+    instances: 2
 discoverableClientConfiguration:
     scheme: https
-    port: 10012
+    port: 10012,20012
     applId: ZOWEAPPL
-    host: discoverable-client,discoverable-client-2
+    host: discoverable-client,discoverable-client
     instances: 2
 apiCatalogServiceConfiguration:
     scheme: https
-    url:
     host: apiml,apiml-2,apiml-3
-    port: 10010
+    port: 10010,20010,30010
     instances: 3
 cachingServiceConfiguration:
-    url:
     scheme: https
     host: apiml,apiml-2,apiml-3
-    port: 10010
+    port: 10010,20010,30010
+    instances: 3
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password
@@ -56,9 +51,4 @@ zosmfServiceConfiguration:
     host: mock-services
     port: 10013
     serviceId: mockzosmf
-auxiliaryUserList:
-    value: 'unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
-oidcConfiguration:
-    providerName: auth0
-safIdtConfiguration:
-    enabled: true
+    instances: 1

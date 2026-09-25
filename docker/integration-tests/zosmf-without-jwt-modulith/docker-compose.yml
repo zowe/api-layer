@@ -1,0 +1,36 @@
+services:
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    apiml:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml
+        environment:
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://apiml:10010/gateway/certificates
+            APIML_SECURITY_AUTH_ZOSMF_JWTAUTOCONFIGURATION: ltpa
+            APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
+            APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
+            APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"

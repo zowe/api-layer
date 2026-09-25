@@ -26,11 +26,9 @@ import org.zowe.apiml.util.config.*;
 import org.zowe.apiml.util.requests.Endpoints;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
@@ -50,7 +48,7 @@ import static org.zowe.apiml.util.config.ConfigReader.environmentConfiguration;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CachingServiceTests {
 
-    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
     private static final String SERVLET_PATH = IS_MODULITH_ENABLED ? "" : "/cachingservice";
 
     private static final String SERVICE = "service";
@@ -113,10 +111,10 @@ class CachingServiceTests {
 
         KEY_VALUE.setServiceId(SERVICE);
 
-        assumeTrue(cachingServiceConfiguration.getHost() != null);
-        baseUrls = Arrays.stream(cachingServiceConfiguration.getHost().split("[,;]"))
-            .map(host -> String.format("%s://%s:%d", cachingServiceConfiguration.getScheme(), host, cachingServiceConfiguration.getPort()))
-            .collect(Collectors.toList());
+        assumeTrue(cachingServiceConfiguration.getFirstHost() != null);
+        baseUrls = cachingServiceConfiguration.getHosts().stream()
+            .map(host -> String.format("%s://%s:%d", cachingServiceConfiguration.getScheme(), host, cachingServiceConfiguration.getPortForHost(host)))
+            .toList();
         baseUrls = baseUrls.subList(0, Integer.getInteger("caching.instances", baseUrls.size()));
         assumeTrue(baseUrls.size() > 1, "This test requires multiple instances of Caching service.");
         credentials = ConfigReader.environmentConfiguration().getCredentials();

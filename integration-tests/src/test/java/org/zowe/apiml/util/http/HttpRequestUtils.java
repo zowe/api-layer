@@ -40,8 +40,8 @@ public class HttpRequestUtils {
      * @throws IOException oops
      */
     public static HttpResponse getResponse(String endpoint, int returnCode) throws IOException {
-        int port = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPort();
-        String host = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getHost();
+        String host = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getFirstHost();
+        int port = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration().getPortForHost(host);
 
         return getResponse(endpoint, returnCode, port, host);
     }
@@ -75,11 +75,11 @@ public class HttpRequestUtils {
     }
 
     public static URI getUri(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair... arguments) {
-        var host = serviceConfiguration.getHost();
+        var host = serviceConfiguration.getFirstHost();
         if (serviceConfiguration instanceof GatewayServiceConfiguration s && StringUtils.isNotBlank(s.getDvipaHost())) {
             host = s.getDvipaHost();
         }
-        return getUri(serviceConfiguration.getScheme(), host, serviceConfiguration.getPort(), endpoint, arguments);
+        return getUri(serviceConfiguration.getScheme(), host, serviceConfiguration.getPortForHost(host), endpoint, arguments);
     }
 
     public static URI getUri(String scheme, String host, int port, String endpoint, NameValuePair... arguments) {
@@ -102,7 +102,7 @@ public class HttpRequestUtils {
 
     public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, NameValuePair... arguments) {
         return getUriFromService(serviceConfiguration, endpoint, sc -> {
-            var host = sc.getHost();
+            var host = sc.getFirstHost();
             var hostnameTokenizer = new StringTokenizer(host, ",");
             host = hostnameTokenizer.nextToken(); // take first
             if (sc instanceof GatewayServiceConfiguration s && StringUtils.isNotBlank(s.getDvipaHost())) {
@@ -115,7 +115,7 @@ public class HttpRequestUtils {
     public static URI getUriFromService(ServiceConfiguration serviceConfiguration, String endpoint, Function<ServiceConfiguration, String> hostSelector, NameValuePair... arguments) {
         var scheme = serviceConfiguration.getScheme();
         var host = hostSelector.apply(serviceConfiguration);
-        int port = serviceConfiguration.getPort();
+        int port = serviceConfiguration.getPortForHost(host);
         return getUri(scheme, host, port, endpoint, arguments);
     }
 
@@ -130,14 +130,14 @@ public class HttpRequestUtils {
      */
     public static URI getRawUriFromGateway(String rawPath) {
         var config = ConfigReader.environmentConfiguration().getGatewayServiceConfiguration();
-        var host = config.getHost();
+        var host = config.getFirstHost();
         var hostnameTokenizer = new StringTokenizer(host, ",");
         host = hostnameTokenizer.nextToken();
         if (StringUtils.isNotBlank(config.getDvipaHost())) {
             host = config.getDvipaHost();
         }
         try {
-            return new URI(config.getScheme() + "://" + host + ":" + config.getPort() + rawPath);
+            return new URI(config.getScheme() + "://" + host + ":" + config.getPortForHost(host) + rawPath);
         } catch (URISyntaxException e) {
             log.error("Can't create raw URI for path '{}'", rawPath);
             throw new RuntimeException("Invalid raw path: " + rawPath, e);

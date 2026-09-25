@@ -11,31 +11,38 @@
 package org.zowe.apiml.util.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Data
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GatewayServiceConfiguration implements ServiceConfiguration {
+public class GatewayServiceConfiguration extends ServiceConfiguration {
 
-    private String scheme;
-    private String host;
     private String dvipaHost;
-    private int port;
-    private int externalPort;
-    private int instances;
+    //TODO remove external port from config - not used in v3
+    // and from Integration tests
+    //private int externalPort;
+    // Remove internal ports - config, it, code
     private String internalPorts;
     private String servicesEndpoint;
     private int bucketCapacity;
     private String authProvider;
     private Integer connectionTimeout;
 
+    GatewayServiceConfiguration(String scheme, String host, String dvipaHost, String port, int instances, String internalPorts, String servicesEndpoint, int bucketCapacity, String authProvider, Integer connectionTimeout) {
+        super(scheme, null, host, port, instances);
+        this.dvipaHost = dvipaHost;
+        this.internalPorts = internalPorts;
+        this.servicesEndpoint = servicesEndpoint;
+        this.bucketCapacity = bucketCapacity;
+        this.authProvider = authProvider;
+        this.connectionTimeout = connectionTimeout;
+    }
+
     public String getServiceId() {
         return CoreService.GATEWAY.getServiceId();
     }
-  
+
 }

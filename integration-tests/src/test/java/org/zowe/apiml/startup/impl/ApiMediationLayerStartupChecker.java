@@ -51,7 +51,7 @@ public class ApiMediationLayerStartupChecker {
 
     private static final long POOL_INTERVAL = 5;
 
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
     private static final boolean VERIFY_SSL_CERTIFICATES = Boolean.parseBoolean(
         System.getProperty("apiml.security.ssl.verifySslCertificatesOfServices", "true")
     );
@@ -98,6 +98,10 @@ public class ApiMediationLayerStartupChecker {
         private final String scheme;
         private final String hostname;
         private final String serviceId;
+        // Each container binds its own distinct real port now (see docker-compose.yml's
+        // APIML_SERVICE_PORT/APIML_INTERNAL_DISCOVERY_PORT for the instance this host represents),
+        // which is also what it self-registers under as its eureka instance identity, so one
+        // field/lookup serves both purposes - see ServiceConfiguration.getPortForHost().
         private final int port;
         private final ServiceConfiguration serviceConfiguration;
 
@@ -105,7 +109,7 @@ public class ApiMediationLayerStartupChecker {
             this.scheme = serviceConfiguration.getScheme();
             this.hostname = hostname;
             this.serviceId = serviceConfiguration.getServiceId();
-            this.port = serviceConfiguration.getPort();
+            this.port = serviceConfiguration.getPortForHost(hostname);
             this.serviceConfiguration = serviceConfiguration;
         }
 
@@ -122,14 +126,11 @@ public class ApiMediationLayerStartupChecker {
             if (serviceConfiguration == null) {
                 return hosts;
             }
-            if (StringUtils.isNotBlank(serviceConfiguration.getHost())) {
-                hosts.addAll(Arrays.asList(serviceConfiguration.getHost().split("[,;]")));
-            }
-            if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration) {
-                String additionalHost = discoveryServiceConfiguration.getAdditionalHost();
-                if (StringUtils.isNotBlank(additionalHost)) {
-                    hosts.addAll(Arrays.asList(additionalHost.split("[,;]")));
-                }
+            hosts.addAll(serviceConfiguration.getHosts());
+
+            if (serviceConfiguration instanceof DiscoveryServiceConfiguration discoveryServiceConfiguration
+                && StringUtils.isNotBlank(discoveryServiceConfiguration.getAdditionalHost())) {
+                hosts.addAll(Arrays.asList(discoveryServiceConfiguration.getAdditionalHost().split("[,;]")));
             }
             return hosts;
         }
@@ -141,15 +142,13 @@ public class ApiMediationLayerStartupChecker {
         private static List<Instance> of(ServiceConfiguration serviceConfiguration) {
             return getAllHosts(serviceConfiguration).stream()
                 .filter(StringUtils::isNotBlank)
-                .map(String::trim)
-                .map(String::toLowerCase)
-                .map(host -> new Instance(host, serviceConfiguration))
+                .map(host -> new Instance(host.trim().toLowerCase(), serviceConfiguration))
                 .toList();
         }
 
         private static List<Instance> of(ServiceConfiguration serviceConfiguration, String countProperty) {
             List<Instance> allInstances = of(serviceConfiguration);
-            String countString = System.getProperty(countProperty);
+            String countString = System.getProperty(countProperty, String.valueOf(serviceConfiguration.getInstances()));
             if (StringUtils.isNotBlank(countString)) {
                 try {
                     int count = Integer.parseInt(countString);
@@ -199,14 +198,31 @@ public class ApiMediationLayerStartupChecker {
             var config = ConfigReader.environmentConfiguration();
 
             var instances = new ArrayList<Instance>();
-            instances.addAll(Instance.of(config.getDiscoveryServiceConfiguration(), "discovery.instances"));
-            instances.addAll(Instance.of(config.getApiCatalogServiceConfiguration(), "apicatalog.instances"));
-            instances.addAll(Instance.of(config.getGatewayServiceConfiguration(), "gateway.instances"));
-            instances.addAll(Instance.of(config.getDiscoverableClientConfiguration(), "discoverableclient.instances"));
-            instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
-            instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
-            instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
-            instances.addAll(Instance.of(config.getCentralGatewayServiceConfiguration(), "centralGateway.instances"));
+            if (config.getDiscoveryServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getDiscoveryServiceConfiguration(), "discovery.instances"));
+            }
+            if (config.getApiCatalogServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getApiCatalogServiceConfiguration(), "apicatalog.instances"));
+            }
+            if (config.getGatewayServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getGatewayServiceConfiguration(), "gateway.instances"));
+            }
+            if (config.getDiscoverableClientConfiguration() != null) {
+                instances.addAll(Instance.of(config.getDiscoverableClientConfiguration(), "discoverableclient.instances"));
+            }
+            if (config.getCachingServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getCachingServiceConfiguration(), "caching.instances"));
+            }
+            if (config.getZosmfServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getZosmfServiceConfiguration(), "zosmf.instances"));
+            }
+            if (config.getZaasConfiguration() != null) {
+                instances.addAll(Instance.of(config.getZaasConfiguration(), "zaas.instances"));
+            }
+            if (config.getCentralGatewayServiceConfiguration() != null) {
+                instances.addAll(Instance.of(config.getCentralGatewayServiceConfiguration(), "centralGateway.instances"));
+            }
+
             allInstances = instances.stream()
                 .map(i -> {
                     String replacement = System.getProperty("serviceIdReplaced", "");
@@ -248,10 +264,13 @@ public class ApiMediationLayerStartupChecker {
                     CoreService.CACHING.getServiceId()
                 ));
             }
-            instances = instances.filter(instance -> !Strings.CI.equalsAny(instance.getServiceId(),
-                CoreService.DISCOVERY.getServiceId(), // the source of version
-                ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId() // does not support the endpoint
-            ));
+            if (ConfigReader.environmentConfiguration().getZosmfServiceConfiguration() != null) {
+                instances = instances.filter(instance -> !Strings.CI.equalsAny(instance.getServiceId(),
+                    CoreService.DISCOVERY.getServiceId(), // the source of version
+                    ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getServiceId() // does not support the endpoint
+                ));
+            }
+
             return instances.toList();
         }
 

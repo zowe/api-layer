@@ -1,0 +1,91 @@
+services:
+
+    api-catalog-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}
+        hostname: api-catalog-services
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            - "127.0.0.1:10014:10014"
+            - "127.0.0.1:5124:5124"
+            - "127.0.0.1:6304:6304"
+
+    # Two real, independently-addressable infinispan cluster members - not a same-port
+    # collision: caching-service is deliberately moved off its default app port (10016)
+    # onto 10022, so both instances get their own port, no host-side trickery needed.
+    caching-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/caching-service:${APIML_TAG:-local}
+        hostname: caching-service
+        environment:
+            JGROUPS_BIND_PORT: "7600"
+            SERVER_SSL_KEYSTORETYPE: "PKCS12"
+            CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data_replica"
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
+            CACHING_STORAGE_MODE: "infinispan"
+            APIML_SERVICE_PORT: "10022"
+            JGROUPS_BIND_ADDRESS: "caching-service"
+        ports:
+            - "127.0.0.1:10022:10022"
+            - "127.0.0.1:5126:5126"
+            - "127.0.0.1:6306:6306"
+
+    caching-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/caching-service:${APIML_TAG:-local}
+        hostname: caching-service-2
+        environment:
+            APIML_SERVICE_PORT: "20016"
+            JGROUPS_BIND_PORT: "7600"
+            SERVER_SSL_KEYSTORETYPE: "PKCS12"
+            CACHING_STORAGE_INFINISPAN_PERSISTENCE_DATALOCATION: "data"
+            CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
+            CACHING_STORAGE_MODE: "infinispan"
+            JGROUPS_BIND_ADDRESS: "caching-service-2"
+            APIML_SERVICE_HOSTNAME: "caching-service-2"
+            logbackService: ZWEACS2
+        ports:
+            - "127.0.0.1:20016:20016"
+            - "127.0.0.1:25126:5126"
+            - "127.0.0.1:26306:6306"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    discovery-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5121:5121"
+
+    gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6300:6300"
+
+    zaas-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service
+        environment:
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+        ports:
+            - "127.0.0.1:10023:10023"
+            - "127.0.0.1:5120:5120"
+            - "127.0.0.1:6301:6301"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"

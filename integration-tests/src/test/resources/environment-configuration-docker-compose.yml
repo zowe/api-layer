@@ -1,0 +1,79 @@
+# Same topology as environment-configuration-docker.yml (used by CITests, still shared by
+# several other, not-yet-migrated jobs), except discoveryServiceConfiguration.additionalPort
+# differs from its port. CITests's docker-compose.yml publishes discovery-service-2's real
+# port (10011, unchanged) to a different HOST port (20011 - instance 2's port is always "2"
+# followed by the primary's last 4 digits, see docker/integration-tests/README.md) instead of
+# a different loopback address, since alternate loopback addresses aren't reliably supported by
+# Docker Desktop on macOS/Windows. additionalPort is deliberately kept equal to port in every
+# other environment-configuration-*.yml file, where it's fine to reuse - don't copy this pattern
+# there without checking ApiMediationLayerStartupChecker's connectPort vs identity-port
+# distinction.
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: USER
+    password: validPassword
+    clientUser: APIMTST
+gatewayServiceConfiguration:
+    scheme: https
+    host: gateway-service
+    port: 10010
+    internalPorts: 10010
+    externalPort: 10010
+    instances: 1
+    servicesEndpoint: gateway/api/v1/services
+    bucketCapacity: 20
+    authProvider: zosmf
+centralGatewayServiceConfiguration:
+    scheme: https
+    host: central-gateway-service
+    port: 10010
+zaasConfiguration:
+    scheme: https
+    host: zaas-service
+    port: 10023
+discoveryServiceConfiguration:
+    scheme: https
+    user: user
+    password: user
+    host: discovery-service
+    additionalHost: discovery-service-2
+    additionalPort: 20011
+    port: 10011
+    instances: 1
+discoverableClientConfiguration:
+    scheme: https
+    port: 10012
+    applId: ZOWEAPPL
+    host: discoverable-client
+    instances: 1
+apiCatalogServiceConfiguration:
+    scheme: https
+    url:
+    host: api-catalog-services
+    port: 10014
+    instances: 1
+cachingServiceConfiguration:
+    url:
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/service/client-cert.p12
+    serverKeyStore: ../keystore/service/server-only.p12
+    clientKeystore: ../keystore/client/client-certs.p12
+    clientCN: APIMTST
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/service/service.truststore.p12
+    trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: mock-services
+    port: 10013
+    serviceId: mockzosmf
+auxiliaryUserList:
+    value: 'unauthorized,USER1,validPassword;servicesinfo-authorized,USER,validPassword;servicesinfo-unauthorized,USER1,validPassword'
+oidcConfiguration:
+    providerName: auth0
+safIdtConfiguration:
+    enabled: true
