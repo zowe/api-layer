@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.discovery.config;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import com.sun.jersey.api.core.ResourceConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -19,14 +19,19 @@ import org.springframework.beans.factory.ObjectProvider;
 import javax.ws.rs.ext.ExceptionMapper;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -39,12 +44,16 @@ class JerseyExceptionMapperRegistrarTest {
         ObjectProvider<ExceptionMapper> exceptionMappers = mockProvider(Arrays.asList(mapperOne, mapperTwo));
         JerseyExceptionMapperRegistrar registrar = new JerseyExceptionMapperRegistrar(exceptionMappers);
         ResourceConfig resourceConfig = mock(ResourceConfig.class);
+        Set<Object> objects = new HashSet<>();
+        when(resourceConfig.getSingletons()).thenReturn(objects);
 
         Object result = registrar.postProcessAfterInitialization(resourceConfig, "jerseyApplication");
 
         assertThat(result).isSameAs(resourceConfig);
-        verify(resourceConfig).register(mapperOne);
-        verify(resourceConfig).register(mapperTwo);
+        assertEquals(2, objects.size());
+        Iterator<Object> it = objects.iterator();
+        assertSame(mapperOne, it.next());
+        assertSame(mapperTwo, it.next());
     }
 
     @Test

@@ -11,17 +11,19 @@
 package org.zowe.apiml.discovery.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.stereotype.Component;
 
-import org.glassfish.jersey.server.ResourceConfig;
+import com.sun.jersey.api.core.ResourceConfig;
 
 import javax.ws.rs.ext.ExceptionMapper;
 
 @Component
 @RequiredArgsConstructor
 @SuppressWarnings("rawtypes")
+@Slf4j
 public class JerseyExceptionMapperRegistrar implements BeanPostProcessor {
 
     private final ObjectProvider<ExceptionMapper> exceptionMappers;
@@ -29,8 +31,9 @@ public class JerseyExceptionMapperRegistrar implements BeanPostProcessor {
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) {
         if (bean instanceof ResourceConfig) {
+            log.debug("Found ResourceConfig, registering exceptionMapper");
             ResourceConfig resourceConfig = (ResourceConfig) bean;
-            exceptionMappers.forEach(resourceConfig::register);
+            exceptionMappers.forEach(mapper -> resourceConfig.getSingletons().add(mapper));
         }
         return bean;
     }

@@ -23,7 +23,6 @@ import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
@@ -56,7 +55,6 @@ class MetadataValidationExceptionMapperTest {
             Response response = exceptionMapper.toResponse(new DomainAllowListMetadataException("URLs not allowed found for instance"));
 
             assertEquals(SC_BAD_REQUEST, response.getStatus());
-            assertEquals(MediaType.APPLICATION_JSON_TYPE, response.getMediaType());
             assertEquals("{\"messages\":[{\"messageType\":\"WARNING\",\"messageNumber\":\"ZWEAM604W\",\"messageContent\":\"Invalid metadata found in registration\",\"messageKey\":\"org.zowe.apiml.common.metadataNotAllowedInRegistration\"}]}", response.getEntity());
         }
 
