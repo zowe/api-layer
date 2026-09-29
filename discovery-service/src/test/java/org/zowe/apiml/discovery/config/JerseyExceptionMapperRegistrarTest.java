@@ -20,14 +20,12 @@ import javax.ws.rs.ext.ExceptionMapper;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -51,9 +49,7 @@ class JerseyExceptionMapperRegistrarTest {
 
         assertThat(result).isSameAs(resourceConfig);
         assertEquals(2, objects.size());
-        Iterator<Object> it = objects.iterator();
-        assertSame(mapperOne, it.next());
-        assertSame(mapperTwo, it.next());
+        assertEquals(new HashSet<>(Arrays.asList(mapperOne, mapperTwo)), objects);
     }
 
     @Test
