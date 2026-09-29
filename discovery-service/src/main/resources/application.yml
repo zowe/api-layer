@@ -4,25 +4,23 @@ spring.profiles.group.attls: attlsServer,attlsClient
 logging:
     level:
         ROOT: INFO
+        com.netflix: WARN
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        com.netflix.discovery.DiscoveryClient: OFF
+        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
+        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
+        javax.net.ssl: ERROR # For running with java 17
+        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.eclipse.jetty: WARN
+        org.ehcache: WARN
+        org.springframework: WARN
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
         org.zowe.apiml: INFO
         org.zowe.apiml.discovery.GatewayNotifier: OFF
-        org.springframework: WARN
-        com.netflix: WARN
-        com.netflix.discovery: ERROR
-        com.netflix.config: ERROR
-        com.netflix.discovery.shared.transport.decorator.RedirectingEurekaHttpClient: OFF
-        com.netflix.discovery.DiscoveryClient: OFF
-        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
-        com.sun.jersey.server.impl.application.WebApplicationImpl: WARN
-        org.ehcache: WARN
-        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-
-        # New Config
-        org.apache: WARN #org.apache.catalina, org.apache.coyote, org.apache.tomcat
-        org.eclipse.jetty: WARN
-        org.apache.tomcat.util.net.SSLUtilBase: ERROR
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        javax.net.ssl: ERROR # For running with java 17
     #    com.netflix.eureka.resources: WARN
 
 apiml:
@@ -140,16 +138,16 @@ management:
 logging:
     level:
         ROOT: INFO
-        org.zowe.apiml: DEBUG
-        org.zowe.apiml.discovery.GatewayNotifier: INFO
-        org.springframework: INFO
+        com.netflix: INFO
+        com.netflix.discovery.shared.transport.decorator: DEBUG
+        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         org.apache: INFO
         org.apache.http: DEBUG
         org.apache.tomcat.util.net.jsse.JSSESupport: INFO
-        com.netflix: INFO
-        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
         org.ehcache: INFO
-        com.netflix.discovery.shared.transport.decorator: DEBUG
+        org.springframework: INFO
+        org.zowe.apiml: DEBUG
+        org.zowe.apiml.discovery.GatewayNotifier: INFO
 
 ---
 spring:

@@ -67,7 +67,9 @@ jobs:
     CITests:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
+        container:
+            image: ubuntu:latest
+            options: "--hostname testrunner"
         timeout-minutes: 15
 
         services:
@@ -768,7 +770,9 @@ jobs:
     CITestsInternalPort:
         needs: PublishJibContainers
         runs-on: ubuntu-latest
-        container: ubuntu:latest
+        container:
+            image: ubuntu:latest
+            options: "--hostname testrunner"
         timeout-minutes: 15
 
         services:

@@ -29,8 +29,11 @@ import javax.annotation.Nonnull;
 @EnableCircuitBreaker
 @ComponentScan({
     "org.zowe.apiml.discovery",
+    "org.zowe.apiml.product.eureka.web",
+    "org.zowe.apiml.product.config",
     "org.zowe.apiml.product.security",
-    "org.zowe.apiml.product.web"
+    "org.zowe.apiml.product.web",
+    "org.zowe.apiml.product.service",
 })
 @EnableApimlLogger
 public class DiscoveryServiceApplication implements ApplicationListener<ApplicationReadyEvent> {
@@ -47,4 +50,5 @@ public class DiscoveryServiceApplication implements ApplicationListener<Applicat
     public void onApplicationEvent(@Nonnull final ApplicationReadyEvent event) {
         new ServiceStartupEventHandler().onServiceStartup("Discovery Service", ServiceStartupEventHandler.DEFAULT_DELAY_FACTOR);
     }
+
 }
