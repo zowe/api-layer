@@ -2,6 +2,9 @@
 
 docker compose stop
 
+# Make sure exported logs file is empty
+> otel-collector/logs.json
+
 chmod -R 777 otel-*
 docker compose up -d
 
