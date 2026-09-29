@@ -406,7 +406,7 @@ public class VirtualService implements AutoCloseable {
      * @return base URL of this service (without slash), ie: http://localhost:65123
      */
     public String getUrl() {
-        return "http://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
+        return "https://" + tomcat.getEngine().getDefaultHost() + ":" + getPort();
     }
 
     public void register(String status) throws UnknownHostException {
@@ -426,7 +426,7 @@ public class VirtualService implements AutoCloseable {
                     .put("hostName", InetAddress.getLocalHost().getHostName())
                     .put("vipAddress", serviceId)
                     .put("app", serviceId)
-                    .put("ipAddr", InetAddress.getLocalHost().getHostAddress())
+                    .put("ipAddr", "127.0.0.1")
                     .put("status", status)
                     .put("overriddenstatus", status)
                     .put("port", new JSONObject()
