@@ -10,11 +10,17 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
-import com.netflix.appinfo.EurekaInstanceConfig;
 import org.zowe.apiml.config.ApiInfo;
-import org.zowe.apiml.eurekaservice.client.config.*;
+import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.config.Authentication;
+import org.zowe.apiml.eurekaservice.client.config.Catalog;
+import org.zowe.apiml.eurekaservice.client.config.Route;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.Lease;
+import org.zowe.apiml.registry.model.PortInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.zowe.apiml.util.MapUtils;
 import org.zowe.apiml.util.UrlUtils;
 
@@ -25,12 +31,24 @@ import java.util.Map;
 
 import static org.zowe.apiml.constants.EurekaMetadataDefinition.*;
 
+/**
+ * Builds this service's registration - a registry {@link ServiceInstance} - out of an {@link ApiMediationServiceConfig}.
+ * <p>
+ * The class name and the derivation are kept from the Eureka-based enabler: it used to assemble a Netflix
+ * {@code EurekaInstanceConfig} that Netflix's own {@code EurekaConfigBasedInstanceInfoProvider} then turned into an
+ * {@code InstanceInfo}. The intermediate Netflix types are gone with the client, so this class now produces the
+ * registration directly, with the same field-for-field result - which the registry serialises onto the unchanged
+ * wire contract. The lease cadence is the one Netflix's {@code EurekaInstanceConfigBean} defaulted to and the
+ * enabler never overrode: renewed every 30 seconds, expiring after 90.
+ */
 public class EurekaInstanceConfigCreator {
 
-    public EurekaInstanceConfig createEurekaInstanceConfig(ApiMediationServiceConfig config) throws ServiceDefinitionException {
+    private static final int DEFAULT_LEASE_RENEWAL_INTERVAL_SECONDS = 30;
+    private static final int DEFAULT_LEASE_EXPIRATION_DURATION_SECONDS = 90;
+
+    public ServiceInstance createServiceInstance(ApiMediationServiceConfig config) throws ServiceDefinitionException {
         EurekaInstanceConfigValidator eurekaInstanceConfigValidator = new EurekaInstanceConfigValidator();
         eurekaInstanceConfigValidator.validate(config);
-        ApimlEurekaInstanceConfig result = new ApimlEurekaInstanceConfig();
 
         String hostname;
         int port;
@@ -49,45 +67,53 @@ public class EurekaInstanceConfigCreator {
             config.setBaseUrl(baseUrl.getProtocol() + "://" + hostname + ":" + port);
         }
 
-        result.setInstanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port));
-        result.setAppname(config.getServiceId());
-        result.setAppGroupName(config.getServiceId());
-        result.setHostName(hostname);
-        result.setIpAddress(config.getServiceIpAddress());
-        result.setInstanceEnabledOnit(true);
-        result.setSecureVirtualHostName(config.getServiceId());
-        result.setVirtualHostName(config.getServiceId());
-        result.setStatusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl());
+        long now = System.currentTimeMillis();
+
+        ServiceInstance.Builder result = ServiceInstance.builder()
+            .instanceId(String.format("%s:%s:%s", hostname, config.getServiceId(), port))
+            .appName(config.getServiceId())
+            .appGroupName(config.getServiceId())
+            .hostName(hostname)
+            .ipAddr(config.getServiceIpAddress())
+            // The enabler registers immediately as UP, which is what instanceEnabledOnit meant on the Eureka path.
+            .status(InstanceStatus.UP)
+            .vipAddress(config.getServiceId())
+            .secureVipAddress(config.getServiceId())
+            .statusPageUrl(config.getBaseUrl() + config.getStatusPageRelativeUrl())
+            .lease(Lease.renewable(
+                DEFAULT_LEASE_RENEWAL_INTERVAL_SECONDS,
+                DEFAULT_LEASE_EXPIRATION_DURATION_SECONDS,
+                now))
+            .lastUpdatedTimestamp(now)
+            .lastDirtyTimestamp(now);
 
         if ((config.getHomePageRelativeUrl() != null) && !config.getHomePageRelativeUrl().isEmpty()) {
-            result.setHomePageUrl(config.getBaseUrl() + config.getHomePageRelativeUrl());
+            result.homePageUrl(config.getBaseUrl() + config.getHomePageRelativeUrl());
         }
 
         String protocol = baseUrl.getProtocol();
-        result.setNonSecurePort(port);
 
 
         switch (protocol) {
             case "http":
-                result.setNonSecurePortEnabled(true);
-                result.setHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
+                result.port(new PortInfo(port, true));
+                result.healthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             case "https":
-                result.setSecurePort(port);
-                result.setSecurePortEnabled(true);
-                result.setSecureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
+                result.securePort(new PortInfo(port, true));
+                result.secureHealthCheckUrl(config.getBaseUrl() + config.getHealthCheckRelativeUrl());
                 break;
             default:
                 throw new MetadataValidationException(String.format("'%s' is not valid protocol for baseUrl property", protocol));
         }
 
         try {
-            result.setMetadataMap(createMetadata(config));
+            result.metadata(createMetadata(config));
         } catch (MetadataValidationException | IllegalArgumentException e) {
             throw new ServiceDefinitionException("Service configuration failed to create service metadata: ", e);
         }
 
-        return result;
+        return result.build();
     }
 
     private Map<String, String> createMetadata(ApiMediationServiceConfig config) {
@@ -96,9 +122,9 @@ public class EurekaInstanceConfigCreator {
         // fill authentication metadata
         Authentication authentication = config.getAuthentication();
         if (authentication != null) {
-            metadata.put(AUTHENTICATION_SCHEME, authentication.getScheme());
-            metadata.put(AUTHENTICATION_APPLID, authentication.getApplid());
-            metadata.put(AUTHENTICATION_HEADERS, authentication.getHeaders());
+            putMetadata(metadata, AUTHENTICATION_SCHEME, authentication.getScheme());
+            putMetadata(metadata, AUTHENTICATION_APPLID, authentication.getApplid());
+            putMetadata(metadata, AUTHENTICATION_HEADERS, authentication.getHeaders());
         }
 
         // fill routing metadata
@@ -114,16 +140,16 @@ public class EurekaInstanceConfigCreator {
         if (config.getCatalog() != null) {
             Catalog.Tile tile = config.getCatalog().getTile();
             if (tile != null) {
-                metadata.put(CATALOG_ID, tile.getId());
-                metadata.put(CATALOG_VERSION, tile.getVersion());
-                metadata.put(CATALOG_TITLE, tile.getTitle());
-                metadata.put(CATALOG_DESCRIPTION, tile.getDescription());
+                putMetadata(metadata, CATALOG_ID, tile.getId());
+                putMetadata(metadata, CATALOG_VERSION, tile.getVersion());
+                putMetadata(metadata, CATALOG_TITLE, tile.getTitle());
+                putMetadata(metadata, CATALOG_DESCRIPTION, tile.getDescription());
             }
         }
 
         // fill service metadata
-        metadata.put(SERVICE_TITLE, config.getTitle());
-        metadata.put(SERVICE_DESCRIPTION, config.getDescription());
+        putMetadata(metadata, SERVICE_TITLE, config.getTitle());
+        putMetadata(metadata, SERVICE_DESCRIPTION, config.getDescription());
 
         // fill custom metadata
         metadata.putAll(flattenMetadata(config.getCustomMetadata()));
@@ -134,6 +160,17 @@ public class EurekaInstanceConfigCreator {
         }
 
         return metadata;
+    }
+
+    /**
+     * A key with a null value is dropped rather than carried: the Netflix client the enabler used to build its
+     * registration through did the same, so a key that was never set and one that was set to null stayed
+     * indistinguishable on the wire.
+     */
+    private static void putMetadata(Map<String, String> metadata, String key, String value) {
+        if (value != null) {
+            metadata.put(key, value);
+        }
     }
 
     public Map<String, String> flattenMetadata(Map<String, Object> configurationMetadata) {

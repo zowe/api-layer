@@ -10,41 +10,34 @@
 
 package org.zowe.apiml.eurekaservice.client.impl;
 
-import com.netflix.discovery.EurekaClientConfig;
 import org.zowe.apiml.eurekaservice.client.EurekaClientConfigProvider;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.eurekaservice.client.config.EurekaClientConfiguration;
 
 /**
  * Trivial EurekaClientConfigProvider implementation.
- * Extended EurekaClientConfigProvider implementations can enhance the config metaData or provide different EurekaClientConfig implementation
- * which hold additional data or fetches certain configuration parameters differently.
- *
- * Additionally Netflix implementation DefaultEurekaClientConfig provides some parameters by dynamically fetching them from Archaius1, which in some situations is good,
- * but sometimes can imply incorrect behavior, e.g. if we want to configure certain parameter but want to make sure it won't change in runtime.
- * Another usage is to pass the parameter in different way than Archaius1 is able to access it, for example store it in metadata.
-  *
- * See API ML EurekaClientConfiguration for example how some config parameters are hard coded.
+ * Extended EurekaClientConfigProvider implementations can enhance the config metadata or provide a different client
+ * configuration implementation which holds additional data or fetches certain configuration parameters differently.
  */
 public class ApiMlEurekaClientConfigProvider implements EurekaClientConfigProvider {
 
-    private EurekaClientConfig clientConfig;
+    private EurekaClientConfiguration clientConfig;
 
     /**
-     *  Wrapps the ApiMediationServiceConfig argument by a default implementation of {@link EurekaClientConfiguration}
+     * Wraps the ApiMediationServiceConfig argument by a default implementation of {@link EurekaClientConfiguration}
      *
      * @param config
      * @return
      */
     @Override
-    public EurekaClientConfig config(ApiMediationServiceConfig config) {
+    public EurekaClientConfiguration config(ApiMediationServiceConfig config) {
         clientConfig = new EurekaClientConfiguration(config);
         return clientConfig;
     }
 
 
     @Override
-    public EurekaClientConfig get() {
+    public EurekaClientConfiguration get() {
         return clientConfig;
     }
 }

@@ -31,9 +31,9 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 public class RegisterToApiLayer {
 
     /**
-     * {@link ApiMediationClient} is a wrapper and initializer for a {@link com.netflix.discovery.EurekaClient} instance.
-     * It also provides methods for registering and unregistering API ML services with Eureka server.
-     * RegisterToApiLayer class provides the apiMediationClient as a spring bean to be used in code where EurekaClient
+     * {@link ApiMediationClient} is a wrapper and initializer for a {@link org.zowe.apiml.registry.client.RegistryClient} instance.
+     * It also provides methods for registering and unregistering API ML services with the Discovery Service.
+     * RegisterToApiLayer class provides the apiMediationClient as a spring bean to be used in code where the registry client
      * is needed.
      */
     private final ApiMediationClient apiMediationClient;
@@ -61,7 +61,7 @@ public class RegisterToApiLayer {
     @EventListener(ContextRefreshedEvent.class)
     public void onContextRefreshedEventEvent() {
         if (apimlEnabled) {
-            if (apiMediationClient.getEurekaClient() != null) {
+            if (apiMediationClient.isRegistered()) {
                 if (config != null) {
                     logger.log("org.zowe.apiml.enabler.registration.renew"
                         , config.getBaseUrl(), config.getServiceIpAddress(), config.getDiscoveryServiceUrls()
@@ -82,7 +82,7 @@ public class RegisterToApiLayer {
 
     @EventListener(ContextClosedEvent.class)
     public void onContextClosedEvent() {
-        if (apiMediationClient.getEurekaClient() != null) {
+        if (apiMediationClient.isRegistered()) {
             unregister();
         }
     }

@@ -17,7 +17,6 @@ dependencies {
     api project(':onboarding-enabler-java')
 
     implementation libs.spring.boot.starter
-    implementation libs.eureka.jersey.client
 
     testImplementation libs.spring.boot.starter.test
 
