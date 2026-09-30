@@ -10,7 +10,6 @@
 
 package org.zowe.apiml;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,7 @@ import org.springframework.cloud.client.discovery.event.HeartbeatMonitor;
 import org.springframework.cloud.client.discovery.event.InstanceRegisteredEvent;
 import org.springframework.cloud.client.discovery.event.ParentHeartbeatEvent;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
-import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
+import org.zowe.apiml.discovery.registry.event.RegistryInstanceRegisteredEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -105,7 +104,8 @@ public class RouteRefreshListenerTest {
         @Test
         void whenEurekaInstanceRegistered_thenReset() {
             doNothing().when(publisher).publishEvent(any());
-            routeRefreshListener.onApplicationEvent(new EurekaInstanceRegisteredEvent(mock(Object.class), mock(InstanceInfo.class), 0, false));
+            routeRefreshListener.onApplicationEvent(new RegistryInstanceRegisteredEvent(new Object(),
+                org.zowe.apiml.registry.model.ServiceInstance.builder().appName("someservice").build(), false));
             verifyNoInteractions(heartbeatMonitor);
         }
 

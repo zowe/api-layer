@@ -10,11 +10,9 @@
 
 package org.zowe.apiml.gateway;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.cloud.client.ServiceInstance;
+import org.zowe.apiml.registry.RegistryView;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,8 +20,12 @@ import java.util.stream.Collectors;
 /**
  * Register the route to all components that need the information for the request to pass properly through the
  * Gateway. This class is heavily depended upon from the Stubs in this package.
+ * <p>
+ * Doubles as a {@link RegistryView} so that the components which read the registry in full -
+ * {@code ServicesInfoService}, {@code BasicInfoService} - can be driven from the same mock services as the
+ * route table. Previously those were fed Netflix {@code Applications} objects built here.
  */
-public class ApplicationRegistry {
+public class ApplicationRegistry implements RegistryView {
 
     private final Map<String, MockService> instanceIdToService = Collections.synchronizedMap(new HashMap<>());
 
@@ -61,39 +63,32 @@ public class ApplicationRegistry {
         return instanceIdToService.values();
     }
 
-    public Application getApplication(String serviceId) {
-        Application application = new Application();
-        application.setName(serviceId);
-        instanceIdToService.values().stream()
+    @Override
+    public List<String> serviceIds() {
+        return instanceIdToService.values().stream()
+            .map(MockService::getServiceId)
+            .distinct()
+            .toList();
+    }
+
+    @Override
+    public List<org.zowe.apiml.registry.model.ServiceInstance> instances(String serviceId) {
+        return instanceIdToService.values().stream()
             .filter(i -> StringUtils.equalsIgnoreCase(serviceId, i.getServiceId()))
             .map(MockService::getInstanceInfo)
-            .map(InstanceInfo.Builder::build)
-            .forEach(application::addInstance);
-        return application;
+            .toList();
     }
 
-    public Applications getApplications() {
-        Applications applications = new Applications();
-
-        instanceIdToService.values().stream()
-            .map(MockService::getServiceId).distinct()
-            .map(this::getApplication)
-            .forEach(applications::addApplication);
-
-        return applications;
-    }
-
-    public List<InstanceInfo> getInstances() {
+    public List<org.zowe.apiml.registry.model.ServiceInstance> getInstances() {
         return instanceIdToService.values().stream()
             .map(MockService::getInstanceInfo)
-            .map(InstanceInfo.Builder::build)
             .toList();
     }
 
     public List<ServiceInstance> getServiceInstance(String serviceId) {
         return instanceIdToService.values().stream()
             .filter(ms -> StringUtils.equalsIgnoreCase(serviceId, ms.getServiceId()))
-            .map(MockService::getEurekaServiceInstance)
+            .map(MockService::getServiceInstance)
             .collect(Collectors.toList());
     }
 

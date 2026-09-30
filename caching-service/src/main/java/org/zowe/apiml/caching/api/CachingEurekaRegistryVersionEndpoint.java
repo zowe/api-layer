@@ -38,10 +38,11 @@ public class CachingEurekaRegistryVersionEndpoint {
     @ReadOperation(produces = APPLICATION_JSON)
     public VersionDto status() {
         long version = -1;
-        var eurekaClient = apiMediationClient.getEurekaClient();
-        if (eurekaClient != null) {
-            var hashCode = eurekaClient.getApplications().getAppsHashCode();
-            var matcher = VERSION_PATTERN.matcher(hashCode);
+        var registryClient = apiMediationClient.getRegistryClient();
+        if (registryClient != null) {
+            var applications = registryClient.cache().applications();
+            var hashCode = applications == null ? null : applications.appsHashCode();
+            var matcher = VERSION_PATTERN.matcher(hashCode == null ? "" : hashCode);
             if (matcher.find()) {
                 version = Long.parseLong(matcher.group(1));
                 log.debug("New Eureka registry version: {}", version);

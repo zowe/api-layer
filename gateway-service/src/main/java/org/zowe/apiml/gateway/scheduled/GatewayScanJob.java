@@ -12,16 +12,16 @@ package org.zowe.apiml.gateway.scheduled;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.cloud.client.ServiceInstance;
-import org.springframework.cloud.netflix.eureka.serviceregistry.EurekaRegistration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.gateway.service.GatewayIndexService;
 import org.zowe.apiml.gateway.service.InstanceInfoService;
+import org.zowe.apiml.registry.SelfRegistration;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.services.BasicInfoService;
 import org.zowe.apiml.services.ServiceInfo;
@@ -54,7 +54,7 @@ import static org.zowe.apiml.constants.EurekaMetadataDefinition.APIML_ID;
 public class GatewayScanJob {
 
     private final BasicInfoService basicInfoService;
-    private final EurekaRegistration serviceRegistration;
+    private final SelfRegistration serviceRegistration;
     private final GatewayIndexService gatewayIndexerService;
     private final InstanceInfoService instanceInfoService;
     @Value("${apiml.service.apimlId:#{null}}")
@@ -72,7 +72,7 @@ public class GatewayScanJob {
     }
 
     private void addLocalServices() {
-        String apimlIdKey = Optional.ofNullable(currentApimlId).orElse(serviceRegistration.getInstanceId());
+        String apimlIdKey = Optional.ofNullable(currentApimlId).orElse(serviceRegistration.instanceId());
         List<ServiceInfo> localServices = basicInfoService.getServicesInfo();
         gatewayIndexerService.putApimlServices(apimlIdKey, localServices);
     }

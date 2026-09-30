@@ -28,7 +28,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
@@ -42,12 +41,12 @@ import java.util.Date;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.hc.core5.http.HttpStatus.SC_FORBIDDEN;
-import static org.apache.hc.core5.http.HttpStatus.SC_METHOD_NOT_ALLOWED;
-import static org.apache.hc.core5.http.HttpStatus.SC_NOT_FOUND;
-import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
-import static org.apache.hc.core5.http.HttpStatus.SC_OK;
-import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
+import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
+import static jakarta.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
+import static jakarta.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static jakarta.servlet.http.HttpServletResponse.SC_NO_CONTENT;
+import static jakarta.servlet.http.HttpServletResponse.SC_OK;
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -106,7 +105,6 @@ class ActuatorConfigTest {
     @SpringBootTest(
         classes = {
             ApimlApplication.class,
-            FreeMarkerConfigurer.class,
             TestConfig.class
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -191,7 +189,6 @@ class ActuatorConfigTest {
     @SpringBootTest(
         classes = {
             ApimlApplication.class,
-            FreeMarkerConfigurer.class,
             TestConfig.class
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -289,7 +286,6 @@ class ActuatorConfigTest {
     @SpringBootTest(
         classes = {
             ApimlApplication.class,
-            FreeMarkerConfigurer.class,
             TestConfig.class
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT

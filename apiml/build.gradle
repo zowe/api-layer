@@ -67,8 +67,6 @@ dependencies {
     implementation libs.swagger2.parser
     implementation libs.swagger3.parser
     implementation libs.bundles.jaxb
-    implementation libs.spring.cloud.starter.eureka.client
-    implementation libs.spring.cloud.starter.eureka.server
     implementation libs.spring.cloud.starter.gateway
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security

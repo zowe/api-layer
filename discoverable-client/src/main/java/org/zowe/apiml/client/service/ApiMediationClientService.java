@@ -26,8 +26,8 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Service that allows a new {@link com.netflix.discovery.EurekaClient} to be registered and un-registered via ApiMediationClientImpl instance.
- * This service uses its own {@link com.netflix.discovery.EurekaClient} so that registration can be tested without affecting other services in
+ * Service that allows a new {@link org.zowe.apiml.registry.client.RegistryClient} to be registered and un-registered via ApiMediationClientImpl instance.
+ * This service uses its own {@link org.zowe.apiml.registry.client.RegistryClient} so that registration can be tested without affecting other services in
  * the Discoverable Client.
  */
 @Service

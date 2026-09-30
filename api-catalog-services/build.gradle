@@ -65,12 +65,21 @@ dependencies {
     api project(':apiml-tomcat-common')
     api project(':security-service-client-spring')
 
+    // The Catalog registers itself with the Discovery Service and looks other services up through Spring Cloud's
+    // DiscoveryClient. It used to get both from the Eureka starter; now it gets them from the registry client.
+    implementation project(':apiml-registry-client-spring')
+
     implementation libs.spring.boot.starter.aop
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.boot.starter.security
     implementation libs.spring.boot.starter.web
     implementation libs.spring.boot.starter.webflux
-    implementation libs.spring.cloud.starter.eureka.client
+    // No longer a Eureka client: ContainerService and ApiDocService work against Spring Cloud's own
+    // ServiceInstance rather than downcasting to EurekaServiceInstance.
+    implementation libs.spring.cloud.commons
+    implementation libs.spring.cloud.context
+    // Also arrived transitively through the Eureka starter.
+    implementation libs.http.client5
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
     implementation libs.spring.cloud.gateway.server

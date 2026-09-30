@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.eurekaservice.client.impl;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClientConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.config.ApiInfo;
@@ -24,6 +22,11 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.product.zos.ZUtilDummy;
+import org.zowe.apiml.registry.client.RegistryClient;
+import org.zowe.apiml.registry.client.RegistryTransport;
+import org.zowe.apiml.registry.model.Applications;
+import org.zowe.apiml.registry.model.InstanceStatus;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +52,48 @@ class ApiMediationClientImplTest {
         "javax.net.ssl.trustStorePassword",
         "javax.net.ssl.trustStoreType"
     };
+
+    /**
+     * Records what the client sent, without any network. The enabler's registration drives this through the same
+     * {@link RegistryTransport} the HTTP transport implements, which is what makes the assertions below statements
+     * about the registration itself rather than about Netflix's client, as they used to be.
+     */
+    static class RecordingTransport implements RegistryTransport {
+
+        final List<ServiceInstance> registered = new ArrayList<>();
+        final List<String> cancelled = new ArrayList<>();
+
+        @Override
+        public Applications fetchApplications() {
+            return new Applications(List.of(), 0L, "UP_0_");
+        }
+
+        @Override
+        public Applications fetchDelta() {
+            return null;
+        }
+
+        @Override
+        public void register(ServiceInstance instance) {
+            registered.add(instance);
+        }
+
+        @Override
+        public boolean renew(String appName, String instanceId) {
+            return true;
+        }
+
+        @Override
+        public void cancel(String appName, String instanceId) {
+            cancelled.add(appName + "/" + instanceId);
+        }
+
+        @Override
+        public void updateStatus(String appName, String instanceId, InstanceStatus status) {
+            // not exercised by these tests
+        }
+
+    }
 
     ApiMediationServiceConfig getValidConfiguration() {
         ApiInfo apiInfo = new ApiInfo("org.zowe.enabler.java", "api/v1", "1.0.0", "https://localhost:10014/apicatalog/api-doc", null, null);
@@ -88,19 +133,67 @@ class ApiMediationClientImplTest {
         }
     }
 
-    @Test
-    void startEurekaClient() throws ServiceDefinitionException {
-        ApiMediationServiceConfig config = getValidConfiguration();
+    private ApiMediationClient registerWithRecordingTransport(ApiMediationServiceConfig config,
+                                                             DefaultCustomMetadataHelper metadataHelper) throws ServiceDefinitionException {
+        RecordingTransport transport = new RecordingTransport();
+        EurekaClientProvider clientProvider = mock(EurekaClientProvider.class);
+        when(clientProvider.client(any(), any())).thenAnswer(invocation ->
+            new RegistryClient(transport, invocation.getArgument(1, ServiceInstance.class)));
 
-        ApiMediationClient client = new ApiMediationClientImpl();
+        ApiMediationClient client = new ApiMediationClientImpl(
+            clientProvider,
+            new ApiMlEurekaClientConfigProvider(),
+            new EurekaInstanceConfigCreator(),
+            metadataHelper
+        );
+        client.register(config);
+        return client;
+    }
+
+    @Test
+    void startRegistryClient() throws ServiceDefinitionException {
+        ApiMediationServiceConfig config = getValidConfiguration();
+        RecordingTransport transport = new RecordingTransport();
+
+        EurekaClientProvider clientProvider = mock(EurekaClientProvider.class);
+        when(clientProvider.client(any(), any())).thenAnswer(invocation ->
+            new RegistryClient(transport, invocation.getArgument(1, ServiceInstance.class)));
+
+        ApiMediationClient client = new ApiMediationClientImpl(clientProvider);
         client.register(config);
 
-        assertNotNull(client.getEurekaClient());
-        assertEquals("SERVICE", client.getEurekaClient().getApplicationInfoManager().getInfo().getAppName());
-        assertEquals(InstanceInfo.InstanceStatus.UP, client.getEurekaClient().getApplicationInfoManager().getInfo().getStatus());
-        assertTrue(client.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().containsKey("apiml.authentication.scheme"));
-        assertFalse(client.getEurekaClient().getApplicationInfoManager().getInfo().getMetadata().containsKey("apiml.authentication.applid"));
+        assertNotNull(client.getRegistryClient());
+        assertTrue(client.isRegistered());
+
+        assertEquals(1, transport.registered.size());
+        ServiceInstance registered = transport.registered.get(0);
+        assertEquals("SERVICE", registered.appName());
+        assertEquals(InstanceStatus.UP, registered.status());
+        assertTrue(registered.metadata().containsKey("apiml.authentication.scheme"));
+        assertFalse(registered.metadata().containsKey("apiml.authentication.applid"));
+        assertEquals("host:service:1000", registered.instanceId());
+        // An empty homePageRelativeUrl means no home page, exactly as on the Eureka path
+        assertNull(registered.homePageUrl());
+        assertEquals("http://host:1000/service", registered.statusPageUrl());
+        assertEquals(1000, registered.port().port());
+        assertTrue(registered.port().enabled());
         // ...
+        client.unregister();
+        assertEquals("SERVICE/host:service:1000", transport.cancelled.get(0));
+    }
+
+    @Test
+    void registerTwiceIsRejected() throws ServiceDefinitionException {
+        ApiMediationServiceConfig config = getValidConfiguration();
+        RecordingTransport transport = new RecordingTransport();
+
+        EurekaClientProvider clientProvider = mock(EurekaClientProvider.class);
+        when(clientProvider.client(any(), any())).thenAnswer(invocation ->
+            new RegistryClient(transport, invocation.getArgument(1, ServiceInstance.class)));
+
+        ApiMediationClient client = new ApiMediationClientImpl(clientProvider);
+        client.register(config);
+        assertThrows(ServiceDefinitionException.class, () -> client.register(config));
         client.unregister();
     }
 
@@ -123,18 +216,19 @@ class ApiMediationClientImplTest {
 
         ApiMediationServiceConfig config = apiMediationServiceConfigReader.buildConfiguration("/https-service-configuration.yml");
 
+        RecordingTransport transport = new RecordingTransport();
         EurekaClientProvider clientProvider = mock(EurekaClientProvider.class);
-        EurekaInstanceConfigCreator instanceConfigCreator = new EurekaInstanceConfigCreator();
+        when(clientProvider.client(any(), any())).thenAnswer(invocation ->
+            new RegistryClient(transport, invocation.getArgument(1, ServiceInstance.class)));
+        EurekaClientConfigProvider clientConfigProvider = mock(ApiMlEurekaClientConfigProvider.class);
+        when(clientConfigProvider.config(config)).thenReturn(new EurekaClientConfiguration(config));
 
-        EurekaClientConfig clientConfig = new EurekaClientConfiguration(config);
-        EurekaClientConfigProvider eurekaClientConfigProvider = mock(ApiMlEurekaClientConfigProvider.class);
-        when(eurekaClientConfigProvider.config(config)).thenReturn(clientConfig);
-
-        ApiMediationClient client = new ApiMediationClientImpl(clientProvider, eurekaClientConfigProvider, instanceConfigCreator);
+        ApiMediationClient client = new ApiMediationClientImpl(clientProvider, clientConfigProvider, new EurekaInstanceConfigCreator());
 
         client.register(config);
 
-        verify(clientProvider).client(any(), any(), any(), any());
+        verify(clientProvider).client(any(), any());
+        assertEquals(1, transport.registered.size());
     }
 
     @Test
@@ -192,6 +286,7 @@ class ApiMediationClientImplTest {
         config.setCustomMetadata(new HashMap<>(Collections.singletonMap("os.name", "OSX")));
         client.register(config);
         assertEquals("OSX", config.getCustomMetadata().get("os.name"));
+        client.unregister();
     }
 
     private org.zowe.apiml.product.zos.ZUtil getZUtilZosValue() {
@@ -222,7 +317,18 @@ class ApiMediationClientImplTest {
     @Test
     void testGivenZos_whenRegister_thenDefaultMetadataAreFetched() throws ServiceDefinitionException {
         ApiMediationServiceConfig config = getValidConfiguration();
-        ApiMediationClient client = createApiMediationClient(getDefaultCustomMetadataHelper(true));
+
+        RecordingTransport transport = new RecordingTransport();
+        EurekaClientProvider clientProvider = mock(EurekaClientProvider.class);
+        when(clientProvider.client(any(), any())).thenAnswer(invocation ->
+            new RegistryClient(transport, invocation.getArgument(1, ServiceInstance.class)));
+
+        ApiMediationClient client = new ApiMediationClientImpl(
+            clientProvider,
+            new ApiMlEurekaClientConfigProvider(),
+            new EurekaInstanceConfigCreator(),
+            getDefaultCustomMetadataHelper(true)
+        );
 
         client.register(config);
         assertEquals(System.getProperty("os.name"), config.getCustomMetadata().get("os.name"));
@@ -233,12 +339,27 @@ class ApiMediationClientImplTest {
         assertEquals("sysname", config.getCustomMetadata().get("zos.sysname"));
         assertEquals("sysclone", config.getCustomMetadata().get("zos.sysclone"));
         assertEquals("sysplex", config.getCustomMetadata().get("zos.sysplex"));
+
+        assertTrue(transport.registered.get(0).metadata().containsKey("zos.jobid"));
+        client.unregister();
     }
 
     @Test
     void testGivenNonZos_whenRegister_thenDefaultMetadataAreFetched() throws ServiceDefinitionException {
         ApiMediationServiceConfig config = getValidConfiguration();
-        ApiMediationClient client = createApiMediationClient(getDefaultCustomMetadataHelper(false));
+
+        RecordingTransport transport = new RecordingTransport();
+        EurekaClientProvider clientProvider = mock(EurekaClientProvider.class);
+        when(clientProvider.client(any(), any())).thenAnswer(invocation ->
+            new RegistryClient(transport, invocation.getArgument(1, ServiceInstance.class)));
+        eurekaClientConfigProvider = spy(ApiMlEurekaClientConfigProvider.class);
+
+        ApiMediationClient client = new ApiMediationClientImpl(
+            clientProvider,
+            eurekaClientConfigProvider,
+            new EurekaInstanceConfigCreator(),
+            getDefaultCustomMetadataHelper(false)
+        );
 
         doAnswer(invocation -> {
             ApiMediationServiceConfig configArg = invocation.getArgument(0);
@@ -250,6 +371,8 @@ class ApiMediationClientImplTest {
 
         assertEquals(System.getProperty("os.name"), config.getCustomMetadata().get("os.name"));
         assertNull(config.getCustomMetadata().get("zos.jobid"));
+        assertFalse(transport.registered.get(0).metadata().containsKey("zos.jobid"));
+        client.unregister();
     }
 
 }

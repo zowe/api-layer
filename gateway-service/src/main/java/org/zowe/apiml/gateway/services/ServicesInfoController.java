@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.gateway.services;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.InstanceStatus;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -121,7 +121,7 @@ public class ServicesInfoController {
     })
     public Mono<ResponseEntity<ServiceInfo>> getService(@Parameter(in = ParameterIn.PATH, description = "Service ID of the requested service", required = true) @PathVariable String serviceId) {
         ServiceInfo serviceInfo = servicesInfoService.getServiceInfo(serviceId);
-        var status = (serviceInfo.getStatus() == InstanceInfo.InstanceStatus.UNKNOWN) ? NOT_FOUND : OK;
+        var status = (serviceInfo.getStatus() == InstanceStatus.UNKNOWN) ? NOT_FOUND : OK;
 
         return Mono.just(ResponseEntity
             .status(status)

@@ -10,8 +10,6 @@
 
 package org.zowe.apiml.client.api;
 
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Applications;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,7 +19,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
+import org.zowe.apiml.registry.client.RegistryCache;
+import org.zowe.apiml.registry.client.RegistryClient;
+import org.zowe.apiml.registry.model.Applications;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,25 +41,28 @@ class ClientEurekaRegistryVersionEndpointTest {
         clientEurekaRegistryVersionEndpoint = new ClientEurekaRegistryVersionEndpoint(apiMediationClient);
     }
 
-    @ParameterizedTest(name = "When eurekaClient.getApplications().getAppsHashCode() is {0} then expected /eurekaversion is {1}")
+    @ParameterizedTest(name = "When the cached registry hash code is {0} then expected /eurekaversion is {1}")
     @MethodSource("provideTestData")
-    void getCorrectVersionOnEurekaEvent(EurekaClient eurekaClient, String hashcode, Long expectedVersion) {
-        Mockito.when(apiMediationClient.getEurekaClient()).thenReturn(eurekaClient);
-        if (eurekaClient != null) {
-            Mockito.when(eurekaClient.getApplications()).thenReturn(Mockito.mock(Applications.class));
-            Mockito.when(eurekaClient.getApplications().getAppsHashCode()).thenReturn(hashcode);
+    void getCorrectVersionOnEurekaEvent(boolean hasClient, String hashcode, Long expectedVersion) {
+        if (hasClient) {
+            var registryClient = Mockito.mock(RegistryClient.class);
+            var cache = Mockito.mock(RegistryCache.class);
+            Mockito.doReturn(cache).when(registryClient).cache();
+            Mockito.doReturn(new Applications(List.of(), 0L, hashcode)).when(cache).applications();
+            Mockito.when(apiMediationClient.getRegistryClient()).thenReturn(registryClient);
+        } else {
+            Mockito.when(apiMediationClient.getRegistryClient()).thenReturn(null);
         }
 
         assertEquals(ClientEurekaRegistryVersionEndpoint.VersionDto.builder().version(expectedVersion).build(), clientEurekaRegistryVersionEndpoint.status());
     }
 
     static Stream<Arguments> provideTestData() {
-        EurekaClient eurekaClient = Mockito.mock(EurekaClient.class);
         return Stream.of(
-            Arguments.of(null, "DOWN_12_UP_3_", -1L),
-            Arguments.of(eurekaClient, "DOWN_12_UP_3_", 3L),
-            Arguments.of(eurekaClient, "DOWN_14_", -1L),
-            Arguments.of(eurekaClient, "UP_24_", 24L));
+            Arguments.of(false, "DOWN_12_UP_3_", -1L),
+            Arguments.of(true, "DOWN_12_UP_3_", 3L),
+            Arguments.of(true, "DOWN_14_", -1L),
+            Arguments.of(true, "UP_24_", 24L));
     }
 
 }

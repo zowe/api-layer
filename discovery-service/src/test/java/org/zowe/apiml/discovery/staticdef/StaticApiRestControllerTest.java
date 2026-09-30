@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.discovery.staticdef;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,7 +32,7 @@ class StaticApiRestControllerTest {
 
     private static final String CREDENTIALS = "eureka:password";
 
-    List<InstanceInfo> instancesInfo;
+    List<ServiceInstance> instancesInfo;
     private MockMvc mockMvc;
     String serviceName = "service";
 
@@ -41,11 +41,19 @@ class StaticApiRestControllerTest {
 
         registrationService = mock(StaticServicesRegistrationService.class);
         instancesInfo = Collections.singletonList(
-            InstanceInfo.Builder.newBuilder()
-                .setAppName(serviceName)
+            ServiceInstance.builder()
+                .appName(serviceName)
                 .build()
         );
-        mockMvc = standaloneSetup(new StaticApiRestController(registrationService)).build();
+        // The ServiceInstance model carries no Jackson annotations by design, so a bare ObjectMapper cannot
+        // serialise it. The running application gets RegistryJacksonModule from a bean; standalone MockMvc has to
+        // be given it explicitly, otherwise this endpoint would serialise every instance as {}.
+        var objectMapper = new com.fasterxml.jackson.databind.ObjectMapper()
+            .registerModule(new org.zowe.apiml.registry.codec.RegistryJacksonModule());
+        mockMvc = standaloneSetup(new StaticApiRestController(registrationService))
+            .setMessageConverters(
+                new org.springframework.http.converter.json.MappingJackson2HttpMessageConverter(objectMapper))
+            .build();
     }
 
 

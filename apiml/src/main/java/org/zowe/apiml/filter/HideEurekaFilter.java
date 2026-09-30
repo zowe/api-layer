@@ -22,8 +22,8 @@ import org.zowe.apiml.message.core.MessageService;
 
 import java.io.IOException;
 
-import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 /**
  * In modulith, all requests are handled by the same filters, on a separate connector.
@@ -47,7 +47,7 @@ public class HideEurekaFilter extends PreFluxFilter {
             StringUtils.equals(request.getRequestURI(), "/eureka") ||
             StringUtils.startsWith(request.getRequestURI(), "/eureka/")
         ) {
-            response.addHeader(CONTENT_TYPE, APPLICATION_JSON);
+            response.addHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE);
             response.getOutputStream().print(error404Message);
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         } else {
