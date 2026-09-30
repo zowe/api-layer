@@ -8,6 +8,11 @@
 
 set -e
 
+if [ ! -f "otel-collector/logs.json" ] || [ ! -s "otel-collector/logs.json" ]; then
+    echo "otel-collector/logs.json is not a regular file or it is empty"
+    exit 1
+fi
+
 while IFS= read -r line; do
     value1=$(echo "$line" | jq -r '(.resourceLogs.[0].resource.attributes.[] | select(.key == "deployment.environment.name").value.stringValue) // "NOT_FOUND"') # TEST
     value2=$(echo "$line" | jq -r '(.resourceLogs.[0].scopeLogs.[0].scope.name) // "NOT_FOUND"') # == org.zowe.apiml.opentelemetry
