@@ -1,6 +1,6 @@
 {
     "$schema": "https://docs.renovatebot.com/renovate-schema.json",
     "constraints": {
-        "npm": "10.9.0"
+        "npm": "10.9.9"
     }
 }
