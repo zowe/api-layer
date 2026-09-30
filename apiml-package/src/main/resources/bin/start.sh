@@ -81,6 +81,9 @@
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
 # - ZWE_configs_debug
 # - ZWE_configs_logging_fileAppender_enabled - write logs to a file, always on when debug is enabled (default: false)
+# - ZWE_configs_logging_debugToFileOnly - keep debug level logs out of stdout and write them to the log file only, implies file appender (default: false)
+# - ZWE_configs_logging_levels / ZWE_components_apiml_logging_levels - comma separated list of logger=level entries
+#                       (e.g. org.zowe.apiml=debug,org.apache.http=trace) passed as logging.level.<logger>=<level>
 # - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
@@ -158,6 +161,20 @@ if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_config
     # Debug mode always writes logs to a file
     ZWE_configs_logging_fileAppender_enabled="true"
 fi
+
+# Debug logs to file only requires the file appender
+if [ "${ZWE_configs_logging_debugToFileOnly:-${ZWE_components_gateway_logging_debugToFileOnly:-false}}" = "true" ]; then
+    ZWE_configs_logging_fileAppender_enabled="true"
+fi
+
+# Per-logger log levels, entries in the logger=level format are passed as -Dlogging.level.<logger>=<level>
+LOGGING_LEVEL_OPTS=""
+for entry in $(echo "${ZWE_configs_logging_levels:-${ZWE_components_apiml_logging_levels:-}}" | tr ',' ' '); do
+    case "${entry}" in
+        ?*=?*) LOGGING_LEVEL_OPTS="${LOGGING_LEVEL_OPTS} -Dlogging.level.${entry}" ;;
+        *) echo "Ignoring invalid logging level entry '${entry}', expected format is <logger>=<level>" ;;
+    esac
+done
 
 # Cookie name for unique cookie support
 if [ "${ZWE_configs_apiml_security_auth_uniqueCookie:-${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}}" = "true" ]; then
@@ -242,6 +259,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${ADD_OPENS} \
     ${VIRTUAL_THREADS_OPTS} \
     ${LOGBACK} \
+    ${LOGGING_LEVEL_OPTS} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
     ${EUREKA_IP_ADDRESS} \
@@ -279,6 +297,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.internal-discovery.address=${ZWE_configs_internal_discovery_address:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}}} \
     -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.logging.debugToFileOnly=${ZWE_configs_logging_debugToFileOnly:-${ZWE_components_gateway_logging_debugToFileOnly:-false}} \
     -Dapiml.logging.fileAppender.enabled=${ZWE_configs_logging_fileAppender_enabled:-${ZWE_components_gateway_logging_fileAppender_enabled:-false}} \
     -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.allowTokenRefresh=${ZWE_components_gateway_apiml_security_allowtokenrefresh:-${ZWE_configs_apiml_security_allowtokenrefresh:-false}} \

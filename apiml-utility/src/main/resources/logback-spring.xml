@@ -28,7 +28,21 @@
     </springProfile>
 
     <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
+    <springProperty scope="context" name="apimlDebugToFileOnly" source="apiml.logging.debugToFileOnly" defaultValue="false"/>
+
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- Debug (and lower) level messages are written to the log file only, stdout is limited to INFO and above -->
+        <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
+            <key>apimlDebugToFileOnly</key>
+            <value>true</value>
+        </condition>
+        <if>
+            <then>
+                <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                    <level>INFO</level>
+                </filter>
+            </then>
+        </if>
         <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
             <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
                 <pattern>${apimlLogPattern}</pattern>
@@ -67,23 +81,18 @@
         </then>
     </if>
 
-    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
-        <key>apimlLogToFile</key>
-        <value>true</value>
-    </condition>
-    <if>
-        <then>
-            <root level="ERROR">
-                <appender-ref ref="STDOUT"/>
+    <root level="ERROR">
+        <appender-ref ref="STDOUT"/>
+        <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
+            <key>apimlLogToFile</key>
+            <value>true</value>
+        </condition>
+        <if>
+            <then>
                 <appender-ref ref="FILE"/>
-            </root>
-        </then>
-        <else>
-            <root level="ERROR">
-                <appender-ref ref="STDOUT"/>
-            </root>
-        </else>
-    </if>
+            </then>
+        </if>
+    </root>
 
     <logger name="org.zowe.apiml.opentelemetry" level="INFO" additivity="false">
         <appender-ref ref="OpenTelemetry" />
