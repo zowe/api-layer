@@ -19,7 +19,8 @@ echo "Golden container logs:"
 > otel-golden/container.log
 docker logs golden 2>&1 | tee otel-golden/container.log
 
-EXIT_CODE_LOGGERS=$(sh/validate_loggers.sh)
+sh sh/validate_loggers.sh
+EXIT_CODE_LOGGERS=$?
 
 echo ""
 
