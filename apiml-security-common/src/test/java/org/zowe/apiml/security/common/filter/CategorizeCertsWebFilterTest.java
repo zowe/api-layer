@@ -39,11 +39,25 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.*;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE;
+import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.CLIENT_CERT_HEADER;
 
 @ExtendWith(MockitoExtension.class)
 class CategorizeCertsWebFilterTest {
@@ -78,12 +92,10 @@ class CategorizeCertsWebFilterTest {
         gatewayCert = loadCertificateFromKeystore("localhost", "service/service.keystore.p12");
         clientCert = loadCertificateFromKeystore("apimtst", "client/client-certs.p12");
         headerCert = loadCertificateFromKeystore("user", "client/client-certs.p12");
-
     }
 
     @BeforeEach
     void setUp() {
-
         Set<String> gatewayPublicKeys = new HashSet<>();
         gatewayPublicKeys.add(CertificateLoggingUtils.base64EncodePublicKey(gatewayCert));
 
@@ -100,6 +112,7 @@ class CategorizeCertsWebFilterTest {
         when(mockRequestBuilder.build()).thenReturn(mockRequest);
         logger = (Logger) LoggerFactory.getLogger(CategorizeCertsWebFilter.class);
         logAppender = new ListAppender<>();
+        logAppender.clearAllFilters();
         logAppender.start();
         logger.addAppender(logAppender);
         logger.setLevel(Level.DEBUG); // Ensure DEBUG level is enabled
@@ -112,10 +125,8 @@ class CategorizeCertsWebFilterTest {
         }
     }
 
-
     @Test
     void filter_whenNoTlsCerts_doesNothingAndContinuesChain() {
-
         when(mockRequest.getSslInfo()).thenReturn(null);
         when(mockFilterChain.filter(any(ServerWebExchange.class))).thenReturn(Mono.empty());
 
@@ -295,7 +306,7 @@ class CategorizeCertsWebFilterTest {
             keystore.load(is, "password".toCharArray());
             return (X509Certificate) keystore.getCertificate(alias);
         }
-    }
 
+    }
 
 }
