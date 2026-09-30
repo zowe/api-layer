@@ -38,9 +38,10 @@
 
     <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
 
+    <springProperty scope="context" name="apimlLogToFile" source="apiml.logging.fileAppender.enabled" defaultValue="false"/>
     <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
-        <key>spring.profiles.active</key>
-        <value>debug</value>
+        <key>apimlLogToFile</key>
+        <value>true</value>
     </condition>
     <if>
         <then>
@@ -67,8 +68,8 @@
     </if>
 
     <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
-        <key>spring.profiles.active</key>
-        <value>debug</value>
+        <key>apimlLogToFile</key>
+        <value>true</value>
     </condition>
     <if>
         <then>

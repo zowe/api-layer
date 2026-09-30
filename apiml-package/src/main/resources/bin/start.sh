@@ -80,6 +80,7 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_fileAppender_enabled - write logs to a file, always on when debug is enabled (default: false)
 # - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
@@ -154,6 +155,8 @@ if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_config
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}"
     fi
     add_profile "debug"
+    # Debug mode always writes logs to a file
+    ZWE_configs_logging_fileAppender_enabled="true"
 fi
 
 # Cookie name for unique cookie support
@@ -276,6 +279,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.internal-discovery.address=${ZWE_configs_internal_discovery_address:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}}} \
     -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.logging.fileAppender.enabled=${ZWE_configs_logging_fileAppender_enabled:-${ZWE_components_gateway_logging_fileAppender_enabled:-false}} \
     -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.allowTokenRefresh=${ZWE_components_gateway_apiml_security_allowtokenrefresh:-${ZWE_configs_apiml_security_allowtokenrefresh:-false}} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
