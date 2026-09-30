@@ -112,8 +112,8 @@ class CategorizeCertsWebFilterTest {
         when(mockRequestBuilder.build()).thenReturn(mockRequest);
         logger = (Logger) LoggerFactory.getLogger(CategorizeCertsWebFilter.class);
         logAppender = new ListAppender<>();
-        logAppender.clearAllFilters();
         logAppender.start();
+        logAppender.clearAllFilters();
         logger.addAppender(logAppender);
         logger.setLevel(Level.DEBUG); // Ensure DEBUG level is enabled
     }
