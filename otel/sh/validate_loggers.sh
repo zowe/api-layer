@@ -9,10 +9,10 @@
 set -e
 
 while IFS= read -r line; do
-    value1=$(echo "$line" | jq -r '(.resourceLogs.[0].resource.attributes.[] | select(.key == "deployment.environment.name").value.stringValue) // NOT_FOUND') # TEST
-    value2=$(echo "$line" | jq -r '(.resourceLogs.[0].scopeLogs.[0].scope.name) // NOT_FOUND') # == org.zowe.apiml.opentelemetry
-    value3=$(echo "$line" | jq -r '(.resourceLogs.[0].scopeLogs.[0].logRecords.[0].body.stringValue) // NOT_FOUND') # the log record
-    value4=$(echo "$line" | jq -r '(.resourceLogs.[0].scopeLogs.[0].logRecords.[0].severityText) // NOT_FOUND') # INFO
+    value1=$(echo "$line" | jq -r '(.resourceLogs.[0].resource.attributes.[] | select(.key == "deployment.environment.name").value.stringValue) // "NOT_FOUND"') # TEST
+    value2=$(echo "$line" | jq -r '(.resourceLogs.[0].scopeLogs.[0].scope.name) // "NOT_FOUND"') # == org.zowe.apiml.opentelemetry
+    value3=$(echo "$line" | jq -r '(.resourceLogs.[0].scopeLogs.[0].logRecords.[0].body.stringValue) // "NOT_FOUND"') # the log record
+    value4=$(echo "$line" | jq -r '(.resourceLogs.[0].scopeLogs.[0].logRecords.[0].severityText) // "NOT_FOUND"') # INFO
 
     if [ "$value1" == "NOT_FOUND" ]; then
         echo "deployment.environment.name not found in $line"
