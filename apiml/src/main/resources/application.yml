@@ -342,6 +342,7 @@ logging:
         org.jgroups: ERROR
 
 ---
+# Legacy general debug enabled when apiml.debug=true
 spring.config.activate.on-profile: debug
 
 logging:
@@ -390,6 +391,107 @@ management:
         web:
             exposure:
                 include: health,info,gateway,loggers
+
+---
+# Shared configuration for debug-* profiles
+spring.config.activate.on-profile: debug-common
+
+logging:
+    level:
+        ROOT: INFO
+        com.netflix.config: ERROR
+        com.netflix.discovery: ERROR
+        com.sun.jersey.server.impl.application.WebApplicationImpl: INFO
+        io.netty.resolver.dns: WARN
+        io.netty.util.internal.MacAddressUtil: ERROR # Can print WARN not finding usable MAC Address
+        javax.net.ssl: ERROR
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: WARN #logs only SSLException
+        org.apache.tomcat.util.net.jsse.JSSESupport: INFO
+        org.apache.tomcat.util.net.SSLUtilBase: ERROR
+        org.jgroups.protocols: ERROR
+        org.springframework: WARN
+        org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO
+        org.springframework.cloud.gateway.filter: WARN
+        org.springframework.cloud.gateway.route: WARN
+        org.springframework.http.server.reactive: INFO
+        org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
+        reactor.netty: WARN
+        reactor.netty.http.client: INFO
+        org.zowe.apiml: DEBUG
+        org.zowe.apiml.caching.service.infinispan.config.LazyCacheManager: INFO
+        org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor: INFO
+        org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService: INFO
+        org.zowe.apiml.gateway.service.RouteLocator: INFO
+        org.zowe.apiml.gateway.service.scheme.HttpBasicPassticket: INFO
+        org.zowe.apiml.product.eureka.web.MetadataFilterService: INFO
+        org.zowe.apiml.security.common.util.X509Util: INFO
+        org.zowe.apiml.util.CorsUtils: INFO
+
+management:
+    endpoint:
+        gateway:
+            access: read-only
+        loggers:
+            access: read-only
+    endpoints:
+        web:
+            exposure:
+                include: health,info,gateway,loggers
+
+---
+spring.config.activate.on-profile: debug-gateway
+
+logging:
+    level:
+        ROOT: INFO
+        org.apache.http: DEBUG
+        org.springframework.boot.autoconfigure.web: DEBUG
+        org.springframework.cloud.gateway: DEBUG
+        reactor.netty: TRACE
+
+---
+spring.config.activate.on-profile: debug-discovery
+
+logging:
+    level:
+        ROOT: INFO
+        com.netflix: DEBUG
+        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
+        org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor: DEBUG
+        org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService: DEBUG
+        org.zowe.apiml.gateway.service.RouteLocator: DEBUG
+        org.zowe.apiml.product.eureka.client: TRACE
+        org.zowe.apiml.product.eureka.web.MetadataFilterService: DEBUG
+        org.zowe.apiml.util.CorsUtils: DEBUG
+
+---
+spring.config.activate.on-profile: debug-caching
+
+logging:
+    level:
+        ROOT: INFO
+        org.apache.catalina: DEBUG
+        org.apache.coyote.http11.Http11InputBuffer: TRACE
+        org.apache.http: DEBUG
+        org.apache.tomcat: DEBUG
+        org.infinispan: DEBUG
+        org.jgroups: TRACE
+        org.jgroups.protocols.pbcast.GMS: DEBUG # prints infinispan cluster info
+        org.springframework.security.web: DEBUG
+        org.zowe.apiml.caching.service.infinispan.config.LazyCacheManager: DEBUG
+
+---
+spring.config.activate.on-profile: debug-zaas
+
+logging:
+    level:
+        ROOT: INFO
+        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
+        #TODO: valid for modulith?
+        org.ehcache: DEBUG
+        org.springframework.security: DEBUG
+        org.zowe.apiml.gateway.service.scheme.HttpBasicPassticket: DEBUG
+        org.zowe.apiml.security.common.util.X509Util: DEBUG
 
 ---
 spring.config.activate.on-profile: debug-control

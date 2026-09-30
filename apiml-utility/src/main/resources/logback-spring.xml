@@ -18,6 +18,7 @@
     <turboFilter class="org.zowe.apiml.product.logging.OpenTelemetryLogsFilter"/>
 
     <springProfile name="!debug &amp; !diag &amp; !dev">
+        <turboFilter class="org.zowe.apiml.product.logging.ApimlDebugGateFilter"/>
         <turboFilter class="org.zowe.apiml.product.logging.ApimlDependencyLogHider"/>
         <turboFilter class="org.zowe.apiml.product.logging.LogLevelInfoFilter"/>
         <turboFilter class="org.zowe.apiml.product.logging.ApimlDuplicateMessagesFilter">

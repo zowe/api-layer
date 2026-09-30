@@ -1,4 +1,4 @@
-spring.profiles.active: debug,diag
+spring.profiles.active: debug-common
 
 server:
     max-http-request-header-size: 16348
