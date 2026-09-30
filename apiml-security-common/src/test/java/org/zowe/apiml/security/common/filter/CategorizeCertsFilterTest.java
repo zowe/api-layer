@@ -21,6 +21,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -44,6 +46,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@TestInstance (Lifecycle.PER_CLASS)
 class CategorizeCertsFilterTest {
 
     private static final String CLIENT_CERT_HEADER = "Client-Cert";
@@ -84,14 +87,14 @@ class CategorizeCertsFilterTest {
     private ListAppender<ILoggingEvent> logAppender;
 
     @BeforeAll
-    public static void init() throws CertificateException {
+    void init() throws CertificateException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         InputStream certStream = new ByteArrayInputStream(Base64.getDecoder().decode(CLIENT_CERT_HEADER_VALUE));
         clientCertfromHeader = cf.generateCertificate(certStream);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
         chain = new MockFilterChain();
@@ -104,6 +107,7 @@ class CategorizeCertsFilterTest {
         logAppender.start();
         logger.addAppender(logAppender);
         logger.setLevel(Level.DEBUG);
+        logAppender.clearAllFilters();
     }
 
     @AfterEach
@@ -223,7 +227,7 @@ class CategorizeCertsFilterTest {
             class WhenCertificateInHeaderAndForwardingEnabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, CLIENT_CERT_HEADER_VALUE);
                     when(certificateValidator.isForwardingEnabled()).thenReturn(true);
                 }
@@ -278,7 +282,7 @@ class CategorizeCertsFilterTest {
             class WhenCertificateInHeaderAndForwardingDisabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, CLIENT_CERT_HEADER_VALUE);
                     when(certificateValidator.isForwardingEnabled()).thenReturn(false);
                 }
@@ -307,7 +311,7 @@ class CategorizeCertsFilterTest {
             class WhenInvalidCertificateInHeaderAndForwardingEnabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, "invalid_cert");
                     when(certificateValidator.isForwardingEnabled()).thenReturn(true);
                     when(certificateValidator.hasGatewayChain(certificates)).thenReturn(true);
@@ -460,7 +464,7 @@ class CategorizeCertsFilterTest {
             class WhenCertificateInHeaderAndForwardingEnabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, CLIENT_CERT_HEADER_VALUE);
                     when(certificateValidator.isForwardingEnabled()).thenReturn(true);
                 }
@@ -526,7 +530,7 @@ class CategorizeCertsFilterTest {
             class WhenCertificateInHeaderAndForwardingDisabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, CLIENT_CERT_HEADER_VALUE);
                     when(certificateValidator.isForwardingEnabled()).thenReturn(false);
                 }
@@ -590,7 +594,6 @@ class CategorizeCertsFilterTest {
 
         @Test
         void whenClientCertHeaderNotDefined_thenReturnFalse() throws ServletException, IOException {
-
             filter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator);
 
             X509Certificate[] certs = new X509Certificate[]{
@@ -614,6 +617,7 @@ class CategorizeCertsFilterTest {
 
             assertNotNull(chain.getRequest(), "Filter chain should continue normally");
         }
+
     }
 
 }
