@@ -13,7 +13,6 @@ package org.zowe.apiml.zaas.security.service.schema.source;
 import lombok.extern.slf4j.Slf4j;
 import org.zowe.apiml.zaas.security.mapping.X509CommonNameUserMapper;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
-import org.zowe.apiml.message.core.MessageType;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -45,10 +44,10 @@ public class X509CNAuthSourceService extends X509AuthSourceService {
      */
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
-        logger.log(MessageType.DEBUG, "Getting X509 client certificate from custom attribute '" + ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE + "'.");
+        log.debug("Getting X509 client certificate from custom attribute '" + ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE + "'.");
         X509Certificate clientCert = super.getCertificateFromRequest(request, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
         if (clientCert == null) {
-            logger.log(MessageType.DEBUG, "Getting X509 client certificate from standard attribute '" + ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE + "'.");
+            log.debug("Getting X509 client certificate from standard attribute '" + ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE + "'.");
             clientCert = super.getCertificateFromRequest(request, ATTR_NAME_JAKARTA_SERVLET_REQUEST_X509_CERTIFICATE);
         }
         clientCert = isValid(clientCert) ? clientCert : null;

@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.io.IOException;
@@ -38,7 +37,7 @@ public class ServletErrorUtils {
                 if (!response.isCommitted()) {
                     log.debug("Failed writing content to not-commited response", e);
                 } else {
-                    logger.log(MessageType.DEBUG, "Response already committed. Skipping error write log.");
+                    log.debug("Response already committed. Skipping error write log.");
                 }
             }
         };

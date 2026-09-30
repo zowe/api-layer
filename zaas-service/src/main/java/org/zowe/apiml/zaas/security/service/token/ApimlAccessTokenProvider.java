@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.cache.StorageException;
-import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
@@ -122,7 +121,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
-        apimlLog.log(MessageType.DEBUG, "Invalidating PAT: ...{}", StringUtils.right(token, 15));
+        log.debug("Invalidating PAT: ...{}", StringUtils.right(token, 15));
         String hashedValue = getHash(token);
         QueryResponse queryResponse = authenticationService.parseJwtWithSignature(token);
         AccessTokenContainer container = new AccessTokenContainer();
@@ -136,23 +135,23 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     public void invalidateAllTokensForUser(String userId, long timestamp) throws CachingServiceClientException {
-        apimlLog.log(MessageType.DEBUG, "Invalidating all PATs for user: {}", userId);
+        log.debug("Invalidating all PATs for user: {}", userId);
         String hashedUserId = getHash(userId.trim().toUpperCase());
         if (timestamp == 0) {
             timestamp = clock.millis();
         }
-        log.debug("hashedUserId {}, timestamp {}", hashedUserId, timestamp);
+        log.trace("hashedUserId {}, timestamp {}", hashedUserId, timestamp);
         cachingServiceClient.appendList(INVALID_USERS_KEY,
             new CachingServiceClient.KeyValue(hashedUserId, Long.toString(timestamp), ruleTtlSeconds(timestamp)));
     }
 
     public void invalidateAllTokensForService(String serviceId, long timestamp) throws CachingServiceClientException {
-        apimlLog.log(MessageType.DEBUG, "Invalidating all PATs for service: {}", serviceId);
+        log.debug("Invalidating all PATs for service: {}", serviceId);
         String hashedServiceId = getHash(serviceId);
         if (timestamp == 0) {
             timestamp = clock.millis();
         }
-        log.debug("serviceIdHash {}, timestamp {}", hashedServiceId, timestamp);
+        log.trace("serviceIdHash {}, timestamp {}", hashedServiceId, timestamp);
         cachingServiceClient.appendList(INVALID_SCOPES_KEY,
             new CachingServiceClient.KeyValue(hashedServiceId, Long.toString(timestamp), ruleTtlSeconds(timestamp)));
     }
@@ -180,12 +179,19 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         List<String> hashedServiceIds = hashScopes(parsedToken, salt);
 
         if (!cachingServiceClient.supportsMapItemQuery()) {
-            return matches(cachingServiceClient.readAllMaps(), parsedToken, hashedToken, hashedUserId, hashedServiceIds);
+            var result = matches(cachingServiceClient.readAllMaps(), parsedToken, hashedToken, hashedUserId, hashedServiceIds);
+            if (result) {
+                log.debug("Token ...{} was found in invalidated token cache.", StringUtils.right(token, 15));
+            } else {
+                log.trace("Token ...{} was not found in invalidated token cache.", StringUtils.right(token, 15));
+            }
+            return result;
         }
 
         if (shouldConsultLegacyStore(parsedToken)) {
             logLegacyRoute();
             if (matches(cachingServiceClient.readAllLegacyMaps(), parsedToken, hashedToken, hashedUserId, hashedServiceIds)) {
+                log.debug("Token ...{} was found in invalidated legacy token cache.", StringUtils.right(token, 15));
                 return true;
             }
         }
@@ -193,9 +199,12 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         for (List<String> scopeBatch : batchScopes(hashedServiceIds)) {
             if (matches(cachingServiceClient.getMapItems(buildQuery(hashedToken, hashedUserId, scopeBatch)),
                     parsedToken, hashedToken, hashedUserId, scopeBatch)) {
+                log.debug("Token ...{} was found in invalidated token cache.", StringUtils.right(token, 15));
                 return true;
             }
         }
+
+        log.trace("Token ...{} was not found in invalidated token cache.", StringUtils.right(token, 15));
         return false;
     }
 
