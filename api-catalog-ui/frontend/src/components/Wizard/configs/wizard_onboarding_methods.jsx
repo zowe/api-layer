@@ -76,14 +76,6 @@ export const enablerData = [
                 minions: { 'API Info': ['gatewayUrl'] },
             },
             { name: 'API Info for Micronaut', indentation: 'apiml/service/apiInfo', nav: 'API info', multiple: true },
-            //comment out for test
-            // {
-            //     name: 'Catalog',
-            //     indentation: 'apiml/service/catalog',
-            //     nav: 'Catalog configuration',
-            //     multiple: true,
-            //     arrIndent: 'tile',
-            // },
             { name: 'SSL detailed', indentation: 'apiml/service/ssl', nav: 'SSL', multiple: true },
             { name: 'Micronaut', indentation: 'micronaut/application', nav: 'Micronaut configuration' },
             { name: 'Micronaut ports', indentation: 'micronaut/server', nav: 'Micronaut configuration' },
