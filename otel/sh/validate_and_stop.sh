@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# Assumes PWD in otel directory
+
+set -e
+
 echo "Waiting for Golden Validator to finish..."
 # This blocks until the golden container exits (success or timeout)
 EXIT_CODE_GOLDEN=$(docker wait golden)
@@ -15,7 +19,7 @@ echo "Golden container logs:"
 > otel-golden/container.log
 docker logs golden 2>&1 | tee otel-golden/container.log
 
-EXIT_CODE_LOGGERS=$(./validate_loggers.sh)
+EXIT_CODE_LOGGERS=$(sh/validate_loggers.sh)
 
 echo ""
 
