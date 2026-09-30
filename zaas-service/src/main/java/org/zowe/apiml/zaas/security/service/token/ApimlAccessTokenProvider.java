@@ -319,32 +319,20 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     /**
-     * Returns empty - "no opinion" - rather than {@code false} for an expired record, so that an expired
-     * entry cannot shadow a still-valid user or scope rule that would otherwise have matched.
+     * The presence of the key alone decides: a record under this exact token hash proves the token was
+     * revoked, whatever its value holds.
+     * <p>
+     * The record's {@code expiresAt} is deliberately not consulted. It is this token's own expiration, which
+     * {@code parseJwtWithSignature} has already enforced, so the only way comparing it could ever change the
+     * answer is by being wrong: it is a zone-less {@code LocalDateTime} written on the revoking node's zone,
+     * and read against this node's clock it makes the record look expired whenever that zone is behind this
+     * one - accepting a revoked token. An unparseable value is likewise still a revocation.
      */
     private Optional<Boolean> checkInvalidToken(Map<String, String> invalidTokens, String tokenId) {
         if (invalidTokens == null || !invalidTokens.containsKey(tokenId)) {
             return Optional.empty();
         }
-        String s = invalidTokens.get(tokenId);
-        try {
-            AccessTokenContainer c = objectMapper.readValue(s, AccessTokenContainer.class);
-            if (c == null) {
-                return Optional.of(true);
-            }
-            if (c.getExpiresAt() != null && c.getExpiresAt().isBefore(LocalDateTime.now())) {
-                // the token is dead of old age anyway, so this changes no security outcome - it only stops a
-                // stale record from being load-bearing
-                return Optional.empty();
-            }
-            // a record with no expiry predates the field being populated, and stays revoked
-            return Optional.of(true);
-        } catch (JsonProcessingException e) {
-            // the key's presence under this exact token hash already proves the token was revoked; an
-            // unparseable value is weaker evidence than a missing one, so it must not fail more open
-            log.error("Not able to parse invalidToken json value.", e);
-            return Optional.of(true);
-        }
+        return Optional.of(true);
     }
 
     private Optional<Boolean> checkRule(Map<String, String> tokenRules, String ruleId, QueryResponse parsedToken) {

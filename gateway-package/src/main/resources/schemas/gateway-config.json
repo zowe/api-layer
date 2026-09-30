@@ -443,7 +443,7 @@
                                 },
                                 "maxScopes": {
                                     "type": "integer",
-                                    "description": "Maximum number of scopes a single personal access token may be issued with. Validating a token looks up one revocation entry per scope, so this must stay at least two below 'components.caching-service.storage.maxQueryKeys'. Lowering it below what has already been issued makes those tokens unusable.",
+                                    "description": "Maximum number of scopes a single personal access token may be issued with. Enforced at issuance only: validation splits a token's scopes across as many revocation lookups as needed, so this is independent of 'components.caching-service.storage.maxQueryKeys', and lowering it does not affect tokens already issued.",
                                     "minimum": 1,
                                     "default": 64
                                 },

@@ -160,7 +160,7 @@
                 },
                 "maxQueryKeys": {
                     "type": "integer",
-                    "description": "Maximum number of keys a single /cache-query request may look up. Must stay at least two above 'components.zaas.apiml.security.personalAccessToken.maxScopes', because validating a personal access token looks up one key per scope plus the token and user hashes.",
+                    "description": "Maximum number of keys a single /cache-query request may look up. Keep this at or above 'components.zaas.apiml.security.personalAccessToken.revocationLookupBatchKeys', or ZAAS lookups for tokens with many scopes are rejected and those tokens denied.",
                     "minimum": 3,
                     "default": 66
                 },

@@ -182,8 +182,8 @@ messages:
       number: ZWEAT612
       type: ERROR
       text: "The HTTP request for Personal Access Token asks for more scopes than the limit of %s"
-      reason: "Validating a personal access token looks up one entry per scope plus two. A token issued above that limit could not be validated, so it is rejected at issuance instead."
-      action: "Request fewer scopes, or issue several tokens. If the limit is genuinely too low for your deployment, raise 'components.zaas.apiml.security.personalAccessToken.maxScopes' and the matching 'components.caching-service.storage.maxQueryKeys'."
+      reason: "The number of scopes a personal access token may be issued with is capped, to keep validating it cheap."
+      action: "Request fewer scopes, or issue several tokens. If the limit is genuinely too low for your deployment, raise 'components.zaas.apiml.security.personalAccessToken.maxScopes'."
 
     # OIDC access token messages
     - key: org.zowe.apiml.security.common.OIDCMappingError

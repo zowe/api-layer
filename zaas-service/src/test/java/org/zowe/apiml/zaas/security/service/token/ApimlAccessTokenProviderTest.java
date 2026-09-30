@@ -421,16 +421,11 @@ class ApimlAccessTokenProviderTest {
         assertFalse(accessTokenProvider.isValidForScopes(TOKEN_WITHOUT_SCOPES, scope));
     }
 
-    /**
-     * A revoked-token record that has since expired must not shadow a rule that still matches: the token
-     * check has to answer "no opinion" rather than "not revoked". This is the regression guard for returning
-     * an empty Optional instead of Optional.of(false).
-     */
     @Nested
     class WhenTheTokenRecordIsNoLongerUsable {
 
         @Test
-        void givenAnExpiredRecordAndAMatchingUserRule_thenStillInvalidated() throws Exception {
+        void givenARecordThatLooksExpiredAndAMatchingUserRule_thenStillInvalidated() throws Exception {
             String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
             String userHash = accessTokenProvider.getHash("USER");
             when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
@@ -443,12 +438,12 @@ class ApimlAccessTokenProviderTest {
         }
 
         @Test
-        void givenAnExpiredRecordAndNoRule_thenNotInvalidated() throws Exception {
+        void givenARecordThatLooksExpiredAndNoRule_thenStillInvalidated() throws Exception {
             String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
             when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
-            givenStore(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, LocalDateTime.now().minusDays(1)))));
+            givenStore(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, LocalDateTime.now().minusHours(5)))));
 
-            assertFalse(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
         }
 
         @Test
@@ -460,10 +455,6 @@ class ApimlAccessTokenProviderTest {
             assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
         }
 
-        /**
-         * The key's presence under this exact token hash already proves the token was revoked. An
-         * unparseable value is weaker evidence than a missing one, so it must not fail more open.
-         */
         @Test
         void givenAnUnparseableRecord_thenStillInvalidated() {
             String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
@@ -477,11 +468,6 @@ class ApimlAccessTokenProviderTest {
     @Nested
     class WhenTheCachingServiceIsTooOld {
 
-        /**
-         * A caching service that predates the point lookup still serves the whole-map read, and it still
-         * holds the layout the token would have been revoked into. Falling back to it is slow; rejecting
-         * every personal access token fleet-wide would be an outage.
-         */
         @Test
         void thenValidationFallsBackToTheWholeMapReadRatherThanFailing() throws Exception {
             when(cachingServiceClient.supportsMapItemQuery()).thenReturn(false);

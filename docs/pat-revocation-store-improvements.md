@@ -126,8 +126,8 @@ start seeing 503s on revocation bursts.
 
 **Third fix, found during review: harden the maintenance filters against malformed entries.**
 `removeToken` (`InfinispanStorage.java:199`, `c.getExpiresAt().isBefore(LocalDateTime.now())`) throws
-an uncaught `NullPointerException` if any single entry has `expiresAt == null` — a case 1.4 explicitly
-acknowledges can exist ("records written before the field was populated"). `removeNonRelevantRules`
+an uncaught `NullPointerException` if any single entry has `expiresAt == null` — which records written
+before the field was populated do. `removeNonRelevantRules`
 (`:219`, `Long.parseLong(entry.getValue())`) has the same problem for a non-numeric rule value. Either
 exception aborts the whole `Stream`/`Collectors.toMap` pipeline before the cleaned map is written
 back, so a single poison entry permanently blocks cleanup of that *entire* map, every cycle — silently
@@ -156,7 +156,8 @@ it on a timer is expensive.
 - Revocations are written only to the new per-item cache — there is no dual-write (see Decisions).
 - The public `POST /cache-list/{mapKey}` API is re-pointed at the new per-item cache by 2.1, so even
   non-PAT callers stop writing the legacy layout.
-- 1.4 stops expired entries from *matching* on read, so dead records are inert, not load-bearing.
+- Dead records are inert: they match only tokens that are themselves expired, which are rejected before
+  the store is consulted (1.4).
 
 The legacy map is therefore frozen at its upgrade-day size, read-only, consulted only by 2.4's routing
 path, and consulted less and less often as pre-cutover tokens expire — reaching zero within 90 days.
@@ -230,23 +231,22 @@ revocations that depended on the old one. Log a loud, operator-visible warning w
 `initializeSalt` actually creates a *new* salt rather than reading an existing one — this should read
 as an incident, not a self-heal.
 
-### 1.4 Honour `expiresAt` on read
-`checkInvalidToken` (`ApimlAccessTokenProvider:111`) parses the `AccessTokenContainer` and returns
-`Optional.of(c != null)` — it never looks at `expiresAt`. Treat an entry whose `expiresAt` is in the
-past as non-matching. The token is expired anyway, so this changes no security outcome, but it stops
-stale entries from being load-bearing and makes 2.2's TTL semantics consistent.
+### 1.4 Do not compare `expiresAt` on read; the key's presence decides
+`checkInvalidToken` (`ApimlAccessTokenProvider`) treats any entry under the token's own hash as a
+revocation, whatever its value holds. An earlier draft of this section proposed treating an entry whose
+`expiresAt` is in the past as non-matching. That is dropped, because it can only ever be wrong:
 
-**Return `Optional.empty()`, not `Optional.of(false)`.** `isInvalidated` (`:94-103`) only falls
-through to the user and scope rules when the token check is empty; returning `false` would let an
-expired-but-listed token bypass a still-valid `invalidUsers` rule. Also keep `expiresAt == null`
-meaning "still revoked" — records written before the field was populated must stay revoked.
+- The entry is keyed by the hash of *this exact token*, so its `expiresAt` is this token's own `exp`.
+  `parseJwtWithSignature` has already rejected an expired token before the store is consulted, so a
+  correct comparison would always answer "not expired".
+- `expiresAt` is a zone-less `LocalDateTime` written on the revoking node's zone. Compared against the
+  validating node's clock, a revoking node in a zone behind the validating one makes the entry look
+  expired while the token is still valid - the revocation is dropped and a revoked token is accepted.
 
-**While in this method, also close an adjacent fail-open gap.** The existing
-`catch (JsonProcessingException e)` branch falls through to `Optional.empty()` on a parse failure —
-indistinguishable from "no entry at all," even though the key's mere presence under that exact token
-hash already proves `invalidateToken()` was called for it. Change that branch to `Optional.of(true)`
-as well: a keyed-but-unparseable entry is strictly *less* trustworthy evidence than a
-missing-`expiresAt` one, so it should fail at least as closed.
+Dead entries are inert without the check: they match only tokens that are themselves expired, which
+never reach it. 2.2's TTL removes them from storage. A keyed-but-unparseable entry stays revoked for the
+same reason - the key's presence under that exact token hash already proves `invalidateToken()` was
+called for it.
 
 ### 1.5 Observability
 Warn when the `invalidTokens` map exceeds a threshold, so operators see growth before it becomes an
@@ -344,7 +344,9 @@ eviction job at all. Infinispan is 16.2.2 (`gradle/versions.gradle:43`). Use `li
 - tokens: `lifespan = expiresAt - now`
 - rules: `lifespan = timestamp + 90d - now` (same semantics as today's hardcoded 90-day cutoff in
   `removeNonRelevantRules`, but now derived per entry)
-- unknown map key or unparseable value: no TTL. The HA test writes an arbitrary map `"aMap"` with a
+- revocation map with an unparseable value: the 90-day ceiling, not "no TTL" - no token outlives it, so
+  nothing that could still matter is dropped, and the entry cannot become permanent.
+- unknown map key: no TTL. The HA test writes an arbitrary map `"aMap"` with a
   non-JSON, non-numeric value (`integration-tests/.../ha/CachingServiceTests.java:59-61`), so TTL
   derivation must tolerate it.
 
@@ -756,8 +758,8 @@ Requirements:
    once must converge on the same value, not each mint their own.
 10. **The legacy map is at its maximum size exactly when the routing path starts reading it, and
     nothing shrinks it.** On upgrade `invalidTokens` holds everything accumulated since the site
-    enabled PAT, and 2.4 puts that map on the read path for every pre-cutover token. 1.4's `expiresAt`
-    check stops expired entries from *matching*, but they still cross the wire. Measure that payload on
+    enabled PAT, and 2.4 puts that map on the read path for every pre-cutover token. Expired entries
+    never match a live token (1.4), but they still cross the wire. Measure that payload on
     a realistic dataset: it is the number that tells an operator whether to keep the legacy directory
     or delete it (1.2), and it is the worst case for the whole sunset window rather than a transient.
 11. **An already-issued PAT with more scopes than the new issuance cap cannot be recovered** (2.3).
@@ -842,10 +844,9 @@ drafts of this list. Each knob needs all three:
   `givenTokenWithScopeMatchingRule_returnInvalidated` all currently control `isInvalidated`'s outcome
   purely by stubbing `readAllMaps()` — each needs to be rewritten against the new batch-lookup mock
   while preserving its distinct same-token/different-token/user-rule/scope-rule coverage, not just
-  patched to compile. For 1.4, the sharp case is an expired token record **plus** a matching
-  `invalidUsers` rule — it must still return `true`. That is the regression guard for
-  `Optional.empty()` vs `Optional.of(false)`. Also add a case for a keyed-but-unparseable
-  `invalidTokens` entry returning `true` (the adjacent fail-open fix in 1.4).
+  patched to compile. For 1.4, the sharp case is a token record whose `expiresAt` looks past —
+  as one written on a node in a zone behind this one does — and it must still return `true`. Also add
+  a case for a keyed-but-unparseable `invalidTokens` entry returning `true`.
 - Unit: a `WhenLockCannotBeAcquired` nested class in `InfinispanStorageTest` — `storeMapItem` throws
   `CACHE_NOT_AVAILABLE`/503 and never writes; `removeNonRelevant*` do not throw; `unlock()` is not
   called when the lock was never taken, but *is* called when the body throws. Also cases where a

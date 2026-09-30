@@ -372,3 +372,10 @@ messages:
       text: "The configured personal access token setting '%s' (%s) was ignored: %s."
       reason: "The value cannot be right. Taken at face value it would stop enforcing revocations made before the upgrade, so a safe value is used instead: for the cutover epoch, the one stored in the Caching Service, or the current time if there is none."
       action: "Correct 'components.zaas.apiml.security.personalAccessToken.<setting>'. The cutover epoch is in milliseconds since the epoch and should be at or shortly before the upgrade; remove it to have it created automatically."
+
+    - key: org.zowe.apiml.zaas.pat.revocationLookupBatchTooLarge
+      number: ZWEAZ608
+      type: ERROR
+      text: "The Caching Service rejected a personal access token revocation lookup of %s keys as too large. Tokens whose lookup is this large are denied until the settings agree."
+      reason: "'components.zaas.apiml.security.personalAccessToken.revocationLookupBatchKeys' is higher than the Caching Service's 'components.caching-service.storage.maxQueryKeys'. The two are configured on different components, so neither can check the other."
+      action: "Lower 'revocationLookupBatchKeys' to at most 'maxQueryKeys', or raise 'maxQueryKeys' to match. Tokens with more scopes than fit in one lookup are split across several, so lowering the batch size never makes a token unusable."

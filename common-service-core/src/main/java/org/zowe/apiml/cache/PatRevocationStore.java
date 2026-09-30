@@ -47,14 +47,15 @@ public final class PatRevocationStore {
     /**
      * Maximum number of scopes a single personal access token may be issued with. Scopes are service ids, so
      * the practical ceiling is "how many services one token is scoped to"; this is set comfortably above
-     * anything a deployment is expected to use. Raising it is safe; lowering it below what a site has already
-     * issued is not - already-issued tokens above the cap start failing the batch lookup immediately.
+     * anything a deployment is expected to use. It is enforced at issuance only: validation splits a token's
+     * scopes across as many lookups as needed, so changing it in either direction leaves issued tokens alone.
      */
     public static final int DEFAULT_MAX_SCOPES_PER_TOKEN = 64;
 
     /**
-     * Maximum number of keys a single {@code /cache-query} request may ask for. Must stay at least
-     * {@link #DEFAULT_MAX_SCOPES_PER_TOKEN} + 2.
+     * Maximum number of keys a single {@code /cache-query} request may ask for. Sized so that a token at
+     * {@link #DEFAULT_MAX_SCOPES_PER_TOKEN}, plus its token and user hashes, fits in one lookup; a larger
+     * token still validates, only in several.
      */
     public static final int DEFAULT_MAX_QUERY_KEYS = DEFAULT_MAX_SCOPES_PER_TOKEN + 2;
 

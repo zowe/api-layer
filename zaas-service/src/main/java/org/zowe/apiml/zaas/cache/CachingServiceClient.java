@@ -56,7 +56,9 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
      * is on every personal access token request and is this service's sole synchronous dependency in a split
      * deployment, so it gets its own short timeouts rather than the shared client's - a caching service that
      * is merely slow would otherwise tie up a request thread per personal access token user at the same time.
-     * The salt and cutover epoch reads are on the same path, so they share it.
+     * The salt and cutover epoch reads are on the same path, so they share it, and so do the whole-map reads
+     * of {@link #readAllMaps} and {@link #readAllLegacyMaps}, which that path makes for a pre-cutover token
+     * or against a caching service too old for the point lookup.
      */
     private final RestTemplate lookupRestTemplate;
 
@@ -101,10 +103,22 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     private final AtomicLong querySupportCheckedAt = new AtomicLong();
 
     /**
-     * A deliberately small circuit breaker over the revocation lookup. Once the caching service has failed
-     * this many times in a row, further lookups fail immediately instead of each waiting out a timeout. The
-     * answer is still "not valid" either way - {@code PATAuthSourceService.isValid} fails closed - but the
-     * request threads come back rather than piling up behind a store that is not answering.
+     * The caching service's own wording when a lookup asks for more keys than its
+     * {@code caching.storage.maxQueryKeys}. Matched on, because a 400 from the query endpoint has other causes -
+     * a storage mode without map support, for one - that need a different remedy.
+     */
+    static final String TOO_MANY_KEYS_MESSAGE = "Too many keys requested at once";
+
+    /** How often a batch size the caching service rejects is reported, when it is rejected on every request. */
+    private static final long BATCH_LIMIT_LOG_INTERVAL_MILLIS = 5L * 60 * 1000;
+    private final AtomicLong batchLimitLoggedAt = new AtomicLong();
+
+    /**
+     * A deliberately small circuit breaker over the revocation lookup, covering the point lookup and the
+     * whole-map reads alike. Once the caching service has failed this many times in a row, further lookups
+     * fail immediately instead of each waiting out a timeout. The answer is still "not valid" either way -
+     * {@code PATAuthSourceService.isValid} fails closed - but the request threads come back rather than
+     * piling up behind a store that is not answering.
      */
     @Value("${apiml.security.personalAccessToken.revocationLookupFailureThreshold:5}")
     private int lookupFailureThreshold = 5;
@@ -222,41 +236,49 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         return readAllMaps(CACHING_LEGACY_LIST_API_PATH, "legacy cache list");
     }
 
+    /**
+     * Both callers are on the personal access token request path, so this goes through the short-timeout
+     * lookup client and the circuit breaker like the point lookup does. The read timeout bounds the wait for
+     * each packet rather than the whole transfer, so a large map that is streaming still completes; what it
+     * cuts short is a caching service that takes longer than that to start answering, and that fails closed.
+     * No retry: unlike the point lookup, repeating a whole-map read is not cheap.
+     */
     private Map<String, Map<String, String>> readAllMaps(String path, String description) throws CachingServiceClientException {
+        failFastIfLookupCircuitOpen("read all key-value maps from " + description);
         try {
             var responseType = new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
             };
             var url = getGatewayAddress() + path;
             log.debug("readAllMaps url: {}", url);
-            var response = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
-                    return response.getBody();
-                }
-                return Map.of();
-            } else {
+            var response = lookupRestTemplate.exchange(url, HttpMethod.GET, null, responseType);
+            if (!response.getStatusCode().is2xxSuccessful()) {
                 throw new CachingServiceClientException("Unable to read all key-value maps from " + description + ", caused by response from caching service is null or has no body");
             }
+            recordLookupSuccess();
+            if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
+                return response.getBody();
+            }
+            return Map.of();
         } catch (Exception e) {
+            recordLookupFailure();
             throw new CachingServiceClientException("Unable to read all key-value maps from " + description + ", caused by: " + e.getMessage(), e);
         }
     }
 
     @Override
     public Map<String, Map<String, String>> getMapItems(Map<String, Collection<String>> keysByMapKey) throws CachingServiceClientException {
-        if (isLookupCircuitOpen()) {
-            throw new CachingServiceClientException(
-                "Unable to look up cache items: the caching service has failed " + lookupFailureThreshold +
-                    " lookups in a row, so this one was not attempted");
-        }
+        failFastIfLookupCircuitOpen("look up cache items");
         try {
             Map<String, Map<String, String>> found = lookupMapItems(keysByMapKey);
-            consecutiveLookupFailures.set(0);
+            recordLookupSuccess();
             return found;
         } catch (HttpStatusCodeException e) {
             boolean versionMismatch = isEndpointMissing(e.getStatusCode()) && markMapItemQueryUnsupportedIfConfirmed();
             if (!versionMismatch) {
                 recordLookupFailure();
+            }
+            if (isBatchLimitExceeded(e)) {
+                logBatchLimitExceeded(keysByMapKey);
             }
             throw new CachingServiceClientException("Unable to look up cache items, caused by: " + e.getMessage(), e);
         } catch (Exception e) {
@@ -282,19 +304,52 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         return response.getBody() == null ? Map.of() : response.getBody();   //NOSONAR tests return null
     }
 
+    /**
+     * The batch size is configured on this side and the limit on the caching service's, so nothing can check
+     * the two against each other up front. When they disagree every lookup of a token with enough scopes is
+     * rejected, and each such token is denied - which, left to the generic error, reads as an outage of
+     * unknown cause.
+     */
+    private boolean isBatchLimitExceeded(HttpStatusCodeException e) {
+        return HttpStatus.BAD_REQUEST.equals(e.getStatusCode())
+            && e.getResponseBodyAsString().contains(TOO_MANY_KEYS_MESSAGE);
+    }
+
+    private void logBatchLimitExceeded(Map<String, Collection<String>> keysByMapKey) {
+        long loggedAt = batchLimitLoggedAt.get();
+        long now = System.currentTimeMillis();
+        if (loggedAt != 0 && now - loggedAt < BATCH_LIMIT_LOG_INTERVAL_MILLIS) {
+            return;
+        }
+        if (batchLimitLoggedAt.compareAndSet(loggedAt, now)) {
+            int keys = keysByMapKey.values().stream().mapToInt(Collection::size).sum();
+            apimlLog.log("org.zowe.apiml.zaas.pat.revocationLookupBatchTooLarge", keys);
+        }
+    }
+
+    private void failFastIfLookupCircuitOpen(String action) {
+        if (isLookupCircuitOpen()) {
+            throw new CachingServiceClientException(
+                "Unable to " + action + ": the caching service has failed " + lookupFailureThreshold +
+                    " lookups in a row, so this one was not attempted");
+        }
+    }
+
     private boolean isLookupCircuitOpen() {
         long openedAt = lookupCircuitOpenedAt.get();
         if (openedAt == 0) {
             return false;
         }
-        if (System.currentTimeMillis() - openedAt < lookupCircuitOpenMillis) {
+        long now = System.currentTimeMillis();
+        if (now - openedAt < lookupCircuitOpenMillis) {
             return true;
         }
-        // half open: let one request through to find out whether the store is back
-        if (lookupCircuitOpenedAt.compareAndSet(openedAt, 0)) {
-            consecutiveLookupFailures.set(0);
-        }
-        return false;
+        return !lookupCircuitOpenedAt.compareAndSet(openedAt, now);
+    }
+
+    private void recordLookupSuccess() {
+        consecutiveLookupFailures.set(0);
+        lookupCircuitOpenedAt.set(0);
     }
 
     private void recordLookupFailure() {

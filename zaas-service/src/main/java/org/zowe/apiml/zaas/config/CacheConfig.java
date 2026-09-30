@@ -224,7 +224,8 @@ public class CacheConfig {
      * The revocation lookup gets its own client, with explicit connect and read timeouts. It is on every
      * personal access token request and is the only synchronous dependency that path has in a split
      * deployment, so a caching service that is merely slow - rather than down - would otherwise hold a ZAAS
-     * request thread for every personal access token user at once. The shared client sets no read timeout.
+     * request thread for every personal access token user at once. The shared client's timeouts are sized for
+     * general traffic, not for a call made on every request.
      */
     @Bean
     @ConditionalOnMissingBean(name = "modulithConfig")
