@@ -26,7 +26,7 @@ dependencyResolutionManagement {
             version('caffeine', '3.3.0')
             version('checkerQual', '3.55.1')
             version('commonsConfiguration2', '2.15.1')
-            version('commonsLang3', '3.20.0')
+            version('commonsLang3', '3.21.0')
             version('commonsLogging', '1.4.0')
             version('commonsText', '1.15.0')
             version('commonsIo', '2.22.0')
@@ -38,7 +38,7 @@ dependencyResolutionManagement {
             version('googleErrorprone', '2.50.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.14.0')
-            version('guava', '33.7.1-jre')
+            version('guava', '33.7.2-jre')
             version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6.4')
@@ -101,7 +101,7 @@ dependencyResolutionManagement {
             version('thymeleaf', '3.1.5.RELEASE')
             version('tomcat', '10.1.60')
             version('velocity', '2.4.1')
-            version('woodstoxCore', '7.2.2')
+            version('woodstoxCore', '7.3.0')
             version('jgit', '7.8.0.202609011348-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.5.0.8588')
@@ -305,7 +305,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.6.3')
+            version('logback', '1.6.4')
             version('mockitoCore', '5.24.0')
             version('slf4j', '2.0.18')
             version('mockitoInline', '5.2.0')
