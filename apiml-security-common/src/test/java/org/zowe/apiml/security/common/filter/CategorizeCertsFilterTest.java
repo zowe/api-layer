@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @TestInstance (Lifecycle.PER_CLASS)
@@ -103,10 +104,12 @@ class CategorizeCertsFilterTest {
         when(certificateValidator.hasGatewayChain(any())).thenReturn(false);
 
         logger = (Logger) LoggerFactory.getLogger(CategorizeCertsFilter.class);
+        logger.detachAndStopAllAppenders();
         logAppender = new ListAppender<>();
         logAppender.start();
         logger.addAppender(logAppender);
         logger.setLevel(Level.DEBUG);
+        logger.getLoggerContext().resetTurboFilterList();
         logAppender.clearAllFilters();
     }
 

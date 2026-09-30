@@ -115,6 +115,7 @@ class CategorizeCertsWebFilterTest {
         logAppender.start();
         logger.addAppender(logAppender);
         logger.setLevel(Level.DEBUG); // Ensure DEBUG level is enabled
+        logger.getLoggerContext().resetTurboFilterList();
         logAppender.clearAllFilters();
     }
 
