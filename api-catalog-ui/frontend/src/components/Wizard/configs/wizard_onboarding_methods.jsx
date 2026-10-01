@@ -31,7 +31,6 @@ export const enablerData = [
             { name: 'Routes', indentation: 'routes', minions: { 'API Info': ['gatewayUrl'] } },
             { name: 'Authentication', indentation: 'authentication' },
             { name: 'API Info', indentation: 'apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'catalog/tile' },
             { name: 'SSL', indentation: 'ssl' },
         ],
         defaults: defaultPJE,
@@ -55,7 +54,6 @@ export const enablerData = [
                 minions: { 'API Info': ['gatewayUrl'] },
             },
             { name: 'API Info', indentation: 'apiml/service/apiInfo', multiple: true },
-            { name: 'Catalog', indentation: 'apiml/service/catalog/tile', nav: 'Catalog' },
             { name: 'Authentication', indentation: 'apiml/service/authentication', nav: 'Auth & SSL' },
             { name: 'SSL', indentation: 'apiml/service/ssl', nav: 'Auth & SSL' },
         ],
@@ -78,13 +76,6 @@ export const enablerData = [
                 minions: { 'API Info': ['gatewayUrl'] },
             },
             { name: 'API Info for Micronaut', indentation: 'apiml/service/apiInfo', nav: 'API info', multiple: true },
-            {
-                name: 'Catalog',
-                indentation: 'apiml/service/catalog',
-                nav: 'Catalog configuration',
-                multiple: true,
-                arrIndent: 'tile',
-            },
             { name: 'SSL detailed', indentation: 'apiml/service/ssl', nav: 'SSL', multiple: true },
             { name: 'Micronaut', indentation: 'micronaut/application', nav: 'Micronaut configuration' },
             { name: 'Micronaut ports', indentation: 'micronaut/server', nav: 'Micronaut configuration' },
@@ -145,7 +136,6 @@ export const enablerData = [
         categories: [
             { name: 'Basic info', nav: 'Basics', inArr: true },
             { name: 'Description', nav: 'Basics', inArr: true },
-            { name: 'Catalog info', nav: 'Basics', inArr: true },
             { name: 'Service info', nav: 'Basics', inArr: true },
             {
                 name: 'URL for Static',
@@ -165,7 +155,6 @@ export const enablerData = [
             },
             { name: 'Authentication', indentation: 'authentication', inArr: true },
             { name: 'API Info', indentation: 'apiInfo', multiple: true, inArr: true },
-            { name: 'Catalog UI Tiles', indentation: 'catalogUiTiles' },
         ],
     },
     {
