@@ -103,14 +103,14 @@ dependencyResolutionManagement {
             version('jgit', '7.8.0.202609011348-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.5.0.8588')
-            version('gradleRelease', '3.1.0')
+            version('gradleRelease', '3.2.0')
             version('gradleLicencer', '0.6.1')
             version('gradleJibPlugin', '3.5.4')
             version('reactorBom', '2023.0')
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
-            version('micronaut', '4.10.29')
+            version('micronaut', '4.10.30')
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
@@ -297,7 +297,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.6.4')
+            version('logback', '1.6.5')
             version('mockitoCore', '5.24.0')
             version('mockServer','5.15.0')
 
