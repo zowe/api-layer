@@ -16,19 +16,24 @@ setup() {
     BATS_TEST_DIRNAME="$(cd "$(dirname "$BATS_TEST_FILENAME")" && pwd)"
     PROJECT_ROOT="$(cd "${BATS_TEST_DIRNAME}/../../../" && pwd)"
     APIML_DIR="${PROJECT_ROOT}/apiml-package/src/main/resources/bin"
-    LAUNCH_COMPONENT="${PROJECT_ROOT}/apiml-package"
-#    # Create a temporary directory for test artifacts
-#    TEST_TEMP_DIR="$(mktemp -d)"
-#
-#    # Set up minimal required environment variables for sourcing scripts
-#    export JAVA_HOME="${TEST_TEMP_DIR}/java"
-#    mkdir -p "${JAVA_HOME}/bin"
 
-    # Create a mock java binary that always return success
-    java() {
-        return 0
-      }
-    export -f java
+    # Create a temporary directory for test artifacts
+    TEST_TEMP_DIR="$(mktemp -d)"
+
+    LAUNCH_COMPONENT="${TEST_TEMP_DIR}"
+
+    # Set up minimal required environment variables for sourcing scripts
+    export ZWE_java_home="${TEST_TEMP_DIR}/java"
+    mkdir -p "${ZWE_java_home}/bin"
+
+    # Create a mock java binary that returns version info
+    cat > "${ZWE_java_home}/bin/java" << 'MOCK_JAVAP'
+#!/bin/sh
+FULL_COMMAND=$(printf '%q ' "$0" "$@")
+
+echo "Java command executed: $FULL_COMMAND"
+MOCK_JAVAP
+    chmod +x "${ZWE_java_home}/bin/java"
 
 ##    export ZWE_zowe_workspaceDirectory="${TEST_TEMP_DIR}/workspace"
 ##    export ZWE_zowe_runtimeDirectory="${TEST_TEMP_DIR}/runtime"

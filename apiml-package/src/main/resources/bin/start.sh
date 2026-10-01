@@ -266,7 +266,7 @@ if [ -n "${ZWE_configs_telemetry_attributes_mainframe_lpar_name}" ]; then
     OTEL_ATTRIBUTES="$OTEL_ATTRIBUTES -Dotel.resource.attributes.mainframe.lpar.name=${ZWE_configs_telemetry_attributes_mainframe_lpar_name}"
 fi
 # End OpenTelemetry
-
+echo "$JAVA_BIN_DIR"
 APIML_CODE=AG
 _BPXK_AUTOCVT=OFF
 _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
