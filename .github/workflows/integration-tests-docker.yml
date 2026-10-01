@@ -1,0 +1,1955 @@
+name: Integration tests using JIB containers (docker)
+# Services now run as a plain docker compose stack (docker/integration-tests/modulith)
+# instead of GitHub Actions' native container/services orchestration - the exact same
+# compose file and commands work unchanged on a developer machine. See
+# docker/integration-tests/README.md.
+
+on:
+    push:
+        branches: [ v2.x.x, v3.x.x ]
+        paths-ignore:
+            - '**.md'
+    pull_request:
+        branches: [ v2.x.x, v3.x.x ]
+        paths-ignore:
+            - '**.md'
+    workflow_dispatch:
+
+env:
+    JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
+    ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+    ARTIFACTORY_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+    PERSONAL_JB_TOKEN: ${{ secrets.PERSONAL_JB_TOKEN }}
+
+jobs:
+    # Certificates are generated rather than committed, and each run produces a fresh
+    # certificate authority. They are therefore generated once here and shared with
+    # every other job, so that the container images and the test runners all trust the
+    # same authority.
+    GenerateCertificates:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
+
+            -   name: Generate certificates
+                run: ./gradlew generateCertificates
+
+            -   uses: actions/upload-artifact@v4
+                with:
+                    name: development-certificates
+                    retention-days: 1
+                    if-no-files-found: error
+                    path: |
+                        keystore/ca/**
+                        keystore/service/**
+                        keystore/client/**
+                        keystore/negative/**
+                        zaas-client/src/test/resources/localhost.keystore.p12
+                        zaas-client/src/test/resources/localhost.truststore.p12
+                        common-service-core/src/test/resources/jwt-public-key.pub
+
+    PublishJibContainers:
+        needs: GenerateCertificates
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   name: Build Nodejs Sample App
+                run: |
+                    cd onboarding-enabler-nodejs-sample-app
+                    cp ../config/docker/nodejs-service/service-configuration.yml ./config/service-configuration.yml
+                    cp -r ../.licence ./.licence
+                    cp -r ../keystore ./keystore
+                    cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
+                    docker build -t nodesampleapp .
+                    docker tag nodesampleapp ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+                    echo "$PERSONAL_JB_TOKEN" | docker login ghcr.io -u balhar-jakub --password-stdin
+                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:${{ env.JOB_ID }}
+
+            -   name: Build Python Sample App
+                run: |
+                    cd onboarding-enabler-python-sample-app
+                    cp ../config/docker/python-service/service-configuration.yml ./src/config/service-configuration.yml
+                    cp -r ../keystore ./keystore
+                    cp -r ../onboarding-enabler-python ./onboarding-enabler-python
+                    docker build -t pythonsampleapp .
+                    docker tag pythonsampleapp ghcr.io/balhar-jakub/nodejs-sample-app:python${{ env.JOB_ID }}
+                    echo "$PERSONAL_JB_TOKEN" | docker login ghcr.io -u balhar-jakub --password-stdin
+                    docker push ghcr.io/balhar-jakub/nodejs-sample-app:python${{ env.JOB_ID }}
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew clean jib -Djib.serialize=true -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Pzowe.docker.password=$PERSONAL_JB_TOKEN -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+
+            -   name: Standalone Catalog
+                run: >
+                    ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD -Pzowe.docker.password=$PERSONAL_JB_TOKEN -Pzowe.docker.username=balhar-jakub -Pzowe.docker.container=ghcr.io/balhar-jakub/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsModulithUnknownHostnames:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith-unknown-hostnames/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-unknown-hostnames
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run CI Tests with Unknown Hostnames
+                run: >
+                    ./gradlew :integration-tests:runUnknownHostnamesTests
+                    -Denvironment.config=-docker-modulith-unknown-hostnames --info
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsModulithUnknownHostnames-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+                        integration-tests/build/test-results/runUnknownHostnamesTests/binary/**
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith-unknown-hostnames/docker-compose.yml
+            -   uses: ./.github/actions/teardown
+
+    CITestsModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Modulith CI Tests
+                run: >
+                    ./gradlew :integration-tests:runContainerModulithTests -Dtest.hostname=testrunner
+                    -Denvironment.config=-docker-modulith --info
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+                        integration-tests/build/test-results/runContainerModulithTests/binary/**
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsModulithSAFProviderHA:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith-saf-ha/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                # check GWCount
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-saf-ha -Denvironment.gwCount=2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Modulith CI Tests with SAF Provider in HA
+                run: >
+                    ./gradlew :integration-tests:runContainerSAFProviderTests --info
+                    -Denvironment.config=-docker-modulith-saf-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsModulithSAFProviderHA-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/reports/**
+                        results/**
+                        integration-tests/build/test-results/runContainerSAFProviderTests/binary/**
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith-saf-ha/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsModulithHA:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        strategy:
+            fail-fast: false
+            matrix:
+                type: [ "normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic" ]
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith-ha/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Normal HA Tests in Modulith
+                if: ${{ 'normal' == matrix.type }}
+                run: >
+                    ./gradlew runHATests -Denvironment.config=-docker-modulith-ha -Denvironment.gwCount=3
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Gateway Service Chaotic HA Tests in Modulith
+                if: ${{ 'gateway-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
+                    -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Discoverable Client Chaotic HA Tests in Modulith
+                if: ${{ 'discoverableclient-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
+                    -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run WebSocket Chaotic HA Tests in Modulith
+                if: ${{ 'websocket-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
+                    -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Caching Chaotic HA Tests
+                if: ${{ 'caching-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    -Denvironment.config=-docker-modulith-ha -Denvironment.chaotic=true
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsModulithHA-${{ env.JOB_ID }}-${{ matrix.type }}
+                    path: |
+                        integration-tests/build/reports/**
+                        integration-tests/build/test-results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith-ha/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITests:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/split/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-compose -DcentralGateway.instances=0
+                    -DcentralHosts=discovery-service-2,gateway-service-2,zaas-service-2
+
+            -   name: Run CI Tests
+                timeout-minutes: 4
+                run: >
+                    ./gradlew :integration-tests:runContainerTests -Denvironment.config=-docker-compose
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Dtest.hostname=testrunner
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITests-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/split/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsSAFProviderHA:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
+                -Dzaas.connectPorts=10023,20023 -Ddiscovery.additionalPort=20011
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/saf-provider-ha/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Dcaching.instances=1 -Dzosmf.instances=0
+
+            -   name: Run CI Tests With SAF Provider
+                run: >
+                    ENV_CONFIG=ha ./gradlew :integration-tests:runContainerSAFProviderTests -Denvironment.config=-ha
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsSAFProviderHA-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/saf-provider-ha/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    GatewayProxy:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/gateway-proxy/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1 -Dapicatalog.instances=0 -Dcentralgateway.port=30010
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runGatewayProxyTest -Denvironment.config=-docker
+                    -Dcentralgateway.port=30010
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: GatewayProxy-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/gateway-proxy/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    GatewayCentralRegistry:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        env:
+            CONNECT_PORT_FLAGS: -Dcentralgateway.port=20010 -Ddiscovery.additionalPort=20011
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/gateway-central-registry/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    -Ddiscoverableclient.instances=0 -Dgateway.instances=2 ${{ env.CONNECT_PORT_FLAGS }}
+                    -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
+                    -Denvironment.config=-docker -Dgateway.instances=2 -Ddiscoverableclient.instances=0
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -DcentralHosts=central-gateway-service,api-catalog-services-2,discovery-service-2
+
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: GatewayCentralRegistry-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/gateway-central-registry/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CentralRegistryModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/central-registry-modulith/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith -Ddiscoverableclient.instances=0
+                    -Dgateway.host=central-gateway-service -Dgateway.port=20010
+                    -DcentralHosts=central-gateway-service
+
+            -   name: Run CI Tests
+                timeout-minutes: 4
+                run: >
+                    ./gradlew :integration-tests:runGatewayCentralRegistryTest --info
+                    -Denvironment.config=-docker-modulith
+                    -Ddiscovery.additionalHost=central-gateway-service -Ddiscovery.additionalPort=20011
+                    -Dcentralgateway.port=20010
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ModulithCentralRegistry-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/central-registry-modulith/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsRegistration:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/registration/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runRegistrationTests -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+            # Coverage results are not stored in this job as it would not provide much additional data
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsRegistration-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/registration/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsDiscoveryBasicAuth:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/discovery-basic-auth/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
+                    -Dapiml.security.ssl.verifySslCertificatesOfServices=false
+                    -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
+
+            -   name: Run Discovery Basic Auth Tests
+                run: >
+                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsDiscoveryBasicAuth-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/discovery-basic-auth/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsDiscoveryBasicAuthModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010
+                -Dcaching.connectPorts=10010,20010 -Ddiscovery.additionalPort=20011
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/discovery-basic-auth-modulith/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck --info -Denvironment.config=-docker-modulith-2-instances
+                    -Dapiml.security.ssl.verifySslCertificatesOfServices=false
+                    -Dapiml.discovery.userid=eureka -Dapiml.discovery.password=password
+
+            -   name: Run Discovery Basic Auth Tests
+                run: >
+                    ./gradlew :integration-tests:runDiscoveryBasicAuthTests -Denvironment.config=-docker-modulith-2-instances
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsDiscoveryBasicAuthModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/discovery-basic-auth-modulith/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+    CITestsRegistrationModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/registration-modulith/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
+
+            -   name: Run CI Tests
+                run: >
+                    ./gradlew :integration-tests:runRegistrationTests -Denvironment.config=-docker-modulith
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+            # Coverage results are not stored in this job as it would not provide much additional data
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsRegistration-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/registration-modulith/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsZaas:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/zaas/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+                    extra-env: |
+                        OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
+                        OIDC_CLIENT_SECRET=${{ secrets.OIDC_CLIENT_SECRET }}
+                        OIDC_JWKSET_URI=${{ secrets.OIDC_JWKSET_URI }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=20010
+                    -DcentralHosts=central-gateway-service
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :integration-tests:runZaasTest -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Doidc.client.id=$OIDC_CLIENT_ID -Doidc.client.secret=$OIDC_CLIENT_SECRET -Doidc.test.user=$OIDC_TEST_USER
+                    -Doidc.test.pass=$OIDC_TEST_PASS -Doidc.test.alt_user=$OIDC_WINNIE_USER
+                    -Doidc.test.alt_pass=$OIDC_WINNIE_PASS -Doidc.host=$OIDC_HOST
+                    -Ddiscoverableclient.instances=1 -Ddiscovery.instances=1 -Dcentralgateway.port=20010
+                    -DcentralHosts=central-gateway-service
+                env:
+                    OIDC_CLIENT_ID: ${{ secrets.OIDC_CLIENT_ID }}
+                    OIDC_CLIENT_SECRET: ${{ secrets.OIDC_CLIENT_SECRET }}
+                    OIDC_HOST: ${{ secrets.OIDC_HOST }}
+                    OIDC_TEST_PASS: ${{ secrets.OIDC_TEST_PASS }}
+                    OIDC_TEST_USER: ${{ secrets.OIDC_TEST_USER }}
+                    OIDC_WINNIE_PASS: ${{ secrets.OIDC_WINNIE_PASS }}
+                    OIDC_WINNIE_USER: ${{ secrets.OIDC_WINNIE_USER }}
+            -   name: Dump DC jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address zaas-service --port 6301 --destfile ./results/zaas-service.exec
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsZaas-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/zaas/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsZosmfWithoutJwt:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/zosmf-without-jwt/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :integration-tests:runZosmfAuthTest -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsZosmfWithoutJwt-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/zosmf-without-jwt/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsZosmfWithoutJwtModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/zosmf-without-jwt-modulith/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -DcentralGateway.instances=0
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :integration-tests:runZosmfAuthTest --info
+                    -Denvironment.config=-docker-modulith
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsZosmfWithoutJwtModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/zosmf-without-jwt-modulith/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsWithRedisReplica:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   name: Run APIML and Redis Containers
+                run: |
+                    cd docker/redis
+                    chmod +x run-redis.sh
+                    ./run-redis.sh -l -t -a ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                run: >
+                    ./gradlew runStartUpCheck --info
+                    -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.keyAlias=apimtst
+                    -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
+                    -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1 -DcentralGateway.instances=0
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Caching Service tests
+                run: >
+                    ./gradlew :integration-tests:runCachingServiceTests --info
+                    -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.keyAlias=apimtst
+                    -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Output Redis logs
+                if: always()
+                run: |
+                    echo "Redis Master"
+                    docker logs redis-master
+                    echo "Redis Replica"
+                    docker logs redis-replica
+
+            -   name: Output Caching Service container logs
+                if: always()
+                run: docker logs caching-service
+
+            -   name: Output Gateway container logs
+                if: always()
+                run: docker logs gateway-service
+
+            -   name: Output ZAAS container logs
+                if: always()
+                run: docker logs zaas-service
+
+            -   name: Output Discovery container logs
+                if: always()
+                run: docker logs discovery-service
+
+            -   name: Output Mock services container logs
+                if: always()
+                run: docker logs mock-services
+
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsWithRedisReplica-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsWithRedisSentinel:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   name: Run APIML and Redis Containers
+                run: |
+                    cd docker/redis
+                    chmod +x run-redis.sh
+                    ./run-redis.sh -l -s -t -a ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                run: >
+                    ./gradlew runStartUpCheck --info
+                    -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.keyAlias=apimtst
+                    -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
+                    -Ddiscoverableclient.instances=0 -Dapicatalog.instances=0 -Ddiscovery.instances=1 -DcentralGateway.instances=0
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Caching Service tests
+                run: >
+                    ./gradlew :integration-tests:runCachingServiceTests --info
+                    -DtlsConfiguration.clientKeyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.keyAlias=apimtst
+                    -DtlsConfiguration.keyStore=../docker/redis/redis-containers/keystore/all-services.keystore.p12
+                    -DtlsConfiguration.trustStore=../docker/redis/redis-containers/keystore/all-services.truststore.p12
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Output Redis logs
+                if: always()
+                run: |
+                    echo "Redis Master"
+                    docker logs redis-master
+                    echo "Redis Replica"
+                    docker logs redis-replica
+                    echo "Redis Sentinel 1"
+                    docker logs redis-sentinel-1
+                    echo "Redis Sentinel 2"
+                    docker logs redis-sentinel-2
+                    echo "Redis Sentinel 3"
+                    docker logs redis-sentinel-3
+
+            -   name: Output Caching Service container logs
+                if: always()
+                run: docker logs caching-service
+
+            -   name: Output Gateway container logs
+                if: always()
+                run: docker logs gateway-service
+
+            -   name: Output ZAAS container logs
+                if: always()
+                run: docker logs zaas-service
+
+            -   name: Output Discovery container logs
+                if: always()
+                run: docker logs discovery-service
+
+            -   name: Output Mock services container logs
+                if: always()
+                run: docker logs mock-services
+
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: ContainerCITestsWithRedisSentinel-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/teardown
+
+    DeterministicHALoadBalancing:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
+                -Dzaas.connectPorts=10023,20023 -Ddiscovery.additionalPort=20011
+                -Ddiscoverableclient.connectPorts=10012,20012
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/deterministic-lb/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-ha
+                    -Ddiscoverableclient.instances=2 -Dcaching.instances=1
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runDeterministicLbHaTests --info
+                    -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=1
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: DeterministicLbHaTest-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/deterministic-lb/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    DeterministicHALoadBalancingModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/deterministic-lb-modulith/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
+                    -Ddiscoverableclient.instances=2 -Denvironment.gwCount=2 -Dgateway.instances=2 -Ddiscovery.instances=2
+                    -Dcaching.instances=2 -Dapicatalog.instances=2
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runDeterministicLbHaTests --info
+                    -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=2
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: DeterministicLbHaTestModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/deterministic-lb-modulith/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    StickySessionHALoadBalancing:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,20010 -Dzaas.connectPorts=10023,20023
+                -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/sticky-session-lb/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Dapicatalog.instances=1 -Dcaching.instances=1
+                    ${{ env.CONNECT_PORT_FLAGS }}
+
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runStickySessionLbHaTests -Denvironment.config=-ha
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: StickySessionLbHaTest-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/sticky-session-lb/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    StickySessionHALoadBalancingModulith:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/sticky-session-lb-modulith/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
+
+            -   name: Run HA Tests
+                run: >
+                    ./gradlew runStickySessionLbHaTests -Denvironment.config=-docker-modulith-ha
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011 -Ddiscoverableclient.connectPorts=10012,20012
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+            # Coverage results are not stored in this job as it would not provide much additional data
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: StickySessionLbHaTestModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/sticky-session-lb-modulith/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsHA_caching-chaotic:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
+                -Dzaas.connectPorts=10023,20023 -Ddiscovery.additionalPort=20011
+                -Ddiscoverableclient.connectPorts=10012,20012 -Dcaching.connectPorts=10016,20016,30016
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/ha-caching-chaotic/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=2
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Caching Chaotic HA Tests
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsHA-${{ env.JOB_ID }}-caching-chaotic
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/ha-caching-chaotic/docker-compose.yml
+            -   uses: ./.github/actions/teardown
+
+    CITestsHA:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 18
+        strategy:
+            fail-fast: false
+            matrix:
+                type: [ "normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic" ]
+
+        env:
+            CONNECT_PORT_FLAGS: >-
+                -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10014,20014
+                -Dzaas.connectPorts=10023,20023 -Ddiscovery.additionalPort=20011
+                -Ddiscoverableclient.connectPorts=10012,20012 -Dcaching.connectPorts=10016,20016
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/ha/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-ha -Ddiscoverableclient.instances=2 -Dcaching.instances=2
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Normal HA Tests
+                if: ${{ 'normal' == matrix.type }}
+                run: >
+                    ./gradlew runHATests -Denvironment.config=-ha -Denvironment.gwCount=2 -Dcaching.instances=2
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Discovery Service Chaotic HA Tests
+                if: ${{ 'discovery-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.DiscoveryChaoticTest
+                    -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Gateway Service Chaotic HA Tests
+                if: ${{ 'gateway-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.GatewayChaoticTest
+                    -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Discoverable Client Chaotic HA Tests
+                if: ${{ 'discoverableclient-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.SouthboundServiceChaoticTest
+                    -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run WebSocket Chaotic HA Tests
+                if: ${{ 'websocket-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.WebSocketChaoticTest
+                    -Denvironment.config=-ha ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Caching Chaotic HA Tests
+                if: ${{ 'caching-chaotic' == matrix.type }}
+                run: >
+                    ./gradlew :integration-tests:runChaoticHATests --tests org.zowe.apiml.integration.ha.CachingServiceTests
+                    -Denvironment.config=-ha -Denvironment.offPlatform=true -DcloudGateway.enabled=false -Denvironment.chaotic=true
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Correct Permisions
+                run: |
+                    chmod 755 -R .gradle
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsHA-${{ env.JOB_ID }}-${{ matrix.type }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/ha/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsWithInfinispan:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/with-infinispan/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1 -DcentralGateway.instances=0
+
+            -   name: Build with Gradle
+                run: >
+                    ./gradlew :integration-tests:runInfinispanServiceTests -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/with-infinispan/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsModulithWithInfinispan:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/modulith-with-infinispan/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith-ha
+                    -Dgateway.instances=2 -Ddiscovery.instances=2 -Dcaching.instances=2 -Dapicatalog.instances=2
+                    -Dgateway.connectPorts=10010,20010 -Dapicatalog.connectPorts=10010,20010 -Dcaching.connectPorts=10010,20010
+                    -Ddiscovery.additionalPort=20011
+                    -Ddiscoverableclient.instances=1 -DcentralGateway.instances=0
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Build with Gradle
+                run: >
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests --info
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   uses: ./.github/actions/dump-jacoco
+                if: always()
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsModulithWithInfinispan-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/modulith-with-infinispan/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    E2EUITests:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        # Services now run as a plain docker compose stack (docker/integration-tests/e2e-ui-tests)
+        # instead of GitHub Actions' native container/services orchestration. Unlike the other
+        # migrated jobs, the pinned Cypress/browser toolchain can't just move to the bare runner -
+        # GH Actions container jobs don't get docker-socket access, so a job running *inside*
+        # cypress/browsers couldn't itself drive docker compose. Instead the compose file defines
+        # cypress as a service using that same pinned image, invoked on demand via
+        # `docker compose run` once the stack is up - same network, so hostnames resolve exactly
+        # like from the host. discovery-service-2 binds its own distinct real port via
+        # APIML_SERVICE_PORT, so -Ddiscovery.additionalPort tells the test runner which port that
+        # is - without it the checker defaults to discovery-service's own port instead (same
+        # hostname-aliased loopback) and waits forever for discovery-service-2/zaas-service-2 to
+        # appear there. See docker/integration-tests/README.md.
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+            -   name: Install npm dependencies API Catalog
+                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1.12.1
+                with:
+                    install-command: npm ci --legacy-peer-deps
+                    working-directory: api-catalog-ui/frontend
+            -   name: Cache NPM and Cypress 📦
+                uses: actions/cache@v4
+                with:
+                    path: |
+                        ~/.cache/Cypress
+                        api-catalog-ui/frontend/node_modules
+                    key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/e2e-ui-tests/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+                    extra-env: |
+                        OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
+                        OIDC_CLIENT_PASSWORD=${{ secrets.OIDC_CLIENT_PASSWORD }}
+                        OIDC_HOST=${{ secrets.OIDC_HOST }}
+                        OIDC_AUTH_URI=${{ secrets.OIDC_AUTH_URI }}
+                        OIDC_TOKEN_URI=${{ secrets.OIDC_TOKEN_URI }}
+                        OIDC_USER_INFO_URI=${{ secrets.OIDC_USER_INFO_URI }}
+                        OIDC_JWKSET_URI=${{ secrets.OIDC_JWKSET_URI }}
+
+            -   name: Run startup check
+                run: >
+                    ./gradlew runStartUpCheck --scan -Denvironment.config=-ha -Ddiscoverableclient.instances=1
+                    -Dgateway.instances=1 -Dcaching.instances=1 -Dapicatalog.instances=1
+                    -Ddiscovery.additionalPort=20011
+                    -DcentralHosts=api-catalog-services,discoverable-client,discovery-service,gateway-service,zaas-service,caching-service
+
+            -   name: Show status when APIML is not ready yet
+                if: failure()
+                shell: bash
+                run: |
+                    curl --cacert ./keystore/service/trusted_CAs.cer -s https://gateway-service:10010/application/health
+                    curl --cacert ./keystore/service/trusted_CAs.cer -s https://gateway-service-2:10010/application/health
+
+            -   name: Cypress run API Catalog
+                run: >
+                    docker compose -f docker/integration-tests/e2e-ui-tests/docker-compose.yml run --rm
+                    -e CYPRESS_AUTH0_USERNAME=$OIDC_WINNIE_USER -e CYPRESS_AUTH0_PASSWORD=$OIDC_WINNIE_PASS
+                    cypress sh -c "cd api-catalog-ui/frontend && npm run cy:e2e:ci"
+                env:
+                    OIDC_WINNIE_PASS: ${{ secrets.OIDC_WINNIE_PASS }}
+                    OIDC_WINNIE_USER: ${{ secrets.OIDC_WINNIE_USER }}
+
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6300 --destfile ./results/gateway-service.exec
+
+            -   name: Correct Permissions
+                run: |
+                    chmod 755 -R .gradle
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: E2EUITests-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   name: Upload screenshots API Catalog
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: cypress-snapshots
+                    path: api-catalog-ui/frontend/cypress/screenshots
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/e2e-ui-tests/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    E2EUITestsModulith:
+        # This stage needs to use modulith with gateway-service hostname due to the current OIDC provider setup
+        # Where only gateway-service is an allowed hostname for redirects
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+
+        # Services now run as a plain docker compose stack (docker/integration-tests/e2e-ui-tests-modulith)
+        # instead of GitHub Actions' native container/services orchestration. See the comment on
+        # docker/integration-tests/e2e-ui-tests/docker-compose.yml's cypress service for why the
+        # pinned Cypress/browser toolchain is a compose service instead of a `container:` job.
+        # gateway-service-2 binds its own distinct real ports via APIML_SERVICE_PORT /
+        # APIML_INTERNAL_DISCOVERY_PORT, so the gradle steps below pass -Dgateway.connectPorts /
+        # -Ddiscovery.additionalPort to tell the test runner which ports those are. See
+        # docker/integration-tests/README.md.
+        env:
+            CONNECT_PORT_FLAGS: -Dgateway.connectPorts=10010,20010 -Ddiscovery.additionalPort=20011
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+            -   name: Install npm dependencies API Catalog
+                uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1.12.1
+                with:
+                    install-command: npm ci --legacy-peer-deps
+                    working-directory: api-catalog-ui/frontend
+            -   name: Cache NPM and Cypress 📦
+                uses: actions/cache@v4
+                with:
+                    path: |
+                        ~/.cache/Cypress
+                        api-catalog-ui/frontend/node_modules
+                    key: my-cache-${{ runner.os }}-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/e2e-ui-tests-modulith/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+                    extra-env: |
+                        OIDC_CLIENT_ID=${{ secrets.OIDC_CLIENT_ID }}
+                        OIDC_CLIENT_PASSWORD=${{ secrets.OIDC_CLIENT_PASSWORD }}
+                        OIDC_HOST=${{ secrets.OIDC_HOST }}
+                        OIDC_AUTH_URI=${{ secrets.OIDC_AUTH_URI }}
+                        OIDC_TOKEN_URI=${{ secrets.OIDC_TOKEN_URI }}
+                        OIDC_USER_INFO_URI=${{ secrets.OIDC_USER_INFO_URI }}
+                        OIDC_JWKSET_URI=${{ secrets.OIDC_JWKSET_URI }}
+
+            -   name: Run startup check
+                run: >
+                    ./gradlew runStartUpCheck --scan -Denvironment.config=-docker-modulith-ha -Ddiscoverableclient.instances=1 -Denvironment.gwCount=1
+                    -Dgateway.host=gateway-service,gateway-service-2 -Ddiscovery.host=gateway-service -Ddiscovery.additionalHost=gateway-service-2
+                    ${{ env.CONNECT_PORT_FLAGS }}
+                    -DcentralHosts=discoverable-client,gateway-service
+
+            -   name: Show status when APIML is not ready yet
+                if: failure()
+                shell: bash
+                run: |
+                    curl --cacert ./keystore/service/trusted_CAs.cer -s https://gateway-service:10010/application/health
+                    curl --cacert ./keystore/service/trusted_CAs.cer -s https://gateway-service-2:10010/application/health
+
+            -   name: Cypress run API Catalog
+                run: >
+                    docker compose -f docker/integration-tests/e2e-ui-tests-modulith/docker-compose.yml run --rm
+                    -e CYPRESS_AUTH0_USERNAME=$OIDC_WINNIE_USER -e CYPRESS_AUTH0_PASSWORD=$OIDC_WINNIE_PASS
+                    cypress sh -c "cd api-catalog-ui/frontend && npm run cy:e2e:ci:modulith"
+                env:
+                    OIDC_WINNIE_PASS: ${{ secrets.OIDC_WINNIE_PASS }}
+                    OIDC_WINNIE_USER: ${{ secrets.OIDC_WINNIE_USER }}
+
+            -   name: Dump CGW jacoco data
+                run: >
+                    java -jar ./scripts/jacococli.jar dump --address gateway-service --port 6310 --destfile ./results/gateway-service.exec
+
+            -   name: Correct Permissions
+                run: |
+                    chmod 755 -R .gradle
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: E2EUITestsModulith-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   name: Upload screenshots API Catalog
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: cypress-snapshots-modulith
+                    path: api-catalog-ui/frontend/cypress/screenshots
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/e2e-ui-tests-modulith/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsServicePrefixReplacer:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/service-prefix-replacer/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                    -Ddiscovery.instances=1 -DserviceIdReplaced=discoverableclient:sampleclient
+                    -DcentralGateway.instances=0
+
+            -   name: Run Service ID Prefix Replacer Tests
+                run: >
+                    ./gradlew :integration-tests:runIdPrefixReplacerTests -Denvironment.config=-docker
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsServicePrefixReplacer-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/service-prefix-replacer/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    CITestsNodeJsAndPythonServices:
+        needs: PublishJibContainers
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: ./.github/actions/compose-integration-env
+                with:
+                    compose-file: docker/integration-tests/node-python-services/docker-compose.yml
+                    image-tag: ${{ env.JOB_ID }}
+                    extra-env: |
+                        SAMPLE_APP_IMAGE_PREFIX=ghcr.io/balhar-jakub/
+
+            -   name: Run Startup Check
+                if: always()
+                run: >
+                    ./gradlew runStartUpCheck -Denvironment.config=-docker-modulith
+                    -Ddiscoverableclient.instances=0 -DcentralGateway.instances=0
+                    -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+
+            -   name: Run Node.JS and Python Services Tests
+                run: >
+                    ./gradlew :integration-tests:runNodeAndPythonSampleServiceTests -Denvironment.config=-docker-modulith
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: always()
+                with:
+                    name: CITestsNodeJsAndPythonServices-${{ env.JOB_ID }}
+                    path: |
+                        integration-tests/build/test-results/runStartUpCheck/binary/**
+                        integration-tests/build/reports/**
+                        results/**
+
+            -   uses: ./.github/actions/compose-integration-env-teardown
+                if: always()
+                with:
+                    compose-file: docker/integration-tests/node-python-services/docker-compose.yml
+
+            -   uses: ./.github/actions/teardown
+
+    PublishResults:
+        needs: [
+            CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,CITestsHA,
+            CITestsModulith,CITestsModulithHA
+        ]
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+
+        steps:
+            -   uses: actions/checkout@v4
+                with:
+                    fetch-depth: 0
+                    ref: ${{ github.head_ref }}
+
+            -   uses: ./.github/actions/setup
+            -   uses: ./.github/actions/restore-certificates
+
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: ContainerCITests-${{ env.JOB_ID }}
+                    path: containercitests
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    path: containercitestsmodulith
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: CITestsWithInfinispan-${{ env.JOB_ID }}
+                    path: citestswithinfinispan
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: GatewayProxy-${{ env.JOB_ID }}
+                    path: GatewayProxy
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: ContainerCITestsZaas-${{ env.JOB_ID }}
+                    path: ContainerCITestsZaas
+            -   uses: actions/download-artifact@v4
+                with:
+                    name: CITestsHA-${{ env.JOB_ID }}-websocket-chaotic
+                    path: citestschaoticha
+
+            -   name: Code coverage and publish results
+                run: >
+                    ./gradlew --scan --info coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,ContainerCITestsZaas/results"
+                    -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
+                env:
+                    SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+                    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            -   name: Store results
+                uses: actions/upload-artifact@v4
+                if: failure()
+                with:
+                    name: SonarResults-${{ env.JOB_ID }}
+                    path: |
+                        build/reports/problems/problems-report.html
+                        results/**
+                        **/build/reports/tests/**
+
+            -   uses: ./.github/actions/teardown

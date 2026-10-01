@@ -36,13 +36,13 @@ public class DiscoverableClientRequests {
     private final String instance;
 
     public DiscoverableClientRequests(String host) {
-        this(discoverableClientConfiguration.getScheme(), host, discoverableClientConfiguration.getPort(), new Requests());
+        this(discoverableClientConfiguration.getScheme(), host, new Requests());
     }
-    public DiscoverableClientRequests(String scheme, String host, int port, Requests requests) {
+    public DiscoverableClientRequests(String scheme, String host, Requests requests) {
         this.requests = requests;
         this.scheme = scheme;
         this.host = host;
-        this.port = port;
+        this.port = discoverableClientConfiguration.getPortForHost(host);
 
         instance = String.format("%s://%s:%s", scheme, host, port);
 

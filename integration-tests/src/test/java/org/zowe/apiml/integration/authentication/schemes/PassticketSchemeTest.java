@@ -100,7 +100,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         @Test
         @Tag("GatewayServiceRouting")
         void givenValidJWT_thenTranslateToPassticket() {
-            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getFirstHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             verifyPassTicketHeaders(
                 //@formatter:off
                 given()
@@ -115,7 +115,7 @@ public class PassticketSchemeTest implements TestWithStartedInstances {
         @Test
         @Tag("GatewayServiceRouting")
         void givenNoJWT_thenErrorHeaderIsCreated() {
-            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
+            String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getFirstHost(), conf.getPort(), REQUEST_INFO_ENDPOINT);
             //@formatter:off
             given()
             .when()

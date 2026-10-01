@@ -94,24 +94,61 @@ public class SecurityUtils {
     private static final TlsConfiguration tlsConfiguration = ConfigReader.environmentConfiguration().getTlsConfiguration();
 
     private static final String GATEWAY_SCHEME = serviceConfiguration.getScheme();
-    private static final String GATEWAY_HOST = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getHost() : serviceConfiguration.getDvipaHost();
-    private static final int GATEWAY_PORT = serviceConfiguration.getPort();
+    private static final String GATEWAY_HOST = StringUtils.isBlank(serviceConfiguration.getDvipaHost()) ? serviceConfiguration.getFirstHost() : serviceConfiguration.getDvipaHost();
+    private static final int GATEWAY_PORT = serviceConfiguration.getPortForHost(GATEWAY_HOST);
 
-    private static final String ZOSMF_SCHEME = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
-    private static final String ZOSMF_HOST = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getHost();
-    private static final int ZOSMF_PORT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPort();
+    // SAF authentication provider does not require z/OSMF
+    private static final String ZOSMF_SCHEME;
+    private static final String ZOSMF_HOST;
+    private static final Integer ZOSMF_PORT;
+
+    static {
+        if (ConfigReader.environmentConfiguration().getZosmfServiceConfiguration() != null) {
+            ZOSMF_SCHEME = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getScheme();
+            ZOSMF_HOST = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getFirstHost();
+            ZOSMF_PORT = ConfigReader.environmentConfiguration().getZosmfServiceConfiguration().getPortForHost(ZOSMF_HOST);
+        } else {
+            ZOSMF_SCHEME = null;
+            ZOSMF_HOST = null;
+            ZOSMF_PORT = null;
+        }
+    }
 
     public static final String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     public static final String PASSWORD = ConfigReader.environmentConfiguration().getCredentials().getPassword();
 
-    public static final String OIDC_HOSTNAME = ConfigReader.environmentConfiguration().getOidcConfiguration().getHost();
-    public static final String OIDC_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
-    public static final String OIDC_CLIENT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientSecret();
-    public static final String OIDC_USER = ConfigReader.environmentConfiguration().getOidcConfiguration().getUser();
-    public static final String OIDC_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getPassword();
-    public static final String OIDC_ALT_USER = ConfigReader.environmentConfiguration().getOidcConfiguration().getAlternateUser();
-    public static final String OIDC_ALT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getAlternatePassword();
-    public static final String OIDC_PROVIDER_NAME = ConfigReader.environmentConfiguration().getOidcConfiguration().getProviderName();
+    public static final String OIDC_HOSTNAME;
+    public static final String OIDC_CLIENT_ID;
+    public static final String OIDC_CLIENT_PASSWORD;
+    public static final String OIDC_USER;
+    public static final String OIDC_PASSWORD;
+    public static final String OIDC_ALT_USER;
+    public static final String OIDC_ALT_PASSWORD;
+    public static final String OIDC_PROVIDER_NAME;
+
+    static {
+        if (ConfigReader.environmentConfiguration().getOidcConfiguration() != null) {
+            OIDC_HOSTNAME = ConfigReader.environmentConfiguration().getOidcConfiguration().getHost();
+            OIDC_CLIENT_ID = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientId();
+            OIDC_CLIENT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getClientSecret();
+            OIDC_USER = ConfigReader.environmentConfiguration().getOidcConfiguration().getUser();
+            OIDC_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getPassword();
+            OIDC_ALT_USER = ConfigReader.environmentConfiguration().getOidcConfiguration().getAlternateUser();
+            OIDC_ALT_PASSWORD = ConfigReader.environmentConfiguration().getOidcConfiguration().getAlternatePassword();
+            OIDC_PROVIDER_NAME = ConfigReader.environmentConfiguration().getOidcConfiguration().getProviderName();
+        } else {
+            OIDC_HOSTNAME = null;
+            OIDC_CLIENT_ID = null;
+            OIDC_CLIENT_PASSWORD = null;
+            OIDC_USER = null;
+            OIDC_PASSWORD = null;
+            OIDC_ALT_USER = null;
+            OIDC_ALT_PASSWORD = null;
+            OIDC_PROVIDER_NAME = null;
+        }
+
+
+    }
 
     public static final String OKTA_AUTHENTICATE_SESSION_URL = "/api/v1/authn";
     public static final String OKTA_GENERATE_TOKEN_URL = "/oauth2/v1/authorize";
@@ -130,7 +167,7 @@ public class SecurityUtils {
     //@formatter:off
 
     public static String getGatewayUrl(String host, String path) {
-        return getGatewayUrl(host, path, GATEWAY_PORT);
+        return getGatewayUrl(host, path, serviceConfiguration.getPortForHost(host));
     }
 
     public static String getGatewayUrl(String path) {

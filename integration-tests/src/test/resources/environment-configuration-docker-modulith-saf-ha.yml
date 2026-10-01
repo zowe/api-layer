@@ -1,0 +1,51 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: USER
+    password: validPassword
+    clientUser: APIMTST
+gatewayServiceConfiguration:
+    scheme: https
+    host: apiml,apiml-2
+    port: 10010, 20010
+    internalPorts: 10010
+    instances: 2
+    servicesEndpoint: gateway/api/v1/services
+    bucketCapacity: 40
+    authProvider: zosmf
+discoveryServiceConfiguration:
+    scheme: https
+    user: user
+    password: user
+    host: apiml,apiml-2
+    port: 10011,20011
+    instances: 2
+    additionalHost: #Used only for additional gateway registration - central gateway setup
+    additionalPort:
+discoverableClientConfiguration:
+    scheme: https
+    port: 10012
+    applId: ZOWEAPPL
+    host: discoverable-client
+    instances: 1
+apiCatalogServiceConfiguration:
+    scheme: https
+    host: apiml,apiml-2
+    port: 10010,20010
+    instances: 2
+cachingServiceConfiguration:
+    scheme: https
+    host: apiml,apiml-2
+    port: 10010,20010
+    instances: 2
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/service/client-cert.p12
+    serverKeyStore: ../keystore/service/server-only.p12
+    clientKeystore: ../keystore/client/client-certs.p12
+    clientCN: APIMTST
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/service/service.truststore.p12
+    trustStorePassword: password
