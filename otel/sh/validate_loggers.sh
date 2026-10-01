@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Verify a selection of log attributes exporter to a JSON file
 # The goal of this verification is confirming the logs make it to the

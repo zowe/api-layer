@@ -13,9 +13,11 @@ package org.zowe.apiml.security.common.filter;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.TurboFilterList;
 import ch.qos.logback.core.read.ListAppender;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -86,12 +88,21 @@ class CategorizeCertsFilterTest {
 
     private Logger logger;
     private ListAppender<ILoggingEvent> logAppender;
+    private TurboFilterList turboFilterList;
 
     @BeforeAll
     void init() throws CertificateException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         InputStream certStream = new ByteArrayInputStream(Base64.getDecoder().decode(CLIENT_CERT_HEADER_VALUE));
         clientCertfromHeader = cf.generateCertificate(certStream);
+        logger = (Logger) LoggerFactory.getLogger(CategorizeCertsFilter.class);
+        turboFilterList = logger.getLoggerContext().getTurboFilterList();
+        logger.getLoggerContext().resetTurboFilterList();
+    }
+
+    @AfterAll
+    void reset() {
+        turboFilterList.forEach(logger.getLoggerContext()::addTurboFilter);
     }
 
     @BeforeEach
@@ -103,13 +114,11 @@ class CategorizeCertsFilterTest {
         when(certificateValidator.isForwardingEnabled()).thenReturn(false);
         when(certificateValidator.hasGatewayChain(any())).thenReturn(false);
 
-        logger = (Logger) LoggerFactory.getLogger(CategorizeCertsFilter.class);
         logger.detachAndStopAllAppenders();
         logAppender = new ListAppender<>();
         logAppender.start();
         logger.addAppender(logAppender);
         logger.setLevel(Level.DEBUG);
-        logger.getLoggerContext().resetTurboFilterList();
         logAppender.clearAllFilters();
     }
 
