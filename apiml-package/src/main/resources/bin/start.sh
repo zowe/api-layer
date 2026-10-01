@@ -80,10 +80,12 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
 # - ZWE_configs_debug
+#TODO
 # - ZWE_configs_logging_fileAppender_enabled - write logs to a file, always on when debug is enabled (default: false)
 # - ZWE_configs_logging_debugToFileOnly - keep debug level logs out of stdout and write them to the log file only, implies file appender (default: false)
 # - ZWE_configs_logging_levels / ZWE_components_apiml_logging_levels - comma separated list of logger=level entries
 #                       (e.g. org.zowe.apiml=debug,org.apache.http=trace) passed as logging.level.<logger>=<level>
+# end of TODO
 # - ZWE_configs_logging_level - logging level to activate (default: info)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
@@ -149,30 +151,46 @@ if [ -n "${ZWE_DISCOVERY_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
 
+# Log to file
+LOG_TO_FILE="false"
+if [ "${ZWE_components_apiml_logging_toFile_enabled:-false}" = "true" ]; then
+    LOG_TO_FILE="true"
+fi
+
 # Logging level
 add_profile "${ZWE_configs_logging_level:-${ZWE_components_gateway_logging_level:-info}}"
 
-# Debug profile
+# Debug logging
+ZWE_configs_logging_debug=$(printf '%s' "${ZWE_configs_logging_debug:-}" | tr -d '[:space:]' | tr ',' ' ')
+
 if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then
     if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}" ]; then
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}"
     fi
     add_profile "debug"
-    # Debug mode always writes logs to a file
-    ZWE_configs_logging_fileAppender_enabled="true"
-fi
+    LOG_TO_FILE="true"
+else
+    # process debug for features
+    case "${ZWE_configs_logging_debug}" in
+      *=true*)
+          add_profile debug-common
+          LOG_TO_FILE="true"
+        ;;
+    esac
 
-# Debug logs to file only requires the file appender
-if [ "${ZWE_configs_logging_debugToFileOnly:-${ZWE_components_gateway_logging_debugToFileOnly:-false}}" = "true" ]; then
-    ZWE_configs_logging_fileAppender_enabled="true"
+    for logger in ${ZWE_configs_logging_debug}; do
+      case "$logger" in
+        *=true) add_profile ${pair%%=*} ;;
+      esac
+    done
 fi
 
 # Per-logger log levels, entries in the logger=level format are passed as -Dlogging.level.<logger>=<level>
 LOGGING_LEVEL_OPTS=""
-for entry in $(echo "${ZWE_configs_logging_levels:-${ZWE_components_apiml_logging_levels:-}}" | tr ',' ' '); do
+for entry in $(echo "${ZWE_components_apiml_logging_loggerLevels:-}" | tr ',' ' '); do
     case "${entry}" in
         ?*=?*) LOGGING_LEVEL_OPTS="${LOGGING_LEVEL_OPTS} -Dlogging.level.${entry}" ;;
-        *) echo "Ignoring invalid logging level entry '${entry}', expected format is <logger>=<level>" ;;
+        *) echo "Ignoring invalid logger level entry '${entry}', expected format is <logger>=<level>" ;;
     esac
 done
 

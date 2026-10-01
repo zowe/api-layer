@@ -38,7 +38,9 @@ jobs:
                     cd bats-core && sudo ./install.sh /usr/local
 
             -   name: Run shell script tests
-                run: bats scripts/test/start_test.bats
+                run: |
+                    bats scripts/test/start_test.bats
+                    bats apiml-package/test/start_test.bats
 
             -   name: Build with Gradle
                 run: >
