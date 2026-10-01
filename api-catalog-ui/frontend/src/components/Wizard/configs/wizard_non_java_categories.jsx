@@ -70,10 +70,6 @@ export const nonJavaSpecificCategories = [
     {
         text: 'Metadata',
         content: {
-            'apiml.catalog.tile.id': createField('Tile ID for the API ML catalog:', 'Example: sampleservice'),
-            'apiml.catalog.tile.title': createField('Tile title for the API ML catalog:', 'Example: Zowe Sample Service'),
-            'apiml.catalog.tile.description': createField('Tile description for the API ML catalog:', 'Example: Sample service running'),
-            'apiml.catalog.tile.version': createField('Tile version for the API ML catalog:', 'Example: 1.0.0'),
             'apiml.routes.api_v1.gatewayUrl': createField('API gateway URL:', 'Example: api/v1'),
             'apiml.routes.api_v1.serviceUrl': createField('API service URL:', 'Example: /sampleservice'),
             'apiml.apiInfo.0.apiId': createField('A unique identifier to the API in the API ML:', 'Example: zowe.apiml.sampleservice'),
