@@ -5,6 +5,8 @@
     <property name="MIN_INDEX" value="${rollingPolicy.minIndex:-1}"/>
     <property name="MAX_FILE_SIZE" value="${rollingPolicy.file.maxSize:-50MB}"/>
     <property name="STORAGE_LOCATION" value="${apiml.logs.location}"/>
+    <property name="LOG_TO_FILE" value="${apiml.logging.toFile.enabled:-false}"/>
+    <property name="DEBUG_ONLY_TO_FILE" value="${apiml.logging.toFile.debugOnly:-false}"/>
 
     <springProperty scope="context"
                     name="apimlLogPattern"
@@ -32,11 +34,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <!-- Debug (and lower) level messages are written to the log file only, stdout is limited to INFO and above -->
-        <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
-            <key>apimlDebugToFileOnly</key>
-            <value>true</value>
-        </condition>
-        <if>
+        <if condition='Boolean.parseBoolean(property("DEBUG_ONLY_TO_FILE"))'>
             <then>
                 <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
                     <level>INFO</level>
@@ -52,12 +50,7 @@
 
     <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
 
-    <springProperty scope="context" name="apimlLogToFile" source="apiml.logging.fileAppender.enabled" defaultValue="false"/>
-    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
-        <key>apimlLogToFile</key>
-        <value>true</value>
-    </condition>
-    <if>
+    <if condition='Boolean.parseBoolean(property("LOG_TO_FILE"))'>
         <then>
             <appender name="FILE" class="org.zowe.apiml.product.logging.ApimlRollingFileAppender">
                 <file>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.log</file>
@@ -83,11 +76,7 @@
 
     <root level="ERROR">
         <appender-ref ref="STDOUT"/>
-        <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
-            <key>apimlLogToFile</key>
-            <value>true</value>
-        </condition>
-        <if>
+        <if condition='Boolean.parseBoolean(property("LOG_TO_FILE"))'>
             <then>
                 <appender-ref ref="FILE"/>
             </then>
