@@ -10,17 +10,25 @@
 
 package org.zowe.apiml.eurekaservice.client.config;
 
-import lombok.*;
+import jakarta.annotation.PostConstruct;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.exception.ServiceDefinitionException;
-import jakarta.annotation.PostConstruct;
 import org.zowe.apiml.security.SecurityUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Data
 @AllArgsConstructor
@@ -32,7 +40,30 @@ public class ApiMediationServiceConfig {
     protected static final char[] DEFAULT_ZOS_KEYRING_PASSWORD = "password".toCharArray();
 
     @Singular
+    @ToString.Exclude
     private List<String> discoveryServiceUrls;
+
+    @ToString.Include(name = "discoveryServiceUrls")
+    private String maskedDiscoveryServiceUrls() {
+        if (discoveryServiceUrls == null || discoveryServiceUrls.isEmpty()) {
+            return "null";
+        }
+
+        return discoveryServiceUrls.stream()
+            .filter(Objects::nonNull)
+            .map(url -> {
+                try {
+                    URI uri = URI.create(url);
+                    String userInfo = uri.getRawUserInfo();
+
+                    return new URI(uri.getScheme(), userInfo.replaceAll(":.*", ":*****"), uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+                } catch (IllegalArgumentException | URISyntaxException e) {
+                    return url;
+                }
+            })
+            .toList()
+            .toString();
+    }
 
     /**
      * Eureka basic authentication user id. It is used only as a fallback when TLS validation is disabled

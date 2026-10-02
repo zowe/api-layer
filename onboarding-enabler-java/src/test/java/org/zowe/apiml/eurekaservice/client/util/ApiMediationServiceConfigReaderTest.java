@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ApiMediationServiceConfigReaderTest {
 
@@ -248,4 +250,33 @@ class ApiMediationServiceConfigReaderTest {
 
         assertThat(exception.getCause(), instanceOf(UnknownHostException.class));
     }
+
+    @Test
+    void testToStringContent() throws ServiceDefinitionException {
+        Map<String, String> properties = new HashMap<>();
+        ApiMediationServiceConfig config = getApiMediationServiceConfigFromFile("/service-configuration.yml", properties);
+        String toString = config.toString();
+
+        assertTrue(StringUtils.isNotBlank(toString));
+
+        assertTrue(toString.contains("keyPassword=*****"));
+        assertTrue(toString.contains("keyStorePassword=*****"));
+        assertTrue(toString.contains("trustStorePassword=*****"));
+        assertTrue(toString.contains("discoveryServiceUrls=[http://eureka:*****"));
+
+        config.setDiscoveryPassword(null);
+        config.getSsl().setKeyPassword(new char[]{});
+        config.getSsl().setKeyStorePassword(null);
+        config.getSsl().setTrustStorePassword(null);
+
+        toString = config.toString();
+
+        assertTrue(StringUtils.isNotBlank(toString));
+
+        assertTrue(toString.contains("keyPassword=null"));
+        assertTrue(toString.contains("keyStorePassword=null"));
+        assertTrue(toString.contains("trustStorePassword=null"));
+        assertTrue(toString.contains("discoveryServiceUrls=[http://eureka:*****"));
+    }
+
 }
