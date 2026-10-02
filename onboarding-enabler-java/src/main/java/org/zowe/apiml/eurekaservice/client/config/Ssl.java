@@ -13,6 +13,7 @@ package org.zowe.apiml.eurekaservice.client.config;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
 @AllArgsConstructor
@@ -28,17 +29,43 @@ public class Ssl {
 
     private String keyAlias;
 
+    @ToString.Exclude
     private char[] keyPassword;
 
     private String keyStore;
 
+    @ToString.Exclude
     private char[] keyStorePassword;
 
     private String keyStoreType;
 
     private String trustStore;
 
+    @ToString.Exclude
     private char[] trustStorePassword;
 
     private String trustStoreType;
+
+    @ToString.Include(name = "keyPassword")
+    private String maskedKeyPassword() {
+        return masked(keyPassword);
+    }
+
+    @ToString.Include(name = "keyStorePassword")
+    private String maskedKeyStorePassword() {
+        return masked(keyStorePassword);
+    }
+
+    @ToString.Include(name = "trustStorePassword")
+    private String maskedTrustStorePassword() {
+        return masked(trustStorePassword);
+    }
+
+    private String masked(char[] password) {
+        if (password == null || password.length == 0) {
+            return "null";
+        }
+        return "*****";
+    }
+
 }
