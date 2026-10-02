@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
@@ -135,7 +134,7 @@ class ApiMediationServiceConfigReaderTest {
         ApiMediationServiceConfig config = getApiMediationServiceConfigFromFile("/service-configuration.yml", properties);
         String toString = config.toString();
 
-        assertTrue(StringUtils.isNotBlank(toString));
+        assertTrue(toString != null && !toString.isEmpty());
 
         assertTrue(toString.contains("keyPassword=*****"));
         assertTrue(toString.contains("keyStorePassword=*****"));
@@ -149,7 +148,7 @@ class ApiMediationServiceConfigReaderTest {
 
         toString = config.toString();
 
-        assertTrue(StringUtils.isNotBlank(toString));
+        assertTrue(toString != null && !toString.isEmpty());
 
         assertTrue(toString.contains("keyPassword=null"));
         assertTrue(toString.contains("keyStorePassword=null"));
