@@ -10,9 +10,13 @@
 
 package org.zowe.apiml.acceptance;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.restassured.http.ContentType;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +38,7 @@ import static org.mockito.Mockito.mock;
 
 @AcceptanceTest
 @Import(ReactiveAuthenticationControllerTests.MockRegisterToApiLayerConfig.class)
+@TestInstance(Lifecycle.PER_CLASS)
 class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServices {
 
     private static final String BEARER = "Bearer ";
@@ -46,15 +51,22 @@ class ReactiveAuthenticationControllerTests extends AcceptanceTestWithMockServic
     @Value("${server.ssl.keyPassword}")
     char[] password;
     @Value("${server.ssl.keyStore}")
-    String client_cert_keystore;
+    String clientCertKeystore;
     @Value("${server.ssl.keyStore}")
     String keystore;
 
-    @BeforeEach
-    void setUp() throws Exception {
-        mockZosmfSuccess();
-        SslContextConfigurer configurer = new SslContextConfigurer(password, client_cert_keystore, keystore);
+    @BeforeAll
+    void init() throws Exception {
+        SslContextConfigurer configurer = new SslContextConfigurer(password, clientCertKeystore, keystore);
+        if (SslContext.isInitialized()) {
+            SslContext.reset();
+        }
         SslContext.prepareSslAuthentication(configurer);
+    }
+
+    @BeforeEach
+    void setUp() throws JsonProcessingException {
+        mockZosmfSuccess();
     }
 
     private String login() {
