@@ -46,7 +46,16 @@ public class ApiMediationServiceConfig {
      * Eureka basic authentication password, see {@link #discoveryUserid}. The value has to match the Discovery Service
      * {@code apiml.discovery.password}.
      */
+    @ToString.Exclude
     private char[] discoveryPassword;
+
+    @ToString.Include(name = "discoveryPassword")
+    private String maskedDiscoveryPassword() {
+        if (discoveryPassword == null || discoveryPassword.length == 0) {
+            return "null";
+        }
+        return "*****";
+    }
 
     /**
      *     Uniquely identifies instances of a microservice in the API ML.
