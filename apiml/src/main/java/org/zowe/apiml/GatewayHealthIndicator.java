@@ -15,9 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.actuate.health.AbstractHealthIndicator;
-import org.springframework.boot.actuate.health.Health.Builder;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.AbstractHealthIndicator;
+import org.springframework.boot.health.contributor.Health.Builder;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaInstanceRegisteredEvent;
 import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvailableEvent;
@@ -26,7 +26,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
 import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.compatibility.ApimlHealthCheckHandler;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
@@ -34,12 +33,12 @@ import org.zowe.apiml.zaas.ZaasServiceAvailableEvent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.springframework.boot.actuate.health.Status.DOWN;
-import static org.springframework.boot.actuate.health.Status.UP;
+import static org.springframework.boot.health.contributor.Status.DOWN;
+import static org.springframework.boot.health.contributor.Status.UP;
 
 /**
  * This class contributes the apiml component health indication to the main /application/health
- * controlled by class {@link ApimlHealthCheckHandler} in the common package.
+ * controlled by class {@link org.springframework.cloud.netflix.eureka.EurekaHealthCheckHandler}.
  *
  * Note: Name is kept as GatewayHealthIndicator for backwards compatibility
  */

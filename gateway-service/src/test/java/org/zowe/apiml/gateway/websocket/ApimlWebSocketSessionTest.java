@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.gateway.websocket;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakeException;
 import org.apache.commons.logging.Log;
 import org.apache.tomcat.websocket.AuthenticationException;
@@ -18,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.socket.CloseStatus;
 import reactor.core.publisher.Sinks;
@@ -79,6 +82,25 @@ class ApimlWebSocketSessionTest {
         ReflectionTestUtils.setField(webSocketSession, "completionSink", emptyMock);
         webSocketSession.onError(e);
         verify(emptyMock, times(1)).tryEmitError(e);
+    }
+
+    /**
+     * The error path logs at debug when debug is enabled and otherwise falls back to info. Tests
+     * normally run with debug enabled, so this pins the fallback: with info-level logging the failure
+     * still has to be reported and the session still has to be closed.
+     */
+    @Test
+    void givenInfoLevelLogging_WhenError_thenTheErrorIsStillReported() {
+        Logger sessionLogger = (Logger) LoggerFactory.getLogger(ApimlWebSocketSession.class);
+        Level previousLevel = sessionLogger.getLevel();
+        try {
+            sessionLogger.setLevel(Level.INFO);
+            webSocketSession.onError(new RuntimeException("message"));
+        } finally {
+            sessionLogger.setLevel(previousLevel);
+        }
+
+        verify(webSocketSession, times(1)).close(argThat(status -> status.getCode() == CloseStatus.SERVER_ERROR.getCode() && status.getReason().equals("message")));
     }
 
 }

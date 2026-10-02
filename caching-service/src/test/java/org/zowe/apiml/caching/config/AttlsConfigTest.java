@@ -16,12 +16,14 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -55,6 +57,7 @@ class AttlsConfigTest {
     )
     @ActiveProfiles({ "test", "AttlsConfigTestCachingService", "attlsClient", "attlsServer" })
     @Nested
+    @ExtendWith(MockitoExtension.class)
     class GivenAttlsModeEnabled {
 
         @Value("${apiml.service.hostname:localhost}")
@@ -127,6 +130,7 @@ class AttlsConfigTest {
         classes = CachingServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @ExtendWith(MockitoExtension.class)
     class GivenSslDisabled {
 
         @Value("${apiml.service.hostname:localhost}")

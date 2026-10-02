@@ -5,7 +5,7 @@ plugins {
 dependencies {
     api project(':apiml-common')
 
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
     implementation libs.spring.boot.starter.security
     implementation libs.reactor
     implementation libs.spring.webflux
@@ -15,10 +15,14 @@ dependencies {
 
     implementation libs.apache.commons.lang3
     implementation libs.http.client5
+    implementation libs.jackson.databind
 
     implementation libs.nimbus.jose.jwt // Parsing
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.webmvc.test
+    testImplementation libs.spring.boot.starter.webflux.test
+    testImplementation libs.spring.boot.starter.security.test
     testImplementation libs.reactor.test
     testImplementation(testFixtures(project(":apiml-common")))
 

@@ -13,10 +13,10 @@ package org.zowe.apiml.discovery.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController;
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorViewResolver;
-import org.springframework.boot.web.servlet.error.ErrorAttributes;
+import org.springframework.boot.autoconfigure.web.ErrorProperties;
+import org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController;
+import org.springframework.boot.webmvc.autoconfigure.error.ErrorViewResolver;
+import org.springframework.boot.webmvc.error.ErrorAttributes;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +32,15 @@ import java.util.Map;
 @ConditionalOnMissingBean(name = "modulithConfig")
 public class DiscoveryErrorController extends BasicErrorController {
 
-    public DiscoveryErrorController(ErrorAttributes errorAttributes, ServerProperties serverProperties, List<ErrorViewResolver> errorViewResolvers) {
-        super(errorAttributes, serverProperties.getError(), errorViewResolvers);
+    /**
+     * Spring Boot 4 moved ErrorMvcAutoConfiguration into spring-boot-webmvc and no longer publishes an
+     * ErrorProperties bean (it is now bound inside WebProperties), so nothing can be injected here.
+     * BasicErrorController still needs an instance; an unconfigured default reproduces the previous
+     * behaviour for the paths this controller actually serves, and {@code /eureka/apps/**} 404s are
+     * short-circuited below before any property is consulted.
+     */
+    public DiscoveryErrorController(ErrorAttributes errorAttributes, List<ErrorViewResolver> errorViewResolvers) {
+        super(errorAttributes, new ErrorProperties(), errorViewResolvers);
     }
 
     @Override

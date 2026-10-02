@@ -36,7 +36,20 @@ spring:
             hostname: ${apiml.service.hostname}
         gateway:
             mvc.enabled: false
-            enabled: false
+            # Spring Cloud Gateway 5.0 renamed the switch that turns its autoconfiguration off, from
+            # spring.cloud.gateway.enabled to spring.cloud.gateway.server.webflux.enabled. The old name
+            # is not read any more, so leaving it here silently stopped opting out. Discovery is a
+            # servlet application, and in the packaged layout the shared lite-lib folder (loader.path)
+            # puts spring-cloud-gateway-server-webflux on its classpath, so the autoconfiguration came
+            # back on and its Spring MVC check aborted startup:
+            #
+            #   APPLICATION FAILED TO START
+            #   Spring MVC found on classpath, which is incompatible with Spring Cloud Gateway.
+            #
+            # Port 10011 never opened, which is what made the Register workflow time out waiting for
+            # discovery. zaas-service already uses the new key; see also gateway-service and apiml,
+            # which run the gateway deliberately and are reactive.
+            server.webflux.enabled: false
     output:
         ansi:
             enabled: detect

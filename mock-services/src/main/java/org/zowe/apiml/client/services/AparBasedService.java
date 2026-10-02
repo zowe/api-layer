@@ -20,7 +20,9 @@ import org.zowe.apiml.client.services.apars.Apar;
 import org.zowe.apiml.client.services.versions.Versions;
 
 import jakarta.servlet.http.HttpServletResponse;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -47,14 +49,15 @@ public class AparBasedService {
             List<Apar> applied = versions.fullSetOfApplied(baseVersion, appliedApars);
             log.info("calledService: {}, calledMethods, {}", calledService, calledMethods);
             Optional<ResponseEntity<?>> result = Optional.empty();
+            Map<String, String> normalizedHeaders = withLowerCaseHeaderNames(headers);
             for (Apar apar : applied) {
                 log.info("applying: {}", apar);
                 if (parameters.length > 0) {
                     LoginBody body = (LoginBody) parameters[0];
-                    result = apar.apply(calledService, calledMethods, result, response, headers, body);
+                    result = apar.apply(calledService, calledMethods, result, response, normalizedHeaders, body);
                 }
                 else {
-                    result = apar.apply(calledService, calledMethods, result, response, headers);
+                    result = apar.apply(calledService, calledMethods, result, response, normalizedHeaders);
                 }
                 log.info("result: {}", result);
             }
@@ -73,6 +76,31 @@ public class AparBasedService {
             logResult(finalResult);
             return finalResult;
         }
+    }
+
+    /**
+     * Normalises the request header names to lower case before the APARs see them.
+     *
+     * <p>The APARs look headers up by their lower-case names - {@code AUTHORIZATION_HEADER} is
+     * {@code "authorization"}, {@code COOKIE_HEADER} is {@code "cookie"} - because that is what Tomcat
+     * 10.1 handed back from {@code getHeaderNames()}. Tomcat 11 returns the client's spelling, so
+     * {@code headers.get("authorization")} no longer found an {@code Authorization} header, and the
+     * z/OSMF files endpoint answered 401 instead of the data set list. Normalising here, at the single
+     * point every APAR is invoked through, keeps the mock's contract independent of the container.
+     *
+     * <p>{@link Locale#ROOT} rather than the default locale, so a Turkish host does not turn
+     * {@code "X-Id"} into {@code "x-ıd"}.
+     *
+     * @param headers the headers as reported by the container
+     * @return the same values under lower-case names
+     */
+    static Map<String, String> withLowerCaseHeaderNames(Map<String, String> headers) {
+        if (headers == null) {
+            return null;
+        }
+        Map<String, String> normalized = new LinkedHashMap<>();
+        headers.forEach((name, value) -> normalized.put(name.toLowerCase(Locale.ROOT), value));
+        return normalized;
     }
 
     private void logResult(Object o) {

@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -30,7 +31,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -60,13 +60,14 @@ import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
     private static final String INVALIDATE = "/zaas/api/v1/auth/invalidate";
@@ -163,15 +164,20 @@ class AuthControllerTest {
             "}");
     }
 
+    /**
+     * Shared fixture: the six callers exercise different endpoints (/public/all, /public/current)
+     * and different jwt producers, so no single test consumes all four stubbings. They are a
+     * deliberate common baseline, not dead code.
+     */
     private void initPublicKeys() {
         var zosmf = mock(JsonWebKeySet.class);
-        when(zosmf.getJsonWebKeys()).thenReturn(
+        lenient().when(zosmf.getJsonWebKeys()).thenReturn(
             Collections.singletonList(zosmfJwk)
         );
 
-        when(zosmfService.getPublicKeys()).thenReturn(zosmf);
-        when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(Collections.singletonList(apimlJwk)));
-        when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
+        lenient().when(zosmfService.getPublicKeys()).thenReturn(zosmf);
+        lenient().when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(Collections.singletonList(apimlJwk)));
+        lenient().when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
     }
 
     @Test
@@ -261,9 +267,11 @@ class AuthControllerTest {
                 var badKey = mock(RSAPublicKey.class);
                 when(badKey.getModulus()).thenReturn(new BigInteger(badModulus));
                 when(badKey.getPublicExponent()).thenReturn(BigInteger.ONE);
-                when(badKey.getAlgorithm()).thenReturn("RSA");
-                when(badKey.getFormat()).thenReturn(null);
-                when(badKey.getEncoded()).thenReturn(new byte[0]);
+                // newJwk() does not read every one of these, so which are consumed depends on the
+                // factory's internals rather than on the test intent.
+                lenient().when(badKey.getAlgorithm()).thenReturn("RSA");
+                lenient().when(badKey.getFormat()).thenReturn(null);
+                lenient().when(badKey.getEncoded()).thenReturn(new byte[0]);
 
                 var badJwk = JsonWebKey.Factory.newJwk(badKey);
 
@@ -397,7 +405,6 @@ class AuthControllerTest {
                     SecurityContext context = new SecurityContextImpl();
                     var tokenAuthenticationMock = mock(TokenAuthentication.class);
                     when(tokenAuthenticationMock.getPrincipal()).thenReturn("user");
-                    when(tokenAuthenticationMock.getType()).thenReturn(TokenAuthentication.Type.JWT);
                     context.setAuthentication(tokenAuthenticationMock);
                     SecurityContextHolder.setContext(context);
                     body = new JSONObject()

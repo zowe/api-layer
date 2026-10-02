@@ -12,8 +12,8 @@ package org.zowe.apiml.gateway.controllers;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebSecurityAutoConfiguration;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.zowe.apiml.message.core.MessageService;
@@ -23,7 +23,7 @@ import org.zowe.apiml.product.version.VersionService;
 
 import static org.mockito.Mockito.when;
 
-@WebFluxTest(controllers = VersionController.class, excludeAutoConfiguration = { ReactiveSecurityAutoConfiguration.class })
+@WebFluxTest(controllers = VersionController.class, excludeAutoConfiguration = { ReactiveWebSecurityAutoConfiguration.class })
 class VersionControllerTest {
 
     @MockitoBean

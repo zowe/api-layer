@@ -21,8 +21,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.zowe.apiml.security.HttpsConfigError;
 import org.zowe.apiml.zaas.security.login.Providers;
 
@@ -41,12 +41,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class JwtSecurityTest {
     public static final String KEY_ALIAS = "localhost";
     private JwtSecurity underTest;
@@ -58,9 +59,12 @@ class JwtSecurityTest {
     @BeforeEach
     void setUp() {
         providers = mock(Providers.class);
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(false);
-        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
+        // Shared defaults: each nested test overrides the ones it cares about (see the when() calls
+        // in the nested classes below), so for any single test some of these go unused. They are
+        // deliberate defaults rather than dead code, hence lenient.
+        lenient().when(providers.isZosfmUsed()).thenReturn(true);
+        lenient().when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(false);
+        lenient().when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
     }
 
     @Nested
@@ -258,7 +262,7 @@ class JwtSecurityTest {
         void setUp() {
             underTest = new JwtSecurity(providers, KEY_ALIAS, "../keystore/service/service.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
 
-            when(providers.isZosfmUsed()).thenReturn(false);
+            lenient().when(providers.isZosfmUsed()).thenReturn(false);
         }
 
         @Test

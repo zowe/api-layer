@@ -78,6 +78,10 @@ class X509ForwardingAwareAuthenticationFilterTest {
         httpServletRequest.setMethod(HttpMethod.POST.name());
         httpServletRequest.setAttribute("client.auth.X509Certificate", x509Certificate);
         httpServletRequest.setServletPath("/api/v1/zaas/auth/login");
+        // Spring Security 7 matches filter patterns with PathPatternRequestMatcher, which resolves
+        // against the request URI rather than the servlet path alone -- with servletPath set but no
+        // requestURI the pattern does not match and requiresAuthentication() returns false.
+        httpServletRequest.setRequestURI("/api/v1/zaas/auth/login");
 
         httpServletResponse = new MockHttpServletResponse();
         var tokenAuthenticationMock = mock(TokenAuthentication.class);

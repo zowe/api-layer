@@ -40,6 +40,11 @@ spring:
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
+    autoconfigure:
+        # This module is the modulith deployment and embeds the gateway, so it must run on Tomcat
+        # for the same reason gateway-service does; see NettyServerPropertiesConfiguration in
+        # apiml-tomcat-common.
+        exclude: org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration
 
 otel:
     sdk:

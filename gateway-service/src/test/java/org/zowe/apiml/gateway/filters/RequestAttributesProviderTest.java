@@ -41,7 +41,7 @@ class RequestAttributesProviderTest {
     @ParameterizedTest(name = "givenRequestWithAttributes_whenFilter_thenCopyJustMissing with {0}")
     @MethodSource("filterInterface")
     void givenRequestWithAttributes_whenFilter_thenCopyJustMissing(String filterName, BiConsumer<RequestAttributesProvider, ServerWebExchange> filter) {
-        RequestFacade requestFacade = new RequestFacade(new Request(null));
+        RequestFacade requestFacade = new RequestFacade(new Request(null, new org.apache.coyote.Request()));
 
         MockServerHttpRequest request = spy(MockServerHttpRequest.get("/").build());
 
