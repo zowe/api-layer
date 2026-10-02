@@ -443,7 +443,6 @@ spring.config.activate.on-profile: debug-gateway
 
 logging:
     level:
-        ROOT: INFO
         org.apache.http: DEBUG
         org.springframework.boot.autoconfigure.web: DEBUG
         org.springframework.cloud.gateway: DEBUG
@@ -454,9 +453,7 @@ spring.config.activate.on-profile: debug-discovery
 
 logging:
     level:
-        ROOT: INFO
         com.netflix: DEBUG
-        org.springframework.context.support.[PostProcessorRegistrationDelegate$BeanPostProcessorChecker]: DEBUG
         org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor: DEBUG
         org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService: DEBUG
         org.zowe.apiml.gateway.service.RouteLocator: DEBUG
@@ -469,7 +466,6 @@ spring.config.activate.on-profile: debug-caching
 
 logging:
     level:
-        ROOT: INFO
         org.apache.catalina: DEBUG
         org.apache.coyote.http11.Http11InputBuffer: TRACE
         org.apache.http: DEBUG
@@ -477,17 +473,13 @@ logging:
         org.infinispan: DEBUG
         org.jgroups: TRACE
         org.jgroups.protocols.pbcast.GMS: DEBUG # prints infinispan cluster info
-        org.springframework.security.web: DEBUG
         org.zowe.apiml.caching.service.infinispan.config.LazyCacheManager: DEBUG
 
 ---
-spring.config.activate.on-profile: debug-zaas
+spring.config.activate.on-profile: debug-authentication
 
 logging:
     level:
-        ROOT: INFO
-        org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        #TODO: valid for modulith?
         org.ehcache: DEBUG
         org.springframework.security: DEBUG
         org.zowe.apiml.gateway.service.scheme.HttpBasicPassticket: DEBUG
