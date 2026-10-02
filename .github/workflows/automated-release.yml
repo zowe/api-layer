@@ -21,6 +21,12 @@ on:
                 required: false
                 type: boolean
                 default: false
+# All release workflows push commits to protected branches and must not interleave
+# with each other or with the enabler release workflow.
+concurrency:
+    group: release-train
+    cancel-in-progress: false
+
 jobs:
     release:
         runs-on: ubuntu-latest
