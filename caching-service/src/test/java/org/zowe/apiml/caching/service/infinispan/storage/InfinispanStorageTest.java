@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
 
@@ -566,12 +567,14 @@ class InfinispanStorageTest {
          */
         @Test
         void thenTheWarningIsThrottledToOncePerDoubling() {
+
             Cache<String, String> tokenCache = createCache();
             var sizes = new java.util.concurrent.atomic.AtomicInteger(10);
             doAnswer(a -> sizes.get()).when(tokenCache).size();
 
             var apimlLog = mock(org.zowe.apiml.message.log.ApimlLogger.class);
-            InfinispanStorage underTest = new InfinispanStorage(createCacheManager(cache, tokenCache, legacyTokenCache), MAX_TTL_SECONDS, 10, 1);
+            InfinispanStorage underTest = new InfinispanStorage(createCacheManager(cache, tokenCache, legacyTokenCache), MAX_TTL_SECONDS, 10);
+            ReflectionTestUtils.setField(underTest,"DEFAULT_SIZE_CHECK_INTERVAL",1);
             org.springframework.test.util.ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
 
             for (int i = 0; i < 5; i++) {
@@ -588,7 +591,8 @@ class InfinispanStorageTest {
         void givenNoThreshold_thenNothingIsLogged() {
             Cache<String, String> tokenCache = createCache();
             var apimlLog = mock(org.zowe.apiml.message.log.ApimlLogger.class);
-            InfinispanStorage underTest = new InfinispanStorage(createCacheManager(cache, tokenCache, legacyTokenCache), MAX_TTL_SECONDS, 0, 1);
+            InfinispanStorage underTest = new InfinispanStorage(createCacheManager(cache, tokenCache, legacyTokenCache), MAX_TTL_SECONDS, 0);
+            ReflectionTestUtils.setField(underTest,"DEFAULT_SIZE_CHECK_INTERVAL",1);
             org.springframework.test.util.ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
 
             underTest.storeMapItem(serviceId1, INVALID_TOKENS_KEY, new KeyValue("k", "v", 60L));
@@ -603,8 +607,8 @@ class InfinispanStorageTest {
         @Test
         void thenTheSampledSizeIsExposedForMetrics() {
             Cache<String, String> tokenCache = createCache();
-            InfinispanStorage underTest = new InfinispanStorage(createCacheManager(cache, tokenCache, legacyTokenCache), MAX_TTL_SECONDS, 0, 1);
-
+            InfinispanStorage underTest = new InfinispanStorage(createCacheManager(cache, tokenCache, legacyTokenCache), MAX_TTL_SECONDS, 0);
+            ReflectionTestUtils.setField(underTest,"DEFAULT_SIZE_CHECK_INTERVAL",1);
             assertEquals(-1, underTest.getLastObservedRevocationStoreSize(), "nothing sampled yet");
 
             underTest.storeMapItem(serviceId1, INVALID_TOKENS_KEY, new KeyValue("k", "v", 60L));
@@ -615,8 +619,8 @@ class InfinispanStorageTest {
         @Test
         void givenWritesBetweenSamples_thenTheSizeIsNotReadEveryTime() {
             Cache<String, String> tokenCache = createCache();
-            InfinispanStorage underTest = new InfinispanStorage(createCacheManager(cache, tokenCache, legacyTokenCache), MAX_TTL_SECONDS, 0, 100);
-
+            InfinispanStorage underTest = new InfinispanStorage(createCacheManager(cache, tokenCache, legacyTokenCache), MAX_TTL_SECONDS, 0);
+            ReflectionTestUtils.setField(underTest,"DEFAULT_SIZE_CHECK_INTERVAL",100);
             for (int i = 0; i < 10; i++) {
                 underTest.storeMapItem(serviceId1, INVALID_TOKENS_KEY, new KeyValue("k" + i, "v", 60L));
             }

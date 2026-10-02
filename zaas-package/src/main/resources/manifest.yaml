@@ -44,7 +44,6 @@ configs:
         # on first use. Set it to pin the cutover fleet-wide.
         cutoverEpoch:
         cutoverSkewAllowanceSeconds: 300
-        revocationLookupTimeoutMillis: 2000
         revocationLookupFailureThreshold: 5
         revocationLookupCircuitOpenMillis: 10000
         revocationLookupBatchKeys: 66

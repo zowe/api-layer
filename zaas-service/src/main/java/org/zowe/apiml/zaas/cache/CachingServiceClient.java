@@ -51,17 +51,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
 
-    /**
-     * Used for the revocation lookup and for {@link #read}. With no local caching of the answer, that lookup
-     * is on every personal access token request and is this service's sole synchronous dependency in a split
-     * deployment, so it gets its own short timeouts rather than the shared client's - a caching service that
-     * is merely slow would otherwise tie up a request thread per personal access token user at the same time.
-     * The salt and cutover epoch reads are on the same path, so they share it, and so do the whole-map reads
-     * of {@link #readAllMaps} and {@link #readAllLegacyMaps}, which that path makes for a pre-cutover token
-     * or against a caching service too old for the point lookup.
-     */
-    private final RestTemplate lookupRestTemplate;
-
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
@@ -149,16 +138,11 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     }
 
     public CachingServiceClient(RestTemplate restTemplate, GatewayClient gatewayClient) {
-        this(restTemplate, restTemplate, gatewayClient);
-    }
-
-    public CachingServiceClient(RestTemplate restTemplate, RestTemplate lookupRestTemplate, GatewayClient gatewayClient) {
         this.gatewayClient = gatewayClient;
         if (restTemplate == null) {
             throw new IllegalStateException("RestTemplate instance cannot be null");
         }
         this.restTemplate = restTemplate;
-        this.lookupRestTemplate = lookupRestTemplate == null ? restTemplate : lookupRestTemplate;
     }
 
     @Override
@@ -250,7 +234,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
             };
             var url = getGatewayAddress() + path;
             log.debug("readAllMaps url: {}", url);
-            var response = lookupRestTemplate.exchange(url, HttpMethod.GET, null, responseType);
+            var response = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
             if (!response.getStatusCode().is2xxSuccessful()) {
                 throw new CachingServiceClientException("Unable to read all key-value maps from " + description + ", caused by response from caching service is null or has no body");
             }
@@ -294,12 +278,12 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         log.debug("getMapItems url: {}", url);
         ResponseEntity<Map<String, Map<String, String>>> response;
         try {
-            response = lookupRestTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(keysByMapKey, defaultHeaders), responseType);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(keysByMapKey, defaultHeaders), responseType);
         } catch (ResourceAccessException e) {
             // a read is idempotent, so one retry is safe, and a single dropped connection is the most common
             // reason for this to fail at all. The short timeout is what keeps the retry affordable.
             log.debug("Retrying the revocation lookup once after a transport failure", e);
-            response = lookupRestTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(keysByMapKey, defaultHeaders), responseType);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(keysByMapKey, defaultHeaders), responseType);
         }
         return response.getBody() == null ? Map.of() : response.getBody();   //NOSONAR tests return null
     }
@@ -378,7 +362,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     boolean probeMapItemQuery() {
         querySupportCheckedAt.set(System.currentTimeMillis());
         try {
-            lookupRestTemplate.exchange(getGatewayAddress() + CACHING_QUERY_API_PATH, HttpMethod.POST,
+            restTemplate.exchange(getGatewayAddress() + CACHING_QUERY_API_PATH, HttpMethod.POST,
                 new HttpEntity<>(Map.of(), defaultHeaders), String.class);
             markMapItemQuerySupported();
             return true;
@@ -433,7 +417,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     private boolean isCachingServiceReachable() {
         try {
-            lookupRestTemplate.exchange(getGatewayAddress() + CACHING_LIST_API_PATH + REACHABILITY_PROBE_MAP_KEY,
+            restTemplate.exchange(getGatewayAddress() + CACHING_LIST_API_PATH + REACHABILITY_PROBE_MAP_KEY,
                 HttpMethod.GET, new HttpEntity<>(defaultHeaders), String.class);
             return true;
         } catch (HttpStatusCodeException e) {
@@ -485,7 +469,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
      */
     public KeyValue read(String key) throws CachingServiceClientException {
         try {
-            ResponseEntity<KeyValue> response = lookupRestTemplate.exchange(getGatewayAddress() + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
+            ResponseEntity<KeyValue> response = restTemplate.exchange(getGatewayAddress() + CACHING_API_PATH + "/" + key, HttpMethod.GET, new HttpEntity<KeyValue>(null, defaultHeaders), KeyValue.class);
             if (response.hasBody()) {
                 return response.getBody();
             }

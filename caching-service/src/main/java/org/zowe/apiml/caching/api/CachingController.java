@@ -133,15 +133,11 @@ public class CachingController {
         return Messages.INCOMPATIBLE_STORAGE_METHOD.getKey().equals(storageException.getKey());
     }
 
-    /**
-     * * @deprecated superseded by the per-item layout; scheduled for removal with the legacy read path.
-     */
     @GetMapping(value = "/cache-list/{mapKey}", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the items in the cache map",
         description = "Values returned for the calling service and specific cache map. Deprecated: this " +
             "scans every item of the map. Use /cache-query to look up specific items.",
         deprecated = true)
-    @Deprecated(since = "3.6.0")
     public Mono<ResponseEntity<Object>> getAllMapItems(@PathVariable String mapKey, ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {
@@ -158,15 +154,11 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
-    /**
-     * * @deprecated superseded by the per-item layout; scheduled for removal with the legacy read path.
-     */
     @GetMapping(value = {"/cache-list", "/cache-list/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the maps in the cache",
         description = "Values returned for the calling service. Deprecated: this scans every item of every " +
             "map, so its cost grows with the size of the store. Use /cache-query to look up specific items.",
         deprecated = true)
-    @Deprecated(since = "3.6.0")
     public Mono<ResponseEntity<Object>> getAllMaps(ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {
@@ -222,14 +214,12 @@ public class CachingController {
      * cannot double as the legacy read. Isolating the legacy read behind its own path means retiring it is a
      * deletion rather than a change to an endpoint that survives.
      *
-     * @deprecated exists only until every token issued before the cutover has expired.
      */
     @GetMapping(value = {"/cache-list-legacy", "/cache-list-legacy/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the maps stored in the pre-cutover layout",
         description = "Only for personal access tokens issued before the per-item revocation store was " +
             "introduced. Removed once every such token has expired.",
         deprecated = true)
-    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     public Mono<ResponseEntity<Object>> getAllLegacyMaps(ServerWebExchange exchange) {
         return Mono.fromCallable(() -> getServiceId(exchange).<ResponseEntity<Object>>map(
             s -> {

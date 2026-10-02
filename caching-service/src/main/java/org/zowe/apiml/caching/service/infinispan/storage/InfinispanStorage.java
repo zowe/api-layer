@@ -24,7 +24,9 @@ import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
-import java.time.*;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,27 +35,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
-import static org.zowe.apiml.cache.PatRevocationStore.INVALID_SCOPES_KEY;
-import static org.zowe.apiml.cache.PatRevocationStore.INVALID_TOKENS_KEY;
-import static org.zowe.apiml.cache.PatRevocationStore.INVALID_USERS_KEY;
-import static org.zowe.apiml.cache.PatRevocationStore.RULE_RETENTION_DAYS;
-import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE;
-import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE_INVALIDATED_TOKEN;
-import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.CACHE_ZOWE_INVALIDATED_TOKEN_ITEM;
+import static org.zowe.apiml.cache.PatRevocationStore.*;
+import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.*;
 
-/**
- * Infinispan-backed storage.
- * <p>
- * Map items (the personal access token revocation store) are held one cache entry per item, keyed by
- * {@code len(serviceId)|serviceId + len(mapKey)|mapKey + itemKey}, with the entry value being exactly the
- * inner-map value the previous layout used. That makes a write a single atomic {@code put} - no cluster-wide
- * lock, no read-modify-write, and only that one entry replicated - and makes "is this token revoked?" a
- * handful of {@code get}s instead of a download of the whole dataset. Expiration is Infinispan's, per entry,
- * so nothing needs a maintenance job.
- * <p>
- * {@link #getAllLegacyMaps(String)} is the one remaining reader of the previous whole-map layout. That cache
- * is never written to any more; it only shrinks, and it is read only for tokens issued before the cutover.
- */
 @Slf4j
 public class InfinispanStorage implements Storage {
 
@@ -63,10 +47,10 @@ public class InfinispanStorage implements Storage {
      * How often the size of the revocation store is sampled, in writes. Sampling keeps the (potentially
      * store-touching) {@code size()} call off every single revocation.
      */
-    public static final int DEFAULT_SIZE_CHECK_INTERVAL = 1000;
+    private int DEFAULT_SIZE_CHECK_INTERVAL = 1000;
 
     /**
-     * Lifespan sentinel for "store without expiration". Deliberately not {@code -1}, which is what Infinispan
+     * Lifespan for "store without expiration". Deliberately not {@code -1}, which is what Infinispan
      * itself uses for that, because {@code -1} is indistinguishable from an ordinary already-elapsed
      * retention - and those must be removed rather than stored forever.
      */
@@ -75,7 +59,6 @@ public class InfinispanStorage implements Storage {
     private final DefaultCacheManager defaultCacheManager;
     private final long maxTtlSeconds;
     private final long sizeWarningThreshold;
-    private final int sizeCheckInterval;
 
     private final AtomicLong writeCounter = new AtomicLong();
     private final AtomicLong lastWarnedSize = new AtomicLong();
@@ -89,14 +72,9 @@ public class InfinispanStorage implements Storage {
     }
 
     public InfinispanStorage(DefaultCacheManager defaultCacheManager, long maxTtlSeconds, long sizeWarningThreshold) {
-        this(defaultCacheManager, maxTtlSeconds, sizeWarningThreshold, DEFAULT_SIZE_CHECK_INTERVAL);
-    }
-
-    public InfinispanStorage(DefaultCacheManager defaultCacheManager, long maxTtlSeconds, long sizeWarningThreshold, int sizeCheckInterval) {
         this.defaultCacheManager = defaultCacheManager;
         this.maxTtlSeconds = maxTtlSeconds;
         this.sizeWarningThreshold = sizeWarningThreshold;
-        this.sizeCheckInterval = Math.max(1, sizeCheckInterval);
     }
 
     private ConcurrentMap<String, KeyValue> getCache() {
@@ -160,7 +138,7 @@ public class InfinispanStorage implements Storage {
         Cache<String, String> cache = getTokenItemCache();
 
         Map<String, String> result = new HashMap<>(legacyMapItems(serviceId, mapKey));
-        for (String key : keysOf(cache)) {
+        for (String key : cache.keySet()) {
             if (!key.startsWith(prefix)) continue;
             String value = cache.get(key);
             if (value != null) {
@@ -179,7 +157,7 @@ public class InfinispanStorage implements Storage {
         Map<String, Map<String, String>> result = new HashMap<>();
         getAllLegacyMaps(serviceId).forEach((legacyMapKey, items) -> result.put(legacyMapKey, new HashMap<>(items)));
 
-        for (String key : keysOf(cache)) {
+        for (String key : cache.keySet()) {
             if (!key.startsWith(prefix)) continue;
             String[] mapAndItem = decodeAfterService(key, prefix.length());
             if (mapAndItem == null) {
@@ -196,11 +174,6 @@ public class InfinispanStorage implements Storage {
 
     /**
      * The pre-cutover items of one map, or empty when there are none.
-     * <p>
-     * The {@code cache-list} endpoints are a public API, so their callers are not only the personal access
-     * token code. Overlaying the frozen layout underneath the per-item one keeps those callers' pre-upgrade
-     * data visible instead of appearing to have been deleted by the upgrade; the per-item values win on a
-     * collision, because that is where every write has gone since.
      *
      * @deprecated goes away with the legacy read path, at which point the overlay goes with it.
      */
@@ -322,22 +295,13 @@ public class InfinispanStorage implements Storage {
         removeNonRelevant(serviceId, mapKey, value -> isExpiredRule(value, now));
     }
 
-    /**
-     * Per-item, best-effort cleanup. With native expiration this is a safety net rather than the primary
-     * mechanism, so it takes no lock: each removal is a compare-and-remove against the value that was read,
-     * and two operators (or two nodes) running it at once simply race harmlessly.
-     * <p>
-     * An entry whose value cannot be interpreted is deliberately kept rather than thrown on. Aborting the
-     * batch would let one poison record block cleanup of the whole map, every cycle - which is how this
-     * silently failed before - and dropping it would un-revoke a token on the strength of a parse error.
-     */
     private void removeNonRelevant(String serviceId, String mapKey, Predicate<String> nonRelevant) {
         String prefix = encodeMapPrefix(serviceId, mapKey);
         Cache<String, String> cache = getTokenItemCache();
 
         int inspected = 0;
         int removed = 0;
-        for (String key : keysOf(cache)) {
+        for (String key : cache.keySet()) {
             if (!key.startsWith(prefix)) continue;
             String value = cache.get(key);
             if (value == null) continue;
@@ -372,36 +336,26 @@ public class InfinispanStorage implements Storage {
         }
     }
 
-    // ---------------------------------------------------------------------------------------------------
-    // expiration
-    // ---------------------------------------------------------------------------------------------------
-
     /**
      * @return the lifespan to store the entry with, in seconds; {@link #NO_EXPIRY} for an entry that is
-     *         stored without expiration, and zero or less for one already past its retention, which must be
-     *         removed rather than stored.
+     * stored without expiration, and zero or less for one already past its retention, which must be
+     * removed rather than stored.
      */
     private long resolveTtlSeconds(String mapKey, KeyValue toCreate) {
         Long requested = toCreate.getTtlSeconds();
         if (requested != null) {
-            // the client computed it against its own clock, which is the authoritative one for token expiry
+            log.debug("Requested ttl seconds {} for map key {}", requested, mapKey);
             return Math.min(requested, maxTtlSeconds);
         }
 
         if (!isRevocationMapKey(mapKey)) {
-            // An arbitrary map, written through the public cache-list API by something that is not the
-            // personal access token code. Those entries have never expired, and quietly dropping another
-            // component's data after 90 days is not this change's business: the bound exists for the
-            // revocation maps, which are the ones that actually grow. A caller that wants an expiry can ask
-            // for one with ttlSeconds.
+            log.debug("An arbitrary map, written through the public cache-list API. This entry will never expire.");
             return NO_EXPIRY;
         }
 
         Long derived = deriveTtlSeconds(mapKey, toCreate.getValue());
         if (derived == null) {
-            // A revocation record whose own expiry this service cannot read. The ceiling is the right
-            // fallback rather than "never expire" - a personal access token cannot live longer than that, so
-            // nothing that could still matter is lost by it.
+            log.debug("A revocation record whose own expiry this service cannot read. Falling back to the maximum retention {}", maxTtlSeconds);
             return maxTtlSeconds;
         }
         return Math.min(derived, maxTtlSeconds);
@@ -430,14 +384,10 @@ public class InfinispanStorage implements Storage {
                 return Duration.ofMillis(relevantUntil - System.currentTimeMillis()).getSeconds();
             }
         } catch (JsonProcessingException | NumberFormatException | ArithmeticException e) {
-            log.debug("Cannot derive the expiration of an item of map {}, falling back to the maximum retention", mapKey, e);
+            log.debug("Cannot derive the expiration of an item of map {}", mapKey);
         }
         return null;
     }
-
-    // ---------------------------------------------------------------------------------------------------
-    // key encoding
-    // ---------------------------------------------------------------------------------------------------
 
     /**
      * {@code len(serviceId)|serviceId + len(mapKey)|mapKey + itemKey}.
@@ -482,27 +432,8 @@ public class InfinispanStorage implements Storage {
         return new String[]{key.substring(start, end), key.substring(end)};
     }
 
-    /**
-     * Reading the key set and then fetching each value keeps lambdas out of the cache API. Doing this with
-     * {@code stream()} makes Infinispan marshal the lambda, which is both slower and harder to support - see
-     * {@code org.infinispan.marshall.core.LambdaMarshaller}.
-     */
-    private Iterable<String> keysOf(Cache<String, String> cache) {
-        return cache.keySet();
-    }
-
-    // ---------------------------------------------------------------------------------------------------
-    // observability
-    // ---------------------------------------------------------------------------------------------------
-
-    /**
-     * Operators need to see the revocation store growing before it becomes an incident. The size is sampled
-     * every {@code sizeCheckInterval} writes rather than read on each one, because {@code size()} can walk the
-     * persistent store; the warning then fires at most once per doubling, so a revocation burst cannot flood
-     * the log with the very message saying the store is busy.
-     */
     private void warnIfStoreTooLarge(Cache<String, String> cache) {
-        if (writeCounter.incrementAndGet() % sizeCheckInterval != 0) {
+        if (writeCounter.incrementAndGet() % DEFAULT_SIZE_CHECK_INTERVAL != 0) {
             return;
         }
 
@@ -529,12 +460,6 @@ public class InfinispanStorage implements Storage {
 
     /**
      * Size of the revocation store as of the last sample, or -1 before the first one.
-     * <p>
-     * Sampled on write rather than read on demand, so a metrics scrape costs nothing and cannot walk the
-     * persistent store. The consequence is that the value goes stale while no revocations are being made -
-     * during which the store can only shrink, as entries expire. This is a secondary channel: ZAAS and the
-     * caching service expose only health and info on actuator by default, so the catalogued warning is what
-     * most sites will actually see.
      */
     public long getLastObservedRevocationStoreSize() {
         return lastObservedSize.get();

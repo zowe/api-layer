@@ -66,37 +66,23 @@ public class InfinispanConfig implements InitializingBean {
     private static final String ZWE_HAINSTANCE_ID = "ZWE_haInstance_id";
     public static final String CACHE_ZOWE = "zoweCache";
 
-    /** @deprecated defined for previous-release peers only; nothing on this node takes it. */
+    /** @deprecated only for the legacy cache for personal access tokens. */
     @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
 
     /**
-     * The pre-cutover revocation store: one cache entry per <em>map</em>, holding the whole map as its value.
-     * Frozen and read-only from this release on - it is only consulted for personal access tokens issued
-     * before the cutover, and it is removed together with the legacy read path.
+     * legacy cache for personal access tokens
      *
      * @deprecated superseded by {@link #CACHE_ZOWE_INVALIDATED_TOKEN_ITEM}.
      */
     @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     public static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
 
-    /**
-     * The revocation store: one cache entry per item, with native per-entry expiration.
-     * <p>
-     * Deliberately a new cache name rather than a reuse of {@link #CACHE_ZOWE_INVALIDATED_TOKEN}: the two
-     * hold different value types, and a previous-release node scanning a cache that mixed them would fail
-     * deserialization and reject every personal access token. An older node is simply unaware of this name.
-     */
     public static final String CACHE_ZOWE_INVALIDATED_TOKEN_ITEM = "zoweInvalidatedTokenItemCache";
 
     private static final long SMALL_CACHE_SIZE = 10;
     private static final long BIG_CACHE_SIZE = 1000;
 
-    /**
-     * Ceiling for any entry of the revocation store. A personal access token lives at most 90 days and a
-     * revocation rule stops being relevant after the same period, so nothing in that cache can legitimately
-     * need longer.
-     */
     private static final Duration REVOCATION_MAX_TTL = Duration.ofDays(PatRevocationStore.RULE_RETENTION_DAYS);
 
     @Value("${caching.storage.infinispan.initialHosts:}")
@@ -249,12 +235,6 @@ public class InfinispanConfig implements InitializingBean {
         return builder;
     }
 
-    /**
-     * Same replicated, persisted shape as {@link #getDistributedCacheConfig()}, plus an entry-count bound.
-     * Bounding is only safe - and only meaningful - with the per-item layout: the soft-index file store is
-     * write-through (passivation is off by default), so evicting an entry drops only the in-memory copy and a
-     * later read falls back to disk. Expiration itself is per entry, set on the write.
-     */
     private ConfigurationBuilder getRevocationCacheConfig() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
@@ -330,7 +310,7 @@ public class InfinispanConfig implements InitializingBean {
      * read-modify-write of the previous layout; with one entry per item every write is a single atomic
      * {@code put} and every removal a compare-and-remove, so nothing needs cluster-wide mutual exclusion.
      * <p>
-     * It is still <em>defined</em>, for one release only. {@code defineLock} creates the internal replicated
+     * It is still <em>defined</em> until v4 release. {@code defineLock} creates the internal replicated
      * {@code org.infinispan.LOCKS} cache, previous-release nodes in the same cluster still take the lock, and
      * a cluster where only some members define that internal cache is a configuration we would otherwise
      * have to prove safe rather than simply avoid. Removed in the release that drops the legacy read path,
@@ -342,9 +322,9 @@ public class InfinispanConfig implements InitializingBean {
             ? lazyCacheManager.getOriginal() : (EmbeddedCacheManager) cacheManager;
         try {
             EmbeddedClusteredLockManagerFactory.from(cm).defineLock(LOCK_ZOWE_INVALIDATED);
-        } catch (AvailabilityException | ClusteredLockException e) {
-            // Nothing on this node needs it, so this is not fatal here - it only matters to a
-            // previous-release peer, which defines the lock itself anyway.
+            } catch (AvailabilityException | ClusteredLockException e) {
+                // Nothing on this node needs it, so this is not fatal here - it only matters to a
+                // previous-release peer, which defines the lock itself anyway.
             log.debug("Cannot define the legacy clustered lock", e);
         }
     }

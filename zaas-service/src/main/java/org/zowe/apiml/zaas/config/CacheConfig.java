@@ -25,9 +25,7 @@ import org.ehcache.impl.config.store.disk.OffHeapDiskStoreConfiguration;
 import org.ehcache.impl.config.store.disk.OffHeapDiskStoreProviderConfiguration;
 import org.ehcache.impl.copy.IdentityCopier;
 import org.ehcache.impl.copy.SerializingCopier;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
 import org.ehcache.jsr107.EhcacheCachingProvider;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -42,7 +40,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.cache.CompositeKeyGenerator;
 import org.zowe.apiml.cache.CompositeKeyGeneratorWithoutLast;
@@ -220,32 +217,10 @@ public class CacheConfig {
         return new CacheUtils();
     }
 
-    /**
-     * The revocation lookup gets its own client, with explicit connect and read timeouts. It is on every
-     * personal access token request and is the only synchronous dependency that path has in a split
-     * deployment, so a caching service that is merely slow - rather than down - would otherwise hold a ZAAS
-     * request thread for every personal access token user at once. The shared client's timeouts are sized for
-     * general traffic, not for a call made on every request.
-     */
     @Bean
     @ConditionalOnMissingBean(name = "modulithConfig")
-    public CachingClient cachingServiceClient(
-        GatewayClient gatewayClient,
-        @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate,
-        @Qualifier("secureHttpClientWithKeystore") ObjectProvider<CloseableHttpClient> secureHttpClient,
-        @Value("${apiml.security.personalAccessToken.revocationLookupTimeoutMillis:2000}") int revocationLookupTimeoutMillis
-    ) {
-        CloseableHttpClient httpClient = secureHttpClient.getIfAvailable();
-        if (httpClient == null) {
-            log.debug("No HTTP client with a keystore is available, the revocation lookup shares the general client");
-            return new CachingServiceClient(restTemplate, gatewayClient);
-        }
-        var factory = new HttpComponentsClientHttpRequestFactory(httpClient);
-        var timeout = Duration.ofMillis(revocationLookupTimeoutMillis);
-        factory.setConnectTimeout(timeout);
-        factory.setConnectionRequestTimeout(timeout);
-        factory.setReadTimeout(timeout);
-        return new CachingServiceClient(restTemplate, new RestTemplate(factory), gatewayClient);
+    public CachingClient cachingServiceClient(GatewayClient gatewayClient, @Qualifier("restTemplateWithKeystore") RestTemplate restTemplate) {
+        return new CachingServiceClient(restTemplate, gatewayClient);
     }
 
     @Bean

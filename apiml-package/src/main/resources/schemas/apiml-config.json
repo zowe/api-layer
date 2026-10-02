@@ -519,12 +519,6 @@
                                     "minimum": 0,
                                     "default": 300
                                 },
-                                "revocationLookupTimeoutMillis": {
-                                    "type": "integer",
-                                    "description": "Connect and read timeout for the revocation lookup made on every personal access token request. Bounded separately from the shared HTTP client so that a slow Caching Service cannot hold a request thread per personal access token user.",
-                                    "minimum": 1,
-                                    "default": 2000
-                                },
                                 "revocationLookupFailureThreshold": {
                                     "type": "integer",
                                     "description": "How many consecutive Caching Service failures put the revocation lookup into fail-fast mode, so that request threads return instead of each waiting out a timeout. Personal access tokens are rejected either way while the Caching Service is down.",

@@ -216,9 +216,7 @@ caller (compare-and-set on the last attempt time); every other caller is served 
 at once rather than waiting behind a lock for the store. A failed attempt is retried only after a
 cooldown (60s, as for the cutover epoch), so a store that is down or slow costs one read per interval,
 not one per request. With no salt known yet (a cold start), callers do have to wait for the attempt in
-progress, but after a failure they fail at once until the cooldown passes. The read goes through the
-short-timeout lookup client (`revocationLookupTimeoutMillis`), not the shared client and its 60s
-socket timeout.
+progress, but after a failure they fail at once until the cooldown passes. 
 
 **A refresh interval bounds cross-node divergence, not data loss.** If the salt is ever actually
 *regenerated* (the store was wiped, not merely a memo expiring), every hash computed under the old

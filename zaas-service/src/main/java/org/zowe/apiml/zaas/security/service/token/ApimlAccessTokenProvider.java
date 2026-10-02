@@ -376,8 +376,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
         long epoch = getCutoverEpoch();
         if (epoch == EPOCH_UNRESOLVED) {
-            // correct, merely slow - and loud, because a rate that never decays is the one way this could
-            // quietly become permanent
             return true;
         }
         if (System.currentTimeMillis() >= epoch + LEGACY_SUNSET.toMillis()) {

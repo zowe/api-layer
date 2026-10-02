@@ -66,10 +66,6 @@ class ApimlExceptionHandlerTest {
 
         }
 
-        /**
-         * The limit is enforced in the provider so that no issuance path can bypass it, which means the only
-         * place the caller learns the number is this handler's message.
-         */
         @Nested
         class WhenAccessTokenTooManyScopesException {
 
@@ -85,11 +81,6 @@ class ApimlExceptionHandlerTest {
             }
         }
 
-        /**
-         * Without this the personal access token endpoints answer 500 with a stack trace for something that is
-         * simply the revocation store being unreachable - which is also how a caching service too old to serve
-         * point lookups surfaces.
-         */
         @Nested
         class WhenCachingServiceClientException {
 

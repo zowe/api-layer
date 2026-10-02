@@ -108,19 +108,6 @@ class CachingServiceClientTest {
         }
 
         @Test
-        void readUsesTheShortTimeoutLookupClient() {
-            RestTemplate lookupRestTemplate = mock(RestTemplate.class);
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", lookupRestTemplate);
-            ResponseEntity<CachingServiceClient.KeyValue> responseEntity = mock(ResponseEntity.class);
-            doReturn(true).when(responseEntity).hasBody();
-            doReturn(new CachingServiceClient.KeyValue(keyToRead, "Wonder")).when(responseEntity).getBody();
-            doReturn(responseEntity).when(lookupRestTemplate).exchange(eq(urlBase + "/" + keyToRead), eq(HttpMethod.GET), any(HttpEntity.class), eq(CachingServiceClient.KeyValue.class));
-
-            assertThat(underTest.read(keyToRead).getValue(), is("Wonder"));
-            verifyNoInteractions(restTemplate);
-        }
-
-        @Test
         void readWithoutProblem() throws CachingServiceClientException {
             ResponseEntity<CachingServiceClient.KeyValue> responseEntity = mock(ResponseEntity.class);
             doReturn(true).when(responseEntity).hasBody();
@@ -427,7 +414,7 @@ class CachingServiceClientTest {
         void givenRepeatedFailures_thenFurtherLookupsAreNotEvenAttempted() {
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
                 .thenThrow(new RestClientException("the store is not answering"));
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
 
             for (int i = 0; i < 5; i++) {
                 assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
@@ -441,7 +428,7 @@ class CachingServiceClientTest {
 
         @Test
         void givenTheCircuitHasBeenOpenLongEnough_thenOneLookupIsLetThroughAgain() {
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
             ReflectionTestUtils.setField(underTest, "lookupCircuitOpenedAt",
                 new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis() - 60_000L));
             ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
@@ -459,7 +446,7 @@ class CachingServiceClientTest {
          */
         @Test
         void givenTheCircuitIsHalfOpen_thenRequestsDuringTheProbeStillFailFast() {
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
             ReflectionTestUtils.setField(underTest, "lookupCircuitOpenedAt",
                 new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis() - 60_000L));
             ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
@@ -476,7 +463,7 @@ class CachingServiceClientTest {
 
         @Test
         void givenTheHalfOpenProbeFails_thenTheCircuitOpensAgain() {
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
             ReflectionTestUtils.setField(underTest, "consecutiveLookupFailures", new java.util.concurrent.atomic.AtomicInteger(5));
             ReflectionTestUtils.setField(underTest, "lookupCircuitOpenedAt",
                 new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis() - 60_000L));
@@ -498,7 +485,7 @@ class CachingServiceClientTest {
         void givenTheCachingServiceRejectsTheBatchSize_thenTheMismatchIsCatalogued() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
             ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
             byte[] body = ("{\"messages\":[{\"messageContent\":\"Payload '3' is not valid: '"
                 + CachingServiceClient.TOO_MANY_KEYS_MESSAGE + ", the limit is 2'.\"}]}").getBytes(StandardCharsets.UTF_8);
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
@@ -515,7 +502,7 @@ class CachingServiceClientTest {
         void givenSomeOtherBadRequest_thenNoBatchSizeMismatchIsReported() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
             ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
                 .thenThrow(HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "storage has no map support", null,
                     "storage has no map support".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
@@ -527,7 +514,7 @@ class CachingServiceClientTest {
 
         @Test
         void givenASuccessfulLookup_thenTheFailureCountIsReset() {
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
             ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
             when(response.getBody()).thenReturn(Map.of());
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
@@ -548,7 +535,7 @@ class CachingServiceClientTest {
          */
         @Test
         void givenATransportFailure_thenTheLookupIsRetriedOnce() {
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
             ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
             when(response.getBody()).thenReturn(Map.of("invalidTokens", Map.of("hash", "record")));
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
@@ -567,7 +554,7 @@ class CachingServiceClientTest {
         void givenAMissingEndpoint_thenTheCircuitStaysClosed() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
             ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
                 .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such endpoint", null, null, null));
 
@@ -608,22 +595,6 @@ class CachingServiceClientTest {
             assertEquals("record", underTest.readAllLegacyMaps().get("invalidTokens").get("hash"));
         }
 
-        /**
-         * The legacy read is on the request path for every pre-cutover token, so the shared client's long
-         * timeouts must not apply to it.
-         */
-        @Test
-        void thenItUsesTheShortTimeoutLookupClient() {
-            RestTemplate lookupRestTemplate = mock(RestTemplate.class);
-            ReflectionTestUtils.setField(underTest, "lookupRestTemplate", lookupRestTemplate);
-            ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
-            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
-            when(response.getBody()).thenReturn(Map.of());
-            when(lookupRestTemplate.exchange(eq(legacyUrl), eq(HttpMethod.GET), isNull(), eq(responseType))).thenReturn(response);
-
-            assertTrue(underTest.readAllLegacyMaps().isEmpty());
-            verifyNoInteractions(restTemplate);
-        }
 
         @Test
         void givenTheLookupCircuitIsOpen_thenItIsNotEvenAttempted() {

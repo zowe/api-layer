@@ -50,11 +50,7 @@ class InfinispanCacheConfigurationTest {
         assertEquals(CacheMode.REPL_SYNC, config.clustering().cacheMode());
     }
 
-    /**
-     * A cache that is not registered here is not an error at runtime: DefaultCacheManager.getCache would
-     * silently create it from the default configuration, which is replicated and persisted to disk. The
-     * revocation store has to be the bounded definition, so assert it rather than assume it.
-     */
+
     @Test
     void testRevocationCacheIsRegisteredAndBounded() {
         assertTrue(cacheManager.getCacheNames().contains("zoweInvalidatedTokenItemCache"));
@@ -64,7 +60,6 @@ class InfinispanCacheConfigurationTest {
         assertEquals(CacheMode.REPL_SYNC, config.clustering().cacheMode());
         assertEquals(100000L, config.memory().maxCount());
         assertFalse(config.persistence().stores().isEmpty(), "eviction must fall back to the store, not lose entries");
-        // expiration is set per entry on the write, not cache-wide
         assertEquals(-1, config.expiration().lifespan());
     }
 
@@ -79,13 +74,11 @@ class InfinispanCacheConfigurationTest {
         assertEquals(maxCount, config.memory().maxCount());
         assertEquals(expiration.toMillis(), config.expiration().lifespan());
 
-        //When a new cache is defined, the test fails as reminder to cover the new configuration with a test
         assertEquals(12, cacheManager.getCacheNames().size());
     }
 
     private static Stream<Arguments> cacheConfigurationsForValidation() {
         return Stream.of(
-            //cacheName, maxCount, lifespan
             arguments("validatedJwtTokens", 1000L, Duration.ofMinutes(1)),
             arguments("zosmfAuthenticationEndpoint", 10L, Duration.ofHours(1)),
             arguments("zosmfInfo", 10L, Duration.ofHours(1)),
