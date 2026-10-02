@@ -52,7 +52,7 @@ public class ApiMediationServiceConfig {
                     URI uri = URI.create(url);
                     String userInfo = uri.getRawUserInfo();
 
-                    return new URI(uri.getScheme(), userInfo.replaceAll(":.*", ":*****"), uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+                    return new URI(uri.getScheme(), userInfo == null ? userInfo : userInfo.replaceAll(":.*", ":*****"), uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
                 } catch (IllegalArgumentException | URISyntaxException e) {
                     return url;
                 }
