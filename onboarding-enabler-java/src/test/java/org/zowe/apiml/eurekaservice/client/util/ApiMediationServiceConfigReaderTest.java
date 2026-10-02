@@ -10,24 +10,27 @@
 
 package org.zowe.apiml.eurekaservice.client.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockServletContext;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import javax.servlet.ServletContext;
+
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ApiMediationServiceConfigReaderTest {
 
@@ -54,7 +57,7 @@ class ApiMediationServiceConfigReaderTest {
     }
 
     @Test
-    void readConfigurationWithWrongFormat() throws ServiceDefinitionException {
+    void readConfigurationWithWrongFormat() {
         String file = "/bad-format-of-service-configuration.yml";
 
         ApiMediationServiceConfigReader apimlConfigReader = new ApiMediationServiceConfigReader();
@@ -124,6 +127,34 @@ class ApiMediationServiceConfigReaderTest {
 
         config = getApiMediationServiceConfigFromFile(null, properties);
         assertNull(config);
+    }
+
+    @Test
+    void testToStringContent() throws ServiceDefinitionException {
+        Map<String, String> properties = new HashMap<>();
+        ApiMediationServiceConfig config = getApiMediationServiceConfigFromFile("/service-configuration.yml", properties);
+        String toString = config.toString();
+
+        assertTrue(StringUtils.isNotBlank(toString));
+
+        assertTrue(toString.contains("keyPassword=*****"));
+        assertTrue(toString.contains("keyStorePassword=*****"));
+        assertTrue(toString.contains("trustStorePassword=*****"));
+        assertTrue(toString.contains("discoveryServiceUrls=[http://eureka:*****"));
+
+        config.setDiscoveryPassword(null);
+        config.getSsl().setKeyPassword(new char[]{});
+        config.getSsl().setKeyStorePassword(null);
+        config.getSsl().setTrustStorePassword(null);
+
+        toString = config.toString();
+
+        assertTrue(StringUtils.isNotBlank(toString));
+
+        assertTrue(toString.contains("keyPassword=null"));
+        assertTrue(toString.contains("keyStorePassword=null"));
+        assertTrue(toString.contains("trustStorePassword=null"));
+        assertTrue(toString.contains("discoveryServiceUrls=[http://eureka:*****"));
     }
 
     private ApiMediationServiceConfig getApiMediationServiceConfigFromFile(String fileName, Map<String, String> properties) throws ServiceDefinitionException {
@@ -199,7 +230,6 @@ class ApiMediationServiceConfigReaderTest {
         return context;
     }
 
-
     @Test
     void testReadConfigurationFile_Internal_file_name_null() throws ServiceDefinitionException {
 
@@ -229,8 +259,8 @@ class ApiMediationServiceConfigReaderTest {
         String additionalFileName = "/additional-service-configuration_ip-address-null_bad-baseUrl.yml";
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
-        
-        Exception exception = assertThrows(ServiceDefinitionException.class, 
+
+        Exception exception = assertThrows(ServiceDefinitionException.class,
             () -> apiMediationServiceConfigReader.loadConfiguration(internalFileName, additionalFileName));
 
         assertThat(exception.getCause(), instanceOf(MalformedURLException.class));
@@ -242,9 +272,10 @@ class ApiMediationServiceConfigReaderTest {
 
         ApiMediationServiceConfigReader apiMediationServiceConfigReader = new ApiMediationServiceConfigReader();
 
-        Exception exception = assertThrows(ServiceDefinitionException.class, 
+        Exception exception = assertThrows(ServiceDefinitionException.class,
             () -> apiMediationServiceConfigReader.loadConfiguration(internalFileName, null));
 
         assertThat(exception.getCause(), instanceOf(UnknownHostException.class));
     }
+
 }

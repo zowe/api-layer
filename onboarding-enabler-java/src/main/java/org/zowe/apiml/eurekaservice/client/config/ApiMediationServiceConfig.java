@@ -10,14 +10,24 @@
 
 package org.zowe.apiml.eurekaservice.client.config;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.Singular;
+import lombok.ToString;
 import org.zowe.apiml.config.ApiInfo;
 import org.zowe.apiml.eurekaservice.client.util.ApiMediationServiceConfigReader;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 
 import javax.annotation.PostConstruct;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
@@ -26,7 +36,30 @@ import java.util.Map;
 public class ApiMediationServiceConfig {
 
     @Singular
+    @ToString.Exclude
     private List<String> discoveryServiceUrls;
+
+    @ToString.Include(name = "discoveryServiceUrls")
+    private String maskedDiscoveryServiceUrls() {
+        if (discoveryServiceUrls == null || discoveryServiceUrls.isEmpty()) {
+            return "null";
+        }
+
+        return discoveryServiceUrls.stream()
+            .filter(Objects::nonNull)
+            .map(url -> {
+                try {
+                    URI uri = URI.create(url);
+                    String userInfo = uri.getRawUserInfo();
+
+                    return new URI(uri.getScheme(), userInfo.replaceAll(":.*", ":*****"), uri.getHost(), uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment()).toString();
+                } catch (IllegalArgumentException | URISyntaxException e) {
+                    return url;
+                }
+            })
+            .collect(Collectors.toList())
+            .toString();
+    }
 
     /**
      * Eureka basic authentication user id. It is used only as a fallback when TLS validation is disabled
@@ -280,4 +313,5 @@ public class ApiMediationServiceConfig {
     public void setIpAddressIfNotPresents ()throws ServiceDefinitionException {
         ApiMediationServiceConfigReader.setServiceIpAddress(this);
     }
+
 }
