@@ -13,10 +13,13 @@ package org.zowe.apiml.product.logging;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 
 /**
- * Appender which is conditional upon the debugging mode and provided location to store the files in.
+ * Appender which is conditional upon the file logging being enabled (apiml.logging.toFile.enabled) and provided location to store the files in.
  * The conditionality is checked on the start of the Appender to limit the overhead.
  */
 public class ApimlRollingFileAppender<E> extends RollingFileAppender<E> { // NOSONAR
+
+    private static final String LOG_TO_FILE_CONTEXT_PROPERTY = "LOG_TO_FILE";
+    private static final String LOG_TO_FILE_PROPERTY = "apiml.logging.toFile.enabled";
 
     @Override
     public void start() {
@@ -26,13 +29,14 @@ public class ApimlRollingFileAppender<E> extends RollingFileAppender<E> { // NOS
     }
 
     /**
-     * Verifies that the appender should be enabled and that there is a location to use within the zowe instance.
+     * Verifies that the file logging is enabled and that there is a location to use within the zowe instance.
+     * The enabled flag is taken from the Logback context (bound from the Spring property by logback-spring.xml).
      * @return true if everything is ok, false otherwise.
      */
     protected boolean verifyStartupParams() {
-        String debug = System.getProperty("spring.profiles.active");
-        if (debug == null || !debug.contains("debug")) {
-            addInfo("The level isn't set to debug. File appender will be disabled.");
+        String enabled = getContext() != null ? getContext().getProperty(LOG_TO_FILE_CONTEXT_PROPERTY) : null;
+        if (!Boolean.parseBoolean(enabled)) {
+            addInfo("Logging to file isn't enabled (" + LOG_TO_FILE_PROPERTY + "). File appender will be disabled.");
             return false;
         }
 

@@ -15,6 +15,7 @@ import ch.qos.logback.core.ContextBase;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -24,52 +25,89 @@ import static org.mockito.Mockito.mock;
 
 @Slf4j
 class ApimlRollingFileAppenderTest {
+    private static final String LOGS_LOCATION_PROPERTY = "apiml.logs.location";
+
     ApimlRollingFileAppender<Object> underTest;
+    Context context;
 
     @BeforeEach
     void setUp() {
         underTest = new ApimlRollingFileAppender<>();
+        context = new ContextBase();
+        underTest.setContext(context);
+    }
+
+    @AfterEach
+    void tearDown() {
+        System.clearProperty(LOGS_LOCATION_PROPERTY);
     }
 
     @Test
-    void givenLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheParamtersAreVerified() {
-        System.setProperty("spring.profiles.active", "debug");
-        System.setProperty("apiml.logs.location", "validLocation");
+    void givenFileLoggingEnabledAndWorkspaceDirectory_whenTheApplicationStarts_thenTheParamtersAreVerified() {
+        context.putProperty("LOG_TO_FILE", "true");
+        System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
 
         boolean result = underTest.verifyStartupParams();
         assertThat(result, is(true));
     }
 
     @Test
-    void givenNullLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
-        System.setProperty("apiml.logs.location", "validLocation");
-        System.setProperty("spring.profiles.active", "");
+    void givenFileLoggingDisabledAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
+        context.putProperty("LOG_TO_FILE", "false");
+        System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
 
         boolean result = underTest.verifyStartupParams();
         assertThat(result, is(false));
     }
 
     @Test
-    void givenLogLevelAndNullWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
-        System.setProperty("apiml.logs.location", "");
-        System.setProperty("spring.profiles.active", "debug");
+    void givenFileLoggingNotConfiguredInContext_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
+        System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
 
         boolean result = underTest.verifyStartupParams();
         assertThat(result, is(false));
     }
 
     @Test
-    void givenLogLevelAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerStarts() {
-        System.setProperty("spring.profiles.active", "debug");
-        System.setProperty("apiml.logs.location", "validLocation");
+    void givenFileLoggingEnabledOnlyAsSystemProperty_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
+        System.setProperty("apiml.logging.toFile.enabled", "true");
+        System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
+        try {
+            boolean result = underTest.verifyStartupParams();
+            assertThat(result, is(false));
+        } finally {
+            System.clearProperty("apiml.logging.toFile.enabled");
+        }
+    }
+
+    @Test
+    void givenNoContext_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
+        ApimlRollingFileAppender<Object> withoutContext = new ApimlRollingFileAppender<>();
+        System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
+
+        boolean result = withoutContext.verifyStartupParams();
+        assertThat(result, is(false));
+    }
+
+    @Test
+    void givenFileLoggingEnabledAndNullWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
+        context.putProperty("LOG_TO_FILE", "true");
+        System.setProperty(LOGS_LOCATION_PROPERTY, "");
+
+        boolean result = underTest.verifyStartupParams();
+        assertThat(result, is(false));
+    }
+
+    @Test
+    void givenFileLoggingEnabledAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerStarts() {
+        context.putProperty("LOG_TO_FILE", "true");
+        System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
 
         TimeBasedRollingPolicy<Object> tbrp = new TimeBasedRollingPolicy<>();
-        Context context = new ContextBase();
         underTest.setEncoder(mock(Encoder.class));
         underTest.setName("test");
         tbrp.setContext(context);
         tbrp.setParent(underTest);
-        underTest.setContext(context);
         tbrp.setFileNamePattern("target/test-output/toto-%d.log");
         tbrp.start();
         underTest.setRollingPolicy(tbrp);

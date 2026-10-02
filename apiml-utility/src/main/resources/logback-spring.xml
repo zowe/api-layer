@@ -5,11 +5,19 @@
     <property name="MIN_INDEX" value="${rollingPolicy.minIndex:-1}"/>
     <property name="MAX_FILE_SIZE" value="${rollingPolicy.file.maxSize:-50MB}"/>
     <property name="STORAGE_LOCATION" value="${apiml.logs.location}"/>
-    <property name="LOG_TO_FILE" value="${apiml.logging.toFile.enabled:-false}"/>
-    <property name="DEBUG_ONLY_TO_FILE" value="${apiml.logging.toFile.debugOnly:-false}"/>
 
     <springProperty scope="context"
-                    name="apimlLogPattern"
+                    name="LOG_TO_FILE"
+                    source="apiml.logging.toFile.enabled"
+                    defaultValue="false"/>
+
+    <springProperty scope="context"
+                    name="DEBUG_ONLY_TO_FILE"
+                    source="apiml.logging.toFile.debugOnly"
+                    defaultValue="false"/>
+
+    <springProperty scope="context"
+                    name="APIML_LOG_PATTERN"
                     source="logging.pattern"
                     defaultValue="%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} &lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt; %X{userid:-} %-5level \(%logger{15}\) %msg%n"/>
 
@@ -30,27 +38,43 @@
     </springProfile>
 
     <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
-    <springProperty scope="context" name="apimlDebugToFileOnly" source="apiml.logging.debugToFileOnly" defaultValue="false"/>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- Debug (and lower) level messages are written to the log file only, stdout is limited to INFO and above -->
-        <if condition='Boolean.parseBoolean(property("DEBUG_ONLY_TO_FILE"))'>
-            <then>
+    <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+        <key>DEBUG_ONLY_TO_FILE</key>
+        <value>true</value>
+    </condition>
+    <if>
+        <then>
+            <!-- Debug (and lower) level messages are written to the log file only, stdout is limited to INFO and above -->
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
                 <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
                     <level>INFO</level>
                 </filter>
-            </then>
-        </if>
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
-                <pattern>${apimlLogPattern}</pattern>
-            </layout>
-        </encoder>
-    </appender>
+                <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                    <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
+                        <pattern>${APIML_LOG_PATTERN}</pattern>
+                    </layout>
+                </encoder>
+            </appender>
+        </then>
+        <else>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                    <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
+                        <pattern>${APIML_LOG_PATTERN}</pattern>
+                    </layout>
+                </encoder>
+            </appender>
+        </else>
+    </if>
 
     <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
 
-    <if condition='Boolean.parseBoolean(property("LOG_TO_FILE"))'>
+    <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+        <key>LOG_TO_FILE</key>
+        <value>true</value>
+    </condition>
+    <if>
         <then>
             <appender name="FILE" class="org.zowe.apiml.product.logging.ApimlRollingFileAppender">
                 <file>${STORAGE_LOCATION}/${logbackService:-${logbackServiceName}}.log</file>
@@ -67,21 +91,30 @@
 
                 <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
                     <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
-                        <pattern>${apimlLogPattern}</pattern>
+                        <pattern>${APIML_LOG_PATTERN}</pattern>
                     </layout>
                 </encoder>
             </appender>
         </then>
     </if>
 
-    <root level="ERROR">
-        <appender-ref ref="STDOUT"/>
-        <if condition='Boolean.parseBoolean(property("LOG_TO_FILE"))'>
-            <then>
+    <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+        <key>LOG_TO_FILE</key>
+        <value>true</value>
+    </condition>
+    <if>
+        <then>
+            <root level="ERROR">
+                <appender-ref ref="STDOUT"/>
                 <appender-ref ref="FILE"/>
-            </then>
-        </if>
-    </root>
+            </root>
+        </then>
+        <else>
+            <root level="ERROR">
+                <appender-ref ref="STDOUT"/>
+            </root>
+        </else>
+    </if>
 
     <logger name="org.zowe.apiml.opentelemetry" level="INFO" additivity="false">
         <appender-ref ref="OpenTelemetry" />
