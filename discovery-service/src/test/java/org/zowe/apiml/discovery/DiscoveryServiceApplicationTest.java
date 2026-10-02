@@ -48,7 +48,7 @@ class DiscoveryServiceApplicationTest {
         },
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
-    @ActiveProfiles("test")
+    @ActiveProfiles({"test", "debug"})
     class TomcatInitialization {
 
         @ParameterizedTest(name = "Check if {0} is initialized on startup")
