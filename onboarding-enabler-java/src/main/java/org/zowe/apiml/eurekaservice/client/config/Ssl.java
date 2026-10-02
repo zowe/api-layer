@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Data
 @AllArgsConstructor
@@ -62,7 +63,7 @@ public class Ssl {
     }
 
     private String masked(char[] password) {
-        if (password == null || password.length == 0) {
+        if (ArrayUtils.isEmpty(password)) {
             return "null";
         }
         return "*****";
