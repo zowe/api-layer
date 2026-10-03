@@ -39,6 +39,7 @@ configs:
     # can be inMemory, VSAM
     mode: inMemory
     size: 10000
+    maxQueryKeys: 66
     vsam:
       # this is required if storage mode is VSAM
       name:
@@ -48,6 +49,11 @@ configs:
         dataLocation:
         indexLocation:
       initialHosts:
+      distributedSyncTimeoutSecs: 360
+      numSegments: 256
+      revocationStore:
+        maxCount: 100000
+        sizeWarningThreshold: 50000
       jgroups:
          port:
          address:

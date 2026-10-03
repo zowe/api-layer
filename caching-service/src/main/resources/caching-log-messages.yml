@@ -149,3 +149,9 @@ messages:
         reason: "Cache is not ready to write at the moment."
         action: "Wait till initialization of cache is done. In case it is done verify the instance configuration or connectivity between multiple instances."
 
+    -   key: org.zowe.apiml.cache.revocationStoreTooLarge
+        number: ZWECS704
+        type: WARNING
+        text: "The personal access token revocation store holds %s entries, which is above the configured threshold of %s."
+        reason: "More personal access tokens have been revoked than the store was sized for. Entries expire on their own, so this usually means revocations are being created faster than they expire."
+        action: "Review how personal access tokens are being revoked. If the volume is expected, raise 'components.caching-service.storage.infinispan.revocationStore.sizeWarningThreshold' and 'components.caching-service.storage.infinispan.revocationStore.maxCount' accordingly."

@@ -18,10 +18,13 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.zowe.apiml.security.common.audit.Rauditx;
 import org.zowe.apiml.security.common.audit.RauditxService;
+import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
+import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.handler.SuccessfulAccessTokenHandler;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import org.zowe.apiml.security.common.util.JWTTestUtils;
 
@@ -42,6 +45,7 @@ class SuccessfulAccessTokenHandlerTest {
     private final TokenAuthentication dummyAuth = new TokenAuthentication(JWT_TOKEN);
     private SuccessfulAccessTokenHandler underTest;
     private AccessTokenProvider accessTokenProvider;
+    private AuthExceptionHandler authExceptionHandler;
     private MockHttpServletRequest httpServletRequest;
     private MockHttpServletResponse httpServletResponse;
 
@@ -60,20 +64,21 @@ class SuccessfulAccessTokenHandlerTest {
         httpServletRequest = new MockHttpServletRequest();
         httpServletResponse = new MockHttpServletResponse();
         accessTokenProvider = mock(AccessTokenProvider.class);
+        authExceptionHandler = mock(AuthExceptionHandler.class);
 
         rauditxService = new RauditxService();
         rauditBuilder = spy(rauditxService.new RauditxBuilder(mock(Rauditx.class)));
         rauditxService = spy(rauditxService);
         doReturn(rauditBuilder).when(rauditxService).builder();
 
-        underTest = new SuccessfulAccessTokenHandler(accessTokenProvider, rauditxService);
+        underTest = new SuccessfulAccessTokenHandler(accessTokenProvider, rauditxService, authExceptionHandler);
         httpServletRequest.setAttribute(TOKEN_REQUEST, accessTokenRequest);
     }
 
     @Nested
     class WhenCallingOnAuthentication {
         @Test
-        void thenReturn200() throws IOException {
+        void thenReturn200() throws IOException, ServletException {
             when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
             executeLoginHandler();
 
@@ -81,7 +86,7 @@ class SuccessfulAccessTokenHandlerTest {
         }
 
         @Test
-        void givenNullExpiration_thenReturn200() throws IOException {
+        void givenNullExpiration_thenReturn200() throws IOException, ServletException {
             when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
             executeLoginHandler();
 
@@ -99,6 +104,16 @@ class SuccessfulAccessTokenHandlerTest {
                 underTest.onAuthenticationSuccess(httpServletRequest, servletResponse, dummyAuth);
             });
         }
+
+        @Test
+        void givenTooManyScopes_thenDelegateToAuthExceptionHandlerInsteadOfThrowing() throws ServletException {
+            AccessTokenTooManyScopesException e = new AccessTokenTooManyScopesException("too many scopes", 64);
+            doThrow(e).when(accessTokenProvider).getToken(anyString(), anyInt(), any());
+
+            assertDoesNotThrow(() -> underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth));
+
+            verify(authExceptionHandler).handleException(eq(httpServletRequest.getRequestURI()), any(), any(), eq(e));
+        }
     }
 
     @Nested
@@ -114,7 +129,7 @@ class SuccessfulAccessTokenHandlerTest {
         }
 
         @Test
-        void whenProperInputs_thenRauditxIsGenerated() throws IOException {
+        void whenProperInputs_thenRauditxIsGenerated() throws IOException, ServletException {
             doReturn(JWT_TOKEN).when(accessTokenProvider).getToken(anyString(), anyInt(), any());
 
             underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth);
@@ -138,7 +153,7 @@ class SuccessfulAccessTokenHandlerTest {
 
     }
 
-    private void executeLoginHandler() throws IOException {
+    private void executeLoginHandler() throws IOException, ServletException {
         underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth);
     }
 }

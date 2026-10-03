@@ -31,6 +31,8 @@ task packageApiml(type: Zip) {
         from configurations.apimlServiceJar
         from "$resourceDir/bin/start.sh"
         from "$resourceDir/bin/validate.sh"
+        // the modulith embeds the caching service, so it carries the same retired cache directories
+        from "../caching-service-package/src/main/resources/bin/retire-cache.sh"
         from "../scripts/parse_jvm_args.sh"
         from "../scripts/apiml-common-scripts.sh"
     }

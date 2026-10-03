@@ -25,6 +25,7 @@ import org.springframework.http.*;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -34,6 +35,7 @@ import org.zowe.apiml.product.instance.ServiceAddress;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,6 +55,8 @@ class CachingServiceClientTest {
         underTest = new CachingServiceClient(restTemplate, gatewayClient);
         ReflectionTestUtils.setField(underTest, "CACHING_API_PATH", "/cachingservice/api/v1/cache");
         ReflectionTestUtils.setField(underTest, "CACHING_LIST_API_PATH", "/cachingservice/api/v1/cache-list/");
+        ReflectionTestUtils.setField(underTest, "CACHING_LEGACY_LIST_API_PATH", "/cachingservice/api/v1/cache-list-legacy");
+        ReflectionTestUtils.setField(underTest, "CACHING_QUERY_API_PATH", "/cachingservice/api/v1/cache-query");
     }
 
     @Nested
@@ -211,6 +215,408 @@ class CachingServiceClientTest {
             when(response.getStatusCode()).thenReturn(HttpStatus.OK);
             Map<String, Map<String, String>> parsedResponseBody = underTest.readAllMaps();
             assertTrue(parsedResponseBody.isEmpty());
+        }
+    }
+
+
+    @Nested
+    class GivenPointLookup {
+
+        String queryUrl = "https://localhost:10010/cachingservice/api/v1/cache-query";
+        String reachabilityUrl = "https://localhost:10010/cachingservice/api/v1/cache-list/apimlReachabilityProbe";
+        ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
+            new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
+            };
+
+        @Test
+        void whenTheEndpointAnswers_thenTheFoundEntriesAreReturned() {
+            ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
+            when(response.getBody()).thenReturn(Map.of("invalidTokens", Map.of("hash", "record")));
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType))).thenReturn(response);
+
+            var result = underTest.getMapItems(Map.of("invalidTokens", List.of("hash")));
+
+            assertEquals("record", result.get("invalidTokens").get("hash"));
+        }
+
+        @Test
+        void whenTheBodyIsNull_thenNothingWasFound() {
+            ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
+            when(response.getBody()).thenReturn(null);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType))).thenReturn(response);
+
+            assertTrue(underTest.getMapItems(Map.of("invalidTokens", List.of("hash"))).isEmpty());
+        }
+
+        @Test
+        void whenTheCallFails_thenItThrowsSoTheCallerCanFailClosed() {
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(new RestClientException("oops"));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+        }
+
+        /**
+         * Zowe components are installed individually, so this ZAAS can be pointed at a caching service that
+         * predates the endpoint. That must degrade to the slower whole-map read with a catalogued error, not
+         * reject every personal access token fleet-wide.
+         */
+        @ParameterizedTest
+        @CsvSource({"404", "405"})
+        void givenACachingServiceWithoutTheEndpoint_thenTheProbeReportsItAndCataloguesTheError(int status) {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatusCode.valueOf(status), "no such endpoint", null, null, null));
+
+            assertFalse(underTest.probeMapItemQuery());
+            assertFalse(underTest.supportsMapItemQuery());
+            verify(apimlLog).log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", CachingServiceClient.MIN_CACHING_SERVICE_VERSION);
+        }
+
+        /**
+         * The revocation lookup is only ever made for a personal access token, so an installation with them
+         * turned off - the default - has nothing to find out and must not be reaching out at startup.
+         */
+        @Test
+        void givenPersonalAccessTokensAreDisabled_thenNothingIsProbedAtStartup() {
+            ReflectionTestUtils.setField(underTest, "personalAccessTokenEnabled", false);
+
+            underTest.probeOnStartup();
+
+            verify(restTemplate, never()).exchange(eq(queryUrl), any(HttpMethod.class), any(), eq(String.class));
+        }
+
+        @Test
+        void givenPersonalAccessTokensAreEnabled_thenTheProbeRunsAtStartup() {
+            ReflectionTestUtils.setField(underTest, "personalAccessTokenEnabled", true);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok("{}"));
+
+            underTest.probeOnStartup();
+
+            verify(restTemplate).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
+        }
+
+        @Test
+        void givenACurrentCachingService_thenTheProbeSaysSo() {
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok("{}"));
+
+            assertTrue(underTest.probeMapItemQuery());
+            assertTrue(underTest.supportsMapItemQuery());
+        }
+
+        /**
+         * Any status other than "no such endpoint" still proves the endpoint is there, so it must not send
+         * validation down the slow path.
+         */
+        @Test
+        void givenSomeOtherError_thenTheEndpointIsStillConsideredPresent() {
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "bad request", null, null, null));
+
+            assertTrue(underTest.probeMapItemQuery());
+        }
+
+        @Test
+        void givenTheCachingServiceIsNotRegisteredYet_thenTheProbeIsInconclusiveAndStaysOptimistic() {
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(new RestClientException("connection refused"));
+
+            assertTrue(underTest.probeMapItemQuery());
+        }
+
+        /**
+         * A gateway 404 for a caching service that is not registered looks exactly like a 404 for an endpoint
+         * that does not exist. Plenty of installations run no caching service at all, and every installation
+         * looks like this for the moments before registration completes - so a version-mismatch error must be
+         * confirmed against an endpoint that has existed in every release before it is logged.
+         */
+        @ParameterizedTest
+        @CsvSource({"404", "405"})
+        void givenNoCachingServiceAtAll_thenNoVersionMismatchIsReported(int status) {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatusCode.valueOf(status), "no such service", null, null, null));
+            when(restTemplate.exchange(eq(reachabilityUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such service", null, null, null));
+
+            assertTrue(underTest.probeMapItemQuery(), "an unreachable caching service must not be called too old");
+            assertTrue(underTest.supportsMapItemQuery());
+            verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cachingServiceTooOld"), any());
+        }
+
+        /**
+         * The control endpoint answering anything at all - including a 400 for a storage mode without map
+         * support - proves the caching service is there and therefore genuinely too old.
+         */
+        @Test
+        void givenACachingServiceThatAnswersElsewhere_thenTheVersionMismatchIsConfirmed() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such endpoint", null, null, null));
+            when(restTemplate.exchange(eq(reachabilityUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "storage has no map support", null, null, null));
+
+            assertFalse(underTest.probeMapItemQuery());
+            verify(apimlLog).log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", CachingServiceClient.MIN_CACHING_SERVICE_VERSION);
+        }
+
+        @Test
+        void givenALookupAgainstNoCachingServiceAtAll_thenTheFastPathIsKept() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such service", null, null, null));
+            when(restTemplate.exchange(eq(reachabilityUrl), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such service", null, null, null));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            assertTrue(underTest.supportsMapItemQuery());
+            verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cachingServiceTooOld"), any());
+        }
+
+        @Test
+        void givenALookupThatHitsAMissingEndpoint_thenTheFallbackIsRemembered() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such endpoint", null, null, null));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            assertFalse(underTest.supportsMapItemQuery());
+            verify(apimlLog).log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", CachingServiceClient.MIN_CACHING_SERVICE_VERSION);
+        }
+
+        /**
+         * The answer has to be re-checked, so that upgrading the caching service heals the deployment on its
+         * own and so the catalogued error keeps being emitted rather than scrolling away once.
+         */
+        @Test
+        void givenTheRecheckIntervalHasPassed_thenTheEndpointIsProbedAgain() {
+            ReflectionTestUtils.setField(underTest, "mapItemQuerySupported", false);
+            ReflectionTestUtils.setField(underTest, "querySupportCheckedAt", new java.util.concurrent.atomic.AtomicLong(1L));
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(ResponseEntity.ok("{}"));
+
+            assertTrue(underTest.supportsMapItemQuery());
+        }
+
+        /**
+         * With no local caching of the answer, this lookup is on every personal access token request. Once the
+         * store has stopped answering, waiting out a timeout per request just ties up ZAAS threads - the answer
+         * is "not valid" either way, so it is better arrived at immediately.
+         */
+        @Test
+        void givenRepeatedFailures_thenFurtherLookupsAreNotEvenAttempted() {
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(new RestClientException("the store is not answering"));
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+
+            for (int i = 0; i < 5; i++) {
+                assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            }
+            clearInvocations(restTemplate);
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+
+            verify(restTemplate, never()).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType));
+        }
+
+        @Test
+        void givenTheCircuitHasBeenOpenLongEnough_thenOneLookupIsLetThroughAgain() {
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "lookupCircuitOpenedAt",
+                new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis() - 60_000L));
+            ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
+            when(response.getBody()).thenReturn(Map.of());
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType))).thenReturn(response);
+
+            assertTrue(underTest.getMapItems(Map.of()).isEmpty());
+            assertEquals(0L, ((java.util.concurrent.atomic.AtomicLong)
+                ReflectionTestUtils.getField(underTest, "lookupCircuitOpenedAt")).get(), "a successful probe closes the circuit");
+        }
+
+        /**
+         * Half open means exactly one probe. Every other request arriving while it is in flight must keep
+         * failing fast rather than piling onto a store that may still be down.
+         */
+        @Test
+        void givenTheCircuitIsHalfOpen_thenRequestsDuringTheProbeStillFailFast() {
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "lookupCircuitOpenedAt",
+                new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis() - 60_000L));
+            ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
+            when(response.getBody()).thenReturn(Map.of());
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenAnswer(invocation -> {
+                    assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+                    return response;
+                });
+
+            assertTrue(underTest.getMapItems(Map.of()).isEmpty());
+            verify(restTemplate, times(1)).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType));
+        }
+
+        @Test
+        void givenTheHalfOpenProbeFails_thenTheCircuitOpensAgain() {
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+            ReflectionTestUtils.setField(underTest, "consecutiveLookupFailures", new java.util.concurrent.atomic.AtomicInteger(5));
+            ReflectionTestUtils.setField(underTest, "lookupCircuitOpenedAt",
+                new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis() - 60_000L));
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(new RestClientException("still not answering"));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            clearInvocations(restTemplate);
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            verify(restTemplate, never()).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType));
+        }
+
+        /**
+         * The batch size is set on ZAAS and the limit on the caching service, so a mismatch can only be seen
+         * when a lookup is rejected - and it must then be named, not left to read as an outage.
+         */
+        @Test
+        void givenTheCachingServiceRejectsTheBatchSize_thenTheMismatchIsCatalogued() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+            byte[] body = ("{\"messages\":[{\"messageContent\":\"Payload '3' is not valid: '"
+                + CachingServiceClient.TOO_MANY_KEYS_MESSAGE + ", the limit is 2'.\"}]}").getBytes(StandardCharsets.UTF_8);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "bad request", null, body, StandardCharsets.UTF_8));
+            Map<String, java.util.Collection<String>> query = Map.of("invalidTokens", List.of("a"), "invalidScopes", List.of("b", "c"));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(query));
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(query));
+
+            verify(apimlLog, times(1)).log("org.zowe.apiml.zaas.pat.revocationLookupBatchTooLarge", 3);
+        }
+
+        @Test
+        void givenSomeOtherBadRequest_thenNoBatchSizeMismatchIsReported() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "storage has no map support", null,
+                    "storage has no map support".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+
+            verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.revocationLookupBatchTooLarge"), any());
+        }
+
+        @Test
+        void givenASuccessfulLookup_thenTheFailureCountIsReset() {
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+            ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
+            when(response.getBody()).thenReturn(Map.of());
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(new RestClientException("blip"))
+                .thenThrow(new RestClientException("blip"))
+                .thenReturn(response);
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            assertTrue(underTest.getMapItems(Map.of()).isEmpty());
+            assertEquals(0, ((java.util.concurrent.atomic.AtomicInteger)
+                ReflectionTestUtils.getField(underTest, "consecutiveLookupFailures")).get());
+        }
+
+        /**
+         * A read is idempotent and a dropped connection is the most common way for it to fail at all, so one
+         * retry is worth having - the short timeout is what keeps it affordable.
+         */
+        @Test
+        void givenATransportFailure_thenTheLookupIsRetriedOnce() {
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+            ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
+            when(response.getBody()).thenReturn(Map.of("invalidTokens", Map.of("hash", "record")));
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(new ResourceAccessException("connection reset"))
+                .thenReturn(response);
+
+            assertEquals("record", underTest.getMapItems(Map.of()).get("invalidTokens").get("hash"));
+            verify(restTemplate, times(2)).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType));
+        }
+
+        /**
+         * A caching service that is too old is not a failing store: it answers perfectly promptly, just with a
+         * 404. Opening the circuit for that would hide the version skew behind a different symptom.
+         */
+        @Test
+        void givenAMissingEndpoint_thenTheCircuitStaysClosed() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(underTest, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
+            when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
+                .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "no such endpoint", null, null, null));
+
+            for (int i = 0; i < 6; i++) {
+                assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
+            }
+
+            assertEquals(0, ((java.util.concurrent.atomic.AtomicInteger)
+                ReflectionTestUtils.getField(underTest, "consecutiveLookupFailures")).get());
+        }
+
+        @Test
+        void givenTheRecheckIntervalHasNotPassed_thenNothingIsProbed() {
+            ReflectionTestUtils.setField(underTest, "mapItemQuerySupported", false);
+            ReflectionTestUtils.setField(underTest, "querySupportCheckedAt",
+                new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis()));
+
+            assertFalse(underTest.supportsMapItemQuery());
+            verify(restTemplate, never()).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class));
+        }
+    }
+
+    @Nested
+    class GivenLegacyListRead {
+
+        String legacyUrl = "https://localhost:10010/cachingservice/api/v1/cache-list-legacy";
+        ParameterizedTypeReference<Map<String, Map<String, String>>> responseType =
+            new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
+            };
+
+        @Test
+        void thenItReadsItsOwnEndpointAndNotTheCurrentOne() {
+            ResponseEntity<Map<String, Map<String, String>>> response = mock(ResponseEntity.class);
+            when(response.getStatusCode()).thenReturn(HttpStatus.OK);
+            when(response.getBody()).thenReturn(Map.of("invalidTokens", Map.of("hash", "record")));
+            when(restTemplate.exchange(eq(legacyUrl), eq(HttpMethod.GET), isNull(), eq(responseType))).thenReturn(response);
+
+            assertEquals("record", underTest.readAllLegacyMaps().get("invalidTokens").get("hash"));
+        }
+
+
+        @Test
+        void givenTheLookupCircuitIsOpen_thenItIsNotEvenAttempted() {
+            ReflectionTestUtils.setField(underTest, "lookupCircuitOpenedAt",
+                new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis()));
+
+            assertThrows(CachingServiceClientException.class, () -> underTest.readAllLegacyMaps());
+            assertThrows(CachingServiceClientException.class, () -> underTest.readAllMaps());
+            verifyNoInteractions(restTemplate);
+        }
+
+        @Test
+        void givenRepeatedFailures_thenTheCircuitOpens() {
+            when(restTemplate.exchange(eq(legacyUrl), eq(HttpMethod.GET), isNull(), eq(responseType)))
+                .thenThrow(new RestClientException("the store is not answering"));
+
+            for (int i = 0; i < 5; i++) {
+                assertThrows(CachingServiceClientException.class, () -> underTest.readAllLegacyMaps());
+            }
+
+            assertNotEquals(0L, ((java.util.concurrent.atomic.AtomicLong)
+                ReflectionTestUtils.getField(underTest, "lookupCircuitOpenedAt")).get());
         }
     }
 

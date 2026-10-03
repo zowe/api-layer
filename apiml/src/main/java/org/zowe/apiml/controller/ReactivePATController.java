@@ -24,6 +24,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.cache.PatRevocationStore;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.audit.RauditxService;
@@ -60,6 +62,9 @@ public class ReactivePATController {
     private final RauditxService rauditxService;
     private final MessageService messageService;
     private final ObjectMapper mapper;
+
+    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS}}")
+    private long ruleTimestampSkewAllowanceMillis = PatRevocationStore.DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
 
     @Data
     @NoArgsConstructor
@@ -284,6 +289,9 @@ public class ReactivePATController {
                 if (rulesRequestModel != null) {
                     timeStamp = rulesRequestModel.getTimestamp();
                 }
+                if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+                    return Mono.just(ResponseEntity.badRequest().build());
+                }
 
                 tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
                 return Mono.just(ResponseEntity.noContent().build());
@@ -414,7 +422,7 @@ public class ReactivePATController {
     public Mono<ResponseEntity<String>> revokeAccessTokensForUser(@RequestBody RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
-        if (userId == null) {
+        if (userId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return badRequestForPATInvalidation();
         }
         log.debug("revokeAccessTokensForUser: userId={}", userId);
@@ -481,7 +489,7 @@ public class ReactivePATController {
     public Mono<ResponseEntity<String>> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
-        if (serviceId == null) {
+        if (serviceId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
             return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);

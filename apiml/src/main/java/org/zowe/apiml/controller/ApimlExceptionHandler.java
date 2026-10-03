@@ -12,7 +12,6 @@ package org.zowe.apiml.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -30,14 +29,17 @@ import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
 import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
+import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
 import org.zowe.apiml.security.common.error.ErrorType;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
+import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import reactor.core.publisher.Mono;
 
 import java.util.Optional;
 
 import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
 import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
 @Slf4j
@@ -56,14 +58,26 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
 
     @ExceptionHandler(AccessTokenInvalidBodyException.class)
     public Mono<Void> handleAccessTokenBodyNotValidException(ServerWebExchange exchange, AccessTokenInvalidBodyException ex) {
-        log.debug("Invalid AccessToken body format, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        log.debug("Invalid AccessToken body format, status: {}, message: {}", SC_BAD_REQUEST, ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.accessToken.invalidFormat");
     }
 
     @ExceptionHandler(AccessTokenMissingBodyException.class)
     public Mono<Void> handleAccessTokenMissingBodyException(ServerWebExchange exchange, AccessTokenMissingBodyException ex) {
-        log.debug("Missing AccessToken body, status: {}, message: {}", HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        log.debug("Missing AccessToken body, status: {}, message: {}", SC_BAD_REQUEST, ex.getMessage());
         return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.token.accessTokenBodyMissingScopes");
+    }
+
+    @ExceptionHandler(AccessTokenTooManyScopesException.class)
+    public Mono<Void> handleAccessTokenTooManyScopesException(ServerWebExchange exchange, AccessTokenTooManyScopesException ex) {
+        log.debug("Too many scopes requested for an AccessToken, status: {}, message: {}", SC_BAD_REQUEST, ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.security.token.accessTokenTooManyScopes", ex.getLimit());
+    }
+
+    @ExceptionHandler(CachingServiceClientException.class)
+    public Mono<Void> handleCachingServiceClientException(ServerWebExchange exchange, CachingServiceClientException ex) {
+        log.debug("The caching service could not be reached. Status: {}, message: {}", SC_SERVICE_UNAVAILABLE,  ex.getMessage());
+        return setBodyResponse(exchange, SC_SERVICE_UNAVAILABLE, "org.zowe.apiml.zaas.pat.cachingServiceUnavailable", ex.getMessage());
     }
 
     @ExceptionHandler(AuthenticationCredentialsNotFoundException.class)

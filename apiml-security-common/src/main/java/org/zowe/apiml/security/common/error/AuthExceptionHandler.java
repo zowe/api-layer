@@ -92,6 +92,8 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.accessToken.invalidFormat")),
         entry(AccessTokenMissingBodyException.class,
             (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.security.token.accessTokenBodyMissingScopes")),
+        entry(AccessTokenTooManyScopesException.class,
+            (ex, ctx) -> handleTooManyScopes(ctx.function, ex)),
         entry(InvalidCertificateException.class,
             (ex, ctx) -> handleInvalidCertificate(ctx.function, ex)),
         entry(ZosAuthenticationException.class,
@@ -231,6 +233,11 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
     private void handleInvalidTokenTypeException(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, InvalidTokenTypeException ex) {
         log.debug(MESSAGE_FORMAT, HttpStatus.UNAUTHORIZED.value(), ex.getMessage());
         writeErrorResponse(ErrorType.INVALID_TOKEN_TYPE.getErrorMessageKey(), HttpStatus.UNAUTHORIZED, function, requestUri);
+    }
+
+    private void handleTooManyScopes(BiConsumer<ApiMessageView, HttpStatus> function, AccessTokenTooManyScopesException ex) {
+        log.debug(MESSAGE_FORMAT, HttpStatus.BAD_REQUEST.value(), ex.getMessage());
+        writeErrorResponse("org.zowe.apiml.security.token.accessTokenTooManyScopes", HttpStatus.BAD_REQUEST, function, ex.getLimit());
     }
 
     private void handleBadRequest(String requestUri, BiConsumer<ApiMessageView, HttpStatus> function, RuntimeException ex, String messageKey) {
