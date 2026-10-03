@@ -102,13 +102,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     private static final long BATCH_LIMIT_LOG_INTERVAL_MILLIS = 5L * 60 * 1000;
     private final AtomicLong batchLimitLoggedAt = new AtomicLong();
 
-    /**
-     * A deliberately small circuit breaker over the revocation lookup, covering the point lookup and the
-     * whole-map reads alike. Once the caching service has failed this many times in a row, further lookups
-     * fail immediately instead of each waiting out a timeout. The answer is still "not valid" either way -
-     * {@code PATAuthSourceService.isValid} fails closed - but the request threads come back rather than
-     * piling up behind a store that is not answering.
-     */
     @Value("${apiml.security.personalAccessToken.revocationLookupFailureThreshold:5}")
     private int lookupFailureThreshold = 5;
 
@@ -157,16 +150,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         }
     }
 
-    /**
-     * Finds out once, at startup, whether the caching service on the other end serves point lookups, so that
-     * a version-skewed deployment shows up in the log rather than as a stack trace on the first token. A
-     * failure here is inconclusive - the caching service may simply not be registered yet - so it leaves the
-     * optimistic answer in place and the first real lookup settles it.
-     * <p>
-     * Skipped entirely when personal access tokens are disabled, which is the default. The revocation lookup
-     * is only ever made for a personal access token, so such an installation has nothing to find out - and
-     * plenty of them run no caching service at all, where probing would only produce a misleading error.
-     */
     @EventListener(ApplicationReadyEvent.class)
     public void probeOnStartup() {
         if (!personalAccessTokenEnabled) {
@@ -371,11 +354,9 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
                 markMapItemQueryUnsupportedIfConfirmed();
                 return mapItemQuerySupported;
             }
-            // any other status still proves the endpoint exists
             markMapItemQuerySupported();
             return true;
         } catch (RuntimeException e) {
-            // the caching service may simply not be registered yet; assume it is current and find out on use
             log.debug("Could not probe the caching service for point lookup support", e);
             return mapItemQuerySupported;
         }
@@ -408,8 +389,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
             return false;
         }
         mapItemQuerySupported = false;
-        // remember when this was learned, so the answer is trusted for the recheck interval rather than
-        // re-probed on the very next request
         querySupportCheckedAt.set(System.currentTimeMillis());
         apimlLog.log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", MIN_CACHING_SERVICE_VERSION);
         return true;
@@ -421,8 +400,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
                 HttpMethod.GET, new HttpEntity<>(defaultHeaders), String.class);
             return true;
         } catch (HttpStatusCodeException e) {
-            // any status other than "no such endpoint" came from the caching service itself, which is all
-            // this needs to establish - a 400 for a storage mode without map support still proves it is there
             return !isEndpointMissing(e.getStatusCode());
         } catch (RuntimeException e) {
             log.debug("The caching service is not reachable", e);
@@ -459,9 +436,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     /**
      * Reads {@link KeyValue} from Caching Service
-     * <p>
-     * Uses the short-timeout lookup client: the only reads are of the hashing salt and the cutover epoch,
-     * and both are made on the personal access token request path.
      *
      * @param key Key to read
      * @return {@link KeyValue}
@@ -514,9 +488,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         }
     }
 
-    /**
-     * Data POJO that represents entry in caching service
-     */
     @RequiredArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Data
@@ -525,10 +496,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         private final String value;
 
         /**
-         * Requested lifespan of the entry, in seconds. Computed here rather than in the caching service
-         * because this side holds the authoritative expiration of the token, on the clock that issued it -
-         * comparing a zone-less timestamp against the caching service's own clock is wrong the moment the two
-         * run in different time zones. Left null when there is nothing to derive it from.
+         * Requested lifespan of the entry, in seconds.
          */
         private Long ttlSeconds;
 

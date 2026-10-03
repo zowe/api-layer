@@ -519,18 +519,6 @@
                                     "minimum": 0,
                                     "default": 300
                                 },
-                                "revocationLookupFailureThreshold": {
-                                    "type": "integer",
-                                    "description": "How many consecutive Caching Service failures put the revocation lookup into fail-fast mode, so that request threads return instead of each waiting out a timeout. Personal access tokens are rejected either way while the Caching Service is down.",
-                                    "minimum": 1,
-                                    "default": 5
-                                },
-                                "revocationLookupCircuitOpenMillis": {
-                                    "type": "integer",
-                                    "description": "How long the revocation lookup keeps failing fast after the failure threshold is reached, before one request is let through to test whether the Caching Service is back.",
-                                    "minimum": 1,
-                                    "default": 10000
-                                },
                                 "revocationLookupBatchKeys": {
                                     "type": "integer",
                                     "description": "Most keys one revocation lookup may ask for. A token with more scopes than fit is split across several lookups rather than rejected, so a token already issued above 'maxScopes' still validates. Keep this at or below 'components.caching-service.storage.maxQueryKeys'.",

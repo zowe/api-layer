@@ -219,8 +219,6 @@ apiml:
             maxScopes: 64
             cutoverEpoch: 0
             cutoverSkewAllowanceSeconds: 300
-            revocationLookupFailureThreshold: 5
-            revocationLookupCircuitOpenMillis: 10000
             revocationLookupBatchKeys: 66
             revokeRuleSkewAllowanceMillis: 60000
         useInternalMapper: false

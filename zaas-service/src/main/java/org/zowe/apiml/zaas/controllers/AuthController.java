@@ -546,19 +546,12 @@ public class AuthController {
         return timestamp > System.currentTimeMillis() + skewAllowanceMillis;
     }
 
-    /**
-     * Without this the revocation endpoints answer 500 with a stack trace for something that is simply the
-     * revocation store being unreachable - which is also how a caching service too old to serve point
-     * lookups surfaces.
-     */
     @ExceptionHandler(CachingServiceClientException.class)
     public ResponseEntity<ApiMessageView> handleCachingServiceClientException(CachingServiceClientException e) {
         log.debug("The caching service could not be reached", e);
         ApiMessageView message = messageService
             .createMessage("org.zowe.apiml.zaas.pat.cachingServiceUnavailable", e.getMessage())
             .mapToView();
-        // pinned rather than negotiated: Jackson XML is on the classpath, so a client that sends no Accept
-        // header would otherwise get this error as XML while every other error here is JSON
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .contentType(MediaType.APPLICATION_JSON)
             .body(message);

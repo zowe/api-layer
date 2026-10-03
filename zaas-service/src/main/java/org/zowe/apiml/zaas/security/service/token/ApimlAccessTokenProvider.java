@@ -157,9 +157,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private final AtomicLong saltAttemptedAt = new AtomicLong();
     private volatile RuntimeException lastSaltFailure;
 
-    // -------------------------------------------------------------------------------------------------
-    // revocation
-    // -------------------------------------------------------------------------------------------------
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
         apimlLog.log(MessageType.DEBUG, "Invalidating PAT: ...{}", StringUtils.right(token, 15));
@@ -217,10 +214,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return secondsUntil(new Date(ruleTimestamp + Duration.ofDays(PatRevocationStore.RULE_RETENTION_DAYS).toMillis()));
     }
 
-    // -------------------------------------------------------------------------------------------------
-    // validation
-    // -------------------------------------------------------------------------------------------------
-
     public boolean isInvalidated(String token) throws CachingServiceClientException {
         byte[] salt = getSalt();
         QueryResponse parsedToken = authenticationService.parseJwtWithSignature(token);
@@ -253,11 +246,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     /**
      * Splits the scope hashes so that no single lookup can exceed the caching service's key limit.
      * <p>
-     * Chunking rather than rejecting is what keeps {@link #maxScopes} advisory: a token already issued with
-     * more scopes than the cap - which no check added now can undo - still authenticates, at the cost of an
-     * extra round trip. Each batch carries the token and user hashes too, so it is a complete answer on its
-     * own and the first match short-circuits the rest. In the overwhelmingly common case there is exactly one
-     * batch and this costs nothing.
      */
     private List<List<String>> batchScopes(List<String> hashedServiceIds) {
         int perBatch = Math.max(1, revocationLookupBatchKeys - 2); // the token and user hashes ride along
@@ -355,10 +343,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return Optional.empty();
     }
 
-    // -------------------------------------------------------------------------------------------------
-    // cutover
-    // -------------------------------------------------------------------------------------------------
-
     /**
      * A token issued after the cutover has only ever been able to be revoked into the per-item store, so it
      * is answered from there alone. An older one additionally consults the pre-cutover store, exactly as
@@ -385,13 +369,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     /**
-     * The allowance is a margin after the cutover inside which a token still counts as pre-cutover: it
-     * absorbs clock differences between the node that stamped the token and the one that set the epoch, and
-     * a configured epoch that is a little early.
+     * The allowance is a margin after the cutover inside which a token still counts as pre-cutover:
      * <p>
-     * A negative one would lower the threshold - the one direction that drops pre-cutover revocations - so
-     * it is replaced by the default. One above {@link #MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS} is capped there,
-     * which also keeps {@code Duration.toMillis} from overflowing and denying every token.
      */
     private long skewAllowanceMillis() {
         long seconds = cutoverSkewAllowanceSeconds;
@@ -441,8 +420,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
                 logCutoverEpoch("configuration", configuredCutoverEpoch);
                 return configuredCutoverEpoch;
             }
-            // Falling back is safe: a stored value is the moment this release first ran, and a minted one is
-            // now - either is at or after the real cutover, and a higher epoch only costs latency.
             apimlLog.log("org.zowe.apiml.zaas.pat.cutoverSettingRejected", "cutoverEpoch", configuredCutoverEpoch, problem);
         }
 
@@ -454,9 +431,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
         long minted = System.currentTimeMillis();
         try {
-            // create maps to putIfAbsent and a collision comes back as 409, so a spurious "absent" - which a
-            // gateway 404 for a not-yet-registered caching service looks exactly like - cannot overwrite a
-            // good value
             cachingServiceClient.create(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, Long.toString(minted)));
             apimlLog.log("org.zowe.apiml.zaas.pat.cutoverEpochMinted", minted);
             logCutoverEpoch("minted", minted);
@@ -527,15 +501,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         apimlLog.log("org.zowe.apiml.zaas.pat.legacyStoreConsulted", epoch == EPOCH_UNRESOLVED ? "unresolved" : epoch);
     }
 
-    // -------------------------------------------------------------------------------------------------
-    // maintenance
-    // -------------------------------------------------------------------------------------------------
-
-    /**
-     * With native expiration this is a safety net, not the primary mechanism, and it is reachable only from
-     * the admin endpoints. Each of the three is attempted regardless of what the others did, so one failing
-     * store does not silently skip the other two.
-     */
     public void evictNonRelevantTokensAndRules() {
         RuntimeException failure = null;
         failure = evictQuietly(() -> cachingServiceClient.evictTokens(INVALID_TOKENS_KEY), INVALID_TOKENS_KEY, failure);
@@ -560,10 +525,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
     }
 
-    // -------------------------------------------------------------------------------------------------
-    // issuance
-    // -------------------------------------------------------------------------------------------------
-
     public String getToken(String username, int expirationTime, Set<String> scopes) {
         if (scopes != null && scopes.size() > maxScopes) {
             throw new AccessTokenTooManyScopesException(
@@ -585,10 +546,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
         return false;
     }
-
-    // -------------------------------------------------------------------------------------------------
-    // salt
-    // -------------------------------------------------------------------------------------------------
 
     private String getHash(String token, byte[] salt) throws CachingServiceClientException {
         return getSecurePassword(token, salt);
@@ -634,13 +591,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             String newSalt = Base64.getEncoder().encodeToString(generateSalt());
             storeSalt(newSalt);
             if (storeHadOtherPatState) {
-                // Not a self-heal: SHA-512(salt+value) under the new salt can never match anything hashed
-                // under the old one, so every revocation that predates this moment has just stopped being
-                // enforced.
                 apimlLog.log("org.zowe.apiml.zaas.pat.saltRegenerated");
             } else {
-                // Nothing else of ours is in the store either, so this is a first start rather than a loss.
-                // Saying otherwise would greet every new adopter with an incident.
                 log.info("A hashing salt for personal access tokens was created; the caching service held none, " +
                     "which is expected on the first start after enabling personal access tokens");
             }

@@ -39,13 +39,13 @@ public class LocalCachingClient implements CachingClient {
     }
 
     @Override
-    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    @Deprecated(since = "3.6.0")
     public Map<String, Map<String, String>> readAllMaps() {
         return storage.getAllMaps(getServiceId());
     }
 
     @Override
-    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    @Deprecated(since = "3.6.0")
     public Map<String, Map<String, String>> readAllLegacyMaps() {
         return storage.getAllLegacyMaps(getServiceId());
     }
@@ -57,7 +57,6 @@ public class LocalCachingClient implements CachingClient {
 
     @Override
     public boolean supportsMapItemQuery() {
-        // in the modulith the storage is called in process, so it is always the matching version
         return true;
     }
 
