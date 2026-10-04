@@ -42,4 +42,21 @@ const getBaseUrl = (pEnvironment, pLocation) => {
     return location.href;
 };
 
+/**
+ * Return the URL of the API ML Gateway serving this UI. Used for endpoints that live
+ * on the Gateway itself rather than on the API Catalog service.
+ *
+ * @param pEnvironment {Optional} Provide environment to be used to get the Gateway URL
+ * @param pLocation {Optional} Provide custom location object
+ * @returns Valid Gateway URL without ending /
+ */
+export const getGatewayUrl = (pEnvironment, pLocation) => {
+    const environment = pEnvironment || import.meta.env;
+    if (environment.VITE_GATEWAY_URL) {
+        return environment.VITE_GATEWAY_URL;
+    }
+    const location = pLocation || window.location;
+    return `${location.protocol}//${location.host}`;
+};
+
 export default getBaseUrl;
