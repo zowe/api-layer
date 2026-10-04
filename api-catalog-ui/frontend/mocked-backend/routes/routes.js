@@ -140,6 +140,13 @@ const appRouter = (app) => {
                 break;
         }
     });
+
+    app.get('/gateway/version', (req, res) => {
+        res.status(200).send({
+            zowe: { version: '3.5.0', buildNumber: '10407', commitHash: 'mocked' },
+            apiml: { version: '3.5.19', buildNumber: '402', commitHash: 'mocked' },
+        });
+    });
 };
 
 module.exports = {
