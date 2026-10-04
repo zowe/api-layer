@@ -8,7 +8,7 @@
  * Copyright Contributors to the Zowe Project.
  */
 
-import getBaseUrl from './urls';
+import getBaseUrl, { getGatewayUrl } from './urls';
 
 describe('>>> Urls Tests', () => {
     it('should return the Gateway URL if used', () => {
@@ -70,5 +70,33 @@ describe('>>> Urls Tests', () => {
         };
 
         expect(getBaseUrl(environment, location)).toEqual('https://localhost:10014/apicatalog');
+    });
+});
+
+describe('>>> getGatewayUrl tests', () => {
+    it('should return the gateway URL from the environment when set', () => {
+        const environment = {
+            VITE_GATEWAY_URL: 'https://localhost:10010',
+        };
+
+        const location = {
+            protocol: 'https:',
+            host: 'localhost:3000',
+        };
+
+        expect(getGatewayUrl(environment, location)).toEqual('https://localhost:10010');
+    });
+
+    it('should derive the gateway URL from the location when no environment URL is set', () => {
+        const environment = {
+            VITE_GATEWAY_URL: '',
+        };
+
+        const location = {
+            protocol: 'https:',
+            host: 'localhost:10010',
+        };
+
+        expect(getGatewayUrl(environment, location)).toEqual('https://localhost:10010');
     });
 });
