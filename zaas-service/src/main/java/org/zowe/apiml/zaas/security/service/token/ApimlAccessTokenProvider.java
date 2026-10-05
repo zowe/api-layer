@@ -77,14 +77,14 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
      * enforcing revocations that are still live. The branch is unreachable before then anyway -
      * {@code parseJwtWithSignature} rejects an expired token before any store is touched.
      */
-    static final Duration LEGACY_SUNSET = Duration.ofDays(120);
+    static final Duration LEGACY_SUNSET = Duration.ofDays(100);
 
     /**
      * No genuine cutover can predate this: it is earlier than this release existed. A configured value below
      * it is a mistake - most often seconds given where milliseconds are expected - and taking it at face
      * value would stop enforcing every pre-cutover revocation.
      */
-    static final long EARLIEST_PLAUSIBLE_CUTOVER_EPOCH = Instant.parse("2026-01-01T00:00:00Z").toEpochMilli();
+    static final long EARLIEST_PLAUSIBLE_CUTOVER_EPOCH = Instant.parse("2026-09-01T00:00:00Z").toEpochMilli();
 
     /** How far ahead of this node's clock a configured cutover may lie, for clocks that disagree. */
     static final Duration CUTOVER_FUTURE_TOLERANCE = Duration.ofDays(1);
@@ -194,15 +194,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             new CachingServiceClient.KeyValue(hashedServiceId, Long.toString(timestamp), ruleTtlSeconds(timestamp)));
     }
 
-    /**
-     * The lifespan is computed here rather than in the caching service because this side holds the
-     * authoritative expiration, on the clock of the node that issued the token. The stored
-     * {@code AccessTokenContainer.expiresAt} is a zone-less {@code LocalDateTime}, so comparing it against
-     * the caching service's own clock is already wrong whenever the two run in different time zones.
-     *
-     * @return seconds until the moment, which may be zero or negative for something already past - the
-     *         caching service turns that into a removal rather than into an entry that never expires.
-     */
     private Long secondsUntil(Date moment) {
         if (moment == null) {
             return null;
@@ -222,8 +213,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         List<String> hashedServiceIds = hashScopes(parsedToken, salt);
 
         if (!cachingServiceClient.supportsMapItemQuery()) {
-            // the caching service predates the point lookup, so its whole-map read still returns the layout
-            // this token would have been revoked into; slower, but correct
             return matches(cachingServiceClient.readAllMaps(), parsedToken, hashedToken, hashedUserId, hashedServiceIds);
         }
 
@@ -245,7 +234,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     /**
      * Splits the scope hashes so that no single lookup can exceed the caching service's key limit.
-     * <p>
      */
     private List<List<String>> batchScopes(List<String> hashedServiceIds) {
         int perBatch = Math.max(1, revocationLookupBatchKeys - 2); // the token and user hashes ride along
@@ -271,11 +259,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return query;
     }
 
-    /**
-     * An <em>absent</em> record means "not revoked". A transport or storage failure is a different thing
-     * entirely and must not be confused with it: those propagate, and {@code PATAuthSourceService.isValid}
-     * turns them into "not valid".
-     */
     private boolean matches(Map<String, Map<String, String>> cacheMap, QueryResponse parsedToken,
                             String hashedToken, String hashedUserId, List<String> hashedServiceIds) {
         Map<String, Map<String, String>> maps = cacheMap == null ? Map.of() : cacheMap;
@@ -306,16 +289,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return scopes.stream().map(scope -> getHash(scope, salt)).toList();
     }
 
-    /**
-     * The presence of the key alone decides: a record under this exact token hash proves the token was
-     * revoked, whatever its value holds.
-     * <p>
-     * The record's {@code expiresAt} is deliberately not consulted. It is this token's own expiration, which
-     * {@code parseJwtWithSignature} has already enforced, so the only way comparing it could ever change the
-     * answer is by being wrong: it is a zone-less {@code LocalDateTime} written on the revoking node's zone,
-     * and read against this node's clock it makes the record look expired whenever that zone is behind this
-     * one - accepting a revoked token. An unparseable value is likewise still a revocation.
-     */
     private Optional<Boolean> checkInvalidToken(Map<String, String> invalidTokens, String tokenId) {
         if (invalidTokens == null || !invalidTokens.containsKey(tokenId)) {
             return Optional.empty();
@@ -415,7 +388,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     private long resolveCutoverEpoch() {
         if (configuredCutoverEpoch > 0) {
-            String problem = implausibleCutoverEpoch(configuredCutoverEpoch);
+            String problem = validateCutoverEpoch(configuredCutoverEpoch);
             if (problem == null) {
                 logCutoverEpoch("configuration", configuredCutoverEpoch);
                 return configuredCutoverEpoch;
@@ -450,11 +423,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return EPOCH_UNRESOLVED;
     }
 
-    /**
-     * @return why the value cannot be a real cutover, or null when it can. Only values that are certainly
-     *         wrong are caught: one that is merely somewhat too low is indistinguishable from a real one.
-     */
-    static String implausibleCutoverEpoch(long epoch) {
+    static String validateCutoverEpoch(long epoch) {
         if (epoch < EARLIEST_PLAUSIBLE_CUTOVER_EPOCH) {
             return "it is earlier than " + Instant.ofEpochMilli(EARLIEST_PLAUSIBLE_CUTOVER_EPOCH)
                 + ", before this release existed - check that it is in milliseconds, not seconds";
@@ -525,7 +494,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
     }
 
-    public String getToken(String username, int expirationTime, Set<String> scopes) {
+    public String issueToken(String username, int expirationTime, Set<String> scopes) {
         if (scopes != null && scopes.size() > maxScopes) {
             throw new AccessTokenTooManyScopesException(
                 "A personal access token was requested with " + scopes.size() + " scopes, the limit is " + maxScopes, maxScopes);
@@ -573,7 +542,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             if (keyValue != null && keyValue.getValue() != null) {
                 localSalt = keyValue.getValue();
                 if (!isBase64EncodedSalt(localSalt)) {
-                    // the salt is stored in the old way, transform to base64 value
                     localSalt = Base64.getEncoder().encodeToString(localSalt.getBytes());
                     cachingServiceClient.update(new CachingServiceClient.KeyValue(SALT_KEY, localSalt));
                 }
@@ -588,7 +556,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
         if (localSalt == null || localSalt.isEmpty()) {
             boolean storeHadOtherPatState = hasStoredCutoverEpoch();
-            String newSalt = Base64.getEncoder().encodeToString(generateSalt());
+            var newSalt = getEncodedSalt();
             storeSalt(newSalt);
             if (storeHadOtherPatState) {
                 apimlLog.log("org.zowe.apiml.zaas.pat.saltRegenerated");
@@ -602,32 +570,10 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return localSalt;
     }
 
-    /**
-     * Whether the store holds the cutover epoch, which is written independently of the salt and never
-     * removed. It is the cheapest available way to tell "first ever start" from "the store lost the salt":
-     * both leave the salt absent, but only the second leaves this behind.
-     */
     private boolean hasStoredCutoverEpoch() {
         return readCutoverEpoch() != null;
     }
 
-    /**
-     * Memoized here rather than inside {@code initializeSalt}, which is exercised directly for its
-     * create-and-migrate side effects and has to reach the store on each call. A Spring {@code @Cacheable}
-     * would not work either: {@code getHash(String)} calls this on the same bean, and a self-invocation
-     * bypasses the proxy - so the annotation would silently do nothing on exactly the path that matters.
-     * <p>
-     * The memo expires rather than lasting forever, because {@code initializeSalt} creates a salt when the
-     * store has none: after a store wipe a permanent memo would leave nodes hashing with divergent salts
-     * indefinitely, where a refresh interval bounds the divergence. The array is copied on the way out
-     * because it is handed straight to {@code MessageDigest.update} by callers.
-     * <p>
-     * Once a salt is known, no caller ever waits for the store. A due refresh is made by the one caller that
-     * claims it, while everyone else carries on with the last known salt - which is safe, because the refresh
-     * interval already accepts that much divergence. A failed refresh is retried only after
-     * {@link #SALT_RETRY_INTERVAL_MILLIS}, so a store that is down costs one read per interval rather than one
-     * per request.
-     */
     public byte[] getSalt() throws CachingServiceClientException {
         byte[] current = memoizedSalt;
         if (current == null) {
@@ -646,11 +592,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return now - attemptedAt >= SALT_RETRY_INTERVAL_MILLIS && saltAttemptedAt.compareAndSet(attemptedAt, now);
     }
 
-    /**
-     * Neither an empty result nor a failure is ever memoized. On an error the previous salt keeps being
-     * served - which stays fail closed, because the store lookup that follows is going to fail too and
-     * {@code PATAuthSourceService.isValid} denies on the exception.
-     */
     private void refreshSalt() {
         try {
             byte[] decoded = decodeSalt(initializeSalt());
@@ -663,11 +604,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
     }
 
-    /**
-     * With no salt known yet there is nothing to hash with, so callers have to wait here - but only for an
-     * attempt in progress. After a failure, callers fail at once until the retry interval has passed,
-     * rather than each queuing up for a read of their own against a store that is not answering.
-     */
     private synchronized byte[] loadFirstSalt() {
         if (memoizedSalt != null) {
             return memoizedSalt;
@@ -693,6 +629,10 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
     }
 
+    private String getEncodedSalt() {
+       return Base64.getEncoder().encodeToString(generateSalt());
+    }
+
     private byte[] decodeSalt(String saltStr) {
         if (saltStr == null) {
             return new byte[0];
@@ -710,7 +650,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             cachingServiceClient.create(new CachingServiceClient.KeyValue(SALT_KEY, salt));
         } catch (CachingServiceClientException e) {
             if (e.isKeyCollision()) {
-                log.warn("Salt initialization encountered a 409 Conflict. Verify your configuration (property 'jgroups.tcpping.initial_hosts') and using caching service '/application/health' endpoint verify that your clustering/JGroups cluster members are properly joined.");
+                log.warn("Salt initialization encountered a key collision. Verify your configuration (property 'jgroups.tcpping.initial_hosts') and using caching service '/application/health' endpoint verify that your clustering/JGroups cluster members are properly joined.");
             } else {
                 log.error("Failed to store salt due to a cache infrastructure error.", e);
             }

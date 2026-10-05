@@ -385,7 +385,7 @@ class ApimlAccessTokenProviderTest {
         scopes.add("Service1");
         scopes.add("Service2");
         when(as.createLongLivedJwtToken("user", 55, scopes)).thenReturn("token");
-        String token = accessTokenProvider.getToken("user", 55, scopes);
+        String token = accessTokenProvider.issueToken("user", 55, scopes);
         assertNotNull(token);
         assertEquals("token", token);
     }
@@ -544,11 +544,11 @@ class ApimlAccessTokenProviderTest {
         @Test
         void thenOnlyCertainlyWrongEpochsAreImplausible() {
             long now = System.currentTimeMillis();
-            assertNotNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_EPOCH - 1));
-            assertNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_EPOCH));
-            assertNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(now));
-            assertNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(now + Duration.ofHours(1).toMillis()));
-            assertNotNull(ApimlAccessTokenProvider.implausibleCutoverEpoch(now + Duration.ofDays(2).toMillis()));
+            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_EPOCH - 1));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_EPOCH));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now + Duration.ofHours(1).toMillis()));
+            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(now + Duration.ofDays(2).toMillis()));
         }
 
         @Test
@@ -765,7 +765,7 @@ class ApimlAccessTokenProviderTest {
                 .collect(Collectors.toSet());
 
             var exception = assertThrows(AccessTokenTooManyScopesException.class,
-                () -> accessTokenProvider.getToken("user", 10, scopes));
+                () -> accessTokenProvider.issueToken("user", 10, scopes));
 
             assertEquals(PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN, exception.getLimit());
             verify(as, never()).createLongLivedJwtToken(any(), anyInt(), any());
@@ -778,7 +778,7 @@ class ApimlAccessTokenProviderTest {
                 .collect(Collectors.toSet());
             when(as.createLongLivedJwtToken(eq("user"), anyInt(), any())).thenReturn("token");
 
-            assertEquals("token", accessTokenProvider.getToken("user", 10, scopes));
+            assertEquals("token", accessTokenProvider.issueToken("user", 10, scopes));
         }
 
         /**

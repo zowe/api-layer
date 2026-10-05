@@ -83,7 +83,7 @@ class ReactivePATControllerTest {
 
         when(tokenAuthentication.getName()).thenReturn(username);
         when(securityContext.getAuthentication()).thenReturn(tokenAuthentication);
-        when(tokenProvider.getToken(username, request.getValidity(), request.getScopes())).thenReturn(pat);
+        when(tokenProvider.issueToken(username, request.getValidity(), request.getScopes())).thenReturn(pat);
 
         try (MockedStatic<ReactiveSecurityContextHolder> mockedContextHolder = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
@@ -97,7 +97,7 @@ class ReactivePATControllerTest {
                 })
                 .verifyComplete();
         }
-        verify(tokenProvider).getToken(username, request.getValidity(), request.getScopes());
+        verify(tokenProvider).issueToken(username, request.getValidity(), request.getScopes());
         verify(mockRauditBuilder).success();
         verify(mockRauditBuilder, never()).failure();
         verify(mockRauditBuilder, times(1)).issue();
@@ -119,7 +119,7 @@ class ReactivePATControllerTest {
 
         when(tokenAuthentication.getName()).thenReturn(username);
         when(securityContext.getAuthentication()).thenReturn(tokenAuthentication);
-        when(tokenProvider.getToken(username, request.getValidity(), request.getScopes())).thenThrow(exception);
+        when(tokenProvider.issueToken(username, request.getValidity(), request.getScopes())).thenThrow(exception);
 
         try (var mockedContextHolder = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));
@@ -131,7 +131,7 @@ class ReactivePATControllerTest {
                 .verify();
         }
 
-        verify(tokenProvider).getToken(username, request.getValidity(), request.getScopes());
+        verify(tokenProvider).issueToken(username, request.getValidity(), request.getScopes());
         verify(mockRauditBuilder).failure();
         verify(mockRauditBuilder).issue();
         verify(mockRauditBuilder, never()).success();
@@ -454,7 +454,7 @@ class ReactivePATControllerTest {
         var mockRauditBuilder = mock(RauditxService.RauditxBuilder.class, Mockito.RETURNS_SELF);
         when(rauditxService.builder()).thenReturn(mockRauditBuilder);
         doThrow(new AccessTokenTooManyScopesException("too many", 2))
-            .when(tokenProvider).getToken(anyString(), anyInt(), any());
+            .when(tokenProvider).issueToken(anyString(), anyInt(), any());
 
         try (MockedStatic<ReactiveSecurityContextHolder> mockedContextHolder = Mockito.mockStatic(ReactiveSecurityContextHolder.class)) {
             mockedContextHolder.when(ReactiveSecurityContextHolder::getContext).thenReturn(Mono.just(securityContext));

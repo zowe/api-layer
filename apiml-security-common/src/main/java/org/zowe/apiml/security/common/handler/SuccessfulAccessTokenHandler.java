@@ -56,7 +56,7 @@ public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandle
             .alwaysLogFailures();
         try {
             AccessTokenRequest accessTokenRequest = (AccessTokenRequest) request.getAttribute(TOKEN_REQUEST);
-            String token = accessTokenProvider.getToken(username, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
+            String token = accessTokenProvider.issueToken(username, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
             response.getWriter().print(token);
             response.getWriter().flush();
             response.getWriter().close();

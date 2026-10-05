@@ -79,7 +79,7 @@ class SuccessfulAccessTokenHandlerTest {
     class WhenCallingOnAuthentication {
         @Test
         void thenReturn200() throws IOException, ServletException {
-            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
+            when(accessTokenProvider.issueToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
             executeLoginHandler();
 
             assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
@@ -87,7 +87,7 @@ class SuccessfulAccessTokenHandlerTest {
 
         @Test
         void givenNullExpiration_thenReturn200() throws IOException, ServletException {
-            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
+            when(accessTokenProvider.issueToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
             executeLoginHandler();
 
             assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
@@ -95,7 +95,7 @@ class SuccessfulAccessTokenHandlerTest {
 
         @Test
         void givenResponseNotCommitted_thenThrowIOException() throws IOException {
-            when(accessTokenProvider.getToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
+            when(accessTokenProvider.issueToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
             HttpServletResponse servletResponse = mock(HttpServletResponse.class);
             PrintWriter mockWriter = mock(PrintWriter.class);
             when(servletResponse.getWriter()).thenReturn(mockWriter);
@@ -108,7 +108,7 @@ class SuccessfulAccessTokenHandlerTest {
         @Test
         void givenTooManyScopes_thenDelegateToAuthExceptionHandlerInsteadOfThrowing() throws ServletException {
             AccessTokenTooManyScopesException e = new AccessTokenTooManyScopesException("too many scopes", 64);
-            doThrow(e).when(accessTokenProvider).getToken(anyString(), anyInt(), any());
+            doThrow(e).when(accessTokenProvider).issueToken(anyString(), anyInt(), any());
 
             assertDoesNotThrow(() -> underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth));
 
@@ -130,7 +130,7 @@ class SuccessfulAccessTokenHandlerTest {
 
         @Test
         void whenProperInputs_thenRauditxIsGenerated() throws IOException, ServletException {
-            doReturn(JWT_TOKEN).when(accessTokenProvider).getToken(anyString(), anyInt(), any());
+            doReturn(JWT_TOKEN).when(accessTokenProvider).issueToken(anyString(), anyInt(), any());
 
             underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth);
 
@@ -142,7 +142,7 @@ class SuccessfulAccessTokenHandlerTest {
         @Test
         void whenImproperInputs_thenRauditxIsGenerated() {
             Exception e = new IllegalStateException("Cannot generate");
-            doThrow(e).when(accessTokenProvider).getToken(anyString(), anyInt(), any());
+            doThrow(e).when(accessTokenProvider).issueToken(anyString(), anyInt(), any());
 
             assertSame(e, assertThrows(IllegalStateException.class, () -> underTest.onAuthenticationSuccess(httpServletRequest, httpServletResponse, dummyAuth)));
 

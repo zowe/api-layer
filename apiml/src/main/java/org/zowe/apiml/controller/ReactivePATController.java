@@ -124,7 +124,7 @@ public class ReactivePATController {
 
                 String pat;
                 try {
-                    pat = tokenProvider.getToken(userId, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
+                    pat = tokenProvider.issueToken(userId, accessTokenRequest.getValidity(), accessTokenRequest.getScopes());
                     rauditBuilder.success();
                 } catch (RuntimeException e) {
                     rauditBuilder.failure();
