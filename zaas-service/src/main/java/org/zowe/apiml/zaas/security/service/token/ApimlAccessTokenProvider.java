@@ -45,6 +45,7 @@ import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 @RequiredArgsConstructor
@@ -115,7 +116,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private volatile byte[] memoizedSalt;
     private volatile long saltReadAt;
     private final AtomicLong saltAttemptedAt = new AtomicLong();
-    private volatile RuntimeException lastSaltFailure;
+    private final AtomicReference<RuntimeException> lastSaltFailure = new  AtomicReference<>();
 
 
     public void invalidateToken(String token) throws CachingServiceClientException, JsonProcessingException {
@@ -555,7 +556,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             return memoizedSalt;
         }
         long now = System.currentTimeMillis();
-        RuntimeException previousFailure = lastSaltFailure;
+        RuntimeException previousFailure = lastSaltFailure.get();
         if (previousFailure != null && now - saltAttemptedAt.get() < SALT_RETRY_INTERVAL_MILLIS) {
             throw new CachingServiceClientException("The personal access token hashing salt is not available yet, " +
                 "the last attempt to read it failed: " + previousFailure.getMessage(), previousFailure);
@@ -563,14 +564,14 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         saltAttemptedAt.set(now);
         try {
             byte[] decoded = decodeSalt(initializeSalt());
-            lastSaltFailure = null;
+            lastSaltFailure.set(null);
             if (decoded.length > 0) {
                 memoizedSalt = decoded;
                 saltReadAt = System.currentTimeMillis();
             }
             return decoded;
         } catch (RuntimeException e) {
-            lastSaltFailure = e;
+            lastSaltFailure.set(e);
             throw e;
         }
     }

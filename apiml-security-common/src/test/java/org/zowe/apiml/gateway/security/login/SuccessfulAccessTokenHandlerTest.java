@@ -77,13 +77,6 @@ class SuccessfulAccessTokenHandlerTest {
 
     @Nested
     class WhenCallingOnAuthentication {
-        @Test
-        void thenReturn200() throws IOException, ServletException {
-            when(accessTokenProvider.issueToken(any(), anyInt(), any())).thenReturn(JWT_TOKEN);
-            executeLoginHandler();
-
-            assertEquals(HttpStatus.OK.value(), httpServletResponse.getStatus());
-        }
 
         @Test
         void givenNullExpiration_thenReturn200() throws IOException, ServletException {

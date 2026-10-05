@@ -114,7 +114,7 @@ public class AuthController {
         description = "Use the `/auth/invalidate` API to invalidate token on specific instance of Gateway.",
         security = {
             @SecurityRequirement(name = "ClientCert")
-    })
+        })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully invalidated"),
         @ApiResponse(responseCode = "400", description = "Invalid token"),
@@ -190,10 +190,10 @@ public class AuthController {
         @ApiResponse(responseCode = "204", description = "Successfully revoked")
     })
     public ResponseEntity<Void> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null || SecurityContextHolder.getContext().getAuthentication().getPrincipal() == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        var userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         log.debug("revokeAllUserAccessTokens: userId={}", userId);
         long timeStamp = 0;
         if (rulesRequestModel != null) {
@@ -513,7 +513,7 @@ public class AuthController {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
             @SecurityRequirement(name = "LoginBasicAuth")
-    })
+        })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "404", description = "WebFinger is disabled"),
