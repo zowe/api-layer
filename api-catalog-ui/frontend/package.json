@@ -46,7 +46,7 @@
         "rxjs": "7.8.2",
         "sass": "1.105.1",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.33.0",
+        "swagger-ui-react": "5.33.1",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -133,7 +133,7 @@
         "start-server-and-test": "2.1.5",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "vite": "8.3.1",
+        "vite": "8.3.2",
         "vite-plugin-node-polyfills": "0.28.0",
         "yaml": "2.9.1"
     },

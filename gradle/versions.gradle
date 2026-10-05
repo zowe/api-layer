@@ -69,7 +69,7 @@ dependencyResolutionManagement {
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
             version('jose4j', '0.9.7')
-            version('jodaTime', '2.14.4')
+            version('jodaTime', '2.15.0')
             version('jsonPath', '2.10.0')
             version('jsonSmart', '2.6.0')
             version('junitJupiter', '5.14.4')
