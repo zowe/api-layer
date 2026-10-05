@@ -233,11 +233,6 @@ class AuthExceptionHandlerTest {
         verify(function).accept(any(), eq(HttpStatus.FORBIDDEN));
     }
 
-    /**
-     * The cap is enforced in the token provider so no issuance path can bypass it, which means this handler is
-     * the only place the caller learns the number - and it has to be a 400, not the 401 that a raw
-     * AuthenticationException escaping the filter chain would produce.
-     */
     @Test
     void testAuthenticationFailure_whenExceptionIsAccessTokenTooManyScopesException() throws ServletException {
         authExceptionHandler.handleException(

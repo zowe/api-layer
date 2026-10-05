@@ -23,12 +23,6 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * {@code KeyValue} is the value type of the replicated and persisted {@code zoweCache}, which among other
- * things holds the salt that all personal access token hashing depends on. Adding a field to it is therefore
- * an upgrade-compatibility question, not just a Jackson one - so the shape of both serialized forms is
- * asserted rather than assumed.
- */
 class KeyValueTest {
 
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -50,10 +44,6 @@ class KeyValueTest {
     @Nested
     class WhenJavaSerialized {
 
-        /**
-         * The whole reason the field is {@code transient}: a previous-release node has to be able to read
-         * what this one writes, and the other way round, for the lifetime of a rolling restart.
-         */
         @Test
         void thenTheTtlIsNotPartOfTheStream() throws Exception {
             KeyValue withoutTtl = new KeyValue("key", "value");
@@ -95,10 +85,6 @@ class KeyValueTest {
     @Nested
     class WhenJsonSerialized {
 
-        /**
-         * Jackson does not honour the transient marker by default, so the property still crosses the wire -
-         * which is what carries the lifespan from ZAAS to the caching service.
-         */
         @Test
         void givenATtl_thenItIsEmitted() throws Exception {
             String json = mapper.writeValueAsString(new KeyValue("key", "value", 60L));
@@ -129,19 +115,11 @@ class KeyValueTest {
         }
     }
 
-    /**
-     * {@code InfinispanStorage.update} logs a whole {@code KeyValue}, so a field appearing in toString would
-     * silently change that log line on every generic cache write, personal access token or not.
-     */
     @Test
     void thenTheTtlIsNotPrinted() {
         assertFalse(new KeyValue("key", "value", 60L).toString().contains("ttlSeconds"));
     }
 
-    /**
-     * Lombok excludes transient fields from equals and hashCode by construction; the round-trip copy is the
-     * only way to get two instances whose 'created' timestamps agree.
-     */
     @Test
     void thenTheTtlDoesNotAffectEquality() throws Exception {
         KeyValue original = new KeyValue("key", "value");

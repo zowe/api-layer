@@ -36,17 +36,10 @@ public class KeyValue implements Serializable {
     private final String created;
 
     /**
-     * Requested time-to-live of the entry, in seconds. Only honoured by storage backends with native
-     * expiration support (Infinispan); ignored elsewhere. {@code null} means "no TTL requested" and lets
-     * the storage derive one, or store the entry without expiration.
+     * Requested time-to-live of the entry, in seconds.
      * <p>
-     * Deliberately {@code transient} so the Java-serialized form of this class - which is the value type of
-     * the replicated and persisted {@code zoweCache}, holding among other things the PAT salt - stays
-     * byte-identical to the previous release. Jackson still emits the property, because
-     * {@code MapperFeature.PROPAGATE_TRANSIENT_MARKER} is off by default and Lombok generates a getter;
-     * {@code @JsonInclude(NON_EMPTY)} keeps it off the wire while unset. Excluded from {@code toString()} so
-     * pre-existing log lines that print a whole {@code KeyValue} do not silently change shape;
-     * {@code equals()}/{@code hashCode()} exclude transient fields by construction in Lombok.
+     * Deliberately {@code transient} so the Java-serialized form of this class stays
+     * byte-identical to the previous release.
      */
     @ToString.Exclude
     private transient Long ttlSeconds;

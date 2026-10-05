@@ -37,12 +37,7 @@ configs:
   apiml:
     security:
       personalAccessToken:
-        # 'enabled' is deliberately absent: leaving it unset is what lets the value be taken from
-        # components.gateway.apiml.security.personalAccessToken.enabled, as it has been up to now.
         maxScopes: 64
-        # empty means "not configured" - the value is then read from the Caching Service, and created there
-        # on first use. Set it to pin the cutover fleet-wide, as an ISO-8601 instant with a zone,
-        # e.g. 2026-10-05T12:00:00Z.
         cutoverDate:
         cutoverSkewAllowanceSeconds: 300
         revocationLookupFailureThreshold: 5

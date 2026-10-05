@@ -277,8 +277,7 @@ public class AccessTokenServiceTest {
                 .delete(EVICT_ENDPOINT)
             .then()
                 .statusCode(204);
-//            return all the items from the cache. Asserted against the raw body on purpose: 'content' is
-//            not a key of the /cache-list response, so matching on it passes whatever the response says.
+
             String cacheList = given()
                 .contentType(ContentType.JSON)
                 .config(SslContext.clientCertUser)
@@ -329,13 +328,6 @@ public class AccessTokenServiceTest {
 
     }
 
-
-    /**
-     * Validating a personal access token looks up one revocation entry per scope plus two, and that lookup is
-     * bounded. A token issued above the bound could never be validated - the lookup would be rejected and the
-     * fail-closed path would turn that into "not valid" on every future request - so it is refused at issuance
-     * instead, which is the one place the caller can still do something about it.
-     */
     @Nested
     class GivenTooManyScopes {
 

@@ -306,15 +306,9 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     /**
-     * Nothing <em>takes</em> the lock any more. It existed solely to serialise the whole-map
+     * Nothing <em>takes</em> the lock anymore. It existed to serialize the whole-map
      * read-modify-write of the previous layout; with one entry per item every write is a single atomic
      * {@code put} and every removal a compare-and-remove, so nothing needs cluster-wide mutual exclusion.
-     * <p>
-     * It is still <em>defined</em> until v4 release. {@code defineLock} creates the internal replicated
-     * {@code org.infinispan.LOCKS} cache, previous-release nodes in the same cluster still take the lock, and
-     * a cluster where only some members define that internal cache is a configuration we would otherwise
-     * have to prove safe rather than simply avoid. Removed in the release that drops the legacy read path,
-     * together with the {@code infinispan-clustered-lock} dependency.
      */
     @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     private void defineLegacyLock(CacheContainer cacheManager) {
@@ -323,8 +317,7 @@ public class InfinispanConfig implements InitializingBean {
         try {
             EmbeddedClusteredLockManagerFactory.from(cm).defineLock(LOCK_ZOWE_INVALIDATED);
             } catch (AvailabilityException | ClusteredLockException e) {
-                // Nothing on this node needs it, so this is not fatal here - it only matters to a
-                // previous-release peer, which defines the lock itself anyway.
+                // Nothing on this node needs it, so this is not fatal here.
             log.debug("Cannot define the legacy clustered lock", e);
         }
     }

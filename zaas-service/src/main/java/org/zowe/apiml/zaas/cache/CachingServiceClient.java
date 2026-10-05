@@ -67,35 +67,20 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     private String CACHING_QUERY_API_PATH;
 
     /**
-     * Minimum caching service version that serves {@code /cache-query}. Named in the operator-facing message
-     * so a version-skewed deployment is diagnosable without reading a stack trace.
+     * Minimum caching service version that serves {@code /cache-query}.
      */
     static final String MIN_CACHING_SERVICE_VERSION = "3.6.0";
 
-    /**
-     * How long a "this caching service is too old" answer is trusted before probing again. Bounded so that
-     * upgrading the caching service heals the deployment on its own, and so the catalogued error keeps being
-     * emitted rather than scrolling away once.
-     */
     private static final long QUERY_SUPPORT_RECHECK_MILLIS = 5L * 60 * 1000;
 
     /**
      * Map key used for nothing but checking that the caching service is answering at all.
-     * {@code GET /cache-list/{mapKey}} has existed in every release and answers 200 for a map that does not
-     * exist, so it separates "too old to serve /cache-query" from "no caching service registered" without
-     * moving any real payload. It has to be an endpoint under {@code /api/v1}, because that is the only
-     * gateway route the caching service declares - {@code /application/info} is not reachable this way.
      */
     private static final String REACHABILITY_PROBE_MAP_KEY = "apimlReachabilityProbe";
 
     private volatile boolean mapItemQuerySupported = true;
     private final AtomicLong querySupportCheckedAt = new AtomicLong();
 
-    /**
-     * The caching service's own wording when a lookup asks for more keys than its
-     * {@code caching.storage.maxQueryKeys}. Matched on, because a 400 from the query endpoint has other causes -
-     * a storage mode without map support, for one - that need a different remedy.
-     */
     static final String TOO_MANY_KEYS_MESSAGE = "Too many keys requested at once";
 
     /** How often a batch size the caching service rejects is reported, when it is rejected on every request. */
@@ -203,13 +188,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         return readAllMaps(CACHING_LEGACY_LIST_API_PATH, "legacy cache list");
     }
 
-    /**
-     * Both callers are on the personal access token request path, so this goes through the short-timeout
-     * lookup client and the circuit breaker like the point lookup does. The read timeout bounds the wait for
-     * each packet rather than the whole transfer, so a large map that is streaming still completes; what it
-     * cuts short is a caching service that takes longer than that to start answering, and that fails closed.
-     * No retry: unlike the point lookup, repeating a whole-map read is not cheap.
-     */
     private Map<String, Map<String, String>> readAllMaps(String path, String description) throws CachingServiceClientException {
         failFastIfLookupCircuitOpen("read all key-value maps from " + description);
         try {
@@ -271,12 +249,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         return response.getBody() == null ? Map.of() : response.getBody();   //NOSONAR tests return null
     }
 
-    /**
-     * The batch size is configured on this side and the limit on the caching service's, so nothing can check
-     * the two against each other up front. When they disagree every lookup of a token with enough scopes is
-     * rejected, and each such token is denied - which, left to the generic error, reads as an outage of
-     * unknown cause.
-     */
     private boolean isBatchLimitExceeded(HttpStatusCodeException e) {
         return HttpStatus.BAD_REQUEST.equals(e.getStatusCode())
             && e.getResponseBodyAsString().contains(TOO_MANY_KEYS_MESSAGE);
@@ -338,10 +310,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         return probeMapItemQuery();
     }
 
-    /**
-     * Asks the caching service for nothing at all. A 2xx, or any error other than "no such endpoint", means
-     * the endpoint is there; a 404 or 405 means the caching service predates it.
-     */
     boolean probeMapItemQuery() {
         querySupportCheckedAt.set(System.currentTimeMillis());
         try {
@@ -374,12 +342,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     }
 
     /**
-     * A 404 from the query endpoint has two very different causes, and only one of them is worth an
-     * operator-facing error: a caching service too old to serve it, versus no caching service registered at
-     * the gateway. The second is the ordinary state of a deployment that does not run one, and of every
-     * deployment for the moments before registration completes - so it is confirmed against an endpoint that
-     * has existed in every release before the version-mismatch error is logged.
-     *
      * @return whether this really is a version mismatch, as opposed to an unreachable caching service
      */
     private boolean markMapItemQueryUnsupportedIfConfirmed() {

@@ -114,10 +114,6 @@ public interface Storage {
     /**
      * Point lookup of a specific set of items spread over several maps, in one call.
      * <p>
-     * This is the hot-path read for personal access token validation: it replaces downloading every map in
-     * full with a handful of {@code get}s. Only the entries that exist are returned - a map key with no
-     * matching item is omitted from the result entirely, and an absent record means "not present", never an
-     * error. Any transport or storage failure must propagate, so that the caller can fail closed.
      *
      * @param serviceId     Id of the service the items belong to
      * @param keysByMapKey  the item keys to look up, grouped by the map they live in
@@ -127,12 +123,6 @@ public interface Storage {
 
     /**
      * Read the pre-cutover, whole-map revocation layout.
-     * <p>
-     * Exists purely so that personal access tokens issued before the per-item store was introduced keep being
-     * checked against revocations made before it. It is never written to, and the last caller disappears once
-     * every pre-cutover token has expired - at which point this method, its implementation, its endpoint and
-     * its client method are all deleted together.
-     *
      * @param serviceId Id of the service to load the legacy maps for
      * @return Map of all legacy maps with their key/value pairs; never null
      * @deprecated superseded by the per-item layout; scheduled for removal with the legacy read path.

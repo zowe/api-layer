@@ -155,8 +155,6 @@ class CachingServiceTests {
             .statusCode(200)
             .body(MAP_KEY, equalTo(MAP_VALUE));
 
-        // the point lookup: one round trip for exactly the keys asked for, which is the read personal access
-        // token validation uses. Asking for one key that exists and one that does not proves both halves.
         given()
             .config(SslContext.clientCertApiml)
             .contentType(JSON)

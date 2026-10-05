@@ -17,10 +17,6 @@ import java.io.Serial;
 
 /**
  * Thrown when a personal access token is requested with more scopes than validating it could ever look up.
- * <p>
- * The cap exists at issuance rather than only at validation because the validation-side limit fails closed:
- * a token issued above it would stop authenticating on its very next request, with no recovery short of
- * issuing a new one.
  */
 @Getter
 public class AccessTokenTooManyScopesException extends AuthenticationException {

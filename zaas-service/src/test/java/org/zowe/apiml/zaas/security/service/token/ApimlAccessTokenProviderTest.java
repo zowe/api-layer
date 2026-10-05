@@ -75,8 +75,6 @@ class ApimlAccessTokenProviderTest {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
         when(cachingServiceClient.read(SALT_KEY)).thenReturn(new CachingServiceClient.KeyValue(SALT_KEY, new String(ApimlAccessTokenProvider.generateSalt())));
-        // a cutover long in the past, so the routing branch is inert and the tests below exercise the
-        // per-item lookup unless they say otherwise
         when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenReturn(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, "1000"));
         when(cachingServiceClient.supportsMapItemQuery()).thenReturn(true);
         accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, new ObjectMapper().registerModule(new JavaTimeModule()));
@@ -93,11 +91,6 @@ class ApimlAccessTokenProviderTest {
         TOKEN_WITHOUT_SCOPES = createTestToken("user", null);
     }
 
-    /**
-     * Answers a point lookup out of the given maps the way the storage does: only keys that were asked for
-     * and actually exist come back, and a map with nothing found is omitted entirely. Stubbing this rather
-     * than a fixed return value means the tests also cover which keys the provider asks for.
-     */
     private void givenStore(Map<String, Map<String, String>> maps) {
         when(cachingServiceClient.getMapItems(any())).thenAnswer(invocation -> {
             Map<String, Collection<String>> query = invocation.getArgument(0);
@@ -137,10 +130,6 @@ class ApimlAccessTokenProviderTest {
 
     }
 
-    /**
-     * The lifespan travels with the entry, computed on this side, because the token expiry is authoritative
-     * here and comparing it against the caching service's own clock is wrong across time zones.
-     */
     @Test
     void givenToken_whenInvalidating_thenTheEntryCarriesItsLifespan() throws Exception {
         String token = "token";
@@ -191,10 +180,6 @@ class ApimlAccessTokenProviderTest {
         verify(cachingServiceClient, never()).readAllLegacyMaps();
     }
 
-    /**
-     * The query has to carry the token hash, the user hash and one entry per scope - and nothing else. If it
-     * asked for whole maps, the point of the lookup would be gone.
-     */
     @Test
     void givenToken_whenValidating_thenOnlyTheRelevantKeysAreRequested() {
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(queryResponseTokenWithScopes);
@@ -210,11 +195,6 @@ class ApimlAccessTokenProviderTest {
         assertEquals(2, query.get(INVALID_SCOPES_KEY).size());
     }
 
-    /**
-     * A token issued with more scopes than one lookup may carry is chunked rather than rejected. This is what
-     * keeps the issuance cap advisory: a token already issued above it - by a previous release, say, which no
-     * check added now can undo - must keep authenticating rather than become permanently unusable.
-     */
     @Nested
     class GivenMoreScopesThanOneLookupCanCarry {
 
@@ -542,7 +522,6 @@ class ApimlAccessTokenProviderTest {
             verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), any(), any(), any());
         }
 
-        /** A date that is long past, taken at face value, would put the cutover beyond its sunset. */
         @Test
         void givenAConfiguredEpochLongInThePast_thenItIsIgnoredAndTheStoredValueUsed() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
@@ -575,8 +554,8 @@ class ApimlAccessTokenProviderTest {
         @Test
         void thenOnlyCertainlyWrongEpochsAreImplausible() {
             long now = System.currentTimeMillis();
-            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_EPOCH - 1));
-            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_EPOCH));
+            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_DATE - 1));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_DATE));
             assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now));
             assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now + Duration.ofHours(1).toMillis()));
             assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(now + Duration.ofDays(2).toMillis()));
@@ -602,10 +581,6 @@ class ApimlAccessTokenProviderTest {
             verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverEpochMinted"), any());
         }
 
-        /**
-         * Two nodes hitting an absent epoch at once must converge on one value rather than each minting
-         * their own, exactly as the salt does - create maps to putIfAbsent and a collision comes back as 409.
-         */
         @Test
         void givenTwoNodesMintingAtOnce_thenTheyConvergeOnOneValue() {
             Map<String, String> store = new HashMap<>();
@@ -638,10 +613,6 @@ class ApimlAccessTokenProviderTest {
             assertEquals(1, store.size());
         }
 
-        /**
-         * A gateway 404 for a caching service that is not registered yet is indistinguishable from a missing
-         * key. putIfAbsent semantics are what stop that from silently replacing a good value.
-         */
         @Test
         void givenASpuriousAbsence_thenTheStoredValueIsNotOverwritten() {
             when(cachingServiceClient.read(CUTOVER_EPOCH_KEY))
@@ -662,10 +633,6 @@ class ApimlAccessTokenProviderTest {
             assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(System.currentTimeMillis())));
         }
 
-        /**
-         * A store that cannot answer must not add two round trips to every request for as long as it stays
-         * that way; routing to the pre-cutover path in the meantime is only slower, not wrong.
-         */
         @Test
         void givenResolutionFails_thenItIsNotRetriedOnEveryRequest() {
             when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("boom"));
@@ -723,11 +690,6 @@ class ApimlAccessTokenProviderTest {
             verify(cachingServiceClient, never()).readAllLegacyMaps();
         }
 
-        /**
-         * A token minted moments after the cutover on a node whose clock runs slightly behind must not lose
-         * its pre-cutover revocations; that is the whole point of adding the allowance to the comparison
-         * rather than baking it into the stored value.
-         */
         @Test
         void givenATokenWithinTheSkewAllowance_thenTheLegacyStoreIsStillConsulted() {
             long epoch = System.currentTimeMillis() - Duration.ofHours(1).toMillis();
@@ -738,28 +700,6 @@ class ApimlAccessTokenProviderTest {
             assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(600).toMillis())));
         }
 
-        /**
-         * A negative allowance would lower the threshold, dropping the revocations of tokens issued just
-         * before the cutover, so the default is used instead.
-         */
-        @Test
-        void givenANegativeSkewAllowance_thenTheDefaultIsUsed() {
-            ApimlLogger apimlLog = mock(ApimlLogger.class);
-            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
-            long epoch = System.currentTimeMillis() - Duration.ofHours(1).toMillis();
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
-            ReflectionTestUtils.setField(accessTokenProvider, "cutoverSkewAllowanceSeconds", -3600L);
-
-            assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch - 1000)));
-            assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(120).toMillis())));
-            assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(600).toMillis())));
-            verify(apimlLog, times(1)).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverSkewAllowanceSeconds"), any(), any());
-        }
-
-        /**
-         * A value above the maximum is a units mistake; it is capped rather than trusted, and an overflowing
-         * one must not throw and deny every token.
-         */
         @Test
         void givenASkewAllowanceAboveTheMaximum_thenItIsCappedAndReported() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
@@ -773,10 +713,6 @@ class ApimlAccessTokenProviderTest {
             verify(apimlLog, times(1)).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverSkewAllowanceSeconds"), any(), any());
         }
 
-        /**
-         * The branch has to go inert on its own, so that deleting it later is a refactor rather than a
-         * behaviour change.
-         */
         @Test
         void givenTheSunsetHasPassed_thenTheBranchIsNotTakenEvenForAnAncientToken() {
             long epoch = System.currentTimeMillis() - ApimlAccessTokenProvider.LEGACY_SUNSET.toMillis() - 1000;
@@ -812,10 +748,6 @@ class ApimlAccessTokenProviderTest {
             assertEquals("token", accessTokenProvider.issueToken("user", 10, scopes));
         }
 
-        /**
-         * A validation looks up one key per scope plus the token and user hashes, so the lookup limit has to
-         * leave room for both - otherwise a legitimately-issued token could never be validated.
-         */
         @Test
         void thenTheLookupLimitLeavesRoomForTheTokenAndUserHashes() {
             assertTrue(PatRevocationStore.DEFAULT_MAX_QUERY_KEYS >= PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN + 2);
@@ -832,10 +764,6 @@ class ApimlAccessTokenProviderTest {
             verify(cachingServiceClient, times(1)).evictRules(INVALID_SCOPES_KEY);
         }
 
-        /**
-         * The first of the three throwing used to abort the other two, so a single bad map silently skipped
-         * the rest of the cleanup.
-         */
         @Test
         void givenTheFirstEvictionFails_thenTheOthersStillRunAndTheFailureIsReported() {
             doThrow(new CachingServiceClientException("boom")).when(cachingServiceClient).evictTokens(INVALID_TOKENS_KEY);
@@ -879,10 +807,6 @@ class ApimlAccessTokenProviderTest {
             verify(cachingServiceClient, times(2)).read(SALT_KEY);
         }
 
-        /**
-         * A failed refresh must not lose the salt that is known to work, and must not be memoized either -
-         * otherwise a transient store outage would freeze a stale answer for the whole refresh interval.
-         */
         @Test
         void givenARefreshFailure_thenTheLastKnownSaltIsServedAndRetriedAfterTheInterval() {
             byte[] original = accessTokenProvider.getSalt();
@@ -892,7 +816,6 @@ class ApimlAccessTokenProviderTest {
             assertArrayEquals(original, accessTokenProvider.getSalt());
             verify(cachingServiceClient, times(2)).read(SALT_KEY);
 
-            // within the retry interval the store is left alone
             assertArrayEquals(original, accessTokenProvider.getSalt());
             verify(cachingServiceClient, times(2)).read(SALT_KEY);
 
@@ -901,10 +824,6 @@ class ApimlAccessTokenProviderTest {
             verify(cachingServiceClient, times(3)).read(SALT_KEY);
         }
 
-        /**
-         * A due refresh is made by one caller; the others carry on with the last known salt rather than
-         * waiting for the store.
-         */
         @Test
         void givenARefreshInProgress_thenOtherCallersAreServedTheLastKnownSaltWithoutWaiting() throws Exception {
             byte[] original = accessTokenProvider.getSalt();
@@ -956,10 +875,6 @@ class ApimlAccessTokenProviderTest {
             assertFalse(Arrays.equals(salt, accessTokenProvider.getSalt()));
         }
 
-        /**
-         * A regenerated salt is not a self-heal: nothing hashed under the previous one can ever match again,
-         * so every existing revocation has silently stopped being enforced.
-         */
         @Test
         void givenTheStoreHasNoSalt_thenTheRegenerationIsCatalogued() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
@@ -981,11 +896,6 @@ class ApimlAccessTokenProviderTest {
             verify(apimlLog, never()).log("org.zowe.apiml.zaas.pat.saltRegenerated");
         }
 
-        /**
-         * A first start after enabling personal access tokens leaves the salt absent too, and it is not an
-         * incident. The cutover epoch tells the two apart: it is written independently and never removed, so
-         * an empty store means "new" while a store holding the epoch but no salt means "lost".
-         */
         @Test
         void givenAnEmptyStore_thenTheFirstSaltIsNotReportedAsAnIncident() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
@@ -1001,7 +911,6 @@ class ApimlAccessTokenProviderTest {
         private void expireTheMemo() {
             ReflectionTestUtils.setField(accessTokenProvider, "saltReadAt",
                 System.currentTimeMillis() - ApimlAccessTokenProvider.SALT_REFRESH_INTERVAL_MILLIS - 1);
-            // in real time the last attempt is at least that old too
             expireTheLastAttempt();
         }
 

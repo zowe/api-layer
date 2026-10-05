@@ -63,10 +63,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     static final int MAX_TOKEN_VALIDITY_DAYS = 90;
 
     /**
-     * How long a memoized salt is served before it is read again. The salt never changes in normal operation,
-     * but {@code initializeSalt} creates one when the store has none, so a permanent memo would leave nodes
-     * hashing with divergent salts indefinitely after a store wipe. A refresh interval bounds that divergence
-     * while still taking essentially every round trip off the request path.
+     * How long a memoized salt is served before it is read again.
      */
     static final long SALT_REFRESH_INTERVAL_MILLIS = 5L * 60 * 1000;
 
@@ -74,39 +71,20 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     static final long SALT_RETRY_INTERVAL_MILLIS = 60L * 1000;
 
     /**
-     * How long after the cutover the pre-cutover store is still consulted. Set beyond the 90-day token
-     * lifetime on purpose: overshooting costs only a later deletion, whereas undershooting would stop
-     * enforcing revocations that are still live. The branch is unreachable before then anyway -
-     * {@code parseJwtWithSignature} rejects an expired token before any store is touched.
+     * How long after the cutover the pre-cutover store is still consulted.
      */
     static final Duration LEGACY_SUNSET = Duration.ofDays(100);
 
-    /**
-     * No genuine cutover can predate this: it is earlier than this release existed. A configured value below
-     * it is a mistake - most often seconds given where milliseconds are expected - and taking it at face
-     * value would stop enforcing every pre-cutover revocation.
-     */
-    static final long EARLIEST_PLAUSIBLE_CUTOVER_EPOCH = Instant.parse("2026-09-01T00:00:00Z").toEpochMilli();
+    static final long EARLIEST_PLAUSIBLE_CUTOVER_DATE = Instant.parse("2026-09-01T00:00:00Z").toEpochMilli();
 
     /** How far ahead of this node's clock a configured cutover may lie, for clocks that disagree. */
     static final Duration CUTOVER_FUTURE_TOLERANCE = Duration.ofDays(1);
 
-    static final long DEFAULT_CUTOVER_SKEW_ALLOWANCE_SECONDS = 300;
-
-    /**
-     * No real clock difference, nor a configured epoch that is only slightly off, needs more than this. A
-     * larger value is a mistake - typically milliseconds given where seconds are expected - and would silently
-     * send every token issued in that window down the legacy path for its whole life.
-     */
     static final long MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS = Duration.ofHours(1).toSeconds();
 
     private static final long EPOCH_UNRESOLVED = -1L;
     private static final long LEGACY_ROUTE_LOG_INTERVAL_MILLIS = 30L * 60 * 1000;
 
-    /**
-     * How long to wait before trying to resolve the epoch again after a failure. Without this, a store that
-     * cannot answer would add two round trips to every single request for as long as it stayed that way.
-     */
     private static final long EPOCH_RESOLVE_RETRY_MILLIS = 60L * 1000;
 
     private final CachingClient cachingServiceClient;
@@ -117,36 +95,15 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
-    /**
-     * Pins the cutover for the whole fleet, as an ISO-8601 instant with an explicit zone, for example
-     * {@code 2026-10-05T12:00:00Z} or {@code 2026-10-05T14:00:00+02:00}. Blank means "not configured": the
-     * value is then read from the store, and minted there if absent. Setting it explicitly makes the value
-     * deterministic, identical on every node, and immune to anything that happens to the cache.
-     */
     @Value("${apiml.security.personalAccessToken.cutoverDate:}")
     private String configuredCutoverDate = "";
 
-    /**
-     * Added to the cutover when deciding whether a token predates it, rather than baked into the stored
-     * value, so the stored epoch stays audit-meaningful while the tolerance stays tunable. Keep it small:
-     * a high threshold is free in correctness terms but sends post-cutover tokens down the slow path exactly
-     * while the pre-cutover store is at its largest.
-     */
     @Value("${apiml.security.personalAccessToken.cutoverSkewAllowanceSeconds:300}")
-    private long cutoverSkewAllowanceSeconds = DEFAULT_CUTOVER_SKEW_ALLOWANCE_SECONDS;
+    private long cutoverSkewAllowanceSeconds = 300;
 
-    /**
-     * Cap on scopes at issuance. Advisory rather than load-bearing: validation chunks its lookups
-     * ({@link #batchScopes}), so a token issued above this cap - including one issued by a previous release,
-     * which no check here can undo - still authenticates.
-     */
     @Value("${apiml.security.personalAccessToken.maxScopes:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_SCOPES_PER_TOKEN}}")
     private int maxScopes = PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN;
 
-    /**
-     * Most keys one revocation lookup may ask for. Matches the caching service's own limit, which is what
-     * bounds the batch size; a value above it would make the caching service reject the lookup.
-     */
     @Value("${apiml.security.personalAccessToken.revocationLookupBatchKeys:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
     private int revocationLookupBatchKeys = PatRevocationStore.DEFAULT_MAX_QUERY_KEYS;
 
@@ -319,16 +276,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return Optional.empty();
     }
 
-    /**
-     * A token issued after the cutover has only ever been able to be revoked into the per-item store, so it
-     * is answered from there alone. An older one additionally consults the pre-cutover store, exactly as
-     * before - which is what makes the upgrade invalidate nothing.
-     * <p>
-     * Every way the epoch can be wrong therefore costs latency rather than availability: too high, or lost
-     * and re-minted, or divergent across nodes, and the affected tokens merely take the slower path. The one
-     * case that is not benign is an epoch that is too <em>low</em>, which would drop pre-cutover revocations
-     * - that is what the skew allowance is for.
-     */
     boolean shouldConsultLegacyStore(QueryResponse parsedToken) {
         Date creation = parsedToken.getCreation();
         if (creation == null) {
@@ -346,15 +293,10 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
     /**
      * The allowance is a margin after the cutover inside which a token still counts as pre-cutover:
-     * <p>
      */
     private long skewAllowanceMillis() {
         long seconds = cutoverSkewAllowanceSeconds;
-        if (seconds < 0) {
-            logSkewAllowanceRejected(seconds, "it is negative, which would stop enforcing revocations of tokens "
-                + "issued just before the cutover; using " + DEFAULT_CUTOVER_SKEW_ALLOWANCE_SECONDS + " instead");
-            seconds = DEFAULT_CUTOVER_SKEW_ALLOWANCE_SECONDS;
-        } else if (seconds > MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS) {
+        if (seconds > MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS) {
             logSkewAllowanceRejected(seconds, "it is above the maximum of " + MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS
                 + " - check that it is in seconds, not milliseconds; using " + MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS + " instead");
             seconds = MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS;
@@ -379,7 +321,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             return EPOCH_UNRESOLVED;
         }
         if (!cutoverEpochAttemptedAt.compareAndSet(attemptedAt, now)) {
-            // another thread is resolving it right now; routing to the legacy path meanwhile is only slower
             return EPOCH_UNRESOLVED;
         }
         long resolved = resolveCutoverEpoch();
@@ -433,8 +374,8 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     static String validateCutoverEpoch(long epoch) {
-        if (epoch < EARLIEST_PLAUSIBLE_CUTOVER_EPOCH) {
-            return "it is earlier than " + Instant.ofEpochMilli(EARLIEST_PLAUSIBLE_CUTOVER_EPOCH)
+        if (epoch < EARLIEST_PLAUSIBLE_CUTOVER_DATE) {
+            return "it is earlier than " + Instant.ofEpochMilli(EARLIEST_PLAUSIBLE_CUTOVER_DATE)
                 + ", before this release existed";
         }
         long latest = System.currentTimeMillis() + CUTOVER_FUTURE_TOLERANCE.toMillis();
@@ -465,10 +406,6 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             epoch, source, System.currentTimeMillis());
     }
 
-    /**
-     * Throttled, because the rate of this message is the signal: it should decay to zero as pre-cutover
-     * tokens expire, and a rate that does not decay means the epoch is failing to resolve.
-     */
     private void logLegacyRoute() {
         long last = legacyRouteLoggedAt.get();
         long now = System.currentTimeMillis();

@@ -239,10 +239,6 @@ class InfinispanStorageTest {
             assertTrue(ttl.getValue() <= MAX_TTL_SECONDS);
         }
 
-        /**
-         * A negative lifespan would mean "never expire" to Infinispan, so a rule that is already past its
-         * retention has to be removed rather than stored - otherwise the oldest entries are the immortal ones.
-         */
         @Test
         void givenAnAlreadyIrrelevantRule_thenItIsRemovedInsteadOfStored() {
             storage.storeMapItem(serviceId1, INVALID_SCOPES_KEY, new KeyValue("k", "1582239600000"));
@@ -260,11 +256,6 @@ class InfinispanStorageTest {
             verify(tokenCache, never()).put(any(), any(), anyLong(), any());
         }
 
-        /**
-         * The cache-list API is public, and entries written through it have never expired. Giving them the
-         * revocation store's ceiling would silently delete another component's data 90 days after the
-         * upgrade, which is not something this change gets to do.
-         */
         @Test
         void givenAnUnknownMap_thenItIsStoredWithoutExpiration() {
             storage.storeMapItem(serviceId1, "aMap", new KeyValue("aMapCacheKey", "aMapCacheValue"));
@@ -280,11 +271,6 @@ class InfinispanStorageTest {
             verify(tokenCache).put(itemKey(serviceId1, "aMap", "aMapCacheKey"), "aMapCacheValue", 30L, TimeUnit.SECONDS);
         }
 
-        /**
-         * A revocation record is a different matter: those are the entries that grow without bound, and a
-         * personal access token cannot outlive the ceiling anyway, so an unreadable one is capped rather
-         * than kept forever.
-         */
         @Test
         void givenARevocationMapAndAnUninterpretableValue_thenItIsStoredWithTheCeilingTtl() {
             storage.storeMapItem(serviceId1, INVALID_TOKENS_KEY, new KeyValue("k", "notJson"));
@@ -354,11 +340,6 @@ class InfinispanStorageTest {
             assertEquals(2, result.get("invalidTokenRules").size());
         }
 
-        /**
-         * The cache-list endpoints are a public API, so an external caller's pre-upgrade entries have to stay
-         * visible rather than appear to have been deleted by the upgrade. The per-item layout wins on a key
-         * collision, because that is where every write has gone since.
-         */
         @Test
         void givenPreCutoverEntries_thenTheyAreVisibleUnderneathTheNewLayout() {
             legacyTokenCache.put(serviceId1 + "aLegacyMap", new HashMap<>(Map.of("legacyKey", "legacyValue")));
@@ -381,10 +362,6 @@ class InfinispanStorageTest {
             assertEquals("token1", result.get("key1"), "the per-item value must win");
         }
 
-        /**
-         * The legacy layout stores the inner map as the entry value, so the overlay must copy it rather than
-         * write into the object the cache handed back.
-         */
         @Test
         void givenPreCutoverEntries_thenTheLegacyMapIsNotMutated() {
             Map<String, String> legacyItems = new HashMap<>(Map.of("legacyOnly", "kept"));
@@ -413,10 +390,6 @@ class InfinispanStorageTest {
             assertEquals(0, result.size());
         }
 
-        /**
-         * The previous bare-concatenated keys made one service id that is a prefix of another leak entries
-         * across services; the length prefix is what removes the ambiguity.
-         */
         @Test
         void givenOneServiceIdIsAPrefixOfAnother_thenEntriesDoNotLeak() {
             tokenCache.put(itemKey("service", INVALID_TOKENS_KEY, "other"), "otherToken");
@@ -526,11 +499,6 @@ class InfinispanStorageTest {
             assertNotNull(result.get(INVALID_USERS_KEY).get("fresh"));
         }
 
-        /**
-         * A single record that cannot be interpreted used to abort the whole read-filter-write, so one poison
-         * entry blocked cleanup of its entire map on every cycle. It must be skipped, not thrown on - and
-         * kept rather than dropped, since a parse error is not evidence that a token is no longer revoked.
-         */
         @Test
         void givenAPoisonRecord_thenTheRestOfTheMapIsStillCleaned() {
             tokenCache.put(itemKey(serviceId1, INVALID_TOKENS_KEY, "unparseable"), "not json at all");
@@ -561,10 +529,6 @@ class InfinispanStorageTest {
     @Nested
     class WhenTheStoreGrows {
 
-        /**
-         * The warning has to survive a revocation burst without becoming the noise it is warning about, so it
-         * fires at most once per doubling rather than once per write.
-         */
         @Test
         void thenTheWarningIsThrottledToOncePerDoubling() {
 
@@ -600,10 +564,6 @@ class InfinispanStorageTest {
             verify(apimlLog, never()).log(eq("org.zowe.apiml.cache.revocationStoreTooLarge"), any(), any());
         }
 
-        /**
-         * Sampled on write rather than read on demand, so that a metrics scrape cannot walk the persistent
-         * store.
-         */
         @Test
         void thenTheSampledSizeIsExposedForMetrics() {
             Cache<String, String> tokenCache = createCache();

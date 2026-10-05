@@ -256,11 +256,6 @@ class CachingServiceClientTest {
             assertThrows(CachingServiceClientException.class, () -> underTest.getMapItems(Map.of()));
         }
 
-        /**
-         * Zowe components are installed individually, so this ZAAS can be pointed at a caching service that
-         * predates the endpoint. That must degrade to the slower whole-map read with a catalogued error, not
-         * reject every personal access token fleet-wide.
-         */
         @ParameterizedTest
         @CsvSource({"404", "405"})
         void givenACachingServiceWithoutTheEndpoint_thenTheProbeReportsItAndCataloguesTheError(int status) {
@@ -274,10 +269,6 @@ class CachingServiceClientTest {
             verify(apimlLog).log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", CachingServiceClient.MIN_CACHING_SERVICE_VERSION);
         }
 
-        /**
-         * The revocation lookup is only ever made for a personal access token, so an installation with them
-         * turned off - the default - has nothing to find out and must not be reaching out at startup.
-         */
         @Test
         void givenPersonalAccessTokensAreDisabled_thenNothingIsProbedAtStartup() {
             ReflectionTestUtils.setField(underTest, "personalAccessTokenEnabled", false);
@@ -307,10 +298,6 @@ class CachingServiceClientTest {
             assertTrue(underTest.supportsMapItemQuery());
         }
 
-        /**
-         * Any status other than "no such endpoint" still proves the endpoint is there, so it must not send
-         * validation down the slow path.
-         */
         @Test
         void givenSomeOtherError_thenTheEndpointIsStillConsideredPresent() {
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
@@ -327,12 +314,6 @@ class CachingServiceClientTest {
             assertTrue(underTest.probeMapItemQuery());
         }
 
-        /**
-         * A gateway 404 for a caching service that is not registered looks exactly like a 404 for an endpoint
-         * that does not exist. Plenty of installations run no caching service at all, and every installation
-         * looks like this for the moments before registration completes - so a version-mismatch error must be
-         * confirmed against an endpoint that has existed in every release before it is logged.
-         */
         @ParameterizedTest
         @CsvSource({"404", "405"})
         void givenNoCachingServiceAtAll_thenNoVersionMismatchIsReported(int status) {
@@ -348,10 +329,6 @@ class CachingServiceClientTest {
             verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cachingServiceTooOld"), any());
         }
 
-        /**
-         * The control endpoint answering anything at all - including a 400 for a storage mode without map
-         * support - proves the caching service is there and therefore genuinely too old.
-         */
         @Test
         void givenACachingServiceThatAnswersElsewhere_thenTheVersionMismatchIsConfirmed() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
@@ -391,10 +368,6 @@ class CachingServiceClientTest {
             verify(apimlLog).log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", CachingServiceClient.MIN_CACHING_SERVICE_VERSION);
         }
 
-        /**
-         * The answer has to be re-checked, so that upgrading the caching service heals the deployment on its
-         * own and so the catalogued error keeps being emitted rather than scrolling away once.
-         */
         @Test
         void givenTheRecheckIntervalHasPassed_thenTheEndpointIsProbedAgain() {
             ReflectionTestUtils.setField(underTest, "mapItemQuerySupported", false);
@@ -405,11 +378,6 @@ class CachingServiceClientTest {
             assertTrue(underTest.supportsMapItemQuery());
         }
 
-        /**
-         * With no local caching of the answer, this lookup is on every personal access token request. Once the
-         * store has stopped answering, waiting out a timeout per request just ties up ZAAS threads - the answer
-         * is "not valid" either way, so it is better arrived at immediately.
-         */
         @Test
         void givenRepeatedFailures_thenFurtherLookupsAreNotEvenAttempted() {
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType)))
@@ -440,10 +408,6 @@ class CachingServiceClientTest {
                 ReflectionTestUtils.getField(underTest, "lookupCircuitOpenedAt")).get(), "a successful probe closes the circuit");
         }
 
-        /**
-         * Half open means exactly one probe. Every other request arriving while it is in flight must keep
-         * failing fast rather than piling onto a store that may still be down.
-         */
         @Test
         void givenTheCircuitIsHalfOpen_thenRequestsDuringTheProbeStillFailFast() {
             ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
@@ -477,10 +441,6 @@ class CachingServiceClientTest {
             verify(restTemplate, never()).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType));
         }
 
-        /**
-         * The batch size is set on ZAAS and the limit on the caching service, so a mismatch can only be seen
-         * when a lookup is rejected - and it must then be named, not left to read as an outage.
-         */
         @Test
         void givenTheCachingServiceRejectsTheBatchSize_thenTheMismatchIsCatalogued() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
@@ -529,10 +489,6 @@ class CachingServiceClientTest {
                 ReflectionTestUtils.getField(underTest, "consecutiveLookupFailures")).get());
         }
 
-        /**
-         * A read is idempotent and a dropped connection is the most common way for it to fail at all, so one
-         * retry is worth having - the short timeout is what keeps it affordable.
-         */
         @Test
         void givenATransportFailure_thenTheLookupIsRetriedOnce() {
             ReflectionTestUtils.setField(underTest, "restTemplate", restTemplate);
@@ -546,10 +502,6 @@ class CachingServiceClientTest {
             verify(restTemplate, times(2)).exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(responseType));
         }
 
-        /**
-         * A caching service that is too old is not a failing store: it answers perfectly promptly, just with a
-         * 404. Opening the circuit for that would hide the version skew behind a different symptom.
-         */
         @Test
         void givenAMissingEndpoint_thenTheCircuitStaysClosed() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);

@@ -420,11 +420,6 @@ class AuthControllerTest {
                 }
             }
 
-            /**
-             * A rule invalidates every token created at or before its timestamp, and its own retention is
-             * derived from the same instant - so a future timestamp claims authority for longer than the rule
-             * is kept. Rejecting it is what keeps the two consistent.
-             */
             @Nested
             class WhenTheTimestampIsInTheFuture {
 
@@ -461,10 +456,6 @@ class AuthControllerTest {
             }
         }
 
-        /**
-         * Without a handler this answers 500 with a stack trace for something that is simply the revocation
-         * store being unreachable - which is also how a caching service too old to serve point lookups shows up.
-         */
         @Nested
         class GivenTheRevocationStoreIsUnreachable {
 

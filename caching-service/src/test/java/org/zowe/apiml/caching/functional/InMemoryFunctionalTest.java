@@ -165,11 +165,7 @@ public class InMemoryFunctionalTest {
                 .statusCode(HttpStatus.OK.value());
         }
 
-        /**
-         * Personal access token revocation only works on Infinispan - every map operation is rejected by the
-         * other backends, and ZAAS fails closed on the rejection. Asserting that here also proves the endpoint
-         * is mapped and its key limit resolved, which is otherwise only exercised by unit tests.
-         */
+
         @Test
         @Order(5)
         void queryMapItemsIsRejectedOnInMemoryStorage() throws Exception {

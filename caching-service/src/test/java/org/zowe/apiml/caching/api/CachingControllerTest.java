@@ -680,11 +680,6 @@ class CachingControllerTest {
                 .verifyComplete();
         }
 
-        /**
-         * The limit protects this service from an unbounded scan. It has to be a 400 with the limit named,
-         * because the caller cannot otherwise tell this apart from the store being broken - and it fails
-         * closed on the difference.
-         */
         @Test
         void givenMoreKeysThanTheLimit_thenReturnBadRequestNamingTheLimit() {
             List<String> tooMany = IntStream.rangeClosed(0, org.zowe.apiml.cache.PatRevocationStore.DEFAULT_MAX_QUERY_KEYS)
@@ -717,10 +712,6 @@ class CachingControllerTest {
                 .verifyComplete();
         }
 
-        /**
-         * A lost write on a revocation is a dropped revocation, so it has to reach the caller as a 503 rather
-         * than as a success or an opaque 500.
-         */
         @Test
         void givenTheCacheIsNotAvailable_thenReturnServiceUnavailable() {
             when(mockStorage.getMapItems(anyString(), any()))

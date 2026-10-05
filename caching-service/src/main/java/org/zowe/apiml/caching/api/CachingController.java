@@ -175,16 +175,6 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
-    /**
-     * Point lookup of specific items across several maps, in one call.
-     * <p>
-     * A read expressed as a POST is slightly unidiomatic, but the keys are SHA-512 hashes of 128 hex
-     * characters each and a multi-scope token needs several of them, which does not fit a URL reliably.
-     * <p>
-     * Deliberately mapped at {@code /cache-query} and not at {@code /cache-list/query}: the latter would win
-     * Spring's pattern comparison against the existing {@code /cache-list/&#123;mapKey&#125;} mapping and
-     * silently make the map key "query" unreachable.
-     */
     @PostMapping(value = {"/cache-query", "/cache-query/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Looks up specific items across cache maps",
         description = "Takes the item keys to look up grouped by map key, and returns only the entries that " +
@@ -207,14 +197,6 @@ public class CachingController {
         ).orElseGet(this::getUnauthorizedResponse));
     }
 
-    /**
-     * Reads the pre-cutover, whole-map revocation layout.
-     * <p>
-     * Separate from {@code GET /cache-list} on purpose: that endpoint now serves the per-item layout, so it
-     * cannot double as the legacy read. Isolating the legacy read behind its own path means retiring it is a
-     * deletion rather than a change to an endpoint that survives.
-     *
-     */
     @GetMapping(value = {"/cache-list-legacy", "/cache-list-legacy/"}, produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Retrieves all the maps stored in the pre-cutover layout",
         description = "Only for personal access tokens issued before the per-item revocation store was " +
@@ -433,11 +415,6 @@ public class CachingController {
         }
     }
 
-    /**
-     * The limit protects the caching service from an unbounded scan, but rejecting a request is not free:
-     * ZAAS fails closed on the resulting error, so an over-limit token stops authenticating altogether. The
-     * matching cap at issuance is what keeps a legitimately-issued token below this bound.
-     */
     private Map<String, Collection<String>> checkQueryPayload(Map<String, List<String>> keysByMapKey) {
         if (keysByMapKey == null) {
             throw invalidPayloadException(null, "No map keys provided in the payload");
