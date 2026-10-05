@@ -519,7 +519,7 @@ exactly the moment the legacy map is at its largest.
 
 **Where the value comes from.** In resolution order:
 
-1. `apiml.security.personalAccessToken.cutoverEpoch`, if set. This is the primary path — one value,
+1. `apiml.security.personalAccessToken.cutoverDate`, if set. This is the primary path — one value,
    identical on every node, unaffected by anything that happens to the cache, and settable again later
    as a real kill switch (see below). A value that is certainly wrong — earlier than this release
    existed (typically seconds instead of milliseconds) or more than a day ahead — is rejected with a
@@ -618,7 +618,7 @@ also matches the leeway conventionally allowed for JWT `nbf`/`exp`. Unlike the c
 constant rather than a knob, which is the one place a site with unsynchronised clocks has no remedy other
 than fixing its time source.
 
-**Kill switch, now real.** Setting `cutoverEpoch` to the present instant invalidates nothing by itself
+**Kill switch, now real.** Setting `cutoverDate` to the present instant invalidates nothing by itself
 under routing — it sends every outstanding PAT to the legacy path. If an actual "invalidate every PAT
 now" control is wanted (key compromise, say), it needs to be its own explicit switch rather than a side
 effect of this value; note it as a follow-up rather than claiming it here.
@@ -819,7 +819,7 @@ drafts of this list. Each knob needs all three:
   `zaas-package/.../schemas/zaas-config.json` — a typed, described entry
 - knobs in scope: `caching.storage.infinispan.lockTimeoutSeconds`, the size-warning threshold, the new
   cache's `maxCount`, the batch-lookup key limit, the scope cap,
-  and `apiml.security.personalAccessToken.cutoverEpoch` with its skew allowance.
+  and `apiml.security.personalAccessToken.cutoverDate` with its skew allowance.
   Backfill `distributedSyncTimeoutSecs` and `numSegments` while in there (see risk 12)
 - a retirement script for 2.7, shipped with `caching-service-package`
 

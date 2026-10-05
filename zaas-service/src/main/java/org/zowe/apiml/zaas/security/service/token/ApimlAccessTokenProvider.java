@@ -39,7 +39,9 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -116,12 +118,13 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     /**
-     * Pins the cutover for the whole fleet. Zero means "not configured": the value is then read from the
-     * store, and minted there if absent. Setting it explicitly makes the value deterministic, identical on
-     * every node, and immune to anything that happens to the cache.
+     * Pins the cutover for the whole fleet, as an ISO-8601 instant with an explicit zone, for example
+     * {@code 2026-10-05T12:00:00Z} or {@code 2026-10-05T14:00:00+02:00}. Blank means "not configured": the
+     * value is then read from the store, and minted there if absent. Setting it explicitly makes the value
+     * deterministic, identical on every node, and immune to anything that happens to the cache.
      */
-    @Value("${apiml.security.personalAccessToken.cutoverEpoch:0}")
-    private long configuredCutoverEpoch;
+    @Value("${apiml.security.personalAccessToken.cutoverDate:}")
+    private String configuredCutoverDate = "";
 
     /**
      * Added to the cutover when deciding whether a token predates it, rather than baked into the stored
@@ -387,13 +390,19 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     private long resolveCutoverEpoch() {
-        if (configuredCutoverEpoch > 0) {
-            String problem = validateCutoverEpoch(configuredCutoverEpoch);
-            if (problem == null) {
-                logCutoverEpoch("configuration", configuredCutoverEpoch);
-                return configuredCutoverEpoch;
+        if (StringUtils.isNotBlank(configuredCutoverDate)) {
+            String problem;
+            try {
+                long configured = OffsetDateTime.parse(configuredCutoverDate.trim()).toInstant().toEpochMilli();
+                problem = validateCutoverEpoch(configured);
+                if (problem == null) {
+                    logCutoverEpoch("configuration", configured);
+                    return configured;
+                }
+            } catch (DateTimeParseException e) {
+                problem = "it is not an ISO-8601 date and time with a zone, such as 2026-10-05T12:00:00Z or 2026-10-05T14:00:00+02:00";
             }
-            apimlLog.log("org.zowe.apiml.zaas.pat.cutoverSettingRejected", "cutoverEpoch", configuredCutoverEpoch, problem);
+            apimlLog.log("org.zowe.apiml.zaas.pat.cutoverSettingRejected", "cutoverDate", configuredCutoverDate, problem);
         }
 
         Long stored = readCutoverEpoch();
@@ -426,12 +435,12 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     static String validateCutoverEpoch(long epoch) {
         if (epoch < EARLIEST_PLAUSIBLE_CUTOVER_EPOCH) {
             return "it is earlier than " + Instant.ofEpochMilli(EARLIEST_PLAUSIBLE_CUTOVER_EPOCH)
-                + ", before this release existed - check that it is in milliseconds, not seconds";
+                + ", before this release existed";
         }
         long latest = System.currentTimeMillis() + CUTOVER_FUTURE_TOLERANCE.toMillis();
         if (epoch > latest) {
             return "it is more than " + CUTOVER_FUTURE_TOLERANCE.toHours() + " hours in the future ("
-                + Instant.ofEpochMilli(epoch) + ") - check that it is in milliseconds, not microseconds";
+                + Instant.ofEpochMilli(epoch) + ")";
         }
         return null;
     }

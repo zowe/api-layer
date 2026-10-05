@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -37,6 +38,9 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
@@ -501,40 +505,67 @@ class ApimlAccessTokenProviderTest {
         @Test
         void givenAConfiguredEpoch_thenItWinsOverTheStoredValueAndOverMinting() {
             long configured = System.currentTimeMillis() - Duration.ofDays(1).toMillis();
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", configured);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(configured).toString());
 
             assertEquals(configured, accessTokenProvider.getCutoverEpoch());
             verify(cachingServiceClient, never()).read(CUTOVER_EPOCH_KEY);
             verify(cachingServiceClient, never()).create(any());
         }
 
-        /**
-         * Seconds where milliseconds are expected is the likeliest mistake, and taken at face value it puts
-         * the cutover in January 1970 - past its sunset, so no pre-cutover revocation would be enforced.
-         */
         @Test
-        void givenAConfiguredEpochInSeconds_thenItIsIgnoredAndTheStoredValueUsed() {
+        void givenAConfiguredEpochWithAnOffset_thenItIsConvertedToTheSameInstant() {
+            Instant configured = Instant.now().minus(Duration.ofDays(1)).truncatedTo(ChronoUnit.SECONDS);
+            String withOffset = configured.atOffset(ZoneOffset.ofHours(2)).toString();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", withOffset);
+
+            assertEquals(configured.toEpochMilli(), accessTokenProvider.getCutoverEpoch());
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"2026-10-05", "2026-10-05T12:00:00", "1791201600000", "yesterday"})
+        void givenAConfiguredEpochThatIsNotAnInstantWithAZone_thenItIsIgnoredAndTheStoredValueUsed(String value) {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", System.currentTimeMillis() / 1000);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", value);
 
             assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
-            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverEpoch"), any(), any());
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), eq(value), any());
+        }
+
+        @Test
+        void givenABlankConfiguredEpoch_thenTheStoredValueIsUsedWithoutComplaint() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "  ");
+
+            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), any(), any(), any());
+        }
+
+        /** A date that is long past, taken at face value, would put the cutover beyond its sunset. */
+        @Test
+        void givenAConfiguredEpochLongInThePast_thenItIsIgnoredAndTheStoredValueUsed() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "1970-01-02T00:00:00Z");
+
+            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), any(), any());
         }
 
         @Test
         void givenAConfiguredEpochFarInTheFuture_thenItIsIgnored() {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", System.currentTimeMillis() * 1000);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.now().plus(Duration.ofDays(30)).toString());
 
             assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
-            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverEpoch"), any(), any());
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), any(), any());
         }
 
         @Test
         void givenAnIgnoredConfiguredEpochAndNothingStored_thenOneIsMinted() {
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", 42L);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "1970-01-01T00:00:00Z");
             when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("not found"));
 
             long before = System.currentTimeMillis();
@@ -658,7 +689,7 @@ class ApimlAccessTokenProviderTest {
         @Test
         void givenATokenOlderThanTheEpoch_thenBothStoresAreConsulted() throws Exception {
             long epoch = System.currentTimeMillis();
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
             String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
             when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(tokenCreatedAt(epoch - Duration.ofDays(1).toMillis()));
             givenStore(Map.of());
@@ -672,7 +703,7 @@ class ApimlAccessTokenProviderTest {
         @Test
         void givenAPreCutoverTokenRevokedAfterTheUpgrade_thenTheNewStoreStillAnswers() throws Exception {
             long epoch = System.currentTimeMillis();
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
             String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
             when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(tokenCreatedAt(epoch - Duration.ofDays(1).toMillis()));
             when(cachingServiceClient.readAllLegacyMaps()).thenReturn(Map.of());
@@ -684,7 +715,7 @@ class ApimlAccessTokenProviderTest {
         @Test
         void givenATokenAfterTheEpoch_thenTheLegacyStoreIsNeverRead() {
             long epoch = System.currentTimeMillis() - Duration.ofHours(1).toMillis();
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
             when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(tokenCreatedAt(System.currentTimeMillis()));
             givenStore(Map.of());
 
@@ -700,7 +731,7 @@ class ApimlAccessTokenProviderTest {
         @Test
         void givenATokenWithinTheSkewAllowance_thenTheLegacyStoreIsStillConsulted() {
             long epoch = System.currentTimeMillis() - Duration.ofHours(1).toMillis();
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
             ReflectionTestUtils.setField(accessTokenProvider, "cutoverSkewAllowanceSeconds", 300L);
 
             assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(120).toMillis())));
@@ -716,7 +747,7 @@ class ApimlAccessTokenProviderTest {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
             long epoch = System.currentTimeMillis() - Duration.ofHours(1).toMillis();
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
             ReflectionTestUtils.setField(accessTokenProvider, "cutoverSkewAllowanceSeconds", -3600L);
 
             assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch - 1000)));
@@ -734,7 +765,7 @@ class ApimlAccessTokenProviderTest {
             ApimlLogger apimlLog = mock(ApimlLogger.class);
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
             long epoch = System.currentTimeMillis() - Duration.ofDays(1).toMillis();
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
             ReflectionTestUtils.setField(accessTokenProvider, "cutoverSkewAllowanceSeconds", Long.MAX_VALUE);
 
             assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofMinutes(30).toMillis())));
@@ -749,7 +780,7 @@ class ApimlAccessTokenProviderTest {
         @Test
         void givenTheSunsetHasPassed_thenTheBranchIsNotTakenEvenForAnAncientToken() {
             long epoch = System.currentTimeMillis() - ApimlAccessTokenProvider.LEGACY_SUNSET.toMillis() - 1000;
-            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverEpoch", epoch);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
 
             assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch - Duration.ofDays(30).toMillis())));
         }

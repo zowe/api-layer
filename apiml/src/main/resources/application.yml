@@ -217,7 +217,8 @@ apiml:
         personalAccessToken:
             enabled: false
             maxScopes: 64
-            cutoverEpoch: 0
+            # ISO-8601 instant with a zone, e.g. 2026-10-05T12:00:00Z; empty means unset
+            cutoverDate:
             cutoverSkewAllowanceSeconds: 300
             revocationLookupBatchKeys: 66
             revokeRuleSkewAllowanceMillis: 60000

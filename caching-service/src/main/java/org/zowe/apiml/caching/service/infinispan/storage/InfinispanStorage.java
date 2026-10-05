@@ -113,7 +113,7 @@ public class InfinispanStorage implements Storage {
         long ttlSeconds = resolveTtlSeconds(mapKey, toCreate);
 
         if (ttlSeconds == NO_EXPIRY) {
-            log.debug("Storing item into the token cache: {}|{}, without expiration", mapKey, toCreate.getKey());
+            log.debug("Storing item into the cache: {}|{}, without expiration", mapKey, toCreate.getKey());
             cache.put(cacheKey, toCreate.getValue());
             warnIfStoreTooLarge(cache);
             return null;
@@ -125,7 +125,7 @@ public class InfinispanStorage implements Storage {
             return null;
         }
 
-        log.debug("Storing item into the token cache: {}|{}, expiring in {}s", mapKey, toCreate.getKey(), ttlSeconds);
+        log.debug("Storing item into the cache: {}|{}, expiring in {}s", mapKey, toCreate.getKey(), ttlSeconds);
         cache.put(cacheKey, toCreate.getValue(), ttlSeconds, TimeUnit.SECONDS);
         warnIfStoreTooLarge(cache);
         return null;
@@ -133,7 +133,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public Map<String, String> getAllMapItems(String serviceId, String mapKey) {
-        log.debug("Reading all records from token cache for service {} under the {} key.", serviceId, mapKey);
+        log.debug("Reading all records from cache for service {} under the {} key.", serviceId, mapKey);
         String prefix = encodeMapPrefix(serviceId, mapKey);
         Cache<String, String> cache = getTokenItemCache();
 
@@ -150,7 +150,7 @@ public class InfinispanStorage implements Storage {
 
     @Override
     public Map<String, Map<String, String>> getAllMaps(String serviceId) {
-        log.debug("Reading all records from token cache for service {} ", serviceId);
+        log.debug("Reading all records from cache for service {} ", serviceId);
         String prefix = encodeServicePrefix(serviceId);
         Cache<String, String> cache = getTokenItemCache();
 
@@ -161,7 +161,7 @@ public class InfinispanStorage implements Storage {
             if (!key.startsWith(prefix)) continue;
             String[] mapAndItem = decodeAfterService(key, prefix.length());
             if (mapAndItem == null) {
-                log.debug("Skipping undecodable key in the token cache");
+                log.debug("Skipping undecodable key in the cache");
                 continue;
             }
             String value = cache.get(key);
@@ -214,7 +214,7 @@ public class InfinispanStorage implements Storage {
     @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     @SuppressWarnings("java:S1133") // the deprecation is the point: this method exists in order to be deleted
     public Map<String, Map<String, String>> getAllLegacyMaps(String serviceId) {
-        log.debug("Reading all records from the legacy token cache for service {}", serviceId);
+        log.debug("Reading all records from the legacy cache for service {}", serviceId);
         ConcurrentMap<String, Map<String, String>> legacy = getLegacyTokenCache();
 
         Map<String, Map<String, String>> result = new HashMap<>();
@@ -321,7 +321,7 @@ public class InfinispanStorage implements Storage {
             }
             return container.getExpiresAt().atZone(ZoneId.systemDefault()).isBefore(ZonedDateTime.now(ZoneId.systemDefault()));
         } catch (JsonProcessingException e) {
-            log.debug("Cannot parse an invalidated token record, keeping it", e);
+            log.debug("Cannot parse an invalidated record, keeping it", e);
             return false;
         }
     }
