@@ -189,29 +189,39 @@ public class InfinispanStorage implements Storage {
         if (keysByMapKey == null || keysByMapKey.isEmpty()) {
             return result;
         }
-
         Cache<String, String> cache = getTokenItemCache();
         for (Map.Entry<String, Collection<String>> requested : keysByMapKey.entrySet()) {
-            String mapKey = requested.getKey();
-            if (mapKey == null || requested.getValue() == null) continue;
-
-            Map<String, String> found = new HashMap<>();
-            for (String itemKey : requested.getValue()) {
-                if (itemKey == null) continue;
-                String value = cache.get(encodeItemKey(serviceId, mapKey, itemKey));
-                if (value != null) {
-                    found.put(itemKey, value);
-                }
-            }
+            if (hasNulls(requested)) continue;
+            var found = findByKeys(cache, serviceId, requested.getKey(), requested.getValue());
             if (!found.isEmpty()) {
-                result.put(mapKey, found);
+                result.put(requested.getKey(), found);
             }
         }
         return result;
     }
 
+    private boolean hasNulls(Map.Entry<String, Collection<String>> requested) {
+        return requested.getKey() == null || requested.getValue() == null;
+    }
+
+    private Map<String, String> findByKeys(Cache<String, String> cache, String serviceId, String mapKey, Collection<String> keys) {
+        Map<String, String> found = new HashMap<>();
+        for (String itemKey : keys) {
+            if (itemKey == null) continue;
+            String value = cache.get(encodeItemKey(serviceId, mapKey, itemKey));
+            if (value != null) {
+                found.put(itemKey, value);
+            }
+        }
+        return found;
+    }
+
+    /**
+     * @param serviceId Id of the service to load the legacy maps for
+     * @deprecated scheduled for removal with the legacy read path
+     */
     @Override
-    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    @Deprecated(since = "3.6.0")
     @SuppressWarnings("java:S1133") // the deprecation is the point: this method exists in order to be deleted
     public Map<String, Map<String, String>> getAllLegacyMaps(String serviceId) {
         log.debug("Reading all records from the legacy cache for service {}", serviceId);
