@@ -217,38 +217,6 @@ export const baseCategories = [
         },
     },
     {
-        text: 'Catalog',
-        content: {
-            type: {
-                value: 'Custom',
-                question: 'Choose existing catalog tile or create a new one:',
-                options: ['Custom'],
-                hidden: true,
-            },
-            id: {
-                value: '',
-                question: 'The unique identifier for the product family of API services:',
-                tooltip: 'reverse domain name notation. Example: org.zowe.apiml',
-            },
-            title: {
-                value: '',
-                question: 'The title of the product family of the API service:',
-                tooltip: 'Example: Hello API ML',
-            },
-            description: {
-                value: '',
-                question: 'A description of the API service product family:',
-                tooltip: 'Example: Sample application to demonstrate exposing a REST API in the ZOWE API ML',
-            },
-            version: {
-                value: '',
-                question: 'The semantic version of this API Catalog tile (increase when adding changes):',
-                tooltip: 'Example: 1.0.0',
-            },
-        },
-        interference: 'catalog',
-    },
-    {
         text: 'SSL',
         content: {
             verifySslCertificatesOfServices: {

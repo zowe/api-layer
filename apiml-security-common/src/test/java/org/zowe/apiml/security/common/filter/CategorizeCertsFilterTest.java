@@ -13,14 +13,18 @@ package org.zowe.apiml.security.common.filter;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.TurboFilterList;
 import ch.qos.logback.core.read.ListAppender;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.slf4j.LoggerFactory;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -42,8 +46,10 @@ import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+@TestInstance (Lifecycle.PER_CLASS)
 class CategorizeCertsFilterTest {
 
     private static final String CLIENT_CERT_HEADER = "Client-Cert";
@@ -82,16 +88,25 @@ class CategorizeCertsFilterTest {
 
     private Logger logger;
     private ListAppender<ILoggingEvent> logAppender;
+    private TurboFilterList turboFilterList;
 
     @BeforeAll
-    public static void init() throws CertificateException {
+    void init() throws CertificateException {
         CertificateFactory cf = CertificateFactory.getInstance("X.509");
         InputStream certStream = new ByteArrayInputStream(Base64.getDecoder().decode(CLIENT_CERT_HEADER_VALUE));
         clientCertfromHeader = cf.generateCertificate(certStream);
+        logger = (Logger) LoggerFactory.getLogger(CategorizeCertsFilter.class);
+        turboFilterList = logger.getLoggerContext().getTurboFilterList();
+        logger.getLoggerContext().resetTurboFilterList();
+    }
+
+    @AfterAll
+    void reset() {
+        turboFilterList.forEach(logger.getLoggerContext()::addTurboFilter);
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         request = new MockHttpServletRequest();
         response = new MockHttpServletResponse();
         chain = new MockFilterChain();
@@ -99,11 +114,12 @@ class CategorizeCertsFilterTest {
         when(certificateValidator.isForwardingEnabled()).thenReturn(false);
         when(certificateValidator.hasGatewayChain(any())).thenReturn(false);
 
-        logger = (Logger) LoggerFactory.getLogger(CategorizeCertsFilter.class);
+        logger.detachAndStopAllAppenders();
         logAppender = new ListAppender<>();
         logAppender.start();
         logger.addAppender(logAppender);
         logger.setLevel(Level.DEBUG);
+        logAppender.clearAllFilters();
     }
 
     @AfterEach
@@ -223,7 +239,7 @@ class CategorizeCertsFilterTest {
             class WhenCertificateInHeaderAndForwardingEnabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, CLIENT_CERT_HEADER_VALUE);
                     when(certificateValidator.isForwardingEnabled()).thenReturn(true);
                 }
@@ -278,7 +294,7 @@ class CategorizeCertsFilterTest {
             class WhenCertificateInHeaderAndForwardingDisabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, CLIENT_CERT_HEADER_VALUE);
                     when(certificateValidator.isForwardingEnabled()).thenReturn(false);
                 }
@@ -307,7 +323,7 @@ class CategorizeCertsFilterTest {
             class WhenInvalidCertificateInHeaderAndForwardingEnabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, "invalid_cert");
                     when(certificateValidator.isForwardingEnabled()).thenReturn(true);
                     when(certificateValidator.hasGatewayChain(certificates)).thenReturn(true);
@@ -460,7 +476,7 @@ class CategorizeCertsFilterTest {
             class WhenCertificateInHeaderAndForwardingEnabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, CLIENT_CERT_HEADER_VALUE);
                     when(certificateValidator.isForwardingEnabled()).thenReturn(true);
                 }
@@ -526,7 +542,7 @@ class CategorizeCertsFilterTest {
             class WhenCertificateInHeaderAndForwardingDisabled {
 
                 @BeforeEach
-                public void setUp() {
+                void setUp() {
                     request.addHeader(CLIENT_CERT_HEADER, CLIENT_CERT_HEADER_VALUE);
                     when(certificateValidator.isForwardingEnabled()).thenReturn(false);
                 }
@@ -590,7 +606,6 @@ class CategorizeCertsFilterTest {
 
         @Test
         void whenClientCertHeaderNotDefined_thenReturnFalse() throws ServletException, IOException {
-
             filter = new CategorizeCertsFilter(new HashSet<>(), certificateValidator);
 
             X509Certificate[] certs = new X509Certificate[]{
@@ -614,6 +629,7 @@ class CategorizeCertsFilterTest {
 
             assertNotNull(chain.getRequest(), "Filter chain should continue normally");
         }
+
     }
 
 }
