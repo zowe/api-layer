@@ -10,19 +10,23 @@
 
 package org.zowe.apiml.eurekaservice.client;
 
-import com.netflix.discovery.EurekaClientConfig;
 import org.zowe.apiml.eurekaservice.client.config.ApiMediationServiceConfig;
+import org.zowe.apiml.eurekaservice.client.config.EurekaClientConfiguration;
 
 import jakarta.inject.Provider;
 
 /**
- * Provides a EurekaClientConfig implementation based on the provided ApiMl service configuration.
+ * Provides a client configuration based on the provided ApiMl service configuration.
+ * <p>
+ * The type it provides changed with the registry-client migration: it used to be Netflix's
+ * {@code EurekaClientConfig}, it now is the enabler's own {@link EurekaClientConfiguration}. The interface and its
+ * role as the extension point are unchanged.
  */
-public interface EurekaClientConfigProvider extends Provider<EurekaClientConfig> {
+public interface EurekaClientConfigProvider extends Provider<EurekaClientConfiguration> {
 
     /**
-     *  * @param config Configuration for the Eureka
-     *  * @return Valid client for the Discovery service
+     * @param config Configuration for the service
+     * @return Valid client configuration for the Discovery service
      */
-    EurekaClientConfig config(final ApiMediationServiceConfig config);
+    EurekaClientConfiguration config(final ApiMediationServiceConfig config);
 }

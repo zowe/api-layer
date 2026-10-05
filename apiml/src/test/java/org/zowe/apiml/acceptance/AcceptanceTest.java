@@ -14,12 +14,10 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.web.reactive.result.view.freemarker.FreeMarkerConfigurer;
 import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
 import org.zowe.apiml.product.config.ServerAddressPropertiesUpdater;
@@ -40,7 +38,7 @@ import java.lang.annotation.Target;
         ),
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
-            classes = EurekaController.class
+            classes = org.zowe.apiml.GatewayHealthIndicator.class
         ),
         @ComponentScan.Filter(
             type = FilterType.ASSIGNABLE_TYPE,
@@ -50,7 +48,6 @@ import java.lang.annotation.Target;
 )
 @SpringBootTest(classes = {
         ApimlApplication.class,
-        FreeMarkerConfigurer.class,
         TestConfig.class,
         OpenTelemetryTestConfig.class,
         ServerAddressPropertiesUpdater.class

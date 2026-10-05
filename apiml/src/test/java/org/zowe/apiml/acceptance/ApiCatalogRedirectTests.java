@@ -22,7 +22,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpHeaders;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.hc.core5.http.HttpStatus.SC_PERMANENT_REDIRECT;
+import static org.springframework.http.HttpStatus.PERMANENT_REDIRECT;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class ApiCatalogRedirectTests {
@@ -46,7 +46,7 @@ class ApiCatalogRedirectTests {
             .when()
                 .get(getGatewayUrlWithPath(hostname, port, "https", "apicatalog/api/v1"))
             .then()
-                .statusCode(SC_PERMANENT_REDIRECT)
+                .statusCode(PERMANENT_REDIRECT.value())
                 .and()
                 .header(HttpHeaders.LOCATION, "/apicatalog/api/v1/");
         }
@@ -59,7 +59,7 @@ class ApiCatalogRedirectTests {
             .when()
                 .get(getGatewayUrlWithPath(hostname, port, "https", "apicatalog/api/v1/"))
             .then()
-                .statusCode(SC_PERMANENT_REDIRECT)
+                .statusCode(PERMANENT_REDIRECT.value())
                 .and()
                 .header(HttpHeaders.LOCATION, "/apicatalog/api/v1/index.html");
         }
@@ -72,7 +72,7 @@ class ApiCatalogRedirectTests {
             .when()
                 .get(getGatewayUrlWithPath(hostname, port, "https", "apicatalog/ui/v1"))
             .then()
-                .statusCode(SC_PERMANENT_REDIRECT)
+                .statusCode(PERMANENT_REDIRECT.value())
                 .and()
                 .header(HttpHeaders.LOCATION, "/apicatalog/ui/v1/");
         }
@@ -85,7 +85,7 @@ class ApiCatalogRedirectTests {
             .when()
                 .get(getGatewayUrlWithPath(hostname, port, "https", "apicatalog/ui/v1/"))
             .then()
-                .statusCode(SC_PERMANENT_REDIRECT)
+                .statusCode(PERMANENT_REDIRECT.value())
                 .and()
                 .header(HttpHeaders.LOCATION, "/apicatalog/ui/v1/index.html");
         }
@@ -98,7 +98,7 @@ class ApiCatalogRedirectTests {
             .when()
                 .post(getGatewayUrlWithPath(hostname, port, "https", "apicatalog/api/v1/auth/login"))
             .then()
-                .statusCode(SC_PERMANENT_REDIRECT)
+                .statusCode(PERMANENT_REDIRECT.value())
                 .and()
                 .header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/login");
         }
@@ -111,7 +111,7 @@ class ApiCatalogRedirectTests {
             .when()
                 .post(getGatewayUrlWithPath(hostname, port, "https", "apicatalog/api/v1/auth/logout"))
             .then()
-                .statusCode(SC_PERMANENT_REDIRECT)
+                .statusCode(PERMANENT_REDIRECT.value())
                 .and()
                 .header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/logout");
         }
@@ -124,7 +124,7 @@ class ApiCatalogRedirectTests {
             .when()
                 .get(getGatewayUrlWithPath(hostname, port, "https", "apicatalog/api/v1/auth/query"))
             .then()
-                .statusCode(SC_PERMANENT_REDIRECT)
+                .statusCode(PERMANENT_REDIRECT.value())
                 .and()
                 .header(HttpHeaders.LOCATION, "/gateway/api/v1/auth/query");
         }

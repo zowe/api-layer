@@ -13,9 +13,8 @@ package org.zowe.apiml.gateway.caching;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -47,7 +46,7 @@ class LoadBalancerCacheTest {
     private Map<String, LoadBalancerCacheRecord> map;
 
     @Mock
-    private EurekaClient eurekaClient;
+    private DiscoveryClient discoveryClient;
 
     private LoadBalancerCache loadBalancerCache;
 
@@ -55,7 +54,7 @@ class LoadBalancerCacheTest {
 
     @BeforeEach
     void setUp() {
-        loadBalancerCache = new LoadBalancerCache(eurekaClient, cachingServiceClient);
+        loadBalancerCache = new LoadBalancerCache(discoveryClient, cachingServiceClient);
         ReflectionTestUtils.setField(loadBalancerCache, "localCache", map);
     }
 
@@ -67,10 +66,8 @@ class LoadBalancerCacheTest {
 
             @BeforeEach
             void setUp() {
-                var application = mock(Application.class);
-                var instanceInfo = mock(InstanceInfo.class);
-                when(eurekaClient.getApplication("cachingservice")).thenReturn(application);
-                when(application.getInstances()).thenReturn(Collections.singletonList(instanceInfo));
+                when(discoveryClient.getInstances("cachingservice")).thenReturn(Collections.singletonList(
+                    new DefaultServiceInstance("cachingservice:1", "cachingservice", "localhost", 10016, true)));
             }
 
             @AfterEach
@@ -187,9 +184,7 @@ class LoadBalancerCacheTest {
 
             @BeforeEach
             void setUp() {
-                var application = mock(Application.class);
-                when(eurekaClient.getApplication("cachingservice")).thenReturn(application);
-                when(application.getInstances()).thenReturn(Collections.emptyList());
+                when(discoveryClient.getInstances("cachingservice")).thenReturn(Collections.emptyList());
             }
 
             @Nested

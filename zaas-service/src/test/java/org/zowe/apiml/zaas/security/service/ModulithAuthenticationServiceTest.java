@@ -10,22 +10,22 @@
 
 package org.zowe.apiml.zaas.security.service;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.Test;
+import org.springframework.cloud.client.DefaultServiceInstance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class ModulithAuthenticationServiceTest {
+
     @Test
     void getInvalidateUrl() {
-        ModulithAuthenticationService service = new ModulithAuthenticationService(null, null, null, null, null, null, null, null);
-        InstanceInfo instanceInfo = mock(InstanceInfo.class);
-        when(instanceInfo.getHostName()).thenReturn("localhost");
-        when(instanceInfo.getSecurePort()).thenReturn(443);
-        when(instanceInfo.isPortEnabled(InstanceInfo.PortType.SECURE)).thenReturn(true);
-        String invalidateUrl = service.getInvalidateUrl(instanceInfo);
-        assertEquals("https://localhost:443/gateway/api/v1/auth/invalidate", invalidateUrl);
+        ModulithAuthenticationService service =
+            new ModulithAuthenticationService(null, null, null, null, null, null, null, null, null);
+        var instance = new DefaultServiceInstance("localhost:gateway:443", "gateway", "localhost", 443, true);
+
+        assertEquals(
+            "https://localhost:443/gateway/api/v1/auth/invalidate",
+            service.getInvalidateUrl(instance));
     }
+
 }

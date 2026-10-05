@@ -10,25 +10,23 @@
 
 package org.zowe.apiml.eurekaservice.client;
 
-import com.netflix.appinfo.ApplicationInfoManager;
-import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.EurekaClientConfig;
-import com.netflix.discovery.shared.transport.jersey.TransportClientFactories;
+import org.zowe.apiml.registry.client.RegistryClient;
+import org.zowe.apiml.registry.client.RegistryTransport;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
 /**
- * Hide the actual code for obtaining the Eureka Client behind interface to simplify testing.
+ * Hide the actual code for obtaining the registry client behind interface to simplify testing.
+ * <p>
+ * The name is kept from the Eureka-based enabler: it is a published extension point, and consumers that provide
+ * their own {@link RegistryClient} - the Micronaut enabler wires one through this - keep compiling against it.
  */
 public interface EurekaClientProvider {
     /**
-     * Provide a Eureka Client based on the provided configuration parameters.
-     * @param applicationInfoManager Information about the running application
-     * @param config Configuration for the Eureka
-     * @param args Relevant filters for Eureka
+     * Provide a registry client based on the provided configuration parameters.
+     *
+     * @param transport the transport to the Discovery Service
+     * @param self      this service's own registration
      * @return Valid client for the Discovery service
      */
-    EurekaClient client(ApplicationInfoManager applicationInfoManager,
-                        final EurekaClientConfig config,
-                        TransportClientFactories<?> transportClientFactories,
-                        AbstractDiscoveryClientOptionalArgs<?> args);
+    RegistryClient client(RegistryTransport transport, ServiceInstance self);
 }

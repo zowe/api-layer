@@ -16,7 +16,6 @@ import org.springframework.boot.actuate.autoconfigure.metrics.cache.CacheMetrics
 import org.springframework.boot.actuate.autoconfigure.opentelemetry.OpenTelemetryAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.oauth2.client.reactive.ReactiveOAuth2ClientAutoConfiguration;
-import org.springframework.cloud.netflix.eureka.server.EurekaController;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.zowe.apiml.enable.EnableApiDiscovery;
@@ -41,7 +40,6 @@ import org.zowe.apiml.gateway.config.GatewayHealthIndicator;
             type = FilterType.ASSIGNABLE_TYPE,
             classes = {
                 EnableApiDiscoveryConfig.class,
-                EurekaController.class,
                 RegisterToApiLayer.class,
                 GatewayHealthIndicator.class
             }

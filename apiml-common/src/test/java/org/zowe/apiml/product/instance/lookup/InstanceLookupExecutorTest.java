@@ -10,16 +10,15 @@
 
 package org.zowe.apiml.product.instance.lookup;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.instance.InstanceInitializationException;
@@ -60,35 +59,18 @@ class InstanceLookupExecutorTest {
         @Mock private DiscoveryClient discoveryClient;
 
         private InstanceLookupExecutor instanceLookupExecutor;
-        private List<InstanceInfo> instances;
+        private List<ServiceInstance> instances;
 
         private Exception lastException;
-        private InstanceInfo lastInstanceInfo;
+        private ServiceInstance lastInstanceInfo;
         private CountDownLatch latch;
 
-        private InstanceInfo getInstance(String serviceId) {
-            return createInstance(
-                serviceId,
-                serviceId,
-                InstanceInfo.InstanceStatus.UP,
-                InstanceInfo.ActionType.ADDED,
-                new HashMap<>());
+        private ServiceInstance getInstance(String serviceId) {
+            return createInstance(serviceId, serviceId, new HashMap<>());
         }
 
-        InstanceInfo createInstance(String serviceId, String instanceId,
-                                    InstanceInfo.InstanceStatus status,
-                                    InstanceInfo.ActionType actionType,
-                                    HashMap<String, String> metadata) {
-            return InstanceInfo.Builder.newBuilder()
-                .setInstanceId(instanceId)
-                .setAppName(serviceId.toUpperCase())
-                .setIPAddr("192.168.0.1")
-                .setSecurePort(9090)
-                .setHostName("hostname")
-                .setStatus(status)
-                .setMetadata(metadata)
-                .setActionType(actionType)
-                .build();
+        ServiceInstance createInstance(String serviceId, String instanceId, HashMap<String, String> metadata) {
+            return new DefaultServiceInstance(instanceId, serviceId, "hostname", 9090, true, metadata);
         }
 
         @BeforeEach
@@ -170,7 +152,7 @@ class InstanceLookupExecutorTest {
             assertTimeout(ofMillis(2000), () -> {
                 when(discoveryClient.getServices()).thenReturn(List.of(SERVICE_ID));
                 when(discoveryClient.getInstances(SERVICE_ID))
-                    .thenReturn(instances.stream().map(EurekaServiceInstance::new).map(ServiceInstance.class::cast).toList());
+                    .thenReturn(instances);
 
                 instanceLookupExecutor.run(
                     SERVICE_ID,
@@ -197,24 +179,22 @@ class InstanceLookupExecutorTest {
         private final InstanceLookupExecutor instanceLookupExecutor = new InstanceLookupExecutor(discoveryClient);
 
         @SuppressWarnings("unchecked")
-        private final Consumer<InstanceInfo> successHandler = mock(Consumer.class);
+        private final Consumer<ServiceInstance> successHandler = mock(Consumer.class);
         @SuppressWarnings("unchecked")
         private final BiConsumer<Exception, Boolean> failureHandler = mock(BiConsumer.class);
 
-        InstanceInfo mockGateway(EurekaMetadataDefinition.RegistrationType registrationType) {
+        ServiceInstance mockGateway(EurekaMetadataDefinition.RegistrationType registrationType) {
             Map<String, String> metadata = new HashMap<>();
             if (registrationType != null) {
                 metadata.put(REGISTRATION_TYPE, registrationType.getValue());
             }
-            InstanceInfo instanceInfo = InstanceInfo.Builder.newBuilder()
-                .setAppName(CoreService.GATEWAY.getServiceId())
-                .setInstanceId(CoreService.GATEWAY.getServiceId() + ":localhost:" + (1 + new Random().nextInt() % 65535))
-                .setMetadata(metadata)
-                .build();
+            ServiceInstance instanceInfo = new DefaultServiceInstance(
+                CoreService.GATEWAY.getServiceId() + ":localhost:" + (1 + new Random().nextInt() % 65535),
+                CoreService.GATEWAY.getServiceId(), "localhost", 10010, true, metadata);
 
             when(discoveryClient.getServices()).thenReturn(List.of(CoreService.GATEWAY.getServiceId()));
             when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
-                List.of(new EurekaServiceInstance(instanceInfo))
+                List.of(instanceInfo)
             );
             return instanceInfo;
         }
@@ -251,7 +231,7 @@ class InstanceLookupExecutorTest {
             var primary = mockGateway(EurekaMetadataDefinition.RegistrationType.PRIMARY);
             var additional = mockGateway(EurekaMetadataDefinition.RegistrationType.ADDITIONAL);
             when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
-                List.of(new EurekaServiceInstance(primary), new EurekaServiceInstance(additional))
+                List.of(primary, additional)
             );
             invokeRun();
             verify(successHandler).accept(primary);

@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.discovery.staticdef;
 
-import com.netflix.appinfo.InstanceInfo;
+import org.zowe.apiml.registry.model.ServiceInstance;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,7 +29,7 @@ public class StaticApiRestController {
     private final StaticServicesRegistrationService registrationService;
 
     @GetMapping(produces = "application/json")
-    public List<InstanceInfo> list() {
+    public List<ServiceInstance> list() {
         return registrationService.getStaticInstances();
     }
 

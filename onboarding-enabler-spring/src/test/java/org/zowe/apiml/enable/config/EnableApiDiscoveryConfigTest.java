@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.enable.config;
 
-import com.netflix.appinfo.EurekaInstanceConfig;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,6 +35,7 @@ import org.zowe.apiml.eurekaservice.client.util.EurekaInstanceConfigCreator;
 import org.zowe.apiml.exception.ServiceDefinitionException;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
 import java.util.stream.Stream;
 
@@ -78,9 +79,9 @@ class EnableApiDiscoveryConfigTest {
     @Test
     void givenYamlMetadata_whenIpAddressIsPreferred_thenUseIpAddress() throws ServiceDefinitionException {
         EurekaInstanceConfigCreator eurekaInstanceConfigCreator = new EurekaInstanceConfigCreator();
-        EurekaInstanceConfig translatedConfig = eurekaInstanceConfigCreator.createEurekaInstanceConfig(apiMediationServiceConfig);
-        assertEquals("https://127.0.0.1:10043/discoverableclient2", translatedConfig.getHomePageUrl());
-        assertEquals("127.0.0.1", translatedConfig.getHostName(true));
+        ServiceInstance translatedConfig = eurekaInstanceConfigCreator.createServiceInstance(apiMediationServiceConfig);
+        assertEquals("https://127.0.0.1:10043/discoverableclient2", translatedConfig.homePageUrl());
+        assertEquals("127.0.0.1", translatedConfig.hostName());
     }
 
     @ParameterizedTest(name = "Call apiMediationClient with EurekaClientProvider: {0} and EurekaClientConfigProvider: {1}")

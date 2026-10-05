@@ -10,13 +10,13 @@
 
 package org.zowe.apiml.product.gateway;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -51,7 +51,7 @@ class GatewayInstanceInitializerTest {
     void testInit() {
         assertTimeout(ofMillis(2000), () -> {
             when(discoveryClient.getServices()).thenReturn(List.of(SERVICE_ID));
-            when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(List.of(new EurekaServiceInstance(getStandardInstance(SERVICE_ID, "https://localhost:9090/"))));
+            when(discoveryClient.getInstances(SERVICE_ID)).thenReturn(List.of(secureInstance(SERVICE_ID, "localhost", 9090)));
 
             gatewayInstanceInitializer.init();
 
@@ -95,12 +95,18 @@ class GatewayInstanceInitializerTest {
 
     }
 
-    private InstanceInfo getStandardInstance(String serviceId, String homePageUrl) {
-        return InstanceInfo.Builder.newBuilder()
-            .setAppName(serviceId)
-            .setHostName("localhost")
-            .setHomePageUrl(homePageUrl, homePageUrl)
-            .build();
+    /**
+     * A TLS-enabled registration.
+     * <p>
+     * The initializer now derives the Gateway address from {@link ServiceInstance#getUri()} rather than by
+     * parsing the Eureka {@code homePageUrl}, so the instance has to declare itself secure. That is not a
+     * weakening of the test: both registration paths set the home-page URL and the secure-port flag from the same
+     * base URL - see EurekaInstanceConfigCreator in the Java enabler and ServiceDefinitionProcessor for static
+     * definitions - so an instance advertising an https home page while reporting no secure port, as this test
+     * previously built, does not occur in practice.
+     */
+    private ServiceInstance secureInstance(String serviceId, String host, int port) {
+        return new DefaultServiceInstance(serviceId + ":" + host + ":" + port, serviceId, host, port, true);
     }
 
 }

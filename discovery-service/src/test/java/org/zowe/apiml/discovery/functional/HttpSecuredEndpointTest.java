@@ -46,16 +46,20 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
     private static final String EUREKA_PASSWORD = "password";
 
     @Test
-    void uiIsSecuredWithConfiguredBasicAuth() {
+    void statusEndpointIsSecuredWithConfiguredBasicAuth() {
+        // Was the Freemarker dashboard at "/". Decision D4 replaced it with JSON at /eureka/status, which is one
+        // of only two paths deliberately outside the frozen contract. The security behaviour being asserted -
+        // client certificate required, certificate accepted - is unchanged and is the part that matters here.
+        //
+        // 403, not 401: /eureka/** is matched by the client-certificate filter chain, whose entry point is
+        // Spring's pre-authenticated Http403ForbiddenEntryPoint and sends no WWW-Authenticate challenge. There
+        // is no basic-auth path to it, so presenting credentials cannot turn a 403 into a 200 - an earlier
+        // version of this test asserted exactly that and failed. The matching assertions for the pre-cutover
+        // /eureka/apps live in HttpsSecuredEndpointsTest.
         given()
-            .get(getDiscoveryUriWithPath("/"))
+            .get(getDiscoveryUriWithPath("/eureka/status"))
             .then()
-            .statusCode(HttpStatus.UNAUTHORIZED.value());
-
-        given().auth().basic(EUREKA_USERID, EUREKA_PASSWORD)
-            .get(getDiscoveryUriWithPath("/"))
-            .then()
-            .statusCode(HttpStatus.OK.value());
+            .statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Nested
@@ -93,14 +97,13 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
     @Nested
     class GivenHttpHeaders {
         @Test
-        void verifyHttpHeadersOnUi() {
+        void verifyHttpHeadersOnStatusEndpoint() {
             Map<String, String> expectedHeaders = new HashMap<>();
             expectedHeaders.put("X-Content-Type-Options", "nosniff");
             expectedHeaders.put("X-XSS-Protection", "1; mode=block");
             expectedHeaders.put("Cache-Control", "no-cache, no-store, max-age=0, must-revalidate");
             expectedHeaders.put("Pragma", "no-cache");
-            expectedHeaders.put("Content-Type", "text/html;charset=UTF-8");
-            expectedHeaders.put("Transfer-Encoding", "chunked");
+            expectedHeaders.put("Content-Type", "application/json");
             expectedHeaders.put("X-Frame-Options", "DENY");
 
             List<String> forbiddenHeaders = new ArrayList<>();
@@ -108,7 +111,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
             Response response = RestAssured
                 .given()
                 .auth().basic(EUREKA_USERID, EUREKA_PASSWORD)
-                .get(getDiscoveryUriWithPath("/"));
+                .get(getDiscoveryUriWithPath("/eureka/status"));
             Map<String, String> responseHeaders = new HashMap<>();
 
             response.getHeaders().forEach(h -> responseHeaders.put(h.getName(), h.getValue()));

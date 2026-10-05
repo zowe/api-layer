@@ -10,9 +10,6 @@
 
 package org.zowe.apiml.caching.health;
 
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.discovery.EurekaClient;
-import com.netflix.discovery.shared.Application;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,8 +20,11 @@ import org.springframework.boot.actuate.health.Status;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.zowe.apiml.eurekaservice.client.ApiMediationClient;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.registry.client.RegistryClient;
+import org.zowe.apiml.registry.client.RegistryCache;
+import org.zowe.apiml.registry.model.ServiceInstance;
 
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -38,23 +38,20 @@ class CachingHealthIndicatorTest {
     @Mock
     private Health.Builder builder;
 
-    void initEureka(boolean hasGw, boolean hasGwInstance) {
-        var eurekaClient = mock(EurekaClient.class);
-        doReturn(eurekaClient).when(apiMediationClient).getEurekaClient();
-        if (!hasGw) return;
-
-        var application = mock(Application.class);
-        doReturn(application).when(eurekaClient).getApplication(CoreService.GATEWAY.getServiceId());
-        if (!hasGwInstance) return;
-
-        doReturn(Collections.singletonList(mock(InstanceInfo.class))).when(application).getInstances();
+    void initRegistry(boolean hasGw, boolean hasGwInstance) {
+        var registryClient = mock(RegistryClient.class);
+        doReturn(registryClient).when(apiMediationClient).getRegistryClient();
+        var cache = mock(RegistryCache.class);
+        doReturn(cache).when(registryClient).cache();
+        doReturn(hasGw && hasGwInstance ? List.of(mock(ServiceInstance.class)) : List.<ServiceInstance>of())
+            .when(cache).instances(CoreService.GATEWAY.getServiceId());
     }
 
     @Nested
     class WithoutCacheIndicator {
 
         @Test
-        void givenNoEurekaClient_whenBuildHealthIndicator_thenItIsDown() {
+        void givenNoRegistryClient_whenBuildHealthIndicator_thenItIsDown() {
             new CachingHealthIndicator(apiMediationClient, Optional.empty()).doHealthCheck(builder);
             verify(builder).withDetail(CoreService.GATEWAY.getServiceId(), Status.DOWN);
             verify(builder).down();
@@ -62,7 +59,7 @@ class CachingHealthIndicatorTest {
 
         @Test
         void givenNoService_whenBuildHealthIndicator_thenItIsDown() {
-            initEureka(false, false);
+            initRegistry(false, false);
             new CachingHealthIndicator(apiMediationClient, Optional.empty()).doHealthCheck(builder);
             verify(builder).withDetail(CoreService.GATEWAY.getServiceId(), Status.DOWN);
             verify(builder).down();
@@ -70,7 +67,7 @@ class CachingHealthIndicatorTest {
 
         @Test
         void givenNoGwInstance_whenBuildHealthIndicator_thenItIsDown() {
-            initEureka(true, false);
+            initRegistry(true, false);
             new CachingHealthIndicator(apiMediationClient, Optional.empty()).doHealthCheck(builder);
             verify(builder).withDetail(CoreService.GATEWAY.getServiceId(), Status.DOWN);
             verify(builder).down();
@@ -78,7 +75,7 @@ class CachingHealthIndicatorTest {
 
         @Test
         void givenGatewayInstanceBeforeStartUp_whenBuildHealthIndicator_thenItIsDown() {
-            initEureka(true, true);
+            initRegistry(true, true);
             new CachingHealthIndicator(apiMediationClient, Optional.empty()).doHealthCheck(builder);
             verify(builder).withDetail(CoreService.GATEWAY.getServiceId(), Status.UP);
             verify(builder).down();
@@ -86,7 +83,7 @@ class CachingHealthIndicatorTest {
 
         @Test
         void givenGatewayInstanceAfterStartUp_whenBuildHealthIndicator_thenItIsUp() {
-            initEureka(true, true);
+            initRegistry(true, true);
             var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.empty());
             cachingHealthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
             cachingHealthIndicator.doHealthCheck(builder);
@@ -104,7 +101,7 @@ class CachingHealthIndicatorTest {
 
         @Test
         void givenNoGateway_whenBuildHealthIndicator_thenItIsDown() {
-            initEureka(false, false);
+            initRegistry(false, false);
             var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(infinispanHealthIndicator));
             cachingHealthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
             cachingHealthIndicator.doHealthCheck(builder);
@@ -114,7 +111,7 @@ class CachingHealthIndicatorTest {
 
         @Test
         void givenNoStartUpEvent_whenBuildHealthIndicator_thenItIsDown() {
-            initEureka(true, true);
+            initRegistry(true, true);
             var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(infinispanHealthIndicator));
             cachingHealthIndicator.doHealthCheck(builder);
             verify(infinispanHealthIndicator).doHealthCheck(builder);
@@ -123,7 +120,7 @@ class CachingHealthIndicatorTest {
 
         @Test
         void givenEverythingReady_whenBuildHealthIndicator_thenItIsUp() {
-            initEureka(true, true);
+            initRegistry(true, true);
             var cachingHealthIndicator = new CachingHealthIndicator(apiMediationClient, Optional.of(infinispanHealthIndicator));
             cachingHealthIndicator.onApplicationEvent(mock(ApplicationReadyEvent.class));
             cachingHealthIndicator.doHealthCheck(builder);

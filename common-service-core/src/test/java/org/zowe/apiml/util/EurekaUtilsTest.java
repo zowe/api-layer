@@ -10,16 +10,15 @@
 
 package org.zowe.apiml.util;
 
-import com.netflix.appinfo.InstanceInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.cloud.client.DefaultServiceInstance;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.zowe.apiml.exception.MetadataValidationException;
 
 import java.util.Collections;
@@ -46,24 +45,6 @@ class EurekaUtilsTest {
         assertNull(EurekaUtils.getServiceIdFromInstanceId(""));
     }
 
-    private InstanceInfo createInstanceInfo(String host, int port, int securePort, boolean isSecureEnabled) {
-        InstanceInfo out = mock(InstanceInfo.class);
-        when(out.getHostName()).thenReturn(host);
-        when(out.getPort()).thenReturn(port);
-        when(out.getSecurePort()).thenReturn(securePort);
-        when(out.isPortEnabled(InstanceInfo.PortType.SECURE)).thenReturn(isSecureEnabled);
-        return out;
-    }
-
-    @Test
-    void testGetUrl() {
-        InstanceInfo ii1 = createInstanceInfo("hostname1", 80, 0, false);
-        InstanceInfo ii2 = createInstanceInfo("locahost", 80, 443, true);
-
-        assertEquals("http://hostname1:80", EurekaUtils.getUrl(ii1));
-        assertEquals("https://locahost:443", EurekaUtils.getUrl(ii2));
-    }
-
     @Nested
     class PrimaryAndSecondaryRegistration {
 
@@ -76,22 +57,15 @@ class EurekaUtilsTest {
         void init() {
             discoveryClient = mock(DiscoveryClient.class);
 
-            InstanceInfo instanceInfoPrimary = InstanceInfo.Builder.newBuilder()
-                .setAppName(PRIMARY)
-                .setInstanceId(String.format("x:%s:1", PRIMARY))
-                .build();
-            ServiceInstance serviceInstancePrimary = new EurekaServiceInstance(instanceInfoPrimary);
+            // getInstanceInfo works off Spring Cloud's ServiceInstance and its metadata, so the test builds
+            // those directly rather than wrapping Netflix InstanceInfo objects in EurekaServiceInstance.
+            ServiceInstance serviceInstancePrimary = new DefaultServiceInstance(
+                String.format("x:%s:1", PRIMARY), PRIMARY, "localhost", 10010, true, Map.of());
             doReturn(Collections.singletonList(serviceInstancePrimary)).when(discoveryClient).getInstances(PRIMARY);
 
-            InstanceInfo instanceInfoSecondary = InstanceInfo.Builder.newBuilder()
-                .setAppName(GATEWAY.getServiceId())
-                .setInstanceId(String.format("x:%s:1", GATEWAY.getServiceId()))
-                .setMetadata(Map.of(
-                    APIML_ID, SECONDARY,
-                    REGISTRATION_TYPE, ADDITIONAL.getValue()
-                ))
-                .build();
-            ServiceInstance serviceInstanceSecondary = new EurekaServiceInstance(instanceInfoSecondary);
+            ServiceInstance serviceInstanceSecondary = new DefaultServiceInstance(
+                String.format("x:%s:1", GATEWAY.getServiceId()), GATEWAY.getServiceId(), "localhost", 10010, true,
+                Map.of(APIML_ID, SECONDARY, REGISTRATION_TYPE, ADDITIONAL.getValue()));
             doReturn(Collections.singletonList(serviceInstanceSecondary)).when(discoveryClient).getInstances(GATEWAY.getServiceId());
         }
 

@@ -10,19 +10,22 @@
 
 package org.zowe.apiml;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.cloud.commons.util.InetUtils;
-import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @ConfigurationProperties("apiml.gateway.eureka.instance")
-@Primary
-public class GatewayEurekaInstanceConfigBean extends EurekaInstanceConfigBean {
+@Data
+public class GatewayEurekaInstanceConfigBean {
 
-    public GatewayEurekaInstanceConfigBean(InetUtils inetUtils) {
-        super(inetUtils);
-    }
+    /**
+     * Gets the metadata name/value pairs associated with this instance. The legacy property prefix is retained
+     * because it is part of the deployment configuration contract.
+     */
+    private Map<String, String> metadataMap = new HashMap<>();
 
 }

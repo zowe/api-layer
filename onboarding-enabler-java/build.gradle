@@ -1,9 +1,18 @@
 dependencies {
     api project(':apiml-utility')
+    // The registry client the enabler is built on. api scope: the enabler's public surface exposes RegistryClient,
+    // so consumers compile against it.
+    api project(':apiml-registry-client')
 
-    implementation libs.eureka.jersey.client
     implementation libs.jackson.dataformat.yaml
     implementation libs.guava
+
+    // Used to arrive transitively with the Netflix Eureka client the enabler used to depend on; the enabler's own
+    // code uses them, so they are explicit now.
+    implementation libs.slf4j.api
+    // Part of the published surface: EurekaClientConfigProvider extends jakarta.inject.Provider
+    api libs.jakarta.inject
+    implementation libs.jakarta.annotation.api
 
     compileOnly libs.jakarta.servlet.api
 

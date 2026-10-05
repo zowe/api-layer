@@ -10,14 +10,14 @@
 
 package org.zowe.apiml.filter;
 
-import com.netflix.discovery.shared.Application;
-import com.netflix.discovery.shared.Applications;
-import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.cloud.client.DefaultServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
@@ -36,9 +36,12 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
@@ -48,7 +51,7 @@ class LogoutHandlerTest {
 
     @Mock private AuthenticationService authenticationService;
     @Mock private FailedAuthenticationWebHandler failureHandler;
-    @Mock private PeerAwareInstanceRegistryImpl registry;
+    @Mock private DiscoveryClient discoveryClient;
     @Mock private ApplicationContext applicationContext;
     private HttpUtils httpUtils = new HttpUtils(new AuthConfigurationProperties()) {
         {
@@ -58,9 +61,14 @@ class LogoutHandlerTest {
 
     private LogoutHandler logoutHandler;
 
+    private static ServiceInstance gatewayInstance() {
+        return new DefaultServiceInstance(
+            "localhost:gateway:10010", CoreService.GATEWAY.getServiceId(), "localhost", 10010, true);
+    }
+
     @BeforeEach
     void setUp() {
-        logoutHandler = new LogoutHandler(authenticationService, failureHandler, registry, httpUtils, applicationContext);
+        logoutHandler = new LogoutHandler(authenticationService, failureHandler, discoveryClient, httpUtils, applicationContext);
     }
 
     @Test
@@ -92,7 +100,7 @@ class LogoutHandlerTest {
         var webFilterExchange = new WebFilterExchange(exchange, mockChain);
 
         when(authenticationService.isInvalidated("token123")).thenReturn(false);
-        when(registry.getApplications()).thenThrow(new TokenFormatNotValidException("bad format"));
+        when(discoveryClient.getInstances(anyString())).thenThrow(new TokenFormatNotValidException("bad format"));
         when(failureHandler.onAuthenticationFailure(eq(webFilterExchange), any(TokenFormatNotValidException.class)))
             .thenReturn(Mono.empty());
 
@@ -112,7 +120,7 @@ class LogoutHandlerTest {
         var webFilterExchange = new WebFilterExchange(exchange, mockChain);
 
         when(authenticationService.isInvalidated("token123")).thenReturn(false);
-        when(registry.getApplications()).thenThrow(new RuntimeException("unexpected error"));
+        when(discoveryClient.getInstances(anyString())).thenThrow(new RuntimeException("unexpected error"));
         when(failureHandler.onAuthenticationFailure(eq(webFilterExchange), any(TokenNotValidException.class)))
             .thenReturn(Mono.empty());
 
@@ -135,10 +143,8 @@ class LogoutHandlerTest {
         logoutHandler.init();
 
         when(authenticationService.isInvalidated("token123")).thenReturn(false);
-        Applications mockApplications = mock(Applications.class);
-        when(registry.getApplications()).thenReturn(mockApplications);
-        var application = mock(Application.class);
-        when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+        var application = List.of(gatewayInstance());
+        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(application);
         StepVerifier.create(logoutHandler.logout(webFilterExchange, mock(Authentication.class)))
             .verifyComplete();
 
@@ -158,10 +164,8 @@ class LogoutHandlerTest {
         logoutHandler.init();
 
         when(authenticationService.isInvalidated("token123")).thenReturn(false);
-        Applications mockApplications = mock(Applications.class);
-        when(registry.getApplications()).thenReturn(mockApplications);
-        var application = mock(Application.class);
-        when(mockApplications.getRegisteredApplications(CoreService.GATEWAY.getServiceId())).thenReturn(application);
+        var application = List.of(gatewayInstance());
+        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(application);
         StepVerifier.create(logoutHandler.logout(webFilterExchange, mock(Authentication.class)))
             .verifyComplete();
 
@@ -178,8 +182,8 @@ class LogoutHandlerTest {
         var webFilterExchange = new WebFilterExchange(exchange, mockChain);
 
         when(authenticationService.isInvalidated("invalidated.jwt.token")).thenReturn(false);
-        Applications mockApplications = mock(Applications.class);
-        when(registry.getApplications()).thenReturn(mockApplications);
+        when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()))
+            .thenReturn(List.of(gatewayInstance()));
 
         StepVerifier.create(logoutHandler.logout(webFilterExchange, mock(Authentication.class))).verifyComplete();
 

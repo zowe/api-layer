@@ -14,8 +14,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Joiner;
-import com.netflix.appinfo.InstanceInfo;
-import com.netflix.appinfo.InstanceInfo.PortType;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -29,9 +27,10 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHeaders;
 import org.assertj.core.error.MultipleAssertionsError;
-import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.auth.AuthenticationScheme;
+import org.zowe.apiml.registry.client.RegistryServiceInstance;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -319,27 +318,32 @@ public class MockService implements AutoCloseable {
      *
      * @return instanceInfo with all related data
      */
-    public InstanceInfo.Builder getInstanceInfo() {
-        return InstanceInfo.Builder.newBuilder()
-            .setInstanceId(getInstanceId())
-            .setHostName(hostname)
-            .setPort(port)
-            .enablePort(PortType.SECURE, false)
-            .enablePort(PortType.UNSECURE, true)
-            .setAppName(serviceId)
-            .setVIPAddress(vipAddress != null ? vipAddress : serviceId)
-            .setStatus(InstanceInfo.InstanceStatus.UP)
-            .setMetadata(getMetadata());
+    public org.zowe.apiml.registry.model.ServiceInstance getInstanceInfo() {
+        return org.zowe.apiml.registry.model.ServiceInstance.builder()
+            .instanceId(getInstanceId())
+            .hostName(hostname)
+            .ipAddr("127.0.0.1")
+            .port(new org.zowe.apiml.registry.model.PortInfo(port, true))
+            .securePort(new org.zowe.apiml.registry.model.PortInfo(port, false))
+            .appName(serviceId)
+            .vipAddress(vipAddress != null ? vipAddress : serviceId)
+            .secureVipAddress(vipAddress != null ? vipAddress : serviceId)
+            .status(org.zowe.apiml.registry.model.InstanceStatus.UP)
+            .homePageUrl("http://" + hostname + ":" + port + "/")
+            .dataCenterInfo(org.zowe.apiml.registry.model.DataCenterInfo.MY_OWN)
+            .lease(org.zowe.apiml.registry.model.Lease.renewable(30, 90, System.currentTimeMillis()))
+            .metadata(getMetadata())
+            .build();
     }
 
     /**
-     * Method call {@link MockService#getInstanceInfo()} converted to EurekaServiceInstance
+     * The same registration as Spring Cloud sees it, for the route table and the load balancer.
      *
-     * @return EurekaServiceInstance with all related data
+     * @return ServiceInstance with all related data
      */
-    public EurekaServiceInstance getEurekaServiceInstance() {
-        InstanceInfo instanceInfo = getInstanceInfo().build();
-        return instanceInfo == null ? null : new EurekaServiceInstance(instanceInfo);
+    public ServiceInstance getServiceInstance() {
+        return new RegistryServiceInstance(
+            getInstanceId(), serviceId, hostname, port, false, getMetadata());
     }
 
     public static class MockServiceBuilder {

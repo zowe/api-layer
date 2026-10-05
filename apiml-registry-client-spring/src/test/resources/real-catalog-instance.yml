@@ -1,0 +1,19 @@
+# The API Catalog's actual eureka.instance configuration, copied verbatim from
+# api-catalog-services/src/main/resources/application.yml with apiml.service.* resolved to the values the
+# local (non-docker) run uses: scheme=https, hostname=localhost, port=10014.
+#
+# The point of interest is statusPageUrlPath: the real configuration puts a FULL URL there, not a relative
+# path. The existing catalog-instance.yml fixture uses "/apicatalog/application/info" instead, which is what
+# lets the contract test pass while the real environment fails.
+eureka:
+    instance:
+        instanceId: localhost:apicatalog:10014
+        hostname: localhost
+        statusPageUrlPath: https://localhost:10014/apicatalog/application/info
+        healthCheckUrl: https://localhost:10014/apicatalog/application/health
+        secureHealthCheckUrl: https://localhost:10014/apicatalog/application/health
+        homePageUrl: https://localhost:10014/apicatalog
+        port: 10014
+        securePort: 10014
+        nonSecurePortEnabled: false
+        securePortEnabled: true

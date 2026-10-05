@@ -36,7 +36,7 @@ class EurekaClientConfigurationTest {
     }
 
     private List<String> serviceUrls() {
-        return new EurekaClientConfiguration(config).getEurekaServerServiceUrls("default");
+        return new EurekaClientConfiguration(config).getEurekaServerServiceUrls();
     }
 
     @Nested

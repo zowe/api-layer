@@ -10,7 +10,6 @@
 
 package org.zowe.apiml.caching.health;
 
-import com.netflix.discovery.shared.Application;
 import jakarta.annotation.Nonnull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
@@ -43,9 +42,8 @@ public class CachingHealthIndicator extends AbstractHealthIndicator implements A
     protected void doHealthCheck(Health.Builder builder) {
         builder.up();
 
-        boolean gatewayUp = Optional.ofNullable(apiMediationClient.getEurekaClient())
-            .map(eurekaClient -> eurekaClient.getApplication(CoreService.GATEWAY.getServiceId()))
-            .map(Application::getInstances)
+        boolean gatewayUp = Optional.ofNullable(apiMediationClient.getRegistryClient())
+            .map(registryClient -> registryClient.cache().instances(CoreService.GATEWAY.getServiceId()))
             .map(instanceList -> !instanceList.isEmpty())
             .orElse(false);
         builder.withDetail(CoreService.GATEWAY.getServiceId(), gatewayUp ? Status.UP : Status.DOWN);
