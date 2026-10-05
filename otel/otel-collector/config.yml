@@ -73,6 +73,11 @@ processors:
                     - set(name, "test.metric")
                     - set(description, "Synthetic metric for resource attribute validation carrying fixed dummy value")
                     - set(instrumentation_scope.name, "test")
+                    # OTel instrumentation 2.32+ stamps the semantic conventions schema URL
+                    # (e.g. https://opentelemetry.io/schemas/1.44.0) on runtime JVM metrics.
+                    # The synthetic validation metric is scope-normalized, so normalize the
+                    # scope schema URL too - the golden file expects it to be empty.
+                    - set(instrumentation_scope.schema_url, "")
                     - set(unit, "")
                     - convert_sum_to_gauge()
             -   context: datapoint
