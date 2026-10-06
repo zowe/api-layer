@@ -370,7 +370,7 @@ class CachingServiceClientTest {
 
         @Test
         void givenTheRecheckIntervalHasPassed_thenTheEndpointIsProbedAgain() {
-            ReflectionTestUtils.setField(underTest, "mapItemQuerySupported", false);
+            ReflectionTestUtils.setField(underTest, "mapItemQuerySupported", new java.util.concurrent.atomic.AtomicBoolean(false));
             ReflectionTestUtils.setField(underTest, "querySupportCheckedAt", new java.util.concurrent.atomic.AtomicLong(1L));
             when(restTemplate.exchange(eq(queryUrl), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
                 .thenReturn(ResponseEntity.ok("{}"));
@@ -520,7 +520,7 @@ class CachingServiceClientTest {
 
         @Test
         void givenTheRecheckIntervalHasNotPassed_thenNothingIsProbed() {
-            ReflectionTestUtils.setField(underTest, "mapItemQuerySupported", false);
+            ReflectionTestUtils.setField(underTest, "mapItemQuerySupported", new java.util.concurrent.atomic.AtomicBoolean(false));
             ReflectionTestUtils.setField(underTest, "querySupportCheckedAt",
                 new java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis()));
 

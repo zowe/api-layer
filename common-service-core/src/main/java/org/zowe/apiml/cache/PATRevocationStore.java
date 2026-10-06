@@ -14,7 +14,7 @@ package org.zowe.apiml.cache;
  * Names and limits of the personal access token revocation store, shared by the issuer (ZAAS) and the store
  * itself (caching service).
  */
-public final class PatRevocationStore {
+public final class PATRevocationStore {
 
     public static final String INVALID_TOKENS_KEY = "invalidTokens";
 
@@ -44,7 +44,7 @@ public final class PatRevocationStore {
      */
     public static final long DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS = 60_000L;
 
-    private PatRevocationStore() {
+    private PATRevocationStore() {
         // constants only
     }
 }

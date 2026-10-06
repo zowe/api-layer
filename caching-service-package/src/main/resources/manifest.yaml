@@ -49,11 +49,6 @@ configs:
         dataLocation:
         indexLocation:
       initialHosts:
-      distributedSyncTimeoutSecs: 360
-      numSegments: 256
-      revocationStore:
-        maxCount: 100000
-        sizeWarningThreshold: 50000
       jgroups:
          port:
          address:

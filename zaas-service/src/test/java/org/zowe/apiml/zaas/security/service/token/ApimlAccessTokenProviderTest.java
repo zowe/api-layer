@@ -25,7 +25,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.zowe.apiml.cache.PatRevocationStore;
+import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
@@ -156,7 +156,7 @@ class ApimlAccessTokenProviderTest {
         ArgumentCaptor<CachingServiceClient.KeyValue> captor = ArgumentCaptor.forClass(CachingServiceClient.KeyValue.class);
         verify(cachingServiceClient, times(1)).appendList(eq(INVALID_USERS_KEY), captor.capture());
         assertNotNull(captor.getValue().getTtlSeconds());
-        assertTrue(captor.getValue().getTtlSeconds() > Duration.ofDays(PatRevocationStore.RULE_RETENTION_DAYS - 1).toSeconds());
+        assertTrue(captor.getValue().getTtlSeconds() > Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS - 1).toSeconds());
     }
 
     @Test
@@ -727,20 +727,20 @@ class ApimlAccessTokenProviderTest {
 
         @Test
         void givenMoreScopesThanTheLimit_thenIssuanceIsRejectedNamingTheLimit() {
-            Set<String> scopes = IntStream.rangeClosed(0, PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN)
+            Set<String> scopes = IntStream.rangeClosed(0, PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN)
                 .mapToObj(i -> "service" + i)
                 .collect(Collectors.toSet());
 
             var exception = assertThrows(AccessTokenTooManyScopesException.class,
                 () -> accessTokenProvider.issueToken("user", 10, scopes));
 
-            assertEquals(PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN, exception.getLimit());
+            assertEquals(PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN, exception.getLimit());
             verify(as, never()).createLongLivedJwtToken(any(), anyInt(), any());
         }
 
         @Test
         void givenExactlyTheLimit_thenIssuanceSucceeds() {
-            Set<String> scopes = IntStream.range(0, PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN)
+            Set<String> scopes = IntStream.range(0, PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN)
                 .mapToObj(i -> "service" + i)
                 .collect(Collectors.toSet());
             when(as.createLongLivedJwtToken(eq("user"), anyInt(), any())).thenReturn("token");
@@ -750,7 +750,7 @@ class ApimlAccessTokenProviderTest {
 
         @Test
         void thenTheLookupLimitLeavesRoomForTheTokenAndUserHashes() {
-            assertTrue(PatRevocationStore.DEFAULT_MAX_QUERY_KEYS >= PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN + 2);
+            assertTrue(PATRevocationStore.DEFAULT_MAX_QUERY_KEYS >= PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN + 2);
         }
     }
 

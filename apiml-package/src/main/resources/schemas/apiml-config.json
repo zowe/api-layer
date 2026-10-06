@@ -510,7 +510,7 @@
                                 },
                                 "cutoverDate": {
                                     "type": "string",
-                                    "description": "The moment, as an ISO-8601 date and time with a zone such as 2026-10-05T12:00:00Z or 2026-10-05T14:00:00+02:00, that splits personal access tokens into those issued before the per-item revocation store existed and those issued after. Use the time the upgrade of the whole fleet completed. Leave unset to have the value created in the Caching Service on first use; set it to pin one value across every node. A value that is too early silently stops enforcing revocations made before the upgrade. A value without a zone, earlier than 2026-09-01 or more than a day in the future is rejected with ZWEAZ607, and the stored or a newly created value is used instead.",
+                                    "description": "The moment, as an ISO-8601 date and time with a zone such as 2026-10-05T12:00:00Z or 2026-10-05T14:00:00+02:00, that splits personal access tokens into those issued before the per-item revocation store existed and those issued after.",
                                     "examples": ["2026-10-05T12:00:00Z"]
                                 },
                                 "cutoverSkewAllowanceSeconds": {

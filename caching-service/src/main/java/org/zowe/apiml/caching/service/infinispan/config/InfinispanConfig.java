@@ -35,7 +35,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
-import org.zowe.apiml.cache.PatRevocationStore;
+import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
@@ -83,7 +83,7 @@ public class InfinispanConfig implements InitializingBean {
     private static final long SMALL_CACHE_SIZE = 10;
     private static final long BIG_CACHE_SIZE = 1000;
 
-    private static final Duration REVOCATION_MAX_TTL = Duration.ofDays(PatRevocationStore.RULE_RETENTION_DAYS);
+    private static final Duration REVOCATION_MAX_TTL = Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS);
 
     @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;

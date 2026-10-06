@@ -36,6 +36,7 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,6 +48,22 @@ import java.util.concurrent.atomic.AtomicLong;
 @Slf4j
 @SuppressWarnings({"squid:S1192"}) // literals are repeating in debug logs only
 public class CachingServiceClient implements CachingClient, InitializingBean {
+
+    /**
+     * Minimum caching service version that serves {@code /cache-query}.
+     */
+    static final String MIN_CACHING_SERVICE_VERSION = "3.6.0";
+
+    private static final long QUERY_SUPPORT_RECHECK_MILLIS = 5L * 60 * 1000;
+
+    /**
+     * Map key used for nothing but checking that the caching service is answering at all.
+     */
+    private static final String REACHABILITY_PROBE_MAP_KEY = "apimlReachabilityProbe";
+    static final String TOO_MANY_KEYS_MESSAGE = "Too many keys requested at once";
+
+    /** How often a batch size the caching service rejects is reported, when it is rejected on every request. */
+    private static final long BATCH_LIMIT_LOG_INTERVAL_MILLIS = 5L * 60 * 1000;
 
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
@@ -66,36 +83,12 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     @Value("${apiml.cachingServiceClient.query.apiPath:/cachingservice/api/v1/cache-query}")
     private String CACHING_QUERY_API_PATH;
 
-    /**
-     * Minimum caching service version that serves {@code /cache-query}.
-     */
-    static final String MIN_CACHING_SERVICE_VERSION = "3.6.0";
-
-    private static final long QUERY_SUPPORT_RECHECK_MILLIS = 5L * 60 * 1000;
-
-    /**
-     * Map key used for nothing but checking that the caching service is answering at all.
-     */
-    private static final String REACHABILITY_PROBE_MAP_KEY = "apimlReachabilityProbe";
-
-    private volatile boolean mapItemQuerySupported = true;
-    private final AtomicLong querySupportCheckedAt = new AtomicLong();
-
-    static final String TOO_MANY_KEYS_MESSAGE = "Too many keys requested at once";
-
-    /** How often a batch size the caching service rejects is reported, when it is rejected on every request. */
-    private static final long BATCH_LIMIT_LOG_INTERVAL_MILLIS = 5L * 60 * 1000;
-    private final AtomicLong batchLimitLoggedAt = new AtomicLong();
-
     @Value("${apiml.security.personalAccessToken.revocationLookupFailureThreshold:5}")
     private int lookupFailureThreshold = 5;
 
     @Value("${apiml.security.personalAccessToken.revocationLookupCircuitOpenMillis:10000}")
     private long lookupCircuitOpenMillis = 10_000;
-
-    private final AtomicInteger consecutiveLookupFailures = new AtomicInteger();
-    private final AtomicLong lookupCircuitOpenedAt = new AtomicLong();
-
+    
     @Value("${apiml.service.http.userId:#{null}}")
     private String cachingServiceUserId;
 
@@ -107,6 +100,12 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     @Value("${apiml.security.personalAccessToken.enabled:false}")
     private boolean personalAccessTokenEnabled;
+
+    private final AtomicBoolean mapItemQuerySupported = new AtomicBoolean(true);
+    private final AtomicLong querySupportCheckedAt = new AtomicLong();
+    private final AtomicLong batchLimitLoggedAt = new AtomicLong();
+    private final AtomicInteger consecutiveLookupFailures = new AtomicInteger();
+    private final AtomicLong lookupCircuitOpenedAt = new AtomicLong();
 
     @Getter(AccessLevel.PACKAGE)
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
@@ -299,7 +298,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     @Override
     public boolean supportsMapItemQuery() {
-        if (mapItemQuerySupported) {
+        if (mapItemQuerySupported.get()) {
             return true;
         }
         long checkedAt = querySupportCheckedAt.get();
@@ -320,13 +319,13 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         } catch (HttpStatusCodeException e) {
             if (isEndpointMissing(e.getStatusCode())) {
                 markMapItemQueryUnsupportedIfConfirmed();
-                return mapItemQuerySupported;
+                return mapItemQuerySupported.get();
             }
             markMapItemQuerySupported();
             return true;
         } catch (RuntimeException e) {
             log.debug("Could not probe the caching service for point lookup support", e);
-            return mapItemQuerySupported;
+            return mapItemQuerySupported.get();
         }
     }
 
@@ -335,10 +334,10 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     }
 
     private void markMapItemQuerySupported() {
-        if (!mapItemQuerySupported) {
+        if (!mapItemQuerySupported.get()) {
             log.info("The caching service now serves point lookups; personal access token validation is back on the fast path");
         }
-        mapItemQuerySupported = true;
+        mapItemQuerySupported.set(true);
     }
 
     /**
@@ -350,7 +349,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
                 "not treating this as a version mismatch");
             return false;
         }
-        mapItemQuerySupported = false;
+        mapItemQuerySupported.set(false);
         querySupportCheckedAt.set(System.currentTimeMillis());
         apimlLog.log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", MIN_CACHING_SERVICE_VERSION);
         return true;

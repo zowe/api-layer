@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.http.server.reactive.ServerHttpRequest;
+import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.cache.Storage;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.caching.model.KeyValue;
@@ -86,7 +87,7 @@ class CachingControllerTest {
         when(mockRequest.getURI()).thenReturn(URI.create("http://localhost"));
         mockStorage = mock(Storage.class);
         underTest = new CachingController(mockStorage, messageService);
-        underTest.maxQueryKeys = org.zowe.apiml.cache.PatRevocationStore.DEFAULT_MAX_QUERY_KEYS;
+        underTest.maxQueryKeys = PATRevocationStore.DEFAULT_MAX_QUERY_KEYS;
     }
 
     @Nested
@@ -682,7 +683,7 @@ class CachingControllerTest {
 
         @Test
         void givenMoreKeysThanTheLimit_thenReturnBadRequestNamingTheLimit() {
-            List<String> tooMany = IntStream.rangeClosed(0, org.zowe.apiml.cache.PatRevocationStore.DEFAULT_MAX_QUERY_KEYS)
+            List<String> tooMany = IntStream.rangeClosed(0, PATRevocationStore.DEFAULT_MAX_QUERY_KEYS)
                 .mapToObj(i -> "hash" + i).toList();
 
             StepVerifier.create(underTest.getMapItems(Map.of("invalidTokens", tooMany), mockExchange))

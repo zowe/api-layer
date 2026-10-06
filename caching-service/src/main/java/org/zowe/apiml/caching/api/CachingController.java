@@ -47,7 +47,7 @@ public class CachingController {
     private final Storage storage;
     private final MessageService messageService;
 
-    @Value("${caching.storage.maxQueryKeys:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
+    @Value("${caching.storage.maxQueryKeys:#{T(org.zowe.apiml.cache.PATRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
     int maxQueryKeys;
 
     @Autowired(required = false)

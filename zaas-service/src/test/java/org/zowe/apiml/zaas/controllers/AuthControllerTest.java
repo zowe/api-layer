@@ -46,6 +46,7 @@ import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
+import org.zowe.apiml.zaas.zaas.ZaasExceptionHandler;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -102,7 +103,7 @@ class AuthControllerTest {
     void setUp() throws JSONException, JoseException {
         messageService = new YamlMessageService("/zaas-log-messages.yml");
         authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider, webFingerProvider);
-        mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(authController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
         body = new JSONObject()
             .put("token", "token")
             .put("serviceId", "service");

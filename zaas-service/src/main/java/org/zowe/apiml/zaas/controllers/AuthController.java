@@ -40,14 +40,13 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.zowe.apiml.cache.PatRevocationStore;
+import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
 import org.zowe.apiml.security.common.util.JwtUtils;
-import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
@@ -103,8 +102,8 @@ public class AuthController {
     public static final String OIDC_TOKEN_VALIDATE = "/oidc-token/validate"; // NOSONAR
     public static final String OIDC_WEBFINGER_PATH = "/oidc/webfinger";
 
-    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS}}")
-    private long ruleTimestampSkewAllowanceMillis = PatRevocationStore.DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
+    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:#{T(org.zowe.apiml.cache.PATRevocationStore).DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS}}")
+    private long ruleTimestampSkewAllowanceMillis = PATRevocationStore.DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
 
     @DeleteMapping(path = INVALIDATE_PATH)
     @Hidden
@@ -546,16 +545,6 @@ public class AuthController {
         return timestamp > System.currentTimeMillis() + skewAllowanceMillis;
     }
 
-    @ExceptionHandler(CachingServiceClientException.class)
-    public ResponseEntity<ApiMessageView> handleCachingServiceClientException(CachingServiceClientException e) {
-        log.debug("The caching service could not be reached", e);
-        ApiMessageView message = messageService
-            .createMessage("org.zowe.apiml.zaas.pat.cachingServiceUnavailable", e.getMessage())
-            .mapToView();
-        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-            .contentType(MediaType.APPLICATION_JSON)
-            .body(message);
-    }
 
     private ResponseEntity<String> badRequestForPATInvalidation() throws JsonProcessingException {
         final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();

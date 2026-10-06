@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 
-import static org.zowe.apiml.cache.PatRevocationStore.*;
+import static org.zowe.apiml.cache.PATRevocationStore.*;
 import static org.zowe.apiml.caching.service.infinispan.config.InfinispanConfig.*;
 
 @Slf4j

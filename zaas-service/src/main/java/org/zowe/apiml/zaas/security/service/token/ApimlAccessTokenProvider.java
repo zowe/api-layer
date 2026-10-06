@@ -18,7 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.cache.PatRevocationStore;
+import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -52,9 +52,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 public class ApimlAccessTokenProvider implements AccessTokenProvider {
 
-    static final String INVALID_TOKENS_KEY = PatRevocationStore.INVALID_TOKENS_KEY;
-    static final String INVALID_USERS_KEY = PatRevocationStore.INVALID_USERS_KEY;
-    static final String INVALID_SCOPES_KEY = PatRevocationStore.INVALID_SCOPES_KEY;
+    static final String INVALID_TOKENS_KEY = PATRevocationStore.INVALID_TOKENS_KEY;
+    static final String INVALID_USERS_KEY = PATRevocationStore.INVALID_USERS_KEY;
+    static final String INVALID_SCOPES_KEY = PATRevocationStore.INVALID_SCOPES_KEY;
     static final String SALT_KEY = "salt";
     static final String CUTOVER_EPOCH_KEY = "patCutoverEpoch";
 
@@ -102,11 +102,11 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     @Value("${apiml.security.personalAccessToken.cutoverSkewAllowanceSeconds:300}")
     private long cutoverSkewAllowanceSeconds = 300;
 
-    @Value("${apiml.security.personalAccessToken.maxScopes:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_SCOPES_PER_TOKEN}}")
-    private int maxScopes = PatRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN;
+    @Value("${apiml.security.personalAccessToken.maxScopes:#{T(org.zowe.apiml.cache.PATRevocationStore).DEFAULT_MAX_SCOPES_PER_TOKEN}}")
+    private int maxScopes = PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN;
 
-    @Value("${apiml.security.personalAccessToken.revocationLookupBatchKeys:#{T(org.zowe.apiml.cache.PatRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
-    private int revocationLookupBatchKeys = PatRevocationStore.DEFAULT_MAX_QUERY_KEYS;
+    @Value("${apiml.security.personalAccessToken.revocationLookupBatchKeys:#{T(org.zowe.apiml.cache.PATRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
+    private int revocationLookupBatchKeys = PATRevocationStore.DEFAULT_MAX_QUERY_KEYS;
 
     private final AtomicLong cutoverEpoch = new AtomicLong(EPOCH_UNRESOLVED);
     private final AtomicLong cutoverEpochAttemptedAt = new AtomicLong();
@@ -163,7 +163,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     }
 
     private Long ruleTtlSeconds(long ruleTimestamp) {
-        return secondsUntil(new Date(ruleTimestamp + Duration.ofDays(PatRevocationStore.RULE_RETENTION_DAYS).toMillis()));
+        return secondsUntil(new Date(ruleTimestamp + Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS).toMillis()));
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
