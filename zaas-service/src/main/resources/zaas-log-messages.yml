@@ -193,13 +193,6 @@ messages:
       reason: "An error occurred during SAF verification. Review the reason in the error message."
       action: "Verify the Identity Token configuration."
 
-    - key: org.zowe.apiml.zaas.security.schema.missingAuthentication
-      number: ZWEAG160
-      type: ERROR
-      text: "No authentication provided in the request"
-      reason: "The JWT token or client certificate was not provided with the request"
-      action: "Configure your client to provide valid authentication."
-
     - key: org.zowe.apiml.zaas.security.schema.x509.mappingFailed
       number: ZWEAG161
       type: ERROR
