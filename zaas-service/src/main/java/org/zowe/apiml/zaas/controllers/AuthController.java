@@ -199,6 +199,7 @@ public class AuthController {
             timeStamp = rulesRequestModel.getTimestamp();
         }
         if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+            log.debug("Timestamp {} used to revoke tokens for all users is past the threshold.",  timeStamp);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);

@@ -39,7 +39,6 @@ configs:
     # can be inMemory, VSAM
     mode: inMemory
     size: 10000
-    maxQueryKeys: 66
     vsam:
       # this is required if storage mode is VSAM
       name:
