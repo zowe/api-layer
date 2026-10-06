@@ -36,15 +36,16 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Service
@@ -66,32 +67,33 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     /**
      * How long a memoized salt is served before it is read again.
      */
-    static final long SALT_REFRESH_INTERVAL_MILLIS = 5L * 60 * 1000;
+    static final Duration SALT_REFRESH_INTERVAL = Duration.ofMinutes(5);
 
     /** How long to wait before reading the salt again after a failed attempt. */
-    static final long SALT_RETRY_INTERVAL_MILLIS = 60L * 1000;
+    static final Duration SALT_RETRY_INTERVAL = Duration.ofMinutes(1);
 
     /**
      * How long after the cutover the pre-cutover store is still consulted.
      */
     static final Duration LEGACY_SUNSET = Duration.ofDays(100);
 
-    static final long EARLIEST_PLAUSIBLE_CUTOVER_DATE = Instant.parse("2026-09-01T00:00:00Z").toEpochMilli();
+    static final Instant EARLIEST_PLAUSIBLE_CUTOVER_DATE = Instant.parse("2026-09-01T00:00:00Z");
 
     /** How far ahead of this node's clock a configured cutover may lie, for clocks that disagree. */
     static final Duration CUTOVER_FUTURE_TOLERANCE = Duration.ofDays(1);
 
-    static final long MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS = Duration.ofHours(1).toSeconds();
+    static final Duration MAX_CUTOVER_SKEW_ALLOWANCE = Duration.ofHours(1);
 
-    private static final long EPOCH_UNRESOLVED = -1L;
-    private static final long LEGACY_ROUTE_LOG_INTERVAL_MILLIS = 30L * 60 * 1000;
+    private static final Duration LEGACY_ROUTE_LOG_INTERVAL = Duration.ofMinutes(30);
 
-    private static final long EPOCH_RESOLVE_RETRY_MILLIS = 60L * 1000;
+    private static final Duration EPOCH_RESOLVE_RETRY = Duration.ofMinutes(1);
 
     private final CachingClient cachingServiceClient;
     private final AuthenticationService authenticationService;
     @Qualifier("oidcJwkMapper")
     private final ObjectMapper objectMapper;
+    @Qualifier("oidcJwtClock")
+    private final Clock clock;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
@@ -108,14 +110,14 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
     @Value("${apiml.security.personalAccessToken.revocationLookupBatchKeys:#{T(org.zowe.apiml.cache.PATRevocationStore).DEFAULT_MAX_QUERY_KEYS}}")
     private int revocationLookupBatchKeys = PATRevocationStore.DEFAULT_MAX_QUERY_KEYS;
 
-    private final AtomicLong cutoverEpoch = new AtomicLong(EPOCH_UNRESOLVED);
-    private final AtomicLong cutoverEpochAttemptedAt = new AtomicLong();
-    private final AtomicLong legacyRouteLoggedAt = new AtomicLong();
+    private final AtomicReference<Instant> cutoverEpoch = new AtomicReference<>();
+    private final AtomicReference<Instant> cutoverEpochAttemptedAt = new AtomicReference<>(Instant.EPOCH);
+    private final AtomicReference<Instant> legacyRouteLoggedAt = new AtomicReference<>(Instant.EPOCH);
     private final AtomicBoolean skewAllowanceRejectionLogged = new AtomicBoolean();
 
     private volatile byte[] memoizedSalt;
-    private volatile long saltReadAt;
-    private final AtomicLong saltAttemptedAt = new AtomicLong();
+    private volatile Instant saltReadAt = Instant.EPOCH;
+    private final AtomicReference<Instant> saltAttemptedAt = new AtomicReference<>(Instant.EPOCH);
     private final AtomicReference<RuntimeException> lastSaltFailure = new  AtomicReference<>();
 
 
@@ -137,7 +139,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         apimlLog.log(MessageType.DEBUG, "Invalidating all PATs for user: {}", userId);
         String hashedUserId = getHash(userId.trim().toUpperCase());
         if (timestamp == 0) {
-            timestamp = System.currentTimeMillis();
+            timestamp = clock.millis();
         }
         log.debug("hashedUserId {}, timestamp {}", hashedUserId, timestamp);
         cachingServiceClient.appendList(INVALID_USERS_KEY,
@@ -148,7 +150,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         apimlLog.log(MessageType.DEBUG, "Invalidating all PATs for service: {}", serviceId);
         String hashedServiceId = getHash(serviceId);
         if (timestamp == 0) {
-            timestamp = System.currentTimeMillis();
+            timestamp = clock.millis();
         }
         log.debug("serviceIdHash {}, timestamp {}", hashedServiceId, timestamp);
         cachingServiceClient.appendList(INVALID_SCOPES_KEY,
@@ -159,11 +161,15 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (moment == null) {
             return null;
         }
-        return Duration.ofMillis(moment.getTime() - System.currentTimeMillis()).toSeconds();
+        return secondsUntil(moment.toInstant());
+    }
+
+    private long secondsUntil(Instant moment) {
+        return Duration.between(clock.instant(), moment).toSeconds();
     }
 
     private Long ruleTtlSeconds(long ruleTimestamp) {
-        return secondsUntil(new Date(ruleTimestamp + Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS).toMillis()));
+        return secondsUntil(Instant.ofEpochMilli(ruleTimestamp).plus(Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS)));
     }
 
     public boolean isInvalidated(String token) throws CachingServiceClientException {
@@ -282,27 +288,30 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (creation == null) {
             return true;
         }
-        long epoch = getCutoverEpoch();
-        if (epoch == EPOCH_UNRESOLVED) {
-            return true;
-        }
-        if (System.currentTimeMillis() >= epoch + LEGACY_SUNSET.toMillis()) {
+        return getCutoverEpoch()
+            .map(cutover -> isPreCutover(creation.toInstant(), cutover))
+            .orElse(true);
+    }
+
+    private boolean isPreCutover(Instant creation, Instant cutover) {
+        if (hasElapsed(cutover, LEGACY_SUNSET, clock.instant())) {
             return false;
         }
-        return creation.getTime() <= epoch + skewAllowanceMillis();
+        return !creation.isAfter(cutover.plus(skewAllowance()));
     }
 
     /**
      * The allowance is a margin after the cutover inside which a token still counts as pre-cutover:
      */
-    private long skewAllowanceMillis() {
+    private Duration skewAllowance() {
         long seconds = cutoverSkewAllowanceSeconds;
-        if (seconds > MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS) {
-            logSkewAllowanceRejected(seconds, "it is above the maximum of " + MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS
-                + " - check that it is in seconds, not milliseconds; using " + MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS + " instead");
-            seconds = MAX_CUTOVER_SKEW_ALLOWANCE_SECONDS;
+        long maxSeconds = MAX_CUTOVER_SKEW_ALLOWANCE.toSeconds();
+        if (seconds > maxSeconds) {
+            logSkewAllowanceRejected(seconds, "it is above the maximum of " + maxSeconds
+                + " - check that it is in seconds, not milliseconds; using " + maxSeconds + " instead");
+            return MAX_CUTOVER_SKEW_ALLOWANCE;
         }
-        return Duration.ofSeconds(seconds).toMillis();
+        return Duration.ofSeconds(seconds);
     }
 
     private void logSkewAllowanceRejected(long seconds, String problem) {
@@ -311,35 +320,30 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
     }
 
-    long getCutoverEpoch() {
-        long current = cutoverEpoch.get();
-        if (current != EPOCH_UNRESOLVED) {
-            return current;
+    Optional<Instant> getCutoverEpoch() {
+        var current = cutoverEpoch.get();
+        if (current != null) {
+            return Optional.of(current);
         }
-        long attemptedAt = cutoverEpochAttemptedAt.get();
-        long now = System.currentTimeMillis();
-        if (attemptedAt != 0 && now - attemptedAt < EPOCH_RESOLVE_RETRY_MILLIS) {
-            return EPOCH_UNRESOLVED;
+        var attemptedAt = cutoverEpochAttemptedAt.get();
+        var now = clock.instant();
+        if (isWithin(attemptedAt, EPOCH_RESOLVE_RETRY, now) || !cutoverEpochAttemptedAt.compareAndSet(attemptedAt, now)) {
+            return Optional.empty();
         }
-        if (!cutoverEpochAttemptedAt.compareAndSet(attemptedAt, now)) {
-            return EPOCH_UNRESOLVED;
-        }
-        long resolved = resolveCutoverEpoch();
-        if (resolved != EPOCH_UNRESOLVED) {
-            cutoverEpoch.compareAndSet(EPOCH_UNRESOLVED, resolved);
-        }
+        var resolved = resolveCutoverEpoch();
+        resolved.ifPresent(r -> cutoverEpoch.compareAndSet(null, r));
         return resolved;
     }
 
-    private long resolveCutoverEpoch() {
+    private Optional<Instant> resolveCutoverEpoch() {
         if (StringUtils.isNotBlank(configuredCutoverDate)) {
             String problem;
             try {
-                long configured = OffsetDateTime.parse(configuredCutoverDate.trim()).toInstant().toEpochMilli();
-                problem = validateCutoverEpoch(configured);
+                var configured = OffsetDateTime.parse(configuredCutoverDate.trim()).toInstant();
+                problem = validateCutoverEpoch(configured, clock.instant());
                 if (problem == null) {
                     logCutoverEpoch("configuration", configured);
-                    return configured;
+                    return Optional.of(configured);
                 }
             } catch (DateTimeParseException e) {
                 problem = "it is not an ISO-8601 date and time with a zone, such as 2026-10-05T12:00:00Z or 2026-10-05T14:00:00+02:00";
@@ -347,53 +351,54 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             apimlLog.log("org.zowe.apiml.zaas.pat.cutoverSettingRejected", "cutoverDate", configuredCutoverDate, problem);
         }
 
-        Long stored = readCutoverEpoch();
+        var stored = readCutoverEpoch();
         if (stored != null) {
             logCutoverEpoch("store", stored);
-            return stored;
+            return Optional.of(stored);
         }
 
-        long minted = System.currentTimeMillis();
+        // millisecond precision, so this node agrees with the ones that read it back
+        var minted = clock.instant().truncatedTo(ChronoUnit.MILLIS);
         try {
-            cachingServiceClient.create(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, Long.toString(minted)));
+            cachingServiceClient.create(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, Long.toString(minted.toEpochMilli())));
             apimlLog.log("org.zowe.apiml.zaas.pat.cutoverEpochMinted", minted);
             logCutoverEpoch("minted", minted);
-            return minted;
+            return Optional.of(minted);
         } catch (CachingServiceClientException e) {
             if (e.isKeyCollision()) {
-                Long concurrent = readCutoverEpoch();
+                var concurrent = readCutoverEpoch();
                 if (concurrent != null) {
                     logCutoverEpoch("store", concurrent);
-                    return concurrent;
+                    return Optional.of(concurrent);
                 }
             }
             log.debug("Cannot resolve the personal access token cutover epoch", e);
         } catch (RuntimeException e) {
             log.debug("Cannot resolve the personal access token cutover epoch", e);
         }
-        return EPOCH_UNRESOLVED;
+        return Optional.empty();
     }
 
-    static String validateCutoverEpoch(long epoch) {
-        if (epoch < EARLIEST_PLAUSIBLE_CUTOVER_DATE) {
-            return "it is earlier than " + Instant.ofEpochMilli(EARLIEST_PLAUSIBLE_CUTOVER_DATE)
+    static String validateCutoverEpoch(Instant epoch, Instant now) {
+        if (epoch.isBefore(EARLIEST_PLAUSIBLE_CUTOVER_DATE)) {
+            return "it is earlier than " + EARLIEST_PLAUSIBLE_CUTOVER_DATE
                 + ", before this release existed";
         }
-        long latest = System.currentTimeMillis() + CUTOVER_FUTURE_TOLERANCE.toMillis();
-        if (epoch > latest) {
+        Instant latest = now.plus(CUTOVER_FUTURE_TOLERANCE);
+        if (epoch.isAfter(latest)) {
             return "it is more than " + CUTOVER_FUTURE_TOLERANCE.toHours() + " hours in the future ("
-                + Instant.ofEpochMilli(epoch) + ")";
+                + epoch + ")";
         }
         return null;
     }
 
-    private Long readCutoverEpoch() {
+    private Instant readCutoverEpoch() {
         try {
             CachingServiceClient.KeyValue keyValue = cachingServiceClient.read(CUTOVER_EPOCH_KEY);
             if (keyValue == null || keyValue.getValue() == null) {
                 return null;
             }
-            return Long.parseLong(keyValue.getValue().trim());
+            return Instant.ofEpochMilli(Long.parseLong(keyValue.getValue().trim()));
         } catch (NumberFormatException e) {
             log.warn("The stored personal access token cutover epoch is not a number, ignoring it", e);
         } catch (CachingServiceClientException | StorageException e) {
@@ -402,19 +407,19 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         return null;
     }
 
-    private void logCutoverEpoch(String source, long epoch) {
+    private void logCutoverEpoch(String source, Instant epoch) {
         log.info("Personal access token cutover epoch resolved to {} from {}; this node's clock reads {}",
-            epoch, source, System.currentTimeMillis());
+            epoch, source, clock.instant());
     }
 
     private void logLegacyRoute() {
-        long last = legacyRouteLoggedAt.get();
-        long now = System.currentTimeMillis();
-        if (now - last < LEGACY_ROUTE_LOG_INTERVAL_MILLIS || !legacyRouteLoggedAt.compareAndSet(last, now)) {
+        var last = legacyRouteLoggedAt.get();
+        var now = clock.instant();
+        if (isWithin(last, LEGACY_ROUTE_LOG_INTERVAL, now) || !legacyRouteLoggedAt.compareAndSet(last, now)) {
             return;
         }
-        long epoch = cutoverEpoch.get();
-        apimlLog.log("org.zowe.apiml.zaas.pat.legacyStoreConsulted", epoch == EPOCH_UNRESOLVED ? "unresolved" : epoch);
+        apimlLog.log("org.zowe.apiml.zaas.pat.legacyStoreConsulted",
+            Optional.ofNullable(cutoverEpoch.get()).map(Instant::toString).orElse("unresolved"));
     }
 
     public void evictNonRelevantTokensAndRules() {
@@ -526,17 +531,25 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (current == null) {
             return loadFirstSalt().clone();
         }
-        long now = System.currentTimeMillis();
-        if (now - saltReadAt >= SALT_REFRESH_INTERVAL_MILLIS && claimSaltAttempt(now)) {
+        var now = clock.instant();
+        if (hasElapsed(saltReadAt, SALT_REFRESH_INTERVAL, now) && claimSaltAttempt(now)) {
             refreshSalt();
             current = memoizedSalt;
         }
         return current.clone();
     }
 
-    private boolean claimSaltAttempt(long now) {
-        long attemptedAt = saltAttemptedAt.get();
-        return now - attemptedAt >= SALT_RETRY_INTERVAL_MILLIS && saltAttemptedAt.compareAndSet(attemptedAt, now);
+    private static boolean isWithin(Instant since, Duration interval, Instant now) {
+        return now.isBefore(since.plus(interval));
+    }
+
+    private static boolean hasElapsed(Instant since, Duration interval, Instant now) {
+        return !isWithin(since, interval, now);
+    }
+
+    private boolean claimSaltAttempt(Instant now) {
+        var attemptedAt = saltAttemptedAt.get();
+        return hasElapsed(attemptedAt, SALT_RETRY_INTERVAL, now) && saltAttemptedAt.compareAndSet(attemptedAt, now);
     }
 
     private void refreshSalt() {
@@ -544,7 +557,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             byte[] decoded = decodeSalt(initializeSalt());
             if (decoded.length > 0) {
                 memoizedSalt = decoded;
-                saltReadAt = System.currentTimeMillis();
+                saltReadAt = clock.instant();
             }
         } catch (RuntimeException e) {
             log.warn("Cannot refresh the personal access token hashing salt, keeping the last known one", e);
@@ -555,9 +568,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         if (memoizedSalt != null) {
             return memoizedSalt;
         }
-        long now = System.currentTimeMillis();
+        var now = clock.instant();
         RuntimeException previousFailure = lastSaltFailure.get();
-        if (previousFailure != null && now - saltAttemptedAt.get() < SALT_RETRY_INTERVAL_MILLIS) {
+        if (previousFailure != null && isWithin(saltAttemptedAt.get(), SALT_RETRY_INTERVAL, now)) {
             throw new CachingServiceClientException("The personal access token hashing salt is not available yet, " +
                 "the last attempt to read it failed: " + previousFailure.getMessage(), previousFailure);
         }
@@ -567,7 +580,7 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
             lastSaltFailure.set(null);
             if (decoded.length > 0) {
                 memoizedSalt = decoded;
-                saltReadAt = System.currentTimeMillis();
+                saltReadAt = clock.instant();
             }
             return decoded;
         } catch (RuntimeException e) {

@@ -37,6 +37,7 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -44,7 +45,6 @@ import java.time.temporal.ChronoUnit;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -64,6 +64,8 @@ class ApimlAccessTokenProviderTest {
     AuthenticationService as;
     ApimlAccessTokenProvider accessTokenProvider;
 
+    private static final Instant STORED_EPOCH = Instant.ofEpochMilli(1000);
+
     private static String SCOPED_TOKEN;
     private static String TOKEN_WITHOUT_SCOPES;
     Date issuedDate = new Date(System.currentTimeMillis() - 100000L);
@@ -77,7 +79,12 @@ class ApimlAccessTokenProviderTest {
         when(cachingServiceClient.read(SALT_KEY)).thenReturn(new CachingServiceClient.KeyValue(SALT_KEY, new String(ApimlAccessTokenProvider.generateSalt())));
         when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenReturn(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, "1000"));
         when(cachingServiceClient.supportsMapItemQuery()).thenReturn(true);
-        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, new ObjectMapper().registerModule(new JavaTimeModule()));
+        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, new ObjectMapper().registerModule(new JavaTimeModule()), Clock.systemUTC());
+    }
+
+    private void advanceClockBy(Duration duration) {
+        var clock = (Clock) ReflectionTestUtils.getField(accessTokenProvider, "clock");
+        ReflectionTestUtils.setField(accessTokenProvider, "clock", Clock.offset(clock, duration));
     }
 
     @BeforeAll
@@ -487,7 +494,7 @@ class ApimlAccessTokenProviderTest {
             long configured = System.currentTimeMillis() - Duration.ofDays(1).toMillis();
             ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(configured).toString());
 
-            assertEquals(configured, accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(Instant.ofEpochMilli(configured)), accessTokenProvider.getCutoverEpoch());
             verify(cachingServiceClient, never()).read(CUTOVER_EPOCH_KEY);
             verify(cachingServiceClient, never()).create(any());
         }
@@ -498,7 +505,7 @@ class ApimlAccessTokenProviderTest {
             String withOffset = configured.atOffset(ZoneOffset.ofHours(2)).toString();
             ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", withOffset);
 
-            assertEquals(configured.toEpochMilli(), accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(configured), accessTokenProvider.getCutoverEpoch());
         }
 
         @ParameterizedTest
@@ -508,7 +515,7 @@ class ApimlAccessTokenProviderTest {
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
             ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", value);
 
-            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
             verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), eq(value), any());
         }
 
@@ -518,7 +525,7 @@ class ApimlAccessTokenProviderTest {
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
             ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "  ");
 
-            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
             verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), any(), any(), any());
         }
 
@@ -528,7 +535,7 @@ class ApimlAccessTokenProviderTest {
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
             ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "1970-01-02T00:00:00Z");
 
-            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
             verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), any(), any());
         }
 
@@ -538,7 +545,7 @@ class ApimlAccessTokenProviderTest {
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
             ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.now().plus(Duration.ofDays(30)).toString());
 
-            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
             verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), any(), any());
         }
 
@@ -547,23 +554,24 @@ class ApimlAccessTokenProviderTest {
             ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "1970-01-01T00:00:00Z");
             when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("not found"));
 
-            long before = System.currentTimeMillis();
-            assertTrue(accessTokenProvider.getCutoverEpoch() >= before);
+            Instant before = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+            assertFalse(accessTokenProvider.getCutoverEpoch().orElseThrow().isBefore(before));
         }
 
         @Test
         void thenOnlyCertainlyWrongEpochsAreImplausible() {
-            long now = System.currentTimeMillis();
-            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_DATE - 1));
-            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_DATE));
-            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now));
-            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now + Duration.ofHours(1).toMillis()));
-            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(now + Duration.ofDays(2).toMillis()));
+            Instant now = Instant.now();
+            Instant earliest = ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_DATE;
+            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(earliest.minusMillis(1), now));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(earliest, now));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now, now));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now.plus(Duration.ofHours(1)), now));
+            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(now.plus(Duration.ofDays(2)), now));
         }
 
         @Test
         void givenAStoredEpoch_thenNothingIsMinted() {
-            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
             verify(cachingServiceClient, never()).create(any());
         }
 
@@ -573,10 +581,10 @@ class ApimlAccessTokenProviderTest {
             ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
             when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("not found"));
 
-            long before = System.currentTimeMillis();
-            long minted = accessTokenProvider.getCutoverEpoch();
+            Instant before = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+            Instant minted = accessTokenProvider.getCutoverEpoch().orElseThrow();
 
-            assertTrue(minted >= before);
+            assertFalse(minted.isBefore(before));
             verify(cachingServiceClient).create(argThat(kv -> CUTOVER_EPOCH_KEY.equals(kv.getKey())));
             verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverEpochMinted"), any());
         }
@@ -603,11 +611,11 @@ class ApimlAccessTokenProviderTest {
             }).when(client).create(any());
 
             ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-            var nodeA = new ApimlAccessTokenProvider(client, as, mapper);
-            var nodeB = new ApimlAccessTokenProvider(client, as, mapper);
+            var nodeA = new ApimlAccessTokenProvider(client, as, mapper, Clock.systemUTC());
+            var nodeB = new ApimlAccessTokenProvider(client, as, mapper, Clock.systemUTC());
 
-            long epochA = nodeA.getCutoverEpoch();
-            long epochB = nodeB.getCutoverEpoch();
+            var epochA = nodeA.getCutoverEpoch();
+            var epochB = nodeB.getCutoverEpoch();
 
             assertEquals(epochA, epochB);
             assertEquals(1, store.size());
@@ -622,7 +630,7 @@ class ApimlAccessTokenProviderTest {
             when(collision.isKeyCollision()).thenReturn(true);
             doThrow(collision).when(cachingServiceClient).create(argThat(kv -> CUTOVER_EPOCH_KEY.equals(kv.getKey())));
 
-            assertEquals(777L, accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(Instant.ofEpochMilli(777)), accessTokenProvider.getCutoverEpoch());
         }
 
         @Test
@@ -646,9 +654,22 @@ class ApimlAccessTokenProviderTest {
         }
 
         @Test
+        void givenResolutionFails_thenItIsRetriedOnceTheRetryIntervalHasPassed() {
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY))
+                .thenThrow(new CachingServiceClientException("boom"))
+                .thenReturn(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, "1000"));
+            doThrow(new CachingServiceClientException("boom")).when(cachingServiceClient).create(argThat(kv -> CUTOVER_EPOCH_KEY.equals(kv.getKey())));
+
+            assertTrue(accessTokenProvider.getCutoverEpoch().isEmpty());
+            advanceClockBy(Duration.ofMinutes(1));
+
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+        }
+
+        @Test
         void givenResolutionSucceeds_thenTheStoreIsNotReadAgain() {
-            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
-            assertEquals(1000L, accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
 
             verify(cachingServiceClient, times(1)).read(CUTOVER_EPOCH_KEY);
         }
@@ -909,14 +930,11 @@ class ApimlAccessTokenProviderTest {
         }
 
         private void expireTheMemo() {
-            ReflectionTestUtils.setField(accessTokenProvider, "saltReadAt",
-                System.currentTimeMillis() - ApimlAccessTokenProvider.SALT_REFRESH_INTERVAL_MILLIS - 1);
-            expireTheLastAttempt();
+            advanceClockBy(ApimlAccessTokenProvider.SALT_REFRESH_INTERVAL);
         }
 
         private void expireTheLastAttempt() {
-            ((AtomicLong) ReflectionTestUtils.getField(accessTokenProvider, "saltAttemptedAt"))
-                .set(System.currentTimeMillis() - ApimlAccessTokenProvider.SALT_RETRY_INTERVAL_MILLIS - 1);
+            advanceClockBy(ApimlAccessTokenProvider.SALT_RETRY_INTERVAL);
         }
     }
 
