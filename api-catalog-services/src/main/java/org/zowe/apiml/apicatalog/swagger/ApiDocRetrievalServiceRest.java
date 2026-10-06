@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -53,9 +54,12 @@ public class ApiDocRetrievalServiceRest implements InitializingBean {
 
     private boolean allowAnySwaggerUrl = false;
 
+    @Value("${apiml.security.domains.allowAnySwagger:false}")
+    private boolean allowAnySwaggerUrlProp;
+
     @Override
     public void afterPropertiesSet() throws Exception {
-        allowAnySwaggerUrl = Boolean.getBoolean("ZWE_APIML_ALLOW_ANY_SWAGGER_URL");
+        allowAnySwaggerUrl = Boolean.getBoolean("ZWE_APIML_ALLOW_ANY_SWAGGER_URL") || allowAnySwaggerUrlProp;
     }
 
     public Mono<ApiDocInfo> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {

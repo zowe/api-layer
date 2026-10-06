@@ -59,6 +59,12 @@ public class MetadataFilterService implements InitializingBean {
     @Value("${server.attlsClient.enabled:false}")
     private boolean isClientAttlsEnabled;
 
+    @Value("${apiml.security.domains.onlyWarn:false}")
+    private boolean onlyWarnProp;
+
+    @Value("${apiml.security.domains.portValidationDisabled:false}")
+    private boolean disablePortValidationProp;
+
     private boolean onlyWarn = false;
     private boolean disablePortValidation = false;
 
@@ -70,8 +76,8 @@ public class MetadataFilterService implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         allowedDomainsSet = sanitizeAllowedDomains();
-        onlyWarn = Optional.ofNullable(System.getenv(ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED)).map(Boolean::parseBoolean).orElse(false);
-        disablePortValidation = Optional.ofNullable(System.getenv(ZWE_DISABLE_PORT_VALIDATION)).map(Boolean::parseBoolean).orElse(false);
+        onlyWarn = Optional.ofNullable(System.getenv(ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED)).map(Boolean::parseBoolean).orElse(false) || onlyWarnProp;
+        disablePortValidation = Optional.ofNullable(System.getenv(ZWE_DISABLE_PORT_VALIDATION)).map(Boolean::parseBoolean).orElse(false) || disablePortValidationProp;
 
         log.info("Allowed domains: {}", allowedDomains);
 
