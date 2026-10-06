@@ -199,7 +199,8 @@ public class AuthController {
             timeStamp = rulesRequestModel.getTimestamp();
         }
         if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
-            log.debug("Timestamp {} used to revoke tokens for all users is past the threshold.",  timeStamp);
+            log.debug("Cannot revoke access tokens of user {}: timestamp {} is more than {} ms in the future",
+                userId, timeStamp, ruleTimestampSkewAllowanceMillis);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
@@ -235,7 +236,13 @@ public class AuthController {
     public ResponseEntity<String> revokeAccessTokensForUser(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
-        if (userId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+        if (userId == null) {
+            log.debug("Cannot revoke access tokens for a user: the request does not contain a userId");
+            return badRequestForPATInvalidation();
+        }
+        if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+            log.debug("Cannot revoke access tokens for user {}: timestamp {} is more than {} ms in the future",
+                userId, timeStamp, ruleTimestampSkewAllowanceMillis);
             return badRequestForPATInvalidation();
         }
         log.debug("revokeAccessTokensForUser: userId={}", userId);
@@ -273,7 +280,13 @@ public class AuthController {
     public ResponseEntity<String> revokeAccessTokensForScope(@RequestBody() RulesRequestModel requestModel) throws JsonProcessingException {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
-        if (serviceId == null || isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+        if (serviceId == null) {
+            log.debug("Cannot revoke access tokens for a service: the request does not contain a serviceId");
+            return badRequestForPATInvalidation();
+        }
+        if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+            log.debug("Cannot revoke access tokens for service {}: timestamp {} is more than {} ms in the future",
+                serviceId, timeStamp, ruleTimestampSkewAllowanceMillis);
             return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
