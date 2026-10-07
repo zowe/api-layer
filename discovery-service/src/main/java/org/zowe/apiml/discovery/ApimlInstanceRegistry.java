@@ -31,6 +31,7 @@ import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -187,7 +188,12 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        info = validateInstanceInfo(info);
+        try {
+            info = validateInstanceInfo(info);
+        } catch (DomainAllowListMetadataException e) {
+            log.debug("Domains not allowed found in instance {}. Instance will not be registered", info.getInstanceId());
+            return;
+        }
         info = changeServiceId(info);
 
         super.register(info, leaseDuration, isReplication);
@@ -195,7 +201,12 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        info = validateInstanceInfo(info);
+        try {
+            info = validateInstanceInfo(info);
+        } catch (DomainAllowListMetadataException e) {
+            log.debug("Domains not allowed found in instance {}. Instance will not be registered", info.getInstanceId());
+            return;
+        }
         info = changeServiceId(info);
 
         super.register(info, isReplication);
