@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -34,11 +35,25 @@ public class KeyValue implements Serializable {
     private String serviceId;
     private final String created;
 
+    /**
+     * Requested time-to-live of the entry, in seconds.
+     * <p>
+     * Deliberately {@code transient} so the Java-serialized form of this class stays
+     * byte-identical to the previous release.
+     */
+    @ToString.Exclude
+    private transient Long ttlSeconds;
+
     public KeyValue(String key, String value) {
         this.key = key;
         this.value = value;
         this.serviceId = "";
         this.created = currentTime();
+    }
+
+    public KeyValue(String key, String value, Long ttlSeconds) {
+        this(key, value);
+        this.ttlSeconds = ttlSeconds;
     }
 
     private static String currentTime() {

@@ -32,6 +32,7 @@ import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.lang.JoseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
@@ -100,6 +102,9 @@ public class AuthController {
     public static final String OIDC_TOKEN_VALIDATE = "/oidc-token/validate"; // NOSONAR
     public static final String OIDC_WEBFINGER_PATH = "/oidc/webfinger";
 
+    @Value("${apiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis:#{T(org.zowe.apiml.cache.PATRevocationStore).DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS}}")
+    private long ruleTimestampSkewAllowanceMillis = PATRevocationStore.DEFAULT_RULE_TIMESTAMP_SKEW_ALLOWANCE_MILLIS;
+
     @DeleteMapping(path = INVALIDATE_PATH)
     @Hidden
     @Operation(summary = "Logout JWT token.",
@@ -108,7 +113,7 @@ public class AuthController {
         description = "Use the `/auth/invalidate` API to invalidate token on specific instance of Gateway.",
         security = {
             @SecurityRequirement(name = "ClientCert")
-    })
+        })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully invalidated"),
         @ApiResponse(responseCode = "400", description = "Invalid token"),
@@ -184,14 +189,19 @@ public class AuthController {
         @ApiResponse(responseCode = "204", description = "Successfully revoked")
     })
     public ResponseEntity<Void> revokeAllUserAccessTokens(@RequestBody(required = false) RulesRequestModel rulesRequestModel) {
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (SecurityContextHolder.getContext().getAuthentication() == null || SecurityContextHolder.getContext().getAuthentication().getPrincipal() == null) {
             return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
         }
-        String userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
+        var userId = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
         log.debug("revokeAllUserAccessTokens: userId={}", userId);
         long timeStamp = 0;
         if (rulesRequestModel != null) {
             timeStamp = rulesRequestModel.getTimestamp();
+        }
+        if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+            log.debug("Cannot revoke access tokens of user {}: timestamp {} is more than {} ms in the future",
+                userId, timeStamp, ruleTimestampSkewAllowanceMillis);
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         tokenProvider.invalidateAllTokensForUser(userId, timeStamp);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -227,6 +237,12 @@ public class AuthController {
         long timeStamp = requestModel.getTimestamp();
         String userId = requestModel.getUserId();
         if (userId == null) {
+            log.debug("Cannot revoke access tokens for a user: the request does not contain a userId");
+            return badRequestForPATInvalidation();
+        }
+        if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+            log.debug("Cannot revoke access tokens for user {}: timestamp {} is more than {} ms in the future",
+                userId, timeStamp, ruleTimestampSkewAllowanceMillis);
             return badRequestForPATInvalidation();
         }
         log.debug("revokeAccessTokensForUser: userId={}", userId);
@@ -265,6 +281,12 @@ public class AuthController {
         long timeStamp = requestModel.getTimestamp();
         String serviceId = requestModel.getServiceId();
         if (serviceId == null) {
+            log.debug("Cannot revoke access tokens for a service: the request does not contain a serviceId");
+            return badRequestForPATInvalidation();
+        }
+        if (isFutureRuleTimestamp(timeStamp, ruleTimestampSkewAllowanceMillis)) {
+            log.debug("Cannot revoke access tokens for service {}: timestamp {} is more than {} ms in the future",
+                serviceId, timeStamp, ruleTimestampSkewAllowanceMillis);
             return badRequestForPATInvalidation();
         }
         tokenProvider.invalidateAllTokensForService(serviceId, timeStamp);
@@ -504,7 +526,7 @@ public class AuthController {
             @SecurityRequirement(name = "Bearer"),
             @SecurityRequirement(name = "CookieAuth"),
             @SecurityRequirement(name = "LoginBasicAuth")
-    })
+        })
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "OK"),
         @ApiResponse(responseCode = "404", description = "WebFinger is disabled"),
@@ -532,6 +554,11 @@ public class AuthController {
         pemWriter.close();
         return stringWriter.toString();
     }
+
+    public static boolean isFutureRuleTimestamp(long timestamp, long skewAllowanceMillis) {
+        return timestamp > System.currentTimeMillis() + skewAllowanceMillis;
+    }
+
 
     private ResponseEntity<String> badRequestForPATInvalidation() throws JsonProcessingException {
         final ApiMessageView message = messageService.createMessage("org.zowe.apiml.security.query.invalidRevokeRequestBody").mapToView();

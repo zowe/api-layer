@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.caching.service.infinispan.config;
 
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,23 +22,21 @@ import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.lock.EmbeddedClusteredLockManagerFactory;
-import org.infinispan.lock.api.ClusteredLock;
-import org.infinispan.lock.api.ClusteredLockManager;
 import org.infinispan.lock.exception.ClusteredLockException;
 import org.infinispan.manager.CacheContainer;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.partitionhandling.AvailabilityException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ResourceLoader;
+import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.cache.Storage;
-import org.zowe.apiml.cache.StorageException;
-import org.zowe.apiml.caching.service.Messages;
 import org.zowe.apiml.caching.service.infinispan.ApimlSslKeyExchange;
 import org.zowe.apiml.caching.service.infinispan.exception.InfinispanConfigException;
 import org.zowe.apiml.caching.service.infinispan.storage.InfinispanStorage;
@@ -49,7 +49,6 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -65,11 +64,26 @@ public class InfinispanConfig implements InitializingBean {
     private static final String KEYRING_PASSWORD = "password";
 
     private static final String ZWE_HAINSTANCE_ID = "ZWE_haInstance_id";
-    private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
     public static final String CACHE_ZOWE = "zoweCache";
+
+    /** @deprecated only for the legacy cache for personal access tokens. */
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    private static final String LOCK_ZOWE_INVALIDATED = "zoweInvalidatedTokenLock";
+
+    /**
+     * legacy cache for personal access tokens
+     *
+     * @deprecated superseded by {@link #CACHE_ZOWE_INVALIDATED_TOKEN_ITEM}.
+     */
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     public static final String CACHE_ZOWE_INVALIDATED_TOKEN = "zoweInvalidatedTokenCache";
+
+    public static final String CACHE_ZOWE_INVALIDATED_TOKEN_ITEM = "zoweInvalidatedTokenItemCache";
+
     private static final long SMALL_CACHE_SIZE = 10;
     private static final long BIG_CACHE_SIZE = 1000;
+
+    private static final Duration REVOCATION_MAX_TTL = Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS);
 
     @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;
@@ -122,7 +136,11 @@ public class InfinispanConfig implements InitializingBean {
     @Value("${apiml.service.hostname:localhost}")
     private String hostname;
 
-    private final AtomicReference<ClusteredLock> zoweInvalidatedTokenLock = new AtomicReference<>();
+    @Value("${caching.storage.infinispan.revocationStore.maxCount:100000}")
+    private long revocationStoreMaxCount;
+
+    @Value("${caching.storage.infinispan.revocationStore.sizeWarningThreshold:50000}")
+    private long revocationStoreSizeWarningThreshold;
 
     @Override
     public void afterPropertiesSet() {
@@ -217,6 +235,20 @@ public class InfinispanConfig implements InitializingBean {
         return builder;
     }
 
+    private ConfigurationBuilder getRevocationCacheConfig() {
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder
+            .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
+            .memory()
+            .maxCount(revocationStoreMaxCount)
+            .persistence()
+            .addSoftIndexFileStore()
+            .clustering()
+            .cacheMode(CacheMode.REPL_SYNC)
+            .hash().numSegments(numSegments);
+        return builder;
+    }
+
     private ConfigurationBuilder getSimpleCacheConfig(long maxCount, Duration lifeSpan) {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
@@ -250,6 +282,7 @@ public class InfinispanConfig implements InitializingBean {
 
         var caches = new HashMap<String, ConfigurationBuilder>();
         caches.put(CACHE_ZOWE, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN_ITEM, getRevocationCacheConfig());
         caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
 
         if (applicationInfo.isModulith()) {
@@ -272,30 +305,36 @@ public class InfinispanConfig implements InitializingBean {
         return new LazyCacheManager(getCacheManagerConfig(resourceLoader), caches);
     }
 
-    private ClusteredLock lock(CacheContainer cacheManager) {
-        return zoweInvalidatedTokenLock.updateAndGet(prev -> {
-            if (prev != null) {
-                return prev;
-            }
-
-            EmbeddedCacheManager cm = (cacheManager instanceof LazyCacheManager lazyCacheManager) ? lazyCacheManager.getOriginal() : (EmbeddedCacheManager) cacheManager;
-            try {
-                ClusteredLockManager clm = EmbeddedClusteredLockManagerFactory.from(cm);
-                clm.defineLock(LOCK_ZOWE_INVALIDATED); // it can throw AvailabilityException
-                return clm.get(LOCK_ZOWE_INVALIDATED);
+    /**
+     * Nothing <em>takes</em> the lock anymore. It existed to serialize the whole-map
+     * read-modify-write of the previous layout; with one entry per item every write is a single atomic
+     * {@code put} and every removal a compare-and-remove, so nothing needs cluster-wide mutual exclusion.
+     */
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    private void defineLegacyLock(CacheContainer cacheManager) {
+        EmbeddedCacheManager cm = (cacheManager instanceof LazyCacheManager lazyCacheManager)
+            ? lazyCacheManager.getOriginal() : (EmbeddedCacheManager) cacheManager;
+        try {
+            EmbeddedClusteredLockManagerFactory.from(cm).defineLock(LOCK_ZOWE_INVALIDATED);
             } catch (AvailabilityException | ClusteredLockException e) {
-                log.debug("Cannot obtain lock", e);
-                throw new StorageException(Messages.CACHE_NOT_AVAILABLE.getKey(), Messages.CACHE_NOT_AVAILABLE.getStatus(), e.getMessage());
-            }
-        });
+                // Nothing on this node needs it, so this is not fatal here.
+            log.debug("Cannot define the legacy clustered lock", e);
+        }
     }
 
     @Bean
-    public Storage storage(DefaultCacheManager cacheManager) {
-        return new InfinispanStorage(
+    public Storage storage(DefaultCacheManager cacheManager, ObjectProvider<MeterRegistry> meterRegistry) {
+        defineLegacyLock(cacheManager);
+        var storage = new InfinispanStorage(
             cacheManager,
-            () -> lock(cacheManager)
+            REVOCATION_MAX_TTL.toSeconds(),
+            revocationStoreSizeWarningThreshold
         );
+        meterRegistry.ifAvailable(registry -> Gauge
+            .builder("apiml.caching.revocationStore.size", storage, InfinispanStorage::getLastObservedRevocationStoreSize)
+            .description("Entries in the personal access token revocation store, as of the last sample taken on write")
+            .register(registry));
+        return storage;
     }
 
 }

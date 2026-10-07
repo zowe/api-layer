@@ -165,8 +165,25 @@ public class InMemoryFunctionalTest {
                 .statusCode(HttpStatus.OK.value());
         }
 
+
         @Test
         @Order(5)
+        void queryMapItemsIsRejectedOnInMemoryStorage() throws Exception {
+            ObjectMapper mapper = new ObjectMapper();
+
+            given().config(SslContext.clientCertApiml)
+                .body(mapper.writeValueAsString(java.util.Map.of("invalidTokens", java.util.List.of("aHash"))))
+                .header("Content-type", "application/json")
+                .header("X-CS-Service-ID", "service1")
+                .header(CLIENT_AUTH_CERTIFICATE_HEADER, MOCK_FORWARDED_CERT_HEADER)
+                .post(getUri("/cache-query"))
+                .then()
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .body("messages[0].messageNumber", is("ZWECS136E"));
+        }
+
+        @Test
+        @Order(6)
         void deleteEntry() {
             given().config(SslContext.clientCertApiml)
                 .header("Content-type", "application/json")
@@ -181,7 +198,7 @@ public class InMemoryFunctionalTest {
     @Nested
     class WhenClientIsNotTrusted {
         @Test
-        @Order(6)
+        @Order(7)
         void responseIsForbidden() {
             given().config(SslContext.clientCertUnknownUser)
                 .header("Content-type", "application/json")
