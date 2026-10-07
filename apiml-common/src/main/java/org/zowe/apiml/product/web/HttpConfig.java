@@ -253,6 +253,7 @@ public class HttpConfig implements InitializingBean {
     @Primary
     RestTemplate restTemplateWithKeystore() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(secureHttpClient);
+        factory.setReadTimeout(requestConnectionTimeout);
         return new RestTemplate(factory);
     }
 

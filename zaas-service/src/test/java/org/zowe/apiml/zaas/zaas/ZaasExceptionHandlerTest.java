@@ -20,6 +20,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.zowe.apiml.security.common.auth.saf.EndpointImproperlyConfigureException;
@@ -98,6 +99,15 @@ class ZaasExceptionHandlerTest {
     }
 
     @Test
+    void givenNoRequiredHeader_whenCallZaas_thenReturns400WithMessage() {
+        given().when()
+            .get("/test/requiredHeader")
+        .then()
+            .statusCode(400)
+            .body("messages[0].messageKey", is("org.zowe.apiml.common.badRequest"));
+    }
+
+    @Test
     void givenNonAuthorizedCredentials_whenCallZaas_thenReturns403WithMessage() {
         given().when()
             .get("/test/forbidden")
@@ -140,6 +150,7 @@ class ZaasExceptionHandlerTest {
         @PreAuthorize("false")
         @GetMapping("/forbidden")
         public void forbidden() {
+            throw new UnsupportedOperationException();
         }
 
         @GetMapping("/sslException")
@@ -155,6 +166,11 @@ class ZaasExceptionHandlerTest {
         @GetMapping("/endpointImproperlyConfigureException")
         public void endpointImproperlyConfigureException() {
             throw new EndpointImproperlyConfigureException("misconfigured", "endpoint");
+        }
+
+        @GetMapping("/requiredHeader")
+        public void requiredHeader(@RequestHeader("X-Required") String required) {
+            throw new UnsupportedOperationException();
         }
 
     }

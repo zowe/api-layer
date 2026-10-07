@@ -233,6 +233,17 @@ class AuthExceptionHandlerTest {
         verify(function).accept(any(), eq(HttpStatus.FORBIDDEN));
     }
 
+    @Test
+    void testAuthenticationFailure_whenExceptionIsAccessTokenTooManyScopesException() throws ServletException {
+        authExceptionHandler.handleException(
+            httpServletRequest.getRequestURI(), function, addHeader,
+            new AccessTokenTooManyScopesException("too many", 64));
+
+        Message message = messageService.createMessage("org.zowe.apiml.security.token.accessTokenTooManyScopes", 64);
+
+        verify(function).accept(message.mapToView(), HttpStatus.BAD_REQUEST);
+    }
+
     @TestConfiguration
     static class ContextConfiguration {
 

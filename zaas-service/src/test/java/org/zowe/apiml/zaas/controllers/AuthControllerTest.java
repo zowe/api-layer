@@ -39,12 +39,14 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
+import org.zowe.apiml.zaas.zaas.ZaasExceptionHandler;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -102,7 +104,7 @@ class AuthControllerTest {
     void setUp() throws JSONException, JoseException {
         messageService = new YamlMessageService("/zaas-log-messages.yml");
         authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider, webFingerProvider);
-        mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(authController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
         body = new JSONObject()
             .put("token", "token")
             .put("serviceId", "service");
@@ -424,6 +426,69 @@ class AuthControllerTest {
                             .content(body.toString()))
                         .andExpect(status().is(SC_BAD_REQUEST)).andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAT607E")));
                 }
+            }
+
+            @Nested
+            class WhenTheTimestampIsInTheFuture {
+
+                @ParameterizedTest
+                @ValueSource(strings = {"/zaas/api/v1/auth/access-token/revoke/tokens/user", "/zaas/api/v1/auth/access-token/revoke/tokens/scope"})
+                void thenRejectIt(String url) throws Exception {
+                    body = new JSONObject()
+                        .put("userId", "user")
+                        .put("serviceId", "user")
+                        .put("timestamp", System.currentTimeMillis() + 86_400_000L);
+                    mockMvc.perform(delete(url)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_BAD_REQUEST));
+                    verify(tokenProvider, never()).invalidateAllTokensForUser(anyString(), anyLong());
+                    verify(tokenProvider, never()).invalidateAllTokensForService(anyString(), anyLong());
+                }
+
+                @Test
+                void thenRejectItForOwnTokensToo() throws Exception {
+                    SecurityContext context = new SecurityContextImpl();
+                    var tokenAuthenticationMock = mock(TokenAuthentication.class);
+                    when(tokenAuthenticationMock.getPrincipal()).thenReturn("user");
+                    context.setAuthentication(tokenAuthenticationMock);
+                    SecurityContextHolder.setContext(context);
+                    body = new JSONObject()
+                        .put("timestamp", System.currentTimeMillis() + 86_400_000L);
+                    mockMvc.perform(delete("/zaas/api/v1/auth//access-token/revoke/tokens")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_BAD_REQUEST));
+                    verify(tokenProvider, never()).invalidateAllTokensForUser(anyString(), anyLong());
+                }
+            }
+        }
+
+        @Nested
+        class GivenTheRevocationStoreIsUnreachable {
+
+            @Test
+            void thenTheRevokeEndpointAnswersServiceUnavailable() throws Exception {
+                doThrow(new CachingServiceClientException("cannot reach the caching service"))
+                    .when(tokenProvider).invalidateToken(anyString());
+                body = new JSONObject().put("token", "token");
+
+                mockMvc.perform(delete("/zaas/api/v1/auth/access-token/revoke")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body.toString()))
+                    .andExpect(status().is(SC_SERVICE_UNAVAILABLE))
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAZ606E")));
+            }
+
+            @Test
+            void thenTheEvictEndpointAnswersServiceUnavailable() throws Exception {
+                doThrow(new CachingServiceClientException("cannot reach the caching service"))
+                    .when(tokenProvider).evictNonRelevantTokensAndRules();
+
+                mockMvc.perform(delete("/zaas/api/v1/auth/access-token/evict")
+                        .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is(SC_SERVICE_UNAVAILABLE));
             }
         }
     }

@@ -5,13 +5,13 @@ task createVenv(type: Exec) {
     commandLine 'python3', '-m', 'venv', 'venv'
 }
 
-task installDependencies(type: Exec) {
+task installPipenv(type: Exec) {
     dependsOn createVenv
-    doFirst {
-        exec {
-            commandLine "${venvPath}pip", 'install', 'pipenv'
-        }
-    }
+    commandLine "${venvPath}pip", 'install', 'pipenv'
+}
+
+task installDependencies(type: Exec) {
+    dependsOn installPipenv
     commandLine "${venvPath}pipenv", 'install', '--deploy', '--ignore-pipfile'
 }
 
