@@ -159,6 +159,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             if (peerReplicate) {
                 replicateToPeersMethodHandle.invokeWithArguments(this, Action.Register, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, isReplication);
             }
+        } catch (DomainAllowListMetadataException e) {
+            log.debug("Domains not allowed found in instance {}. Instance will not be registered", instanceInfo.getInstanceId());
         } catch (Throwable e) {
             throw new IllegalStateException(EXCEPTION_MESSAGE, e);
         } finally {
@@ -188,12 +190,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        try {
-            info = validateInstanceInfo(info);
-        } catch (DomainAllowListMetadataException e) {
-            log.debug("Domains not allowed found in instance {}. Instance will not be registered", info.getInstanceId());
-            return;
-        }
+        info = validateInstanceInfo(info);
         info = changeServiceId(info);
 
         super.register(info, leaseDuration, isReplication);
@@ -201,12 +198,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        try {
-            info = validateInstanceInfo(info);
-        } catch (DomainAllowListMetadataException e) {
-            log.debug("Domains not allowed found in instance {}. Instance will not be registered", info.getInstanceId());
-            return;
-        }
+        info = validateInstanceInfo(info);
         info = changeServiceId(info);
 
         super.register(info, isReplication);
