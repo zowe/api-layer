@@ -120,9 +120,9 @@
                             "type": "object",
                             "description": "Configuration of the allowed domains validation.",
                             "properties": {
-                                "allowAnySwagger": {
+                                "allowAnyApiDocUrl": {
                                     "type": "boolean",
-                                    "description": "Allows the API Catalog to retrieve Swagger documents from any URL, not only from the allowed domains.",
+                                    "description": "Allows the API Catalog to retrieve API documents from any URL, not only from the allowed domains.",
                                     "default": false
                                 },
                                 "onlyWarn": {

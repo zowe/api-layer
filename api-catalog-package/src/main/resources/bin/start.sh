@@ -30,7 +30,7 @@
 # - ZWE_components_gateway_apiml_security_authorization_provider
 # - ZWE_components_gateway_apiml_security_authorization_resourceClass
 # - ZWE_components_gateway_port - the port the api gateway service will use
-# - ZWE_configs_apiml_security_domains_allowAnySwagger - Allow any Swagger URL, not only those matching allowed domains (default: false)
+# - ZWE_configs_apiml_security_domains_allowAnyApiDocUrl - Allow any Api Doc URL, not only those matching allowed domains (default: false)
 # - ZWE_configs_apiml_security_domains_onlyWarn - Only log a warning when a URL is not in allowed domains (default: false)
 # - ZWE_configs_apiml_security_domains_portValidationDisabled - Do not validate the port against allowed domains (default: false)
 # - ZWE_configs_server_ssl_enabled
@@ -137,7 +137,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CATALOG_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.authorization.endpoint.url=${ZWE_components_gateway_apiml_security_authorization_endpoint_url:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port}/zss/api/v1/saf-auth"} \
     -Dapiml.security.authorization.provider=${ZWE_configs_apiml_security_authorization_provider:-${ZWE_components_gateway_apiml_security_authorization_provider:-"native"}} \
     -Dapiml.security.authorization.resourceClass=${ZWE_components_gateway_apiml_security_authorization_resourceClass:-ZOWE} \
-    -Dapiml.security.domains.allowAnySwagger=${ZWE_configs_apiml_security_domains_allowAnySwagger:-false} \
+    -Dapiml.security.domains.allowAnyApiDocUrl=${ZWE_configs_apiml_security_domains_allowAnyApiDocUrl:-false} \
     -Dapiml.security.domains.onlyWarn=${ZWE_configs_apiml_security_domains_onlyWarn:-false} \
     -Dapiml.security.domains.portValidationDisabled=${ZWE_configs_apiml_security_domains_portValidationDisabled:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
