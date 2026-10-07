@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -51,11 +52,14 @@ public class ApiDocRetrievalServiceRest implements InitializingBean {
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
 
-    private boolean allowAnySwaggerUrl = false;
+    private boolean allowAnyApiDocUrl = false;
+
+    @Value("${apiml.security.domains.allowAnyApiDocUrl:false}")
+    private boolean allowAnyApiDocUrlProp;
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        allowAnySwaggerUrl = Boolean.getBoolean("ZWE_APIML_ALLOW_ANY_SWAGGER_URL");
+        allowAnyApiDocUrl = Boolean.getBoolean("ZWE_APIML_ALLOW_ANY_SWAGGER_URL") || allowAnyApiDocUrlProp;
     }
 
     public Mono<ApiDocInfo> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {
@@ -64,7 +68,7 @@ public class ApiDocRetrievalServiceRest implements InitializingBean {
 
         var apiDocUrl = apiInfo.getSwaggerUrl();
 
-        if (!allowAnySwaggerUrl && !verifySwaggerUrl(serviceInstance, apiDocUrl)) {
+        if (!allowAnyApiDocUrl && !verifySwaggerUrl(serviceInstance, apiDocUrl)) {
             log.debug("URL {} does not match declared host: {} and/or port: {} in instance {}", apiDocUrl, serviceInstance.getHost(), serviceInstance.getPort(), serviceInstance.getInstanceId());
             return Mono.error(new ApiDocNotFoundException("Swagger URL validation failed"));
         }
