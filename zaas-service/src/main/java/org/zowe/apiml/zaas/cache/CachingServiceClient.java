@@ -88,7 +88,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     @Value("${apiml.security.personalAccessToken.revocationLookupCircuitOpenMillis:10000}")
     private long lookupCircuitOpenMillis = 10_000;
-    
+
     @Value("${apiml.service.http.userId:#{null}}")
     private String cachingServiceUserId;
 
@@ -455,16 +455,21 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Data
     public static class KeyValue {
+
         private final String key;
         private final String value;
 
         /**
          * Requested lifespan of the entry, in seconds.
          */
-        private Long ttlSeconds;
+        private final Long ttlSeconds;
 
         public KeyValue() {
-            this("", "");
+            this("", "", null);
+        }
+
+        public KeyValue(String key, String value) {
+            this(key, value, null);
         }
 
         /**
@@ -481,16 +486,16 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
          * @param value the stored value
          */
         @JsonCreator
-        public KeyValue(@JsonProperty("key") String key, @JsonProperty("value") String value) {
-            this.key = key;
-            this.value = value;
-        }
-
-        public KeyValue(String key, String value, Long ttlSeconds) {
+        public KeyValue(
+            @JsonProperty("key") String key,
+            @JsonProperty("value") String value,
+            @JsonProperty("ttlSeconds") Long ttlSeconds
+        ) {
             this.key = key;
             this.value = value;
             this.ttlSeconds = ttlSeconds;
         }
+
     }
 
 }
