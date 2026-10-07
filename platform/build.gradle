@@ -37,8 +37,8 @@ dependencies {
 publishing {
     repositories.maven {
         credentials {
-            username project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
-            password project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
+            username = project.hasProperty("zowe.deploy.username") ? project.getProperty("zowe.deploy.username") : ""
+            password = project.hasProperty("zowe.deploy.password") ? project.getProperty("zowe.deploy.password") : ""
         }
         if (rootProject.version.endsWith("-SNAPSHOT")) {
             setUrl(artifactoryPublishingMavenSnapshotRepo)
