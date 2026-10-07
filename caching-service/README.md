@@ -216,40 +216,6 @@ are worth knowing if you use it for anything else:
   per-item value wins if the same key exists in both. That overlay disappears with the pre-cutover read path,
   by which point nothing written before the upgrade is still relevant.
 
-### Retiring the pre-cutover store
-
-The previous layout kept a whole map as the value of a single cache entry, in `zoweInvalidatedTokenCache`.
-From this release on that cache is frozen: nothing writes to it, and it is read only for personal access
-tokens that were issued before the upgrade. It cannot grow, and within 90 days nothing reads it at all.
-
-Removing a cache definition does not remove its data. Each persistent cache is a directory
-`<workspace>/caching-service/<haInstanceId>/<cacheName>/`, and with the default 256 segments even an empty one
-costs about a megabyte across 258 index files. Whether to dispose of it is an operator decision, so the
-product ships a script rather than deleting anything:
-
-    bin/retire-cache.sh --list                       # what is there, and how big
-    bin/retire-cache.sh zoweInvalidatedTokenCache    # rename it aside (reversible)
-    bin/retire-cache.sh zoweInvalidatedTokenCache --delete
-
-The service must be stopped - or, in a modulith deployment, the API Mediation Layer, which keeps its store in
-the same directory: Infinispan holds open handles into it, and moving it underneath a running instance
-corrupts the store rather than retiring it. The script refuses while Infinispan's lock file
-`___global.lck` is present, which it is for as long as the instance runs. An unclean shutdown leaves it
-behind too; start and stop the instance once to clear it, or pass `--force` if it is certainly stopped.
-`zoweCache` is refused outright - it holds the hashing salt, and losing that silently un-enforces every
-revocation there is.
-
-There are two moments to run it, with different consequences, and the script cannot tell them apart:
-
-* **Any time after the upgrade.** Reclaims the disk at once and puts every request on the fast path
-  immediately. The cost, plainly: **every revocation made before the upgrade stops being enforced** - a
-  pre-upgrade token that was revoked works again until it expires on its own. Re-revoke what still matters.
-* **More than 90 days after the upgrade**, or after the release that removes the pre-cutover read path. No
-  consequence at all: nothing reads the directory any more and every token it could apply to has expired.
-
-Keeping the directory costs disk only. The same script also reclaims directories left behind by caches that
-have since been renamed or made non-persistent, which is worth doing independently of personal access tokens.
-
 ## Configuration properties
 
 The Caching Service uses the standard `application.yml` structure for configuration.

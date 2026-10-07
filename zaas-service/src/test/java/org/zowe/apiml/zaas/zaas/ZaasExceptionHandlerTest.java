@@ -150,6 +150,7 @@ class ZaasExceptionHandlerTest {
         @PreAuthorize("false")
         @GetMapping("/forbidden")
         public void forbidden() {
+            throw new UnsupportedOperationException();
         }
 
         @GetMapping("/sslException")
@@ -169,6 +170,7 @@ class ZaasExceptionHandlerTest {
 
         @GetMapping("/requiredHeader")
         public void requiredHeader(@RequestHeader("X-Required") String required) {
+            throw new UnsupportedOperationException();
         }
 
     }
