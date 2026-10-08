@@ -13,11 +13,10 @@ import {
     Checkbox,
     FormControl,
     FormControlLabel,
-    FormHelperText,
     InputLabel,
     MenuItem,
     Select,
-    Input,
+    TextField,
     Tooltip,
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -444,17 +443,20 @@ class WizardInputs extends Component {
         const captionId = `my-helper${itemKey}`;
         return (
             <Tooltip className="wizardTooltip" title={finalTooltip}>
-                <FormControl className="wizardFormFields" disabled={disabled}>
-                    <InputLabel shrink>{question}</InputLabel>
-                    <Input
-                        id={itemKey}
-                        name={itemKey}
-                        value={value}
-                        onChange={(event) => this.handleInputChange(event, index)}
-                        aria-describedby={captionId}
-                    />
-                    <FormHelperText id={captionId}>{caption}</FormHelperText>
-                </FormControl>
+                <TextField
+                    id={itemKey}
+                    name={itemKey}
+                    label={question}
+                    value={value}
+                    onChange={(event) => this.handleInputChange(event, index)}
+                    disabled={disabled}
+                    variant="outlined"
+                    fullWidth
+                    className="wizardFormFields"
+                    helperText={caption}
+                    InputLabelProps={{ shrink: true }}
+                    FormHelperTextProps={{ id: captionId }}
+                />
             </Tooltip>
         );
     }
