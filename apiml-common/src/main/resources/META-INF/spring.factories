@@ -1,2 +1,7 @@
 org.springframework.boot.env.EnvironmentPostProcessor=\
 org.zowe.apiml.product.web.EurekaBasicAuthEnvironmentPostProcessor
+
+# Pins the class loader used to resolve the application's own resources so that template resolution
+# does not depend on the context class loader of the thread performing it. See the class for why.
+org.springframework.context.ApplicationContextInitializer=\
+org.zowe.apiml.product.web.ApplicationClassLoaderInitializer

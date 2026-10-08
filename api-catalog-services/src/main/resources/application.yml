@@ -18,6 +18,8 @@ spring:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
+    autoconfigure:
+        exclude: org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration
     profiles.group:
             dev: debug, diag
 

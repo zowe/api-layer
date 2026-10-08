@@ -179,9 +179,11 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
         List<HttpCookie> cookies = CookieUtil.readCookies(headers).toList();
 
         // set in the request to ZAAS all cookies and headers that contain credentials
-        headers.entrySet().stream()
-            .filter(e -> CREDENTIALS_HEADER_INPUT.test(e.getKey()))
-            .forEach(e -> zaasRequestBuilder.addHeader(e.getKey(), e.getValue().toArray(new String[0])));
+        headers.forEach((key, values) -> {
+            if (CREDENTIALS_HEADER_INPUT.test(key)) {
+                zaasRequestBuilder.addHeader(key, values.toArray(new String[0]));
+            }
+        });
         cookies.stream()
             .filter(CREDENTIALS_COOKIE_INPUT)
             .forEach(c -> zaasRequestBuilder.addCookie(c.getName(), c.getValue()));
@@ -242,14 +244,17 @@ public abstract class AbstractAuthSchemeFactory<T extends AbstractAuthSchemeFact
             List<HttpCookie> cookies = CookieUtil.readCookies(headers).toList();
 
             // update original request - to remove all potential headers and cookies with credentials
-            Stream<Map.Entry<String, String>> nonCredentialHeaders = headers.entrySet().stream()
-                .filter(entry -> !CREDENTIALS_HEADER.test(entry.getKey()))
-                .flatMap(entry -> entry.getValue().stream().map(v -> new AbstractMap.SimpleEntry<>(entry.getKey(), v)));
+            java.util.List<Map.Entry<String, String>> nonCredentialHeaders = new java.util.ArrayList<>();
+            headers.forEach((key, values) -> {
+                if (!CREDENTIALS_HEADER.test(key)) {
+                    values.forEach(v -> nonCredentialHeaders.add(new AbstractMap.SimpleEntry<>(key, v)));
+                }
+            });
             Stream<Map.Entry<String, String>> nonCredentialCookies = cookies.stream()
                 .filter(c -> !CREDENTIALS_COOKIE.test(c))
                 .map(c -> new AbstractMap.SimpleEntry<>(HttpHeaders.COOKIE, c.toString()));
             List<Map.Entry<String, String>> newHeaders = Stream.concat(
-                nonCredentialHeaders,
+                nonCredentialHeaders.stream(),
                 nonCredentialCookies
             ).toList();
 

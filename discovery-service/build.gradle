@@ -59,8 +59,11 @@ dependencies {
     api project(':security-service-client-spring')
 
     implementation libs.spring.boot.starter.security
-    implementation libs.spring.boot.starter.web
+    implementation libs.spring.boot.starter.webmvc
+    implementation libs.spring.boot.jackson2
     implementation libs.spring.cloud.starter.eureka.server
+    // Spring Cloud Netflix 5.0.x excludes archaius-core; eureka-core still needs it.
+    implementation libs.archaius.core
 
     implementation libs.apache.commons.lang3
     implementation libs.jackson.dataformat.yaml

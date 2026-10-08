@@ -2,6 +2,7 @@ dependencies {
     api project(':apiml-utility')
 
     implementation libs.eureka.jersey.client
+    implementation libs.archaius.core
     implementation libs.jackson.dataformat.yaml
     implementation libs.guava
 

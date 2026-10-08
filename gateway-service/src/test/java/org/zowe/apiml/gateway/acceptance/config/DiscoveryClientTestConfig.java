@@ -21,7 +21,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.ReactiveDiscoveryClient;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.cloud.netflix.eureka.RestClientTimeoutProperties;
+import org.springframework.cloud.netflix.eureka.TimeoutProperties;
 import org.springframework.cloud.netflix.eureka.http.DefaultEurekaClientHttpRequestFactorySupplier;
 import org.springframework.cloud.netflix.eureka.http.RestClientDiscoveryClientOptionalArgs;
 import org.springframework.cloud.netflix.eureka.http.RestClientTransportClientFactories;
@@ -34,6 +34,8 @@ import org.springframework.web.client.RestClient;
 import org.zowe.apiml.gateway.ApimlDiscoveryClientStub;
 import org.zowe.apiml.gateway.ApplicationRegistry;
 import reactor.core.publisher.Flux;
+
+import java.util.Collections;
 
 /**
  * This configuration provides the bean for the ApplicationRegistry and overrides bean CloudEurekaClient with custom ApimlDiscoveryClient. This bean mocks Eureka Client to allow virtual services registration.
@@ -82,10 +84,10 @@ public class DiscoveryClientTestConfig {
     @Primary
     @RefreshScope
     ApimlDiscoveryClientStub eurekaClient(ApplicationInfoManager manager,
-                                                 EurekaClientConfig config,
-                                                 EurekaInstanceConfig instance,
-                                                 @Autowired(required = false) HealthCheckHandler healthCheckHandler,
-                                                 ApplicationRegistry applicationRegistry
+                                          EurekaClientConfig config,
+                                          EurekaInstanceConfig instance,
+                                          @Autowired(required = false) HealthCheckHandler healthCheckHandler,
+                                          ApplicationRegistry applicationRegistry
     ) {
         ApplicationInfoManager appManager;
         if (AopUtils.isAopProxy(manager)) {
@@ -95,7 +97,7 @@ public class DiscoveryClientTestConfig {
         }
 
 
-        var factorySupplier = new DefaultEurekaClientHttpRequestFactorySupplier(new RestClientTimeoutProperties());
+        var factorySupplier = new DefaultEurekaClientHttpRequestFactorySupplier(new TimeoutProperties(), Collections.emptySet());
         var args1 = new RestClientDiscoveryClientOptionalArgs(factorySupplier, RestClient::builder);
         var factories = new RestClientTransportClientFactories(args1);
         final var discoveryClient = new ApimlDiscoveryClientStub(appManager, config, this.context, applicationRegistry, factories, args1);

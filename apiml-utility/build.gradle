@@ -3,7 +3,7 @@ dependencies {
 
     api libs.apache.commons.lang3
 
-    compileOnly libs.spring.boot.starter.web
+    compileOnly libs.spring.boot.starter.webmvc
 
     testImplementation libs.spring.boot.starter.test
 

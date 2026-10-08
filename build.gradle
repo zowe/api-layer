@@ -120,6 +120,15 @@ allprojects {
 
             substitute(module('com.sun.mail:mailapi')).using(module("jakarta.mail:jakarta.mail-api:${libs.versions.mailapi}"))
         }
+
+        // Keep the whole Jersey stack on one line.
+        // TODO - remove this with the Java 21 upgrade.
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group.startsWith('org.glassfish.jersey.')) {
+                details.useVersion libs.versions.jersey3.get()
+                details.because 'API ML runs on Java 17; the whole Jersey stack has to stay on the 3.1.x line'
+            }
+        }
     }
 
 }
@@ -136,8 +145,6 @@ configure(subprojects.findAll { it.name in [
 ]}) {
 
     configurations.all {
-        // it has been replaced by spring-jcl
-        exclude group: "commons-logging", module: "commons-logging"
         // exclude netty platform specific native libraries from distribution
         exclude group: "io.netty", module: "netty-codec-native-quic"
     }

@@ -195,6 +195,11 @@ class X509FilterFactoryTest {
         }
 
         @Override
+        public ServerHttpRequest.Builder localAddress(InetSocketAddress localAddress) {
+            return null;
+        }
+
+        @Override
         public ServerHttpRequest build() {
             when(request.getHeaders()).thenReturn(headers);
             return request;

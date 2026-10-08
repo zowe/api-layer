@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.client.services.apars;
 
-import org.apache.tomcat.util.codec.binary.Base64;
+import java.util.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -66,7 +66,7 @@ class AuthenticationAparTest {
 
         @Test
         void givenVerifyMethodWithInvalidUser_returnUnauthorized() {
-            headers.put("authorization", org.apache.tomcat.util.codec.binary.Base64.encodeBase64String("baduser:badpassword".getBytes()));
+            headers.put("authorization", Base64.getEncoder().encodeToString("baduser:badpassword".getBytes()));
 
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));
@@ -88,7 +88,7 @@ class AuthenticationAparTest {
 
         @Test
         void givenVerifyMethodWithValidUser_returnOkLtpa2Token() {
-            headers.put("authorization", Base64.encodeBase64String("USER:validPassword".getBytes()));
+            headers.put("authorization", Base64.getEncoder().encodeToString("USER:validPassword".getBytes()));
 
             Optional<ResponseEntity<?>> result = underTest.apply("authentication", "verify", Optional.empty(), mockResponse, headers);
             assertThat(result.isPresent(), is(true));

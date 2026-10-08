@@ -38,7 +38,7 @@ public class MissingHeaderRoutePredicateFactory extends AbstractRoutePredicateFa
         return new GatewayPredicate() {
             @Override
             public boolean test(ServerWebExchange exchange) {
-                return !exchange.getRequest().getHeaders().containsKey(config.header);
+                return exchange.getRequest().getHeaders().get(config.header) == null;
             }
 
             @Override

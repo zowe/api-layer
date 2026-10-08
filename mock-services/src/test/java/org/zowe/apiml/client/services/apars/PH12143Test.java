@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.client.services.apars;
 
-import org.apache.tomcat.util.codec.binary.Base64;
+import java.util.Base64;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -208,7 +208,7 @@ class PH12143Test {
     }
 
     private String getBasicAuthorizationHeader(String user, String password) {
-        return "Basic " + Base64.encodeBase64String((user + ":" + password).getBytes());
+        return "Basic " + Base64.getEncoder().encodeToString((user + ":" + password).getBytes());
     }
 
     private String getLtpaCookieHeader() {

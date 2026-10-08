@@ -36,7 +36,7 @@ spring:
             hostname: ${apiml.service.hostname}
         gateway:
             mvc.enabled: false
-            enabled: false
+            server.webflux.enabled: false
     output:
         ansi:
             enabled: detect

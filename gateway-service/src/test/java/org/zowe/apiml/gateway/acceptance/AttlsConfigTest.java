@@ -18,12 +18,14 @@ import ch.qos.logback.core.Appender;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,6 +67,7 @@ class AttlsConfigTest {
         classes = GatewayServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @ExtendWith(MockitoExtension.class)
     class GivenAttlsProfile {
 
         @LocalServerPort
@@ -140,6 +143,7 @@ class AttlsConfigTest {
         classes = GatewayServiceApplication.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
     )
+    @ExtendWith(MockitoExtension.class)
     class GivenSslDisabled {
 
         @MockitoBean

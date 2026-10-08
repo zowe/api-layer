@@ -13,8 +13,8 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebSecurityAutoConfiguration;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -28,8 +28,9 @@ import org.zowe.apiml.apicatalog.staticapi.StaticRegistrationServiceRest;
 import org.zowe.apiml.apicatalog.staticapi.StaticDefinitionGenerator;
 import reactor.core.publisher.Mono;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {
@@ -39,7 +40,7 @@ import static org.mockito.Mockito.when;
     StaticDefinitionControllerExceptionHandler.class,
     BeanConfig.class
 })
-@WebFluxTest(controllers = {StaticAPIRefreshControllerMicroservice.class, StaticDefinitionControllerMicroservice.class}, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = {StaticAPIRefreshControllerMicroservice.class, StaticDefinitionControllerMicroservice.class}, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
 class StaticAPIRefreshControllerTest {
 
     private static final String API_REFRESH_ENDPOINT = "/apicatalog/static-api/refresh";
@@ -62,11 +63,11 @@ class StaticAPIRefreshControllerTest {
         webTestClient.post().uri(API_REFRESH_ENDPOINT).exchange()
             .expectStatus().isEqualTo(HttpStatus.SC_SERVICE_UNAVAILABLE)
             .expectBody()
-                .jsonPath("$.messages").value(hasSize(1))
-                .jsonPath("$.messages[0].messageType").value(equalTo("ERROR"))
-                .jsonPath("$.messages[0].messageNumber").value(equalTo("ZWEAC706E"))
-                .jsonPath("$.messages[0].messageContent").value(equalTo("Service not located, discovery"))
-                .jsonPath("$.messages[0].messageKey").value(equalTo("org.zowe.apiml.apicatalog.serviceNotFound"));
+                .jsonPath("$.messages").value(List.class, messages -> assertThat(messages).hasSize(1))
+                .jsonPath("$.messages[0].messageType").isEqualTo("ERROR")
+                .jsonPath("$.messages[0].messageNumber").isEqualTo("ZWEAC706E")
+                .jsonPath("$.messages[0].messageContent").isEqualTo("Service not located, discovery")
+                .jsonPath("$.messages[0].messageKey").isEqualTo("org.zowe.apiml.apicatalog.serviceNotFound");
     }
 
     @Test
@@ -78,11 +79,11 @@ class StaticAPIRefreshControllerTest {
         webTestClient.post().uri(API_REFRESH_ENDPOINT).exchange()
             .expectStatus().isEqualTo(HttpStatus.SC_INTERNAL_SERVER_ERROR)
             .expectBody()
-                .jsonPath("$.messages").value(hasSize(1))
-                .jsonPath("$.messages[0].messageType").value(equalTo("ERROR"))
-                .jsonPath("$.messages[0].messageNumber").value(equalTo("ZWEAC707E"))
-                .jsonPath("$.messages[0].messageContent").value(equalTo("Static API refresh failed, caused by exception: org.springframework.web.client.RestClientException: Exception"))
-                .jsonPath("$.messages[0].messageKey").value(equalTo("org.zowe.apiml.apicatalog.StaticApiRefreshFailed"));
+                .jsonPath("$.messages").value(List.class, messages -> assertThat(messages).hasSize(1))
+                .jsonPath("$.messages[0].messageType").isEqualTo("ERROR")
+                .jsonPath("$.messages[0].messageNumber").isEqualTo("ZWEAC707E")
+                .jsonPath("$.messages[0].messageContent").isEqualTo("Static API refresh failed, caused by exception: org.springframework.web.client.RestClientException: Exception")
+                .jsonPath("$.messages[0].messageKey").isEqualTo("org.zowe.apiml.apicatalog.StaticApiRefreshFailed");
     }
 
     @Test

@@ -384,6 +384,11 @@ public class EurekaRestControllerTest {
         }
 
         @Test
+        void getMatchedResourceTemplate() {
+            assertEquals("", adapter.getMatchedResourceTemplate());
+        }
+
+        @Test
         void getPathSegments() {
             request = MockServerHttpRequest.get("https://localhost:10011/eureka/1/2").contextPath("/eureka").queryParam("param1", "value1").build();
             this.adapter = new UriInfoAdapter(request);

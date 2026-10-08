@@ -60,7 +60,12 @@ configurations.all {
     exclude group: "org.springframework.cloud", module: "spring-cloud-starter-netflix-archaius"
     exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-ribbon'
     exclude group: "org.springframework.cloud", module: 'spring-cloud-starter-netflix-eureka-server'
-    exclude group: 'org.springframework.boot', module: 'spring-boot-starter-reactor-netty'
+    // NOTE: do NOT exclude spring-boot-starter-reactor-netty. Spring Cloud Gateway's
+    // NettyConfiguration is active regardless of the server (this service runs on Tomcat), and in
+    // SB4 it @Bean-defines HttpClientProperties -- which our websocket/routing code injects -- while
+    // also needing org.springframework.boot.reactor.netty.autoconfigure.NettyServerProperties.
+    // Excluding the starter removes that class and the whole configuration fails, taking
+    // HttpClientProperties with it and breaking ApplicationContext startup.
 }
 
 dependencies {
@@ -71,9 +76,10 @@ dependencies {
     implementation libs.spring.boot.starter.security
     implementation libs.spring.cloud.circuit.breaker
     implementation libs.spring.cloud.starter.eureka.client
+    implementation libs.spring.boot.jackson2
     implementation libs.spring.cloud.starter.gateway
     implementation libs.spring.boot.starter.actuator
-    implementation libs.spring.boot.starter.oauth2.client
+    implementation libs.spring.boot.starter.security.oauth2.client
     implementation libs.spring.boot.starter.thymeleaf
     implementation(libs.spring.doc.webflux) {
         exclude group: "jakarta.xml.bind", module: "jakarta.xml.bind-api"
@@ -94,6 +100,9 @@ dependencies {
     implementation libs.bundles.jaxb
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.webflux.test
+    testImplementation libs.spring.boot.starter.security.test
+    testImplementation libs.spring.boot.starter.webmvc.test
     testImplementation libs.spring.mock.mvc
     testImplementation libs.commons.io
     testImplementation libs.reactor.test

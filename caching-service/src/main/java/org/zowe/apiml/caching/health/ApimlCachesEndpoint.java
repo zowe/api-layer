@@ -11,7 +11,7 @@
 package org.zowe.apiml.caching.health;
 
 import lombok.experimental.Delegate;
-import org.springframework.boot.actuate.cache.CachesEndpoint;
+import org.springframework.boot.cache.actuate.endpoint.CachesEndpoint;
 import org.springframework.boot.actuate.endpoint.annotation.Endpoint;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.CacheManager;
