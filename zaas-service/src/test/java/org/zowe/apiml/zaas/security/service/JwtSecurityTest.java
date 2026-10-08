@@ -59,9 +59,6 @@ class JwtSecurityTest {
     @BeforeEach
     void setUp() {
         providers = mock(Providers.class);
-        // Shared defaults: each nested test overrides the ones it cares about (see the when() calls
-        // in the nested classes below), so for any single test some of these go unused. They are
-        // deliberate defaults rather than dead code, hence lenient.
         lenient().when(providers.isZosfmUsed()).thenReturn(true);
         lenient().when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(false);
         lenient().when(providers.isZosmfAvailableAndOnline()).thenReturn(true);

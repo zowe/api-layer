@@ -166,11 +166,6 @@ class AuthControllerTest {
             "}");
     }
 
-    /**
-     * Shared fixture: the six callers exercise different endpoints (/public/all, /public/current)
-     * and different jwt producers, so no single test consumes all four stubbings. They are a
-     * deliberate common baseline, not dead code.
-     */
     private void initPublicKeys() {
         var zosmf = mock(JsonWebKeySet.class);
         lenient().when(zosmf.getJsonWebKeys()).thenReturn(
