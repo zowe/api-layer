@@ -214,7 +214,7 @@ dependencyResolutionManagement {
             library('infinispan_annotations', 'org.infinispan', 'infinispan-component-annotations').versionRef('infinispan')
             library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonAnnotations')
             library('jackson_core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jacksonCore')
-            library('jackson_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
+            library('jackson2_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
             library('jackson_dataformat_yaml', 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-yaml').versionRef('jacksonDataformatYaml')
             library('janino', 'org.codehaus.janino', 'janino').versionRef('janino')
             library('jakarta_validation', 'jakarta.validation', 'jakarta.validation-api').versionRef('jakartaValidation')

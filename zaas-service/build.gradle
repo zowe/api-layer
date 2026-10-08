@@ -72,7 +72,7 @@ dependencies {
 
     implementation libs.jackson.annotations
     implementation libs.jackson.core
-    implementation libs.jackson.databind
+    implementation libs.jackson2.databind
     implementation libs.jaxbApi
     implementation libs.spring.cloud.commons
     implementation libs.spring.doc

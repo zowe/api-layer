@@ -123,7 +123,7 @@ allprojects {
         }
 
         // Keep the whole Jersey stack on one line.
-        // Revisit together with the Java 17 -> 21 baseline decision; do not bump this in isolation.
+        // TODO - remove this with the Java 21 upgrade.
         resolutionStrategy.eachDependency { details ->
             if (details.requested.group.startsWith('org.glassfish.jersey.')) {
                 details.useVersion libs.versions.jersey3.get()
