@@ -102,7 +102,7 @@ teardown() {
 # Tests for start.sh
 ################################################################################
 
-@test "start: When apiml.debug=true, then debug profile is active and logging to file enabled" {
+@test "apiml-start: When apiml.debug=true, then debug profile is active and logging to file enabled" {
     export ZWE_configs_debug=true
     run "${APIML_DIR}/start.sh"
 
@@ -117,7 +117,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.debug=true, then feature level debug is overridden" {
+@test "apiml-start: When apiml.debug=true, then feature level debug is overridden" {
     export ZWE_configs_debug=true
     export ZWE_configs_logging_debug_gateway=true
     export ZWE_configs_logging_debug_authentication=true
@@ -134,7 +134,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.debug=false, then feature level debug is enabled" {
+@test "apiml-start: When apiml.debug=false, then feature level debug is enabled" {
     export ZWE_configs_logging_debug_gateway=true
     export ZWE_configs_logging_debug_authentication=true
     export ZWE_configs_logging_debug_discovery=true
@@ -154,7 +154,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.debug is unset, then feature level debug is enabled" {
+@test "apiml-start: When apiml.debug is unset, then feature level debug is enabled" {
     export ZWE_configs_logging_debug_gateway=true
     export ZWE_configs_logging_debug_authentication=true
     export ZWE_configs_logging_debug_discovery=true
@@ -174,7 +174,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.logging.logging.debug.gateway=true, then gateway debug is enabled" {
+@test "apiml-start: When apiml.logging.logging.debug.gateway=true, then gateway debug is enabled" {
     export ZWE_configs_logging_debug_gateway=true
     run "${APIML_DIR}/start.sh"
 
@@ -189,7 +189,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.logging.logging.debug.discovery=true, then discovery debug is enabled" {
+@test "apiml-start: When apiml.logging.logging.debug.discovery=true, then discovery debug is enabled" {
     export ZWE_configs_logging_debug_discovery=true
     run "${APIML_DIR}/start.sh"
 
@@ -204,7 +204,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.logging.logging.debug.authentication=true, then authentication debug is enabled" {
+@test "apiml-start: When apiml.logging.logging.debug.authentication=true, then authentication debug is enabled" {
     export ZWE_configs_logging_debug_authentication=true
     run "${APIML_DIR}/start.sh"
 
@@ -219,7 +219,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.logging.logging.debug.caching=true, then caching debug is enabled" {
+@test "apiml-start: When apiml.logging.logging.debug.caching=true, then caching debug is enabled" {
     export ZWE_configs_logging_debug_caching=true
     run "${APIML_DIR}/start.sh"
 
@@ -234,7 +234,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.logging.logging.debug.catalog=true, then catalog debug is enabled" {
+@test "apiml-start: When apiml.logging.logging.debug.catalog=true, then catalog debug is enabled" {
     export ZWE_configs_logging_debug_catalog=true
     run "${APIML_DIR}/start.sh"
 
@@ -249,7 +249,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.logging.logging.debug combination is enabled, then the features level debug are enabled" {
+@test "apiml-start: When apiml.logging.logging.debug combination is enabled, then the features level debug are enabled" {
     export ZWE_configs_logging_debug_gateway=false
     export ZWE_configs_logging_debug_authentication=true
     export ZWE_configs_logging_debug_discovery=false
@@ -269,7 +269,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.logging.logging.toFile.enabled=true, then the property is set" {
+@test "apiml-start: When apiml.logging.logging.toFile.enabled=true, then the property is set" {
     export ZWE_configs_logging_toFile_enabled=true
     run "${APIML_DIR}/start.sh"
 
@@ -282,7 +282,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: When apiml.logging.logging.toFile.debugOnly=true, then the property is set" {
+@test "apiml-start: When apiml.logging.logging.toFile.debugOnly=true, then the property is set" {
     export ZWE_configs_logging_toFile_debugOnly=true
     run "${APIML_DIR}/start.sh"
 
@@ -295,7 +295,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "true" ]
 }
 
-@test "start: Default configuration: info, no file" {
+@test "apiml-start: Default configuration: info, no file" {
     run "${APIML_DIR}/start.sh"
 
     [ "$status" -eq 0 ]
@@ -309,7 +309,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "start: Common configuration: debug enabled with logging debug to file only" {
+@test "apiml-start: Common configuration: debug enabled with logging debug to file only" {
     export ZWE_configs_debug=true
     export ZWE_configs_logging_toFile_debugOnly=true
     run "${APIML_DIR}/start.sh"
@@ -325,7 +325,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "true" ]
 }
 
-@test "start: Common configuration: gateway and authentication debug with logging debug to file only" {
+@test "apiml-start: Common configuration: gateway and authentication debug with logging debug to file only" {
     export ZWE_configs_logging_debug_gateway=true
     export ZWE_configs_logging_debug_authentication=true
     export ZWE_configs_logging_toFile_debugOnly=true
@@ -342,7 +342,7 @@ teardown() {
    [ "${onlyDebugToFile}" = "true" ]
 }
 
-@test "start: When apiml.debug not set and single logger level is overridden, then property is set" {
+@test "apiml-start: When apiml.debug not set and single logger level is overridden, then property is set" {
     export ZWE_configs_logging_loggerLevels=org.zowe.apiml.security.HttpsFactory=TRACE
     run "${APIML_DIR}/start.sh"
 
@@ -361,7 +361,7 @@ teardown() {
    [ "${loggersLevel}" = "-Dlogging.level.org.zowe.apiml.security.HttpsFactory=TRACE " ]
 }
 
-@test "start: When apiml.debug not set and multiple logger level is overridden, then property is set" {
+@test "apiml-start: When apiml.debug not set and multiple logger level is overridden, then property is set" {
     export ZWE_configs_logging_loggerLevels=org.zowe.apiml.security.HttpsFactory=TRACE,org.zowe.apiml.security.HttpsFactory=ERROR,org.apache.http=INFO
     run "${APIML_DIR}/start.sh"
 
@@ -380,7 +380,7 @@ teardown() {
    [ "${loggersLevel}" = "-Dlogging.level.org.zowe.apiml.security.HttpsFactory=TRACE -Dlogging.level.org.zowe.apiml.security.HttpsFactory=ERROR -Dlogging.level.org.apache.http=INFO " ]
 }
 
-@test "start: When apiml.debug=true and multiple logger level is overridden, then property is set" {
+@test "apiml-start: When apiml.debug=true and multiple logger level is overridden, then property is set" {
     export ZWE_configs_debug=true
     export ZWE_configs_logging_loggerLevels=org.zowe.apiml.security.HttpsFactory=TRACE,org.zowe.apiml.security.HttpsFactory=ERROR,org.apache.http=INFO
     run "${APIML_DIR}/start.sh"
@@ -393,7 +393,7 @@ teardown() {
     loggersLevel=$(printf '%s\n' "$output" | tr ' ' '\n' | grep -- '-Dlogging.level' | tr '\n' ' ')
 
     echo "loggersLevel: [$loggersLevel]"
-
+    echo "output: $output"
    [ "${profiles}" = "info,debug" ]
    [ "${logToFile}" = "true" ]
    [ "${onlyDebugToFile}" = "false" ]
