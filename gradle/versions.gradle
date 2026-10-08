@@ -17,7 +17,6 @@ dependencyResolutionManagement {
             version('springFramework', '7.0.9')
             version('springRetry', '2.0.13')
 
-            // Spring Modulith 2.1.x is the line aligned with Spring Boot 4.1; 1.4.x targets Boot 3.4.
             version('modulith', '2.1.1')
             version('jmolecules', '2023.3.4')
 
@@ -39,8 +38,6 @@ dependencyResolutionManagement {
             version('fileupload', '1.6.0')
             version('netflixServo', '0.13.2')
             // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
-            // DynamicPropertyFactory, but Spring Cloud Netflix 5.0.x excludes archaius-core from
-            // eureka-client/eureka-core. Declared explicitly to replace what 4.3.3 pulled in.
             version('archaius', '0.7.6')
             version('googleErrorprone', '2.50.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies

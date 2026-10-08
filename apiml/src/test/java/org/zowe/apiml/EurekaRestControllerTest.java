@@ -383,11 +383,6 @@ public class EurekaRestControllerTest {
             assertEquals("/eureka", adapter.getPath(false));
         }
 
-        /**
-         * {@code getMatchedResourceTemplate} became an abstract method of {@code UriInfo} in Jakarta
-         * REST 4.0. Eureka's peer-replication code never reads it, so the adapter mirrors the empty
-         * value its {@code getMatchedURIs}/{@code getMatchedResources} neighbours return.
-         */
         @Test
         void getMatchedResourceTemplate() {
             assertEquals("", adapter.getMatchedResourceTemplate());

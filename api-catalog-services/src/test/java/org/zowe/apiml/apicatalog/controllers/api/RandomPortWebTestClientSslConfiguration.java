@@ -41,11 +41,6 @@ import javax.net.ssl.SSLException;
 public class RandomPortWebTestClientSslConfiguration {
 
     /**
-     * Installs a client connector that trusts the test server's certificate.
-     * <p>
-     * The trust scope is deliberately narrow: this bean exists only in a test context, and the only
-     * endpoint it is ever pointed at is the locally started test server on {@code localhost}.
-     *
      * @return the customizer applied to the injected {@code WebTestClient} builder
      */
     @Bean
