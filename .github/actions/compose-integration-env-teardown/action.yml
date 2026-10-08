@@ -1,0 +1,35 @@
+name: "Tear down a docker compose integration-test environment"
+description: "Stops the stack, dumps container logs for troubleshooting, then removes it"
+
+inputs:
+    compose-file:
+        description: "Path to the docker-compose.yml for this test job"
+        required: true
+
+runs:
+    using: "composite"
+    steps:
+        -   name: Stop the compose stack containers
+            if: always()
+            shell: bash
+            # Stop (not down yet) so containers still exist for the log dump below, and so
+            # any output from a graceful-shutdown sequence is flushed and captured too.
+            run: docker compose -f "${{ inputs.compose-file }}" stop
+
+        -   name: Dump container logs
+            if: always()
+            shell: bash
+            run: |
+                # One service at a time, not "docker compose logs" for all of them together -
+                # that interleaves every container's stdout by timestamp, which shreds
+                # multi-line stack traces from different containers into an unreadable mess.
+                for service in $(docker compose -f "${{ inputs.compose-file }}" config --services); do
+                    echo "::group::${service}"
+                    docker compose -f "${{ inputs.compose-file }}" logs --no-color "${service}"
+                    echo "::endgroup::"
+                done
+
+        -   name: Remove the compose stack
+            if: always()
+            shell: bash
+            run: docker compose -f "${{ inputs.compose-file }}" down -v

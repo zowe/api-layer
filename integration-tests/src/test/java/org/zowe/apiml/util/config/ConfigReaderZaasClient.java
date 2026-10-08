@@ -21,7 +21,7 @@ public class ConfigReaderZaasClient {
     public static ConfigProperties getConfigProperties() {
         var gatewayConfig = environmentConfiguration().getGatewayServiceConfiguration();
         return ConfigProperties.builder()
-            .apimlHost(StringUtils.isNotBlank(gatewayConfig.getDvipaHost()) ? gatewayConfig.getDvipaHost() : gatewayConfig.getHost())
+            .apimlHost(StringUtils.isNotBlank(gatewayConfig.getDvipaHost()) ? gatewayConfig.getDvipaHost() : gatewayConfig.getFirstHost())
             .apimlPort(environmentConfiguration().getGatewayServiceConfiguration().getPort() + "")
             .apimlBaseUrl(ROUTED_AUTH)
             .keyStorePath(environmentConfiguration().getTlsConfiguration().getKeyStore())
