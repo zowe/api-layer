@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
 import org.springframework.cloud.client.DefaultServiceInstance;
@@ -28,36 +27,45 @@ import org.springframework.cloud.netflix.eureka.server.event.EurekaRegistryAvail
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.apicatalog.ApiCatalogServiceAvailableEvent;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.zaas.ZaasServiceAvailableEvent;
 
 import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GatewayHealthIndicatorTest {
 
-    @Mock private DiscoveryClient discoveryClient;
-    @Mock private ApplicationContext applicationContext;
-    @Mock private ServiceStartupEventHandler serviceStartupEventHandler;
+    @Mock
+    private DiscoveryClient discoveryClient;
+
+    @Mock
+    private ApplicationContext applicationContext;
+
+    @Mock
+    private ServiceStartupEventHandler serviceStartupEventHandler;
 
     private GatewayHealthIndicator healthIndicator;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         healthIndicator = new GatewayHealthIndicator(applicationContext, serviceStartupEventHandler);
         ReflectionTestUtils.setField(healthIndicator, "apiCatalogServiceId", CoreService.API_CATALOG.getServiceId());
+        ReflectionTestUtils.setField(healthIndicator, "expectedInstanceCount", 1);
         lenient().when(applicationContext.getBean(DiscoveryClient.class)).thenReturn(discoveryClient);
+        healthIndicator.afterPropertiesSet();
     }
 
     private DefaultServiceInstance getDefaultServiceInstance(String serviceId, String hostname, int port) {
@@ -109,17 +117,6 @@ class GatewayHealthIndicatorTest {
             Health.Builder builder = new Health.Builder();
             healthIndicator.doHealthCheck(builder);
             assertEquals(Status.DOWN, builder.build().getStatus());
-        }
-
-        @Test
-        void whenClientNotAvailable_thenDoNothing() throws Exception {
-            when(applicationContext.getBean(DiscoveryClient.class)).thenThrow(new NoSuchBeanDefinitionException(DiscoveryClient.class));
-
-            Health.Builder builder = new Health.Builder();
-            healthIndicator.doHealthCheck(builder);
-
-            verifyNoInteractions(serviceStartupEventHandler);
-            verifyNoInteractions(discoveryClient);
         }
 
     }
@@ -195,11 +192,14 @@ class GatewayHealthIndicatorTest {
     @Nested
     class OnCatalogRegistration {
 
+        @Mock
+        private EurekaInstanceRegisteredEvent registeredEvent;
+
+        @Mock
+        private InstanceInfo instanceInfo;
+
         @Test
         void whenBothEvents_thenOneMessage() {
-            var registeredEvent = mock(EurekaInstanceRegisteredEvent.class);
-
-            var instanceInfo = mock(InstanceInfo.class);
             when(registeredEvent.getInstanceInfo()).thenReturn(instanceInfo);
             when(instanceInfo.getAppName()).thenReturn("apicatalog");
 
@@ -213,9 +213,6 @@ class GatewayHealthIndicatorTest {
 
         @Test
         void whenBothEventsReverse_thenOneMessage() {
-            var registeredEvent = mock(EurekaInstanceRegisteredEvent.class);
-
-            var instanceInfo = mock(InstanceInfo.class);
             when(registeredEvent.getInstanceInfo()).thenReturn(instanceInfo);
             when(instanceInfo.getAppName()).thenReturn("apicatalog");
 
@@ -225,6 +222,93 @@ class GatewayHealthIndicatorTest {
             healthIndicator.onApplicationEvent(new ApiCatalogServiceAvailableEvent(new Object()));
 
             verify(serviceStartupEventHandler, times(1)).onServiceStartup("API Catalog Service", 5);
+        }
+
+    }
+
+    @Nested
+    class OnHAScenarios {
+
+        @Mock
+        private ApimlLogger apimlLogger;
+
+        @BeforeEach
+        void setUp() {
+            ReflectionTestUtils.setField(healthIndicator, "expectedInstanceCount", 2);
+            ReflectionTestUtils.setField(healthIndicator, "apimlLog", apimlLogger);
+        }
+
+        @Nested
+        class WhenHaIsNotComplete {
+
+            @Test
+            void whenOnlyOneInstanceOfGatewayIsRegistered_thenHaLogIsNotPublished() throws Exception {
+                when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
+                    Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
+                when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
+                    Collections.singletonList(getDefaultServiceInstance(CoreService.GATEWAY.getServiceId(), "host", 10010)));
+
+                healthIndicator.onApplicationEvent(new EurekaRegistryAvailableEvent(mock(EurekaServerConfig.class)));
+                healthIndicator.onApplicationEvent(new ZaasServiceAvailableEvent("dummy"));
+                healthIndicator.onApplicationEvent(new ApiCatalogServiceAvailableEvent(new Object()));
+
+                healthIndicator.doHealthCheck(new Health.Builder());
+
+                verify(apimlLogger, never()).log("org.zowe.apiml.common.mediationLayerStartedHA");
+            }
+
+            @Test
+            void whenNoGatewayInstancesAreRegisteredYet_thenHaLogIsNotPublished() throws Exception {
+                when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(Collections.emptyList());
+                when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(Collections.emptyList());
+
+                healthIndicator.onApplicationEvent(new EurekaRegistryAvailableEvent(mock(EurekaServerConfig.class)));
+                healthIndicator.onApplicationEvent(new ZaasServiceAvailableEvent("dummy"));
+
+                healthIndicator.doHealthCheck(new Health.Builder());
+
+                verify(apimlLogger, never()).log("org.zowe.apiml.common.mediationLayerStartedHA");
+            }
+
+        }
+
+        @Nested
+        class WhenHaIsComplete {
+
+            @BeforeEach
+            void setUp() {
+                when(discoveryClient.getInstances(CoreService.API_CATALOG.getServiceId())).thenReturn(
+                    Collections.singletonList(getDefaultServiceInstance(CoreService.API_CATALOG.getServiceId(), "host", 10014)));
+                when(discoveryClient.getInstances(CoreService.GATEWAY.getServiceId())).thenReturn(
+                    List.of(getDefaultServiceInstance(CoreService.GATEWAY.getServiceId(), "host1", 10010),
+                        getDefaultServiceInstance(CoreService.GATEWAY.getServiceId(), "host2", 10010)));
+            }
+
+            @Test
+            void whenGatewayReachesExpectedInstanceCount_thenHaLogIsPublishedOnce() throws Exception {
+                healthIndicator.onApplicationEvent(new EurekaRegistryAvailableEvent(mock(EurekaServerConfig.class)));
+                healthIndicator.onApplicationEvent(new ZaasServiceAvailableEvent("dummy"));
+                healthIndicator.onApplicationEvent(new ApiCatalogServiceAvailableEvent(new Object()));
+
+                Health.Builder builder = new Health.Builder();
+                healthIndicator.doHealthCheck(builder);
+
+                assertEquals(Status.UP, builder.build().getStatus());
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.common.mediationLayerStartedHA");
+            }
+
+            @Test
+            void whenHealthCheckedRepeatedly_thenHaLogIsPublishedOnlyOnce() throws Exception {
+                healthIndicator.onApplicationEvent(new EurekaRegistryAvailableEvent(mock(EurekaServerConfig.class)));
+                healthIndicator.onApplicationEvent(new ZaasServiceAvailableEvent("dummy"));
+                healthIndicator.onApplicationEvent(new ApiCatalogServiceAvailableEvent(new Object()));
+
+                healthIndicator.doHealthCheck(new Health.Builder());
+                healthIndicator.doHealthCheck(new Health.Builder());
+
+                verify(apimlLogger, times(1)).log("org.zowe.apiml.common.mediationLayerStartedHA");
+            }
+
         }
 
     }

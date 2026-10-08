@@ -13,7 +13,7 @@ package org.zowe.apiml;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health.Builder;
@@ -32,7 +32,9 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.zaas.ZaasServiceAvailableEvent;
 
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.springframework.boot.actuate.health.Status.DOWN;
 import static org.springframework.boot.actuate.health.Status.UP;
@@ -46,13 +48,15 @@ import static org.springframework.boot.actuate.health.Status.UP;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class GatewayHealthIndicator extends AbstractHealthIndicator {
+public class GatewayHealthIndicator extends AbstractHealthIndicator implements InitializingBean {
 
     private final ApplicationContext applicationContext;
     private final ServiceStartupEventHandler serviceStartupEventHandler;
 
     @InjectApimlLogger
     private final ApimlLogger apimlLog = ApimlLogger.empty();
+
+    private DiscoveryClient discoveryClient;
 
     @Value("${apiml.catalog.serviceId:}")
     private String apiCatalogServiceId;
@@ -62,23 +66,30 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
     private AtomicBoolean catalogAvailable = new AtomicBoolean(false);
 
     private AtomicBoolean startedInformationPublished = new AtomicBoolean(false);
+    private AtomicBoolean startedHaInformationPublished = new AtomicBoolean(false);
+
+    private AtomicInteger gatewayCount = new AtomicInteger(0);
+    private AtomicInteger zaasCount = new AtomicInteger(0);
+
+    private Integer expectedInstanceCount;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        expectedInstanceCount = Optional.ofNullable(System.getenv("ZWE_DISCOVERY_SERVICES_LIST"))
+            .map(discoveryServicesList -> discoveryServicesList.split(","))
+            .map(i -> i.length)
+            .orElse(1);
+
+        discoveryClient = applicationContext.getBean(DiscoveryClient.class);
+    }
 
     @Override
     protected void doHealthCheck(Builder builder) throws Exception {
         var anyCatalogIsAvailable = StringUtils.isNotBlank(apiCatalogServiceId);
-        DiscoveryClient discoveryClient;
-        try {
-            discoveryClient = applicationContext.getBean(DiscoveryClient.class);
-        } catch (BeansException e) {
-            log.debug("DiscoveryClient is not available", e);
-            return;
-        }
 
         catalogAvailable.set(anyCatalogIsAvailable && !discoveryClient.getInstances(apiCatalogServiceId).isEmpty());
 
-        // Keeping for backwards compatibility, in modulith the amount of gateways is the amount of authentication services available
-        var gatewayCount = discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size();
-        var zaasCount = gatewayCount;
+        refreshInstanceCounts();
 
         builder.status(toStatus(discoveryAvailable.get() && zaasAvailable.get()))
             .withDetail(CoreService.DISCOVERY.getServiceId(), toStatus(discoveryAvailable.get()).getCode())
@@ -93,6 +104,15 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         if (isFullyUp()) {
             onFullyUp();
         }
+        if (isFullyHaUp()) {
+            onFullyHaUp();
+        }
+    }
+
+    private void refreshInstanceCounts() {
+        // Keeping for backwards compatibility, in modulith the amount of gateways is the amount of authentication services available
+        gatewayCount.set(this.discoveryClient.getInstances(CoreService.GATEWAY.getServiceId()).size());
+        zaasCount.set(gatewayCount.get());
     }
 
     private boolean isFullyUp() {
@@ -105,11 +125,28 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         }
     }
 
+    private boolean isFullyHaUp() {
+        if (expectedInstanceCount > 1) {
+            refreshInstanceCounts();
+            return expectedInstanceCount == gatewayCount.get();
+        }
+        return false;
+    }
+
+    private void onFullyHaUp() {
+        if (startedHaInformationPublished.compareAndSet(false, true)) {
+            apimlLog.log("org.zowe.apiml.common.mediationLayerStartedHA");
+        }
+    }
+
     @EventListener
     public void onApplicationEvent(ZaasServiceAvailableEvent event) {
         zaasAvailable.set(true);
         if (isFullyUp()) {
             onFullyUp();
+        }
+        if (isFullyHaUp()) {
+            onFullyHaUp();
         }
     }
 
@@ -118,6 +155,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         discoveryAvailable.set(true);
         if (isFullyUp()) {
             onFullyUp();
+        }
+        if (isFullyHaUp()) {
+            onFullyHaUp();
         }
     }
 
@@ -130,6 +170,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         if (isFullyUp()) {
             onFullyUp();
         }
+        if (isFullyHaUp()) {
+            onFullyHaUp();
+        }
     }
 
     @EventListener
@@ -139,6 +182,9 @@ public class GatewayHealthIndicator extends AbstractHealthIndicator {
         }
         if (isFullyUp()) {
             onFullyUp();
+        }
+        if (isFullyHaUp()) {
+            onFullyHaUp();
         }
     }
 
