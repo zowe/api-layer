@@ -31,6 +31,7 @@ import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -158,6 +159,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             if (peerReplicate) {
                 replicateToPeersMethodHandle.invokeWithArguments(this, Action.Register, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, isReplication);
             }
+        } catch (DomainAllowListMetadataException e) {
+            log.debug("Domains not allowed found in instance {}. Instance will not be registered", instanceInfo.getInstanceId());
         } catch (Throwable e) {
             throw new IllegalStateException(EXCEPTION_MESSAGE, e);
         } finally {
