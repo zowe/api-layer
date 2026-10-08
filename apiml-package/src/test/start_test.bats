@@ -143,6 +143,7 @@ teardown() {
     export ZWE_configs_logging_debug_wiretap=true
     run "${APIML_DIR}/start.sh"
 
+    echo "output: $output"
     [ "$status" -eq 0 ]
 
     profiles=$(printf '%s\n' "$output" | sed -n 's/.*-Dspring\.profiles\.active=\([^ "]*\).*/\1/p' | sed 's/\\,/,/g')
