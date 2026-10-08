@@ -10,16 +10,14 @@
 
 package org.zowe.apiml.zaas.security.service.schema.source;
 
-import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.log.ApimlLogger;
+import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import java.util.function.Function;
 
+@Slf4j
 public abstract class TokenAuthSourceService implements AuthSourceService {
-
-    protected abstract ApimlLogger getLogger();
 
     public abstract Function<String, AuthSource> getMapper();
 
@@ -33,9 +31,9 @@ public abstract class TokenAuthSourceService implements AuthSourceService {
      * or Optional.empty() when no authentication source found.
      */
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
-        getLogger().log(MessageType.DEBUG, "Getting JWT token from request.");
+        log.debug("Getting JWT token from request.");
         Optional<String> authToken = getToken(request);
-        getLogger().log(MessageType.DEBUG, String.format("JWT token %s in request.", authToken.isPresent() ? "found" : "not found"));
+        log.debug("JWT token {} in request.", authToken.isPresent() ? "found" : "not found");
         return authToken.map(getMapper());
 
     }

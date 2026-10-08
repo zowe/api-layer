@@ -108,7 +108,7 @@ public final class ApimlLogger {
      * @throws IllegalArgumentException when parameters are null
      */
     @SuppressWarnings("squid:S2629")
-    public void log(MessageType messageType, String text, Object... arguments) {
+    protected void log(MessageType messageType, String text, Object... arguments) {
         try {
             ObjectUtil.requireNotNull(messageType, "messageType can't be null");
             ObjectUtil.requireNotNull(text, "text can't be null");

@@ -29,7 +29,6 @@ import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.HttpsConfig;
@@ -187,7 +186,7 @@ public class JwtSecurity {
             jwtPublicKey = SecurityUtils.loadPublicKey(config);
             jwtVerifier = buildVerifier(jwtPublicKey);
             jwkPublicKey = getJwkPublicKey();
-            apimlLog.log(MessageType.DEBUG, "JWT signing key loaded from keystore '{}', alias '{}', kid={}.",
+            log.debug("JWT signing key loaded from keystore '{}', alias '{}', kid={}.",
                 keyStore, keyAlias, jwkPublicKey.map(JsonWebKey::getKeyId).orElse("unknown"));
         } catch (HttpsConfigError er) {
             apimlLog.log("org.zowe.apiml.zaas.jwtInitConfigError", er.getCode(), er.getMessage());

@@ -10,12 +10,12 @@
 
 package org.zowe.apiml.zaas.security.mapping;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource;
@@ -26,6 +26,7 @@ import java.util.function.UnaryOperator;
 import static org.zowe.apiml.zaas.security.mapping.model.MapperResponse.OIDC_FAILED_MESSAGE_KEY;
 
 @Component
+@Slf4j
 @ConditionalOnBean(name = "oidcMapper")
 public class OIDCMapperHelper implements InitializingBean {
 
@@ -60,12 +61,12 @@ public class OIDCMapperHelper implements InitializingBean {
         }
 
         if (mapper == null) {
-            apimlLog.log(MessageType.ERROR, "OIDC token mapping invoked but no mapper provided");
+            log.error("OIDC token mapping invoked but no mapper provided");
             return null;
         }
 
         if (!(authSource instanceof OIDCAuthSource)) {
-            apimlLog.log(MessageType.DEBUG, "The used authentication source type is {} and not OIDC", authSource.getType());
+            log.debug("The used authentication source type is {} and not OIDC", authSource.getType());
             return null;
         }
 
@@ -86,7 +87,7 @@ public class OIDCMapperHelper implements InitializingBean {
             }
         }
 
-        apimlLog.log(MessageType.DEBUG, "No mainframe user mapping found for distributed ids {}", distributedIds);
+        log.debug("No mainframe user mapping found for distributed ids {}", distributedIds);
         return null;
     }
 }

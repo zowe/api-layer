@@ -11,7 +11,7 @@
         },
         "debug": {
             "type": "boolean",
-            "description": "Enable debug logs in API ML service",
+            "description": "Enable debug logs in API ML service and logging to file",
             "default": false
         },
         "sslDebug": {
@@ -1036,6 +1036,65 @@
                         "info",
                         "debug"
                     ]
+                },
+                "debug": {
+                    "type": "object",
+                    "description": "Enable debug logging for specific features.",
+                    "properties": {
+                        "gateway": {
+                            "type": "boolean",
+                            "description": "Debug request routing",
+                            "default": false
+                        },
+                        "discovery": {
+                            "type": "boolean",
+                            "description": "Debug onboarding of services",
+                            "default": false
+                        },
+                        "caching": {
+                            "type": "boolean",
+                            "description": "Debug caches",
+                            "default": false
+                        },
+                        "authentication": {
+                            "type": "boolean",
+                            "description": "Debug security and authentication",
+                            "default": false
+                        },
+                        "catalog": {
+                            "type": "boolean",
+                            "description": "Debug api catalog",
+                            "default": false
+                        },
+                        "wiretap": {
+                            "type": "boolean",
+                            "description": "Tracing of routed requests",
+                            "default": false
+                        }
+
+                    }
+                },
+                "toFile":{
+                    "type": "object",
+                    "description": "Configuration for logging to file in addition to stdout/spool.",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "description": "Send APIML logs also to file.",
+                            "default": false
+                        },
+                        "debugOnly": {
+                            "type": "boolean",
+                            "description": "Debug messages are logged only to file."
+                        }
+                    }
+                },
+                "loggerLevels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Array of pairs logger=level for package/class log level fine tuning."
                 }
             }
         }

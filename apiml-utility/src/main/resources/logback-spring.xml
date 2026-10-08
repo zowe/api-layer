@@ -7,7 +7,17 @@
     <property name="STORAGE_LOCATION" value="${apiml.logs.location}"/>
 
     <springProperty scope="context"
-                    name="apimlLogPattern"
+                    name="LOG_TO_FILE"
+                    source="apiml.logging.toFile.enabled"
+                    defaultValue="false"/>
+
+    <springProperty scope="context"
+                    name="DEBUG_ONLY_TO_FILE"
+                    source="apiml.logging.toFile.debugOnly"
+                    defaultValue="false"/>
+
+    <springProperty scope="context"
+                    name="APIML_LOG_PATTERN"
                     source="logging.pattern"
                     defaultValue="%d{yyyy-MM-dd HH:mm:ss.SSS,UTC} &lt;${logbackService:-${logbackServiceName}}:%thread:${PID:- }&gt; %X{userid:-} %-5level \(%logger{15}\) %msg%n"/>
 
@@ -18,6 +28,7 @@
     <turboFilter class="org.zowe.apiml.product.logging.OpenTelemetryLogsFilter"/>
 
     <springProfile name="!debug &amp; !diag &amp; !dev">
+        <turboFilter class="org.zowe.apiml.product.logging.ApimlDebugGateFilter"/>
         <turboFilter class="org.zowe.apiml.product.logging.ApimlDependencyLogHider"/>
         <turboFilter class="org.zowe.apiml.product.logging.LogLevelInfoFilter"/>
         <turboFilter class="org.zowe.apiml.product.logging.ApimlDuplicateMessagesFilter">
@@ -27,19 +38,41 @@
     </springProfile>
 
     <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
-                <pattern>${apimlLogPattern}</pattern>
-            </layout>
-        </encoder>
-    </appender>
+
+    <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+        <key>DEBUG_ONLY_TO_FILE</key>
+        <value>true</value>
+    </condition>
+    <if>
+        <then>
+            <!-- Debug (and lower) level messages are written to the log file only, stdout is limited to INFO and above -->
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+                    <level>INFO</level>
+                </filter>
+                <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                    <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
+                        <pattern>${APIML_LOG_PATTERN}</pattern>
+                    </layout>
+                </encoder>
+            </appender>
+        </then>
+        <else>
+            <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+                <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                    <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
+                        <pattern>${APIML_LOG_PATTERN}</pattern>
+                    </layout>
+                </encoder>
+            </appender>
+        </else>
+    </if>
 
     <appender name="OpenTelemetry" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender"/>
 
-    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
-        <key>spring.profiles.active</key>
-        <value>debug</value>
+    <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+        <key>LOG_TO_FILE</key>
+        <value>true</value>
     </condition>
     <if>
         <then>
@@ -58,16 +91,16 @@
 
                 <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
                     <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
-                        <pattern>${apimlLogPattern}</pattern>
+                        <pattern>${APIML_LOG_PATTERN}</pattern>
                     </layout>
                 </encoder>
             </appender>
         </then>
     </if>
 
-    <condition class="org.zowe.apiml.product.logging.PropertyContainsCondition">
-        <key>spring.profiles.active</key>
-        <value>debug</value>
+    <condition class="ch.qos.logback.core.boolex.PropertyEqualityCondition">
+        <key>LOG_TO_FILE</key>
+        <value>true</value>
     </condition>
     <if>
         <then>
