@@ -20,9 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -31,7 +34,11 @@ import org.zowe.apiml.product.instance.ServiceAddress;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /**
@@ -41,6 +48,22 @@ import java.util.Map;
 @Slf4j
 @SuppressWarnings({"squid:S1192"}) // literals are repeating in debug logs only
 public class CachingServiceClient implements CachingClient, InitializingBean {
+
+    /**
+     * Minimum caching service version that serves {@code /cache-query}.
+     */
+    static final String MIN_CACHING_SERVICE_VERSION = "3.6.0";
+
+    private static final long QUERY_SUPPORT_RECHECK_MILLIS = 5L * 60 * 1000;
+
+    /**
+     * Map key used for nothing but checking that the caching service is answering at all.
+     */
+    private static final String REACHABILITY_PROBE_MAP_KEY = "apimlReachabilityProbe";
+    static final String TOO_MANY_KEYS_MESSAGE = "Too many keys requested at once";
+
+    /** How often a batch size the caching service rejects is reported, when it is rejected on every request. */
+    private static final long BATCH_LIMIT_LOG_INTERVAL_MILLIS = 5L * 60 * 1000;
 
     private final GatewayClient gatewayClient;
     private final RestTemplate restTemplate;
@@ -54,6 +77,18 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
     @Value("${apiml.cachingServiceClient.list.apiPath:/cachingservice/api/v1/cache-list/}")
     private String CACHING_LIST_API_PATH;
 
+    @Value("${apiml.cachingServiceClient.legacyList.apiPath:/cachingservice/api/v1/cache-list-legacy}")
+    private String CACHING_LEGACY_LIST_API_PATH;
+
+    @Value("${apiml.cachingServiceClient.query.apiPath:/cachingservice/api/v1/cache-query}")
+    private String CACHING_QUERY_API_PATH;
+
+    @Value("${apiml.security.personalAccessToken.revocationLookupFailureThreshold:5}")
+    private int lookupFailureThreshold = 5;
+
+    @Value("${apiml.security.personalAccessToken.revocationLookupCircuitOpenMillis:10000}")
+    private long lookupCircuitOpenMillis = 10_000;
+    
     @Value("${apiml.service.http.userId:#{null}}")
     private String cachingServiceUserId;
 
@@ -62,6 +97,15 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     @Value("${apiml.security.ssl.verifySslCertificatesOfServices:true}")
     private boolean verifyCertificates;
+
+    @Value("${apiml.security.personalAccessToken.enabled:false}")
+    private boolean personalAccessTokenEnabled;
+
+    private final AtomicBoolean mapItemQuerySupported = new AtomicBoolean(true);
+    private final AtomicLong querySupportCheckedAt = new AtomicLong();
+    private final AtomicLong batchLimitLoggedAt = new AtomicLong();
+    private final AtomicInteger consecutiveLookupFailures = new AtomicInteger();
+    private final AtomicLong lookupCircuitOpenedAt = new AtomicLong();
 
     @Getter(AccessLevel.PACKAGE)
     private static final HttpHeaders defaultHeaders = new HttpHeaders();
@@ -88,6 +132,15 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
                 defaultHeaders.add(HttpHeaders.AUTHORIZATION, basicToken);
             }
         }
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void probeOnStartup() {
+        if (!personalAccessTokenEnabled) {
+            log.debug("Personal access tokens are disabled, not probing the caching service for point lookup support");
+            return;
+        }
+        probeMapItemQuery();
     }
 
     private String getGatewayAddress() {
@@ -122,23 +175,196 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         }
     }
 
+    @Override
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
     public Map<String, Map<String, String>> readAllMaps() throws CachingServiceClientException {
+        return readAllMaps(CACHING_LIST_API_PATH, "cache list");
+    }
+
+    @Override
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    public Map<String, Map<String, String>> readAllLegacyMaps() throws CachingServiceClientException {
+        return readAllMaps(CACHING_LEGACY_LIST_API_PATH, "legacy cache list");
+    }
+
+    private Map<String, Map<String, String>> readAllMaps(String path, String description) throws CachingServiceClientException {
+        failFastIfLookupCircuitOpen("read all key-value maps from " + description);
         try {
             var responseType = new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
             };
-            var url = getGatewayAddress() + CACHING_LIST_API_PATH;
+            var url = getGatewayAddress() + path;
             log.debug("readAllMaps url: {}", url);
             var response = restTemplate.exchange(url, HttpMethod.GET, null, responseType);
-            if (response.getStatusCode().is2xxSuccessful()) {
-                if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
-                    return response.getBody();
-                }
-                return Map.of();
-            } else {
-                throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by response from caching service is null or has no body");
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new CachingServiceClientException("Unable to read all key-value maps from " + description + ", caused by response from caching service is null or has no body");
             }
+            recordLookupSuccess();
+            if (response.getBody() != null && !response.getBody().isEmpty()) {     //NOSONAR tests return null
+                return response.getBody();
+            }
+            return Map.of();
         } catch (Exception e) {
-            throw new CachingServiceClientException("Unable to read all key-value maps from cache list, caused by: " + e.getMessage(), e);
+            recordLookupFailure();
+            throw new CachingServiceClientException("Unable to read all key-value maps from " + description + ", caused by: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getMapItems(Map<String, Collection<String>> keysByMapKey) throws CachingServiceClientException {
+        failFastIfLookupCircuitOpen("look up cache items");
+        try {
+            Map<String, Map<String, String>> found = lookupMapItems(keysByMapKey);
+            recordLookupSuccess();
+            return found;
+        } catch (HttpStatusCodeException e) {
+            boolean versionMismatch = isEndpointMissing(e.getStatusCode()) && markMapItemQueryUnsupportedIfConfirmed();
+            if (!versionMismatch) {
+                recordLookupFailure();
+            }
+            if (isBatchLimitExceeded(e)) {
+                logBatchLimitExceeded(keysByMapKey);
+            }
+            throw new CachingServiceClientException("Unable to look up cache items, caused by: " + e.getMessage(), e);
+        } catch (Exception e) {
+            recordLookupFailure();
+            throw new CachingServiceClientException("Unable to look up cache items, caused by: " + e.getMessage(), e);
+        }
+    }
+
+    private Map<String, Map<String, String>> lookupMapItems(Map<String, Collection<String>> keysByMapKey) {
+        var responseType = new ParameterizedTypeReference<Map<String, Map<String, String>>>() {
+        };
+        var url = getGatewayAddress() + CACHING_QUERY_API_PATH;
+        log.debug("getMapItems url: {}", url);
+        ResponseEntity<Map<String, Map<String, String>>> response;
+        try {
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(keysByMapKey, defaultHeaders), responseType);
+        } catch (ResourceAccessException e) {
+            // a read is idempotent, so one retry is safe, and a single dropped connection is the most common
+            // reason for this to fail at all. The short timeout is what keeps the retry affordable.
+            log.debug("Retrying the revocation lookup once after a transport failure", e);
+            response = restTemplate.exchange(url, HttpMethod.POST, new HttpEntity<>(keysByMapKey, defaultHeaders), responseType);
+        }
+        return response.getBody() == null ? Map.of() : response.getBody();   //NOSONAR tests return null
+    }
+
+    private boolean isBatchLimitExceeded(HttpStatusCodeException e) {
+        return HttpStatus.BAD_REQUEST.equals(e.getStatusCode())
+            && e.getResponseBodyAsString().contains(TOO_MANY_KEYS_MESSAGE);
+    }
+
+    private void logBatchLimitExceeded(Map<String, Collection<String>> keysByMapKey) {
+        long loggedAt = batchLimitLoggedAt.get();
+        long now = System.currentTimeMillis();
+        if (loggedAt != 0 && now - loggedAt < BATCH_LIMIT_LOG_INTERVAL_MILLIS) {
+            return;
+        }
+        if (batchLimitLoggedAt.compareAndSet(loggedAt, now)) {
+            int keys = keysByMapKey.values().stream().mapToInt(Collection::size).sum();
+            apimlLog.log("org.zowe.apiml.zaas.pat.revocationLookupBatchTooLarge", keys);
+        }
+    }
+
+    private void failFastIfLookupCircuitOpen(String action) {
+        if (isLookupCircuitOpen()) {
+            throw new CachingServiceClientException(
+                "Unable to " + action + ": the caching service has failed " + lookupFailureThreshold +
+                    " lookups in a row, so this one was not attempted");
+        }
+    }
+
+    private boolean isLookupCircuitOpen() {
+        long openedAt = lookupCircuitOpenedAt.get();
+        if (openedAt == 0) {
+            return false;
+        }
+        long now = System.currentTimeMillis();
+        if (now - openedAt < lookupCircuitOpenMillis) {
+            return true;
+        }
+        return !lookupCircuitOpenedAt.compareAndSet(openedAt, now);
+    }
+
+    private void recordLookupSuccess() {
+        consecutiveLookupFailures.set(0);
+        lookupCircuitOpenedAt.set(0);
+    }
+
+    private void recordLookupFailure() {
+        if (consecutiveLookupFailures.incrementAndGet() >= lookupFailureThreshold) {
+            lookupCircuitOpenedAt.compareAndSet(0, System.currentTimeMillis());
+        }
+    }
+
+    @Override
+    public boolean supportsMapItemQuery() {
+        if (mapItemQuerySupported.get()) {
+            return true;
+        }
+        long checkedAt = querySupportCheckedAt.get();
+        long now = System.currentTimeMillis();
+        if (now - checkedAt < QUERY_SUPPORT_RECHECK_MILLIS || !querySupportCheckedAt.compareAndSet(checkedAt, now)) {
+            return false;
+        }
+        return probeMapItemQuery();
+    }
+
+    boolean probeMapItemQuery() {
+        querySupportCheckedAt.set(System.currentTimeMillis());
+        try {
+            restTemplate.exchange(getGatewayAddress() + CACHING_QUERY_API_PATH, HttpMethod.POST,
+                new HttpEntity<>(Map.of(), defaultHeaders), String.class);
+            markMapItemQuerySupported();
+            return true;
+        } catch (HttpStatusCodeException e) {
+            if (isEndpointMissing(e.getStatusCode())) {
+                markMapItemQueryUnsupportedIfConfirmed();
+                return mapItemQuerySupported.get();
+            }
+            markMapItemQuerySupported();
+            return true;
+        } catch (RuntimeException e) {
+            log.debug("Could not probe the caching service for point lookup support", e);
+            return mapItemQuerySupported.get();
+        }
+    }
+
+    private boolean isEndpointMissing(HttpStatusCode status) {
+        return HttpStatus.NOT_FOUND.equals(status) || HttpStatus.METHOD_NOT_ALLOWED.equals(status);
+    }
+
+    private void markMapItemQuerySupported() {
+        if (!mapItemQuerySupported.get()) {
+            log.info("The caching service now serves point lookups; personal access token validation is back on the fast path");
+        }
+        mapItemQuerySupported.set(true);
+    }
+
+    /**
+     * @return whether this really is a version mismatch, as opposed to an unreachable caching service
+     */
+    private boolean markMapItemQueryUnsupportedIfConfirmed() {
+        if (!isCachingServiceReachable()) {
+            log.debug("The point lookup endpoint is missing, but the caching service is not answering at all; " +
+                "not treating this as a version mismatch");
+            return false;
+        }
+        mapItemQuerySupported.set(false);
+        querySupportCheckedAt.set(System.currentTimeMillis());
+        apimlLog.log("org.zowe.apiml.zaas.pat.cachingServiceTooOld", MIN_CACHING_SERVICE_VERSION);
+        return true;
+    }
+
+    private boolean isCachingServiceReachable() {
+        try {
+            restTemplate.exchange(getGatewayAddress() + CACHING_LIST_API_PATH + REACHABILITY_PROBE_MAP_KEY,
+                HttpMethod.GET, new HttpEntity<>(defaultHeaders), String.class);
+            return true;
+        } catch (HttpStatusCodeException e) {
+            return !isEndpointMissing(e.getStatusCode());
+        } catch (RuntimeException e) {
+            log.debug("The caching service is not reachable", e);
+            return false;
         }
     }
 
@@ -223,9 +449,6 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         }
     }
 
-    /**
-     * Data POJO that represents entry in caching service
-     */
     @RequiredArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Data
@@ -233,10 +456,21 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         private final String key;
         private final String value;
 
+        /**
+         * Requested lifespan of the entry, in seconds.
+         */
+        private Long ttlSeconds;
+
         @JsonCreator
         public KeyValue() {
             key = "";
             value = "";
+        }
+
+        public KeyValue(String key, String value, Long ttlSeconds) {
+            this.key = key;
+            this.value = value;
+            this.ttlSeconds = ttlSeconds;
         }
     }
 

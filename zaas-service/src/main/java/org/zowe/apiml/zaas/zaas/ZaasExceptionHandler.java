@@ -23,6 +23,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,6 +36,7 @@ import org.zowe.apiml.security.common.auth.saf.EndpointImproperlyConfigureExcept
 import org.zowe.apiml.security.common.auth.saf.UnsupportedResourceClassException;
 import org.zowe.apiml.security.common.token.TokenExpireException;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtAuthException;
 import org.zowe.apiml.zaas.security.service.saf.SafIdtException;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSchemeException;
@@ -198,7 +200,7 @@ public class ZaasExceptionHandler {
             .body(messageView);
     }
 
-    @ExceptionHandler({IllegalArgumentException.class, MissingServletRequestParameterException.class})
+    @ExceptionHandler({IllegalArgumentException.class, MissingServletRequestParameterException.class, MissingRequestHeaderException.class})
     public ResponseEntity<ApiMessageView> handleIllegalArguments(Exception exception) {
         log.debug("Client sent illegal arguments", exception);
         ApiMessageView messageView = messageService.createMessage("org.zowe.apiml.common.badRequest", exception.getMessage()).mapToView();
@@ -216,6 +218,17 @@ public class ZaasExceptionHandler {
             .status(HttpStatus.UNSUPPORTED_MEDIA_TYPE)
             .contentType(MediaType.APPLICATION_JSON)
             .body(messageView);
+    }
+
+    @ExceptionHandler(CachingServiceClientException.class)
+    public ResponseEntity<ApiMessageView> handleCachingServiceClientException(CachingServiceClientException e) {
+        log.debug("The caching service could not be reached", e);
+        ApiMessageView message = messageService
+            .createMessage("org.zowe.apiml.zaas.pat.cachingServiceUnavailable", e.getMessage())
+            .mapToView();
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(message);
     }
 
 }

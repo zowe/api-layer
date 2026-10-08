@@ -162,6 +162,60 @@ Command to run full set of api-layer: `npm run api-layer`. If you are looking fo
 In local usage, the Caching Service will run at `https://localhost:10016`. The API path is `/cachingservice/api/v1/cache/${path-params-as-needed}`.
 For example, `https://localhost:10016/cachingservice/api/v1/cache/my-key` retrieves the cache entry using the key 'my-key'.
 
+## Personal access token revocation store
+
+When personal access tokens are enabled, ZAAS keeps their revocation state here, under three maps:
+`invalidTokens` (one entry per revoked token), `invalidUsers` and `invalidScopes` (one entry per revocation
+rule). Only the Infinispan backend supports this - `inMemory`, `redis` and `VSAM` reject every map operation,
+and `PATAuthSourceService` fails closed, so personal access token authentication does not work on them at all.
+
+Each item is one cache entry, in `zoweInvalidatedTokenItemCache`, with its own expiration:
+
+* A revocation is a single `put`. It takes no cluster-wide lock, replicates only that one entry, and costs the
+  same whether the store holds ten entries or a million.
+* Expiration is Infinispan's own, computed per entry by ZAAS - the token's remaining life for a token, 90 days
+  for a rule. Nothing has to run on a timer to keep the store from growing.
+* Asking "is this token revoked?" is a point lookup of the token hash, the user hash and one key per scope,
+  through `POST /cachingservice/api/v1/cache-query`, instead of a download of the whole store.
+
+### Endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `POST /cachingservice/api/v1/cache-list/{mapKey}` | add or replace one item of a map |
+| `POST /cachingservice/api/v1/cache-query` | look up specific items across maps; returns only what exists |
+| `GET /cachingservice/api/v1/cache-list` | every item of every map. Deprecated: cost grows with the store |
+| `GET /cachingservice/api/v1/cache-list/{mapKey}` | every item of one map. Deprecated, same reason |
+| `GET /cachingservice/api/v1/cache-list-legacy` | the pre-cutover layout only. Removed once every token issued before the upgrade has expired |
+| `DELETE /cachingservice/api/v1/cache-list/evict/tokens/{mapKey}` | drop expired token records. A safety net; expiration is automatic |
+| `DELETE /cachingservice/api/v1/cache-list/evict/rules/{mapKey}` | drop rules past their retention. Likewise |
+
+`cache-query` takes the keys to look up grouped by map, and answers with only the entries that exist - a map
+with nothing found is omitted from the response entirely:
+
+    POST /cachingservice/api/v1/cache-query
+    {"invalidTokens": ["<hash>"], "invalidUsers": ["<hash>"], "invalidScopes": ["<hash>", "<hash>"]}
+
+A read expressed as a POST is unidiomatic, but each key is a 128-character hash and a multi-scope token needs
+several of them, which does not fit a URL reliably. The number of keys per request is bounded by
+`caching.storage.maxQueryKeys`. ZAAS keeps within that bound by splitting a token with more scopes than fit
+across several lookups (`apiml.security.personalAccessToken.revocationLookupBatchKeys`), so a token issued
+with more scopes than the current cap - by a previous release, for instance - still authenticates rather than
+becoming permanently unusable.
+
+### Maps that are not the revocation store
+
+`cache-list` is a general-purpose API and its callers are not only the personal access token code. Two things
+are worth knowing if you use it for anything else:
+
+* **Entries under a map key other than `invalidTokens`, `invalidUsers` or `invalidScopes` are stored without
+  expiration**, exactly as before. Pass `ttlSeconds` on the item if you want one. Only the three revocation
+  maps get an automatic lifespan, because those are the ones that grow without bound.
+* **Items written before this release are still returned** by `GET /cache-list` and
+  `GET /cache-list/{mapKey}`: the frozen pre-cutover layout is read underneath the per-item one, and the
+  per-item value wins if the same key exists in both. That overlay disappears with the pre-cutover read path,
+  by which point nothing written before the upgrade is still relevant.
+
 ## Configuration properties
 
 The Caching Service uses the standard `application.yml` structure for configuration.

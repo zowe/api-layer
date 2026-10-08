@@ -12,6 +12,7 @@ package org.zowe.apiml.cache;
 
 import org.zowe.apiml.caching.model.KeyValue;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -109,4 +110,23 @@ public interface Storage {
      * @param mapKey the map key
      */
     void removeNonRelevantTokens(String serviceId, String mapKey);
+
+    /**
+     * Point lookup of a specific set of items spread over several maps, in one call.
+     * <p>
+     *
+     * @param serviceId     Id of the service the items belong to
+     * @param keysByMapKey  the item keys to look up, grouped by the map they live in
+     * @return the found entries, grouped by map key; never null
+     */
+    Map<String, Map<String, String>> getMapItems(String serviceId, Map<String, Collection<String>> keysByMapKey) throws StorageException;
+
+    /**
+     * Read the pre-cutover, whole-map revocation layout.
+     * @param serviceId Id of the service to load the legacy maps for
+     * @return Map of all legacy maps with their key/value pairs; never null
+     * @deprecated superseded by the per-item layout; scheduled for removal with the legacy read path.
+     */
+    @Deprecated(since = "3.6.0") // scheduled for removal with the legacy read path
+    Map<String, Map<String, String>> getAllLegacyMaps(String serviceId) throws StorageException;
 }

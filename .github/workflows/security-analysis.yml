@@ -33,10 +33,14 @@ jobs:
                     });
 
                     if(isRisky) {
-                       await github.rest.issues.addLabels({
-                           owner,
-                           repo: repository,
-                           issue_number: prNumber,
-                           labels: ['Sensitive']
-                       });
+                       try {
+                           await github.rest.issues.addLabels({
+                               owner,
+                               repo: repository,
+                               issue_number: prNumber,
+                               labels: ['Sensitive']
+                           });
+                       } catch (error) {
+                           core.warning(`Could not add the 'Sensitive' label (the workflow token is read-only, as for pull requests from forks): ${error.message}`);
+                       }
                     }

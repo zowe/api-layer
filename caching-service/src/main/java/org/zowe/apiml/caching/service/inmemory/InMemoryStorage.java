@@ -19,6 +19,7 @@ import org.zowe.apiml.caching.service.inmemory.config.InMemoryConfig;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.log.ApimlLogger;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -135,6 +136,16 @@ public class InMemoryStorage implements Storage {
 
     @Override
     public void removeNonRelevantRules(String serviceId, String mapKey) {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getMapItems(String serviceId, Map<String, Collection<String>> keysByMapKey) throws StorageException {
+        throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
+    }
+
+    @Override
+    public Map<String, Map<String, String>> getAllLegacyMaps(String serviceId) throws StorageException {
         throw new StorageException(Messages.INCOMPATIBLE_STORAGE_METHOD.getKey(), Messages.INCOMPATIBLE_STORAGE_METHOD.getStatus());
     }
 

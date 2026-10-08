@@ -53,6 +53,9 @@
 # - ZWE_configs_apiml_security_authorization_endpoint_enabled
 # - ZWE_configs_apiml_security_authorization_endpoint_url
 # - ZWE_configs_apiml_security_authorization_provider
+# - ZWE_configs_apiml_security_domains_allowAnyApiDocUrl
+# - ZWE_configs_apiml_security_domains_onlyWarn
+# - ZWE_configs_apiml_security_domains_portValidationDisabled
 # - ZWE_configs_apiml_security_enableStrictUrlValidation
 # - ZWE_configs_apiml_security_x509_acceptForwardedCert
 # - ZWE_configs_apiml_security_x509_certificatesUrl
@@ -290,6 +293,9 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.authorization.provider=${ZWE_components_gateway_apiml_security_authorization_provider:-${ZWE_configs_apiml_security_authorization_provider:-"native"}} \
     -Dapiml.security.authorization.resourceClass=${ZWE_components_gateway_apiml_security_authorization_resourceClass:-${ZWE_configs_apiml_security_authorization_resourceClass:-ZOWE}} \
     -Dapiml.security.authorization.resourceNamePrefix=${ZWE_components_gateway_apiml_security_authorization_resourceNamePrefix:-${ZWE_configs_apiml_security_authorization_resourceNamePrefix:-APIML.}} \
+    -Dapiml.security.domains.allowAnyApiDocUrl=${ZWE_components_api_catalog_apiml_security_domains_allowAnyApiDocUrl:-${ZWE_configs_apiml_security_domains_allowAnyApiDocUrl:-false}} \
+    -Dapiml.security.domains.onlyWarn=${ZWE_components_discovery_apiml_security_domains_onlyWarn:-${ZWE_configs_apiml_security_domains_onlyWarn:-false}} \
+    -Dapiml.security.domains.portValidationDisabled=${ZWE_components_discovery_apiml_security_domains_portValidationDisabled:-${ZWE_configs_apiml_security_domains_portValidationDisabled:-false}} \
     -Dapiml.security.enableStrictUrlValidation=${ZWE_components_gateway_apiml_security_enableStrictUrlValidation:-${ZWE_configs_apiml_security_enableStrictUrlValidation:-true}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-${ZWE_configs_apiml_security_jwtInitializerTimeout:-5}} \
     -Dapiml.security.oidc.enabled=${ZWE_components_gateway_apiml_security_oidc_enabled:-${ZWE_configs_apiml_security_oidc_enabled:-false}} \
@@ -302,6 +308,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.oidc.userInfo.uri=${ZWE_components_gateway_apiml_security_oidc_userInfo_uri:-${ZWE_configs_apiml_security_oidc_userInfo_uri:-}} \
     -Dapiml.security.oidc.validationType=${ZWE_components_gateway_apiml_security_oidc_validationType:-${ZWE_configs_apiml_security_oidc_validationType:-"JWK"}} \
     -Dapiml.security.personalAccessToken.enabled=${ZWE_components_gateway_apiml_security_personalAccessToken_enabled:-${ZWE_configs_apiml_security_personalAccessToken_enabled:-false}} \
+    -Dapiml.security.personalAccessToken.maxScopes=${ZWE_components_gateway_apiml_security_personalAccessToken_maxScopes:-${ZWE_configs_apiml_security_personalAccessToken_maxScopes:-64}} \
+    -Dapiml.security.personalAccessToken.cutoverDate=${ZWE_components_gateway_apiml_security_personalAccessToken_cutoverDate:-${ZWE_configs_apiml_security_personalAccessToken_cutoverDate:-}} \
+    -Dapiml.security.personalAccessToken.cutoverSkewAllowanceSeconds=${ZWE_components_gateway_apiml_security_personalAccessToken_cutoverSkewAllowanceSeconds:-${ZWE_configs_apiml_security_personalAccessToken_cutoverSkewAllowanceSeconds:-300}} \
+    -Dapiml.security.personalAccessToken.revocationLookupBatchKeys=${ZWE_components_gateway_apiml_security_personalAccessToken_revocationLookupBatchKeys:-${ZWE_configs_apiml_security_personalAccessToken_revocationLookupBatchKeys:-66}} \
+    -Dapiml.security.personalAccessToken.revokeRuleSkewAllowanceMillis=${ZWE_components_gateway_apiml_security_personalAccessToken_revokeRuleSkewAllowanceMillis:-${ZWE_configs_apiml_security_personalAccessToken_revokeRuleSkewAllowanceMillis:-60000}} \
     -Dapiml.security.rauditx.oidcSourceUserPaths=${ZWE_configs_apiml_security_rauditx_oidcSourceUserPaths:-${ZWE_components_gateway_apiml_security_rauditx_oidcSourceUserPaths:-sub}} \
     -Dapiml.security.rauditx.onOidcUserIsMapped=${ZWE_configs_apiml_security_rauditx_onOidcUserIsMapped:-${ZWE_components_gateway_apiml_security_rauditx_onOidcUserIsMapped:-false}} \
     -Dapiml.security.saf.provider=${ZWE_components_gateway_apiml_security_saf_provider:-${ZWE_configs_apiml_security_saf_provider:-"rest"}} \
@@ -343,6 +354,11 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dcaching.storage.mode=${ZWE_components_caching_service_storage_mode:-${ZWE_configs_storage_mode:-infinispan}} \
     -Dcaching.storage.size=${ZWE_components_caching_service_storage_size:-${ZWE_configs_storage_size:-10000}} \
     -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
+    -Dcaching.storage.maxQueryKeys=${ZWE_components_caching_service_storage_maxQueryKeys:-${ZWE_configs_storage_maxQueryKeys:-66}} \
+    -Dcaching.storage.infinispan.distributedSyncTimeoutSecs=${ZWE_components_caching_service_storage_infinispan_distributedSyncTimeoutSecs:-${ZWE_configs_storage_infinispan_distributedSyncTimeoutSecs:-360}} \
+    -Dcaching.storage.infinispan.numSegments=${ZWE_components_caching_service_storage_infinispan_numSegments:-${ZWE_configs_storage_infinispan_numSegments:-256}} \
+    -Dcaching.storage.infinispan.revocationStore.maxCount=${ZWE_components_caching_service_storage_infinispan_revocationStore_maxCount:-${ZWE_configs_storage_infinispan_revocationStore_maxCount:-100000}} \
+    -Dcaching.storage.infinispan.revocationStore.sizeWarningThreshold=${ZWE_components_caching_service_storage_infinispan_revocationStore_sizeWarningThreshold:-${ZWE_configs_storage_infinispan_revocationStore_sizeWarningThreshold:-50000}} \
     -Deureka.client.serviceUrl.defaultZone=${ZWE_DISCOVERY_SERVICES_LIST} \
     -Dfile.encoding=UTF-8 \
     -Dibm.serversocket.recover=true \

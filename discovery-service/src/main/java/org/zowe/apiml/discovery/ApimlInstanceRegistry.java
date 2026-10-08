@@ -22,6 +22,7 @@ import com.netflix.eureka.resources.ServerCodecs;
 import com.netflix.eureka.transport.EurekaServerHttpClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistry;
 import org.springframework.cloud.netflix.eureka.server.InstanceRegistryProperties;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +31,7 @@ import org.zowe.apiml.discovery.config.EurekaConfig;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 import org.zowe.apiml.util.EurekaUtils;
 
@@ -157,6 +159,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             if (peerReplicate) {
                 replicateToPeersMethodHandle.invokeWithArguments(this, Action.Register, instanceInfo.getAppName(), instanceInfo.getId(), instanceInfo, null, isReplication);
             }
+        } catch (DomainAllowListMetadataException e) {
+            log.debug("Domains not allowed found in instance {}. Instance will not be registered", instanceInfo.getInstanceId());
         } catch (Throwable e) {
             throw new IllegalStateException(EXCEPTION_MESSAGE, e);
         } finally {
@@ -186,7 +190,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        validateInstanceInfo(info);
+        info = validateInstanceInfo(info);
         info = changeServiceId(info);
 
         super.register(info, leaseDuration, isReplication);
@@ -194,7 +198,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        validateInstanceInfo(info);
+        info = validateInstanceInfo(info);
         info = changeServiceId(info);
 
         super.register(info, isReplication);
@@ -211,8 +215,9 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * described above. For backwards compatibility the validation prints warnings only for non-conformant values.
      * @param info the instance info
      */
-    private void validateInstanceInfo(InstanceInfo info) {
-        info = metadataFilterService.verifyAllowedDomains(info);
+    private InstanceInfo validateInstanceInfo(InstanceInfo info) {
+        var result = metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(info));
+        var resultInstanceInfo = new InstanceInfo.Builder(info).setIPAddr(result.getInstanceInfo().getIPAddr()).build();
 
         String instanceId = info.getInstanceId();
         String appName = StringUtils.lowerCase(info.getAppName());
@@ -236,6 +241,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         }
 
         verifyAuthenticationSchemeConfiguration(info, appName);
+        return resultInstanceInfo;
     }
 
     /**

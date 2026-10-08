@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.util;
 
+import io.restassured.RestAssured;
+import io.restassured.config.LogConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.platform.launcher.TestExecutionListener;
 import org.junit.platform.launcher.TestPlan;
@@ -21,6 +23,10 @@ public class StartAndCleanApplications implements TestExecutionListener {
     private FullApiMediationLayer fullApiMediationLayer;
 
     public StartAndCleanApplications() {
+        RestAssured.config = RestAssured.config().logConfig(
+            LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails()
+        );
+
         if (FullApiMediationLayer.startServices()) {
             fullApiMediationLayer = FullApiMediationLayer.getInstance();
         }
