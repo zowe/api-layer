@@ -22,7 +22,6 @@ buildscript {
                 password mavenPassword
             }
         }
-        mavenCentral()
     }
 
     repositories mavenRepositories
