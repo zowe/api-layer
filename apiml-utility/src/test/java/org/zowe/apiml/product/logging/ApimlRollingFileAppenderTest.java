@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -42,22 +44,17 @@ class ApimlRollingFileAppenderTest {
         System.clearProperty(LOGS_LOCATION_PROPERTY);
     }
 
-    @Test
-    void givenFileLoggingEnabledAndWorkspaceDirectory_whenTheApplicationStarts_thenTheParamtersAreVerified() {
-        context.putProperty("LOG_TO_FILE", "true");
-        System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
+    @ParameterizedTest(name = "Enabled: {0}, location: {1}, started: {2}")
+    @CsvSource({
+        "true,validLocation,true",
+        "false,validLocation,false",
+        "true,,true"})
+    void givenFileLoggingSet_whenTheApplicationStarts_thenTheParamtersAreVerified(String enabled, String location, boolean expectedResult) {
+        context.putProperty("LOG_TO_FILE", enabled);
+        System.setProperty(LOGS_LOCATION_PROPERTY, "location");
 
         boolean result = underTest.verifyStartupParams();
-        assertThat(result, is(true));
-    }
-
-    @Test
-    void givenFileLoggingDisabledAndWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
-        context.putProperty("LOG_TO_FILE", "false");
-        System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
-
-        boolean result = underTest.verifyStartupParams();
-        assertThat(result, is(false));
+        assertThat(result, is(expectedResult));
     }
 
     @Test
@@ -86,15 +83,6 @@ class ApimlRollingFileAppenderTest {
         System.setProperty(LOGS_LOCATION_PROPERTY, "validLocation");
 
         boolean result = withoutContext.verifyStartupParams();
-        assertThat(result, is(false));
-    }
-
-    @Test
-    void givenFileLoggingEnabledAndNullWorkspaceDirectory_whenTheApplicationStarts_thenTheLoggerDoesntStart() {
-        context.putProperty("LOG_TO_FILE", "true");
-        System.setProperty(LOGS_LOCATION_PROPERTY, "");
-
-        boolean result = underTest.verifyStartupParams();
         assertThat(result, is(false));
     }
 

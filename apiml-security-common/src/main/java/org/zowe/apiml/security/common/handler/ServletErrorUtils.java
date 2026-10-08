@@ -26,7 +26,7 @@ import java.util.function.BiConsumer;
 @Slf4j
 public class ServletErrorUtils {
 
-    public static BiConsumer<ApiMessageView, HttpStatus> createApiErrorWriter(HttpServletResponse response, ApimlLogger logger) {
+    public static BiConsumer<ApiMessageView, HttpStatus> createApiErrorWriter(HttpServletResponse response) {
         return (apiMessageView, status) -> {
             response.setStatus(status.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
