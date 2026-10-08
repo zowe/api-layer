@@ -29,6 +29,7 @@ setup() {
     # Create a mock java binary that returns version info
     cat > "${ZWE_java_home}/bin/java" << 'MOCK_JAVAP'
 #!/bin/bash
+# bash required to safely capture arguments
 FULL_COMMAND=$(printf '%q ' "$0" "$@")
 
 echo "Java command executed: $FULL_COMMAND"
@@ -143,7 +144,6 @@ teardown() {
     export ZWE_configs_logging_debug_wiretap=true
     run "${APIML_DIR}/start.sh"
 
-    echo "output: $output"
     [ "$status" -eq 0 ]
 
     profiles=$(printf '%s\n' "$output" | sed -n 's/.*-Dspring\.profiles\.active=\([^ "]*\).*/\1/p' | sed 's/\\,/,/g')
