@@ -22,10 +22,7 @@ import org.zowe.apiml.product.config.ServerAddressPropertiesUpdater;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
 import org.zowe.apiml.product.monitoring.LatencyUtilsConfigInitializer;
 
-@SpringBootApplication(
-    exclude = {
-    }
-)
+@SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan(value = {
     "org.zowe.apiml.apicatalog",

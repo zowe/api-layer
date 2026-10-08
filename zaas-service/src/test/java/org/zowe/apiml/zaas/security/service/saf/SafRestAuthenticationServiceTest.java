@@ -96,7 +96,7 @@ class SafRestAuthenticationServiceTest {
                 @Test
                 void givenBadResponse() {
                     ResponseEntity<SafRestAuthenticationService.Token> response =
-                            new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                        ResponseEntity.badRequest().build();
                     when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
                             .thenReturn(response);
 
@@ -107,7 +107,7 @@ class SafRestAuthenticationServiceTest {
                 @Test
                 void givenInternalErrorResponseWithEmptyBody() {
                     ResponseEntity<SafRestAuthenticationService.Token> response =
-                        new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                        ResponseEntity.internalServerError().build();
                     when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(SafRestAuthenticationService.Token.class)))
                         .thenReturn(response);
 
@@ -184,7 +184,7 @@ class SafRestAuthenticationServiceTest {
             @Test
             void givenInternalErrorResponse() {
                 ResponseEntity response =
-                    new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+                    ResponseEntity.internalServerError().build();
                 when(restTemplate.exchange(any(), eq(HttpMethod.POST), any(), eq(Void.class)))
                     .thenReturn(response);
 
