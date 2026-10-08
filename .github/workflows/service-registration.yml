@@ -38,7 +38,6 @@ jobs:
                     cd bats-core && sudo ./install.sh /usr/local
 
             -   name: Run shell script tests
-                shell: bash #bash required to safely capture jvm args for evaluation
                 run: |
                     bats scripts/test/start_test.bats
                     bats apiml-package/src/test/start_test.bats

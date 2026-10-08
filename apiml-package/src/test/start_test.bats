@@ -28,7 +28,7 @@ setup() {
 
     # Create a mock java binary that returns version info
     cat > "${ZWE_java_home}/bin/java" << 'MOCK_JAVAP'
-#!/bin/sh
+#!/bin/bash
 FULL_COMMAND=$(printf '%q ' "$0" "$@")
 
 echo "Java command executed: $FULL_COMMAND"
