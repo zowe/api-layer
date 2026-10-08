@@ -112,9 +112,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.debug=true, then feature level debug is overridden" {
@@ -129,9 +129,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.debug=false, then feature level debug is enabled" {
@@ -149,9 +149,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-gateway,debug-discovery,debug-authentication,debug-caching,debug-catalog,debug-wiretap" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug-common,debug-gateway,debug-discovery,debug-authentication,debug-caching,debug-catalog,debug-wiretap" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.debug is unset, then feature level debug is enabled" {
@@ -169,9 +169,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-gateway,debug-discovery,debug-authentication,debug-caching,debug-catalog,debug-wiretap" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug-common,debug-gateway,debug-discovery,debug-authentication,debug-caching,debug-catalog,debug-wiretap" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.logging.logging.debug.gateway=true, then gateway debug is enabled" {
@@ -184,9 +184,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-gateway" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug-common,debug-gateway" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.logging.logging.debug.discovery=true, then discovery debug is enabled" {
@@ -199,9 +199,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-discovery" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug-common,debug-discovery" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.logging.logging.debug.authentication=true, then authentication debug is enabled" {
@@ -214,9 +214,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-authentication" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug-common,debug-authentication" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.logging.logging.debug.caching=true, then caching debug is enabled" {
@@ -229,9 +229,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-caching" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug-common,debug-caching" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.logging.logging.debug.catalog=true, then catalog debug is enabled" {
@@ -244,9 +244,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-catalog" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug-common,debug-catalog" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.logging.logging.debug combination is enabled, then the features level debug are enabled" {
@@ -264,9 +264,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-authentication,debug-caching" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info,debug-common,debug-authentication,debug-caching" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.logging.logging.toFile.enabled=true, then the property is set" {
@@ -278,8 +278,8 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: When apiml.logging.logging.toFile.debugOnly=true, then the property is set" {
@@ -291,8 +291,8 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${logToFile}" = "false" ]
-   [ "${onlyDebugToFile}" = "true" ]
+    [ "${logToFile}" = "false" ]
+    [ "${onlyDebugToFile}" = "true" ]
 }
 
 @test "apiml-start: Default configuration: info, no file" {
@@ -304,9 +304,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info" ]
-   [ "${logToFile}" = "false" ]
-   [ "${onlyDebugToFile}" = "false" ]
+    [ "${profiles}" = "info" ]
+    [ "${logToFile}" = "false" ]
+    [ "${onlyDebugToFile}" = "false" ]
 }
 
 @test "apiml-start: Common configuration: debug enabled with logging debug to file only" {
@@ -320,9 +320,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "true" ]
+    [ "${profiles}" = "info,debug" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "true" ]
 }
 
 @test "apiml-start: Common configuration: gateway and authentication debug with logging debug to file only" {
@@ -337,9 +337,9 @@ teardown() {
     logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
-   [ "${profiles}" = "info,debug-common,debug-gateway,debug-authentication" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "true" ]
+    [ "${profiles}" = "info,debug-common,debug-gateway,debug-authentication" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "true" ]
 }
 
 @test "apiml-start: When apiml.debug not set and single logger level is overridden, then property is set" {
@@ -353,12 +353,10 @@ teardown() {
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
     loggersLevel=$(printf '%s\n' "$output" | tr ' ' '\n' | grep -- '-Dlogging.level' | tr '\n' ' ')
 
-    echo "loggersLevel: [$loggersLevel]"
-
-   [ "${profiles}" = "info" ]
-   [ "${logToFile}" = "false" ]
-   [ "${onlyDebugToFile}" = "false" ]
-   [ "${loggersLevel}" = "-Dlogging.level.org.zowe.apiml.security.HttpsFactory=TRACE " ]
+    [ "${profiles}" = "info" ]
+    [ "${logToFile}" = "false" ]
+    [ "${onlyDebugToFile}" = "false" ]
+    [ "${loggersLevel}" = "-Dlogging.level.org.zowe.apiml.security.HttpsFactory=TRACE " ]
 }
 
 @test "apiml-start: When apiml.debug not set and multiple logger level is overridden, then property is set" {
@@ -372,12 +370,10 @@ teardown() {
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
     loggersLevel=$(printf '%s\n' "$output" | tr ' ' '\n' | grep -- '-Dlogging.level' | tr '\n' ' ')
 
-    echo "loggersLevel: [$loggersLevel]"
-
-   [ "${profiles}" = "info" ]
-   [ "${logToFile}" = "false" ]
-   [ "${onlyDebugToFile}" = "false" ]
-   [ "${loggersLevel}" = "-Dlogging.level.org.zowe.apiml.security.HttpsFactory=TRACE -Dlogging.level.org.zowe.apiml.security.HttpsFactory=ERROR -Dlogging.level.org.apache.http=INFO " ]
+    [ "${profiles}" = "info" ]
+    [ "${logToFile}" = "false" ]
+    [ "${onlyDebugToFile}" = "false" ]
+    [ "${loggersLevel}" = "-Dlogging.level.org.zowe.apiml.security.HttpsFactory=TRACE -Dlogging.level.org.zowe.apiml.security.HttpsFactory=ERROR -Dlogging.level.org.apache.http=INFO " ]
 }
 
 @test "apiml-start: When apiml.debug=true and multiple logger level is overridden, then property is set" {
@@ -392,10 +388,8 @@ teardown() {
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
     loggersLevel=$(printf '%s\n' "$output" | tr ' ' '\n' | grep -- '-Dlogging.level' | tr '\n' ' ')
 
-    echo "loggersLevel: [$loggersLevel]"
-    echo "output: $output"
-   [ "${profiles}" = "info,debug" ]
-   [ "${logToFile}" = "true" ]
-   [ "${onlyDebugToFile}" = "false" ]
-   [ "${loggersLevel}" = "-Dlogging.level.org.zowe.apiml.security.HttpsFactory=TRACE -Dlogging.level.org.zowe.apiml.security.HttpsFactory=ERROR -Dlogging.level.org.apache.http=INFO " ]
+    [ "${profiles}" = "info,debug" ]
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
+    [ "${loggersLevel}" = "-Dlogging.level.org.zowe.apiml.security.HttpsFactory=TRACE -Dlogging.level.org.zowe.apiml.security.HttpsFactory=ERROR -Dlogging.level.org.apache.http=INFO " ]
 }
