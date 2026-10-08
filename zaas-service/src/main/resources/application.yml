@@ -40,6 +40,13 @@ apiml:
         jwtInitializerTimeout: 5
         personalAccessToken:
             enabled: false
+            maxScopes: 64
+            cutoverDate:
+            cutoverSkewAllowanceSeconds: 300
+            revocationLookupFailureThreshold: 5
+            revocationLookupCircuitOpenMillis: 10000
+            revocationLookupBatchKeys: 66
+            revokeRuleSkewAllowanceMillis: 60000
         useInternalMapper: false
         auth:
             provider: zosmf

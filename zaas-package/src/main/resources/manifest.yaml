@@ -34,7 +34,6 @@ configs:
   debug: false
   sslDebug: ""
 
-
   server:
     ssl:
       enabled: true

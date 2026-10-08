@@ -20,10 +20,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.cache.PATRevocationStore;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
+import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
@@ -32,18 +37,34 @@ import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.zowe.apiml.zaas.security.service.token.ApimlAccessTokenProvider.CUTOVER_EPOCH_KEY;
+import static org.zowe.apiml.zaas.security.service.token.ApimlAccessTokenProvider.INVALID_SCOPES_KEY;
+import static org.zowe.apiml.zaas.security.service.token.ApimlAccessTokenProvider.INVALID_TOKENS_KEY;
+import static org.zowe.apiml.zaas.security.service.token.ApimlAccessTokenProvider.INVALID_USERS_KEY;
+import static org.zowe.apiml.zaas.security.service.token.ApimlAccessTokenProvider.SALT_KEY;
 
 class ApimlAccessTokenProviderTest {
 
     CachingServiceClient cachingServiceClient;
     AuthenticationService as;
     ApimlAccessTokenProvider accessTokenProvider;
+
+    private static final Instant STORED_EPOCH = Instant.ofEpochMilli(1000);
 
     private static String SCOPED_TOKEN;
     private static String TOKEN_WITHOUT_SCOPES;
@@ -52,11 +73,18 @@ class ApimlAccessTokenProviderTest {
     QueryResponse queryResponseWithoutScopes = new QueryResponse(null, "user", issuedDate, new Date(), "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE_PAT);
 
     @BeforeEach
-    void setup() throws CachingServiceClientException,SecureTokenInitializationException {
+    void setup() throws CachingServiceClientException, SecureTokenInitializationException {
         cachingServiceClient = mock(CachingServiceClient.class);
         as = mock(AuthenticationService.class);
-        when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", new String(ApimlAccessTokenProvider.generateSalt())));
-        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, new ObjectMapper().registerModule(new JavaTimeModule()));
+        when(cachingServiceClient.read(SALT_KEY)).thenReturn(new CachingServiceClient.KeyValue(SALT_KEY, new String(ApimlAccessTokenProvider.generateSalt())));
+        when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenReturn(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, "1000"));
+        when(cachingServiceClient.supportsMapItemQuery()).thenReturn(true);
+        accessTokenProvider = new ApimlAccessTokenProvider(cachingServiceClient, as, new ObjectMapper().registerModule(new JavaTimeModule()), Clock.systemUTC());
+    }
+
+    private void advanceClockBy(Duration duration) {
+        var clock = (Clock) ReflectionTestUtils.getField(accessTokenProvider, "clock");
+        ReflectionTestUtils.setField(accessTokenProvider, "clock", Clock.offset(clock, duration));
     }
 
     @BeforeAll
@@ -68,6 +96,34 @@ class ApimlAccessTokenProviderTest {
         scopesClaim.put("scopes", scopes);
         SCOPED_TOKEN = createTestToken("user", scopesClaim);
         TOKEN_WITHOUT_SCOPES = createTestToken("user", null);
+    }
+
+    private void givenStore(Map<String, Map<String, String>> maps) {
+        when(cachingServiceClient.getMapItems(any())).thenAnswer(invocation -> {
+            Map<String, Collection<String>> query = invocation.getArgument(0);
+            Map<String, Map<String, String>> result = new HashMap<>();
+            query.forEach((mapKey, keys) -> {
+                Map<String, String> stored = maps.get(mapKey);
+                if (stored == null) {
+                    return;
+                }
+                Map<String, String> found = new HashMap<>();
+                keys.forEach(key -> {
+                    if (stored.containsKey(key)) {
+                        found.put(key, stored.get(key));
+                    }
+                });
+                if (!found.isEmpty()) {
+                    result.put(mapKey, found);
+                }
+            });
+            return result;
+        });
+    }
+
+    private String tokenRecord(String tokenHash, LocalDateTime expiresAt) throws Exception {
+        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        return mapper.writeValueAsString(new AccessTokenContainer(null, tokenHash, null, expiresAt, null, null));
     }
 
     @Test
@@ -82,22 +138,41 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
+    void givenToken_whenInvalidating_thenTheEntryCarriesItsLifespan() throws Exception {
+        String token = "token";
+        Date issued = new Date();
+        Date expires = new Date(System.currentTimeMillis() + Duration.ofDays(10).toMillis());
+        when(as.parseJwtWithSignature(token)).thenReturn(new QueryResponse(null, "user", issued, expires, "issuer", Collections.emptyList(), null));
+
+        accessTokenProvider.invalidateToken(token);
+
+        ArgumentCaptor<CachingServiceClient.KeyValue> captor = ArgumentCaptor.forClass(CachingServiceClient.KeyValue.class);
+        verify(cachingServiceClient).appendList(eq(INVALID_TOKENS_KEY), captor.capture());
+        assertNotNull(captor.getValue().getTtlSeconds());
+        assertTrue(captor.getValue().getTtlSeconds() > Duration.ofDays(9).toSeconds());
+        assertTrue(captor.getValue().getTtlSeconds() <= Duration.ofDays(10).toSeconds());
+    }
+
+    @Test
     void invalidateAllUserTokens() {
         String userId = "user";
-        int timestamp = 1234;
+        long timestamp = System.currentTimeMillis();
 
         accessTokenProvider.invalidateAllTokensForUser(userId, timestamp);
-        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
 
+        ArgumentCaptor<CachingServiceClient.KeyValue> captor = ArgumentCaptor.forClass(CachingServiceClient.KeyValue.class);
+        verify(cachingServiceClient, times(1)).appendList(eq(INVALID_USERS_KEY), captor.capture());
+        assertNotNull(captor.getValue().getTtlSeconds());
+        assertTrue(captor.getValue().getTtlSeconds() > Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS - 1).toSeconds());
     }
 
     @Test
     void invalidateAllServiceTokens() {
         String serviceId = "service";
-        int timestamp = 1234;
+        long timestamp = System.currentTimeMillis();
 
         accessTokenProvider.invalidateAllTokensForService(serviceId, timestamp);
-        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_SCOPES_KEY), any());
+        verify(cachingServiceClient, times(1)).appendList(eq(INVALID_SCOPES_KEY), any());
 
     }
 
@@ -105,22 +180,110 @@ class ApimlAccessTokenProviderTest {
     void givenSameToken_returnInvalidated() throws Exception {
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+        givenStore(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, null))));
 
-        AccessTokenContainer invalidateToken = new AccessTokenContainer(null, tokenHash, null, null, null, null);
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        String s = mapper.writeValueAsString(invalidateToken);
-        Map<String, String> invalidTokens = new HashMap<>();
-        invalidTokens.put(tokenHash, s);
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        cacheMap.put(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, invalidTokens);
-        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        verify(cachingServiceClient, never()).readAllMaps();
+        verify(cachingServiceClient, never()).readAllLegacyMaps();
+    }
+
+    @Test
+    void givenToken_whenValidating_thenOnlyTheRelevantKeysAreRequested() {
+        when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(queryResponseTokenWithScopes);
+        givenStore(Map.of());
+
+        accessTokenProvider.isInvalidated(SCOPED_TOKEN);
+
+        ArgumentCaptor<Map<String, Collection<String>>> captor = ArgumentCaptor.forClass(Map.class);
+        verify(cachingServiceClient).getMapItems(captor.capture());
+        Map<String, Collection<String>> query = captor.getValue();
+        assertEquals(1, query.get(INVALID_TOKENS_KEY).size());
+        assertEquals(1, query.get(INVALID_USERS_KEY).size());
+        assertEquals(2, query.get(INVALID_SCOPES_KEY).size());
+    }
+
+    @Nested
+    class GivenMoreScopesThanOneLookupCanCarry {
+
+        private static final int BATCH_KEYS = 6; // so four scope hashes fit in one lookup
+
+        private QueryResponse manyScopes(List<String> scopes) {
+            return new QueryResponse(null, "user", issuedDate, new Date(), "issuer", scopes, QueryResponse.Source.ZOWE_PAT);
+        }
+
+        private List<String> scopeNames(int count) {
+            return IntStream.range(0, count).mapToObj(i -> "service" + i).toList();
+        }
+
+        @BeforeEach
+        void narrowTheBatch() {
+            ReflectionTestUtils.setField(accessTokenProvider, "revocationLookupBatchKeys", BATCH_KEYS);
+        }
+
+        @Test
+        void thenEveryScopeIsAskedAboutAcrossSeveralLookups() {
+            List<String> scopes = scopeNames(10);
+            when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(manyScopes(scopes));
+            givenStore(Map.of());
+
+            assertFalse(accessTokenProvider.isInvalidated(SCOPED_TOKEN));
+
+            ArgumentCaptor<Map<String, Collection<String>>> captor = ArgumentCaptor.forClass(Map.class);
+            verify(cachingServiceClient, times(3)).getMapItems(captor.capture());
+
+            Set<String> askedFor = new HashSet<>();
+            for (Map<String, Collection<String>> query : captor.getAllValues()) {
+                assertTrue(query.get(INVALID_SCOPES_KEY).size() <= BATCH_KEYS - 2, "a lookup exceeded the key limit");
+                // every batch carries the token and user hashes too, so each is a complete answer on its own
+                assertEquals(1, query.get(INVALID_TOKENS_KEY).size());
+                assertEquals(1, query.get(INVALID_USERS_KEY).size());
+                askedFor.addAll(query.get(INVALID_SCOPES_KEY));
+            }
+            byte[] salt = accessTokenProvider.getSalt();
+            Set<String> expected = scopes.stream()
+                .map(scope -> ApimlAccessTokenProvider.getSecurePassword(scope, salt))
+                .collect(Collectors.toSet());
+            assertEquals(expected, askedFor);
+        }
+
+        @Test
+        void givenARuleMatchingAScopeInALaterBatch_thenItIsStillFound() {
+            List<String> scopes = scopeNames(10);
+            when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(manyScopes(scopes));
+            byte[] salt = accessTokenProvider.getSalt();
+            String lastScopeHash = ApimlAccessTokenProvider.getSecurePassword(scopes.get(9), salt);
+            givenStore(Map.of(INVALID_SCOPES_KEY, Map.of(lastScopeHash, String.valueOf(System.currentTimeMillis()))));
+
+            assertTrue(accessTokenProvider.isInvalidated(SCOPED_TOKEN));
+        }
+
+        @Test
+        void givenARuleMatchingTheFirstBatch_thenTheRemainingLookupsAreSkipped() {
+            List<String> scopes = scopeNames(10);
+            when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(manyScopes(scopes));
+            byte[] salt = accessTokenProvider.getSalt();
+            String firstScopeHash = ApimlAccessTokenProvider.getSecurePassword(scopes.get(0), salt);
+            givenStore(Map.of(INVALID_SCOPES_KEY, Map.of(firstScopeHash, String.valueOf(System.currentTimeMillis()))));
+
+            assertTrue(accessTokenProvider.isInvalidated(SCOPED_TOKEN));
+
+            verify(cachingServiceClient, times(1)).getMapItems(any());
+        }
+
+        @Test
+        void givenScopesThatFitInOneLookup_thenOnlyOneIsMade() {
+            when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(manyScopes(scopeNames(4)));
+            givenStore(Map.of());
+
+            accessTokenProvider.isInvalidated(SCOPED_TOKEN);
+
+            verify(cachingServiceClient, times(1)).getMapItems(any());
+        }
     }
 
     @Test
     void givenSaltNotAlreadyInCache_thenGenerateAndStoreNew() throws CachingServiceClientException {
-        when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException(""));
+        when(cachingServiceClient.read(SALT_KEY)).thenThrow(new CachingServiceClientException(""));
         doNothing().when(cachingServiceClient).create(any());
         byte[] salt = accessTokenProvider.getSalt();
         assertNotNull(salt);
@@ -162,16 +325,7 @@ class ApimlAccessTokenProviderTest {
         String differentToken = "eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJ1c2VyIiwiZG9tIjoiRHVtbXkgcHJvdmlkZXIiLCJpYXQiOjE2NTQ1MzAwMDUsImV4cCI6MTY1NDU1ODgwNSwiaXNzIjoiQVBJTUwiLCJqdGkiOiIwYTllNzAyMS1jYzY2LTQzMDMtYTc4YS0wZGQwMWM3MjYyZjkifQ.HNfmAzw_bsKVrft5a527LaF9zsBMkfZK5I95mRmdftmRtI9dQNEFQR4Eg10FiBP53asixz6vmereJGKV04uSZIJzAKOpRk-NlGrZ06UZ3cTCBaLmB1l2HYnrAGkWJ8gCaAAOxRN2Dy4LIa_2UrtT-87DfU1T0OblgUdqfgf1_WKw0JIl6uMjdsJrSKdP61GeacFuaGQGxxZBRR7r9D5mxdVLQaHAjzjK89ZqZuQP04jV1BR-0OnFNA84XsQdWG61dYbWDMDkjPcp-nFK65w5X6GLO0BKFHWn4vSIQMKLEb6A9j7ym9N7pAXdt-eXCdLRiHHGQDjYcNSh_zRHtXwwkdA";
         when(as.parseJwtWithSignature(differentToken)).thenReturn(queryResponseWithoutScopes);
         String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
-
-        AccessTokenContainer invalidateToken = new AccessTokenContainer(null, tokenHash, null, null, null, null);
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        String s = mapper.writeValueAsString(invalidateToken);
-        Map<String, String> invalidTokens = new HashMap<>();
-        invalidTokens.put(tokenHash, s);
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        cacheMap.put(ApimlAccessTokenProvider.INVALID_TOKENS_KEY, invalidTokens);
-        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        givenStore(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, null))));
 
         assertFalse(accessTokenProvider.isInvalidated(differentToken));
     }
@@ -179,15 +333,17 @@ class ApimlAccessTokenProviderTest {
     @Test
     void givenTokenWithUserIdMatchingRule_returnInvalidated() {
         when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        Map<String, Map<String, String>> store = new HashMap<>();
+        givenStore(store);
         doAnswer(answer -> {
             var mapkey = (String) answer.getArgument(0);
             var keyValue = (CachingServiceClient.KeyValue) answer.getArgument(1);
-            cacheMap.computeIfAbsent(mapkey, key -> new HashMap<>()).put(keyValue.getKey(), keyValue.getValue());
+            store.computeIfAbsent(mapkey, key -> new HashMap<>()).put(keyValue.getKey(), keyValue.getValue());
             return null;
         }).when(cachingServiceClient).appendList(any(), any());
+
         accessTokenProvider.invalidateAllTokensForUser("User", System.currentTimeMillis());
+
         assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
     }
 
@@ -196,14 +352,23 @@ class ApimlAccessTokenProviderTest {
         String serviceId = accessTokenProvider.getHash("service");
         Date issued = new Date(System.currentTimeMillis() - 100000L);
         when(as.parseJwtWithSignature(SCOPED_TOKEN)).thenReturn(new QueryResponse(null, "user", issued, issued, "issuer", Collections.singletonList("service"), null));
-        Map<String, String> invalidScopes = new HashMap<>();
-        invalidScopes.put(serviceId, String.valueOf(System.currentTimeMillis()));
-        Map<String, Map<String, String>> cacheMap = new HashMap<>();
-        cacheMap.put(ApimlAccessTokenProvider.INVALID_SCOPES_KEY, invalidScopes);
-        when(cachingServiceClient.readAllMaps()).thenReturn(cacheMap);
+        givenStore(Map.of(INVALID_SCOPES_KEY, Map.of(serviceId, String.valueOf(System.currentTimeMillis()))));
+
         assertTrue(accessTokenProvider.isInvalidated(SCOPED_TOKEN));
     }
 
+    @Test
+    void givenTokenWithoutUserId_thenDoNotFailAndDoNotAskForAUserRule() {
+        when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES))
+            .thenReturn(new QueryResponse(null, null, issuedDate, new Date(), "issuer", Collections.emptyList(), null));
+        givenStore(Map.of());
+
+        assertFalse(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+
+        ArgumentCaptor<Map<String, Collection<String>>> captor = ArgumentCaptor.forClass(Map.class);
+        verify(cachingServiceClient).getMapItems(captor.capture());
+        assertFalse(captor.getValue().containsKey(INVALID_USERS_KEY));
+    }
 
     @Test
     void givenUserAndValidExpirationTest_thenTokenIsCreated() {
@@ -211,7 +376,7 @@ class ApimlAccessTokenProviderTest {
         scopes.add("Service1");
         scopes.add("Service2");
         when(as.createLongLivedJwtToken("user", 55, scopes)).thenReturn("token");
-        String token = accessTokenProvider.getToken("user", 55, scopes);
+        String token = accessTokenProvider.issueToken("user", 55, scopes);
         assertNotNull(token);
         assertEquals("token", token);
     }
@@ -226,7 +391,7 @@ class ApimlAccessTokenProviderTest {
     void givenNoTimestamp_thenUserSystemTimeToInvalidateAllTokensForUser() {
         String userId = "user";
         accessTokenProvider.invalidateAllTokensForUser(userId, 0);
-        verify(cachingServiceClient, times(1)).appendList(eq(ApimlAccessTokenProvider.INVALID_USERS_KEY), any());
+        verify(cachingServiceClient, times(1)).appendList(eq(INVALID_USERS_KEY), any());
     }
 
     static Stream<String> invalidScopes() {
@@ -248,13 +413,386 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Nested
+    class WhenTheTokenRecordIsNoLongerUsable {
+
+        @Test
+        void givenARecordThatLooksExpiredAndAMatchingUserRule_thenStillInvalidated() throws Exception {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            String userHash = accessTokenProvider.getHash("USER");
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+            givenStore(Map.of(
+                INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, LocalDateTime.now().minusDays(1))),
+                INVALID_USERS_KEY, Map.of(userHash, Long.toString(System.currentTimeMillis()))
+            ));
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+
+        @Test
+        void givenARecordThatLooksExpiredAndNoRule_thenStillInvalidated() throws Exception {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+            givenStore(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, LocalDateTime.now().minusHours(5)))));
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+
+        @Test
+        void givenARecordWithNoExpiry_thenStillInvalidated() throws Exception {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+            givenStore(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, null))));
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+
+        @Test
+        void givenAnUnparseableRecord_thenStillInvalidated() {
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+            givenStore(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, "not json at all")));
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+    }
+
+    @Nested
+    class WhenTheCachingServiceIsTooOld {
+
+        @Test
+        void thenValidationFallsBackToTheWholeMapReadRatherThanFailing() throws Exception {
+            when(cachingServiceClient.supportsMapItemQuery()).thenReturn(false);
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+            when(cachingServiceClient.readAllMaps())
+                .thenReturn(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, null))));
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+            verify(cachingServiceClient, never()).getMapItems(any());
+        }
+
+        @Test
+        void givenNothingRevoked_thenTheTokenIsStillAccepted() {
+            when(cachingServiceClient.supportsMapItemQuery()).thenReturn(false);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(queryResponseWithoutScopes);
+            when(cachingServiceClient.readAllMaps()).thenReturn(Map.of());
+
+            assertFalse(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+    }
+
+    @Nested
+    class WhenRoutingByCutoverEpoch {
+
+        private QueryResponse tokenCreatedAt(long creation) {
+            return new QueryResponse(null, "user", new Date(creation), new Date(creation + Duration.ofDays(1).toMillis()),
+                "issuer", Collections.emptyList(), QueryResponse.Source.ZOWE_PAT);
+        }
+
+        @Test
+        void givenAConfiguredEpoch_thenItWinsOverTheStoredValueAndOverMinting() {
+            long configured = System.currentTimeMillis() - Duration.ofDays(1).toMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(configured).toString());
+
+            assertEquals(Optional.of(Instant.ofEpochMilli(configured)), accessTokenProvider.getCutoverEpoch());
+            verify(cachingServiceClient, never()).read(CUTOVER_EPOCH_KEY);
+            verify(cachingServiceClient, never()).create(any());
+        }
+
+        @Test
+        void givenAConfiguredEpochWithAnOffset_thenItIsConvertedToTheSameInstant() {
+            Instant configured = Instant.now().minus(Duration.ofDays(1)).truncatedTo(ChronoUnit.SECONDS);
+            String withOffset = configured.atOffset(ZoneOffset.ofHours(2)).toString();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", withOffset);
+
+            assertEquals(Optional.of(configured), accessTokenProvider.getCutoverEpoch());
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"2026-10-05", "2026-10-05T12:00:00", "1791201600000", "yesterday"})
+        void givenAConfiguredEpochThatIsNotAnInstantWithAZone_thenItIsIgnoredAndTheStoredValueUsed(String value) {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", value);
+
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), eq(value), any());
+        }
+
+        @Test
+        void givenABlankConfiguredEpoch_thenTheStoredValueIsUsedWithoutComplaint() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "  ");
+
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+            verify(apimlLog, never()).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), any(), any(), any());
+        }
+
+        @Test
+        void givenAConfiguredEpochLongInThePast_thenItIsIgnoredAndTheStoredValueUsed() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "1970-01-02T00:00:00Z");
+
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), any(), any());
+        }
+
+        @Test
+        void givenAConfiguredEpochFarInTheFuture_thenItIsIgnored() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.now().plus(Duration.ofDays(30)).toString());
+
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverDate"), any(), any());
+        }
+
+        @Test
+        void givenAnIgnoredConfiguredEpochAndNothingStored_thenOneIsMinted() {
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", "1970-01-01T00:00:00Z");
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("not found"));
+
+            Instant before = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+            assertFalse(accessTokenProvider.getCutoverEpoch().orElseThrow().isBefore(before));
+        }
+
+        @Test
+        void thenOnlyCertainlyWrongEpochsAreImplausible() {
+            Instant now = Instant.now();
+            Instant earliest = ApimlAccessTokenProvider.EARLIEST_PLAUSIBLE_CUTOVER_DATE;
+            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(earliest.minusMillis(1), now));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(earliest, now));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now, now));
+            assertNull(ApimlAccessTokenProvider.validateCutoverEpoch(now.plus(Duration.ofHours(1)), now));
+            assertNotNull(ApimlAccessTokenProvider.validateCutoverEpoch(now.plus(Duration.ofDays(2)), now));
+        }
+
+        @Test
+        void givenAStoredEpoch_thenNothingIsMinted() {
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+            verify(cachingServiceClient, never()).create(any());
+        }
+
+        @Test
+        void givenNoEpochAnywhere_thenOneIsMintedAndTheEventIsCatalogued() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("not found"));
+
+            Instant before = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+            Instant minted = accessTokenProvider.getCutoverEpoch().orElseThrow();
+
+            assertFalse(minted.isBefore(before));
+            verify(cachingServiceClient).create(argThat(kv -> CUTOVER_EPOCH_KEY.equals(kv.getKey())));
+            verify(apimlLog).log(eq("org.zowe.apiml.zaas.pat.cutoverEpochMinted"), any());
+        }
+
+        @Test
+        void givenTwoNodesMintingAtOnce_thenTheyConvergeOnOneValue() {
+            Map<String, String> store = new HashMap<>();
+            CachingServiceClient client = mock(CachingServiceClient.class);
+            when(client.read(anyString())).thenAnswer(invocation -> {
+                String key = invocation.getArgument(0);
+                if (!store.containsKey(key)) {
+                    throw new CachingServiceClientException("no record");
+                }
+                return new CachingServiceClient.KeyValue(key, store.get(key));
+            });
+            doAnswer(invocation -> {
+                CachingServiceClient.KeyValue kv = invocation.getArgument(0);
+                if (store.putIfAbsent(kv.getKey(), kv.getValue()) != null) {
+                    CachingServiceClientException collision = mock(CachingServiceClientException.class);
+                    when(collision.isKeyCollision()).thenReturn(true);
+                    throw collision;
+                }
+                return null;
+            }).when(client).create(any());
+
+            ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+            var nodeA = new ApimlAccessTokenProvider(client, as, mapper, Clock.systemUTC());
+            var nodeB = new ApimlAccessTokenProvider(client, as, mapper, Clock.systemUTC());
+
+            var epochA = nodeA.getCutoverEpoch();
+            var epochB = nodeB.getCutoverEpoch();
+
+            assertEquals(epochA, epochB);
+            assertEquals(1, store.size());
+        }
+
+        @Test
+        void givenASpuriousAbsence_thenTheStoredValueIsNotOverwritten() {
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY))
+                .thenThrow(new CachingServiceClientException("looks absent"))
+                .thenReturn(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, "777"));
+            CachingServiceClientException collision = mock(CachingServiceClientException.class);
+            when(collision.isKeyCollision()).thenReturn(true);
+            doThrow(collision).when(cachingServiceClient).create(argThat(kv -> CUTOVER_EPOCH_KEY.equals(kv.getKey())));
+
+            assertEquals(Optional.of(Instant.ofEpochMilli(777)), accessTokenProvider.getCutoverEpoch());
+        }
+
+        @Test
+        void givenAnUnresolvableEpoch_thenTheLegacyStoreIsStillConsulted() {
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("boom"));
+            doThrow(new CachingServiceClientException("boom")).when(cachingServiceClient).create(argThat(kv -> CUTOVER_EPOCH_KEY.equals(kv.getKey())));
+
+            assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(System.currentTimeMillis())));
+        }
+
+        @Test
+        void givenResolutionFails_thenItIsNotRetriedOnEveryRequest() {
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("boom"));
+            doThrow(new CachingServiceClientException("boom")).when(cachingServiceClient).create(argThat(kv -> CUTOVER_EPOCH_KEY.equals(kv.getKey())));
+
+            for (int i = 0; i < 5; i++) {
+                accessTokenProvider.getCutoverEpoch();
+            }
+
+            verify(cachingServiceClient, times(1)).read(CUTOVER_EPOCH_KEY);
+        }
+
+        @Test
+        void givenResolutionFails_thenItIsRetriedOnceTheRetryIntervalHasPassed() {
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY))
+                .thenThrow(new CachingServiceClientException("boom"))
+                .thenReturn(new CachingServiceClient.KeyValue(CUTOVER_EPOCH_KEY, "1000"));
+            doThrow(new CachingServiceClientException("boom")).when(cachingServiceClient).create(argThat(kv -> CUTOVER_EPOCH_KEY.equals(kv.getKey())));
+
+            assertTrue(accessTokenProvider.getCutoverEpoch().isEmpty());
+            advanceClockBy(Duration.ofMinutes(1));
+
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+        }
+
+        @Test
+        void givenResolutionSucceeds_thenTheStoreIsNotReadAgain() {
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+            assertEquals(Optional.of(STORED_EPOCH), accessTokenProvider.getCutoverEpoch());
+
+            verify(cachingServiceClient, times(1)).read(CUTOVER_EPOCH_KEY);
+        }
+
+        @Test
+        void givenATokenOlderThanTheEpoch_thenBothStoresAreConsulted() throws Exception {
+            long epoch = System.currentTimeMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(tokenCreatedAt(epoch - Duration.ofDays(1).toMillis()));
+            givenStore(Map.of());
+            when(cachingServiceClient.readAllLegacyMaps())
+                .thenReturn(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, null))));
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+            verify(cachingServiceClient).readAllLegacyMaps();
+        }
+
+        @Test
+        void givenAPreCutoverTokenRevokedAfterTheUpgrade_thenTheNewStoreStillAnswers() throws Exception {
+            long epoch = System.currentTimeMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
+            String tokenHash = accessTokenProvider.getHash(TOKEN_WITHOUT_SCOPES);
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(tokenCreatedAt(epoch - Duration.ofDays(1).toMillis()));
+            when(cachingServiceClient.readAllLegacyMaps()).thenReturn(Map.of());
+            givenStore(Map.of(INVALID_TOKENS_KEY, Map.of(tokenHash, tokenRecord(tokenHash, null))));
+
+            assertTrue(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+        }
+
+        @Test
+        void givenATokenAfterTheEpoch_thenTheLegacyStoreIsNeverRead() {
+            long epoch = System.currentTimeMillis() - Duration.ofHours(1).toMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
+            when(as.parseJwtWithSignature(TOKEN_WITHOUT_SCOPES)).thenReturn(tokenCreatedAt(System.currentTimeMillis()));
+            givenStore(Map.of());
+
+            assertFalse(accessTokenProvider.isInvalidated(TOKEN_WITHOUT_SCOPES));
+            verify(cachingServiceClient, never()).readAllLegacyMaps();
+        }
+
+        @Test
+        void givenATokenWithinTheSkewAllowance_thenTheLegacyStoreIsStillConsulted() {
+            long epoch = System.currentTimeMillis() - Duration.ofHours(1).toMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
+            ReflectionTestUtils.setField(accessTokenProvider, "cutoverSkewAllowanceSeconds", 300L);
+
+            assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(120).toMillis())));
+            assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofSeconds(600).toMillis())));
+        }
+
+        @Test
+        void givenASkewAllowanceAboveTheMaximum_thenItIsCappedAndReported() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            long epoch = System.currentTimeMillis() - Duration.ofDays(1).toMillis();
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
+            ReflectionTestUtils.setField(accessTokenProvider, "cutoverSkewAllowanceSeconds", Long.MAX_VALUE);
+
+            assertTrue(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofMinutes(30).toMillis())));
+            assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch + Duration.ofHours(2).toMillis())));
+            verify(apimlLog, times(1)).log(eq("org.zowe.apiml.zaas.pat.cutoverSettingRejected"), eq("cutoverSkewAllowanceSeconds"), any(), any());
+        }
+
+        @Test
+        void givenTheSunsetHasPassed_thenTheBranchIsNotTakenEvenForAnAncientToken() {
+            long epoch = System.currentTimeMillis() - ApimlAccessTokenProvider.LEGACY_SUNSET.toMillis() - 1000;
+            ReflectionTestUtils.setField(accessTokenProvider, "configuredCutoverDate", Instant.ofEpochMilli(epoch).toString());
+
+            assertFalse(accessTokenProvider.shouldConsultLegacyStore(tokenCreatedAt(epoch - Duration.ofDays(30).toMillis())));
+        }
+    }
+
+    @Nested
+    class WhenCappingScopes {
+
+        @Test
+        void givenMoreScopesThanTheLimit_thenIssuanceIsRejectedNamingTheLimit() {
+            Set<String> scopes = IntStream.rangeClosed(0, PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN)
+                .mapToObj(i -> "service" + i)
+                .collect(Collectors.toSet());
+
+            var exception = assertThrows(AccessTokenTooManyScopesException.class,
+                () -> accessTokenProvider.issueToken("user", 10, scopes));
+
+            assertEquals(PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN, exception.getLimit());
+            verify(as, never()).createLongLivedJwtToken(any(), anyInt(), any());
+        }
+
+        @Test
+        void givenExactlyTheLimit_thenIssuanceSucceeds() {
+            Set<String> scopes = IntStream.range(0, PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN)
+                .mapToObj(i -> "service" + i)
+                .collect(Collectors.toSet());
+            when(as.createLongLivedJwtToken(eq("user"), anyInt(), any())).thenReturn("token");
+
+            assertEquals("token", accessTokenProvider.issueToken("user", 10, scopes));
+        }
+
+        @Test
+        void thenTheLookupLimitLeavesRoomForTheTokenAndUserHashes() {
+            assertTrue(PATRevocationStore.DEFAULT_MAX_QUERY_KEYS >= PATRevocationStore.DEFAULT_MAX_SCOPES_PER_TOKEN + 2);
+        }
+    }
+
+    @Nested
     class WhenCallingEviction {
         @Test
         void thenEvictNonRelevantTokensAndRules() {
             accessTokenProvider.evictNonRelevantTokensAndRules();
-            verify(cachingServiceClient, times(1)).evictTokens(ApimlAccessTokenProvider.INVALID_TOKENS_KEY);
-            verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_USERS_KEY);
-            verify(cachingServiceClient, times(1)).evictRules(ApimlAccessTokenProvider.INVALID_SCOPES_KEY);
+            verify(cachingServiceClient, times(1)).evictTokens(INVALID_TOKENS_KEY);
+            verify(cachingServiceClient, times(1)).evictRules(INVALID_USERS_KEY);
+            verify(cachingServiceClient, times(1)).evictRules(INVALID_SCOPES_KEY);
+        }
+
+        @Test
+        void givenTheFirstEvictionFails_thenTheOthersStillRunAndTheFailureIsReported() {
+            doThrow(new CachingServiceClientException("boom")).when(cachingServiceClient).evictTokens(INVALID_TOKENS_KEY);
+
+            assertThrows(CachingServiceClientException.class, () -> accessTokenProvider.evictNonRelevantTokensAndRules());
+
+            verify(cachingServiceClient, times(1)).evictRules(INVALID_USERS_KEY);
+            verify(cachingServiceClient, times(1)).evictRules(INVALID_SCOPES_KEY);
         }
     }
 
@@ -269,12 +807,144 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Nested
+    class SaltMemoization {
+
+        @Test
+        void givenRepeatedCallsWithinTheRefreshWindow_thenTheStoreIsReadOnce() {
+            byte[] first = accessTokenProvider.getSalt();
+            byte[] second = accessTokenProvider.getSalt();
+
+            assertArrayEquals(first, second);
+            verify(cachingServiceClient, times(1)).read(SALT_KEY);
+        }
+
+        @Test
+        void givenTheRefreshWindowHasPassed_thenTheStoreIsReadAgain() {
+            accessTokenProvider.getSalt();
+            expireTheMemo();
+
+            accessTokenProvider.getSalt();
+
+            verify(cachingServiceClient, times(2)).read(SALT_KEY);
+        }
+
+        @Test
+        void givenARefreshFailure_thenTheLastKnownSaltIsServedAndRetriedAfterTheInterval() {
+            byte[] original = accessTokenProvider.getSalt();
+            expireTheMemo();
+            doThrow(new CachingServiceClientException("timeout", new IOException())).when(cachingServiceClient).read(SALT_KEY);
+
+            assertArrayEquals(original, accessTokenProvider.getSalt());
+            verify(cachingServiceClient, times(2)).read(SALT_KEY);
+
+            assertArrayEquals(original, accessTokenProvider.getSalt());
+            verify(cachingServiceClient, times(2)).read(SALT_KEY);
+
+            expireTheLastAttempt();
+            assertArrayEquals(original, accessTokenProvider.getSalt());
+            verify(cachingServiceClient, times(3)).read(SALT_KEY);
+        }
+
+        @Test
+        void givenARefreshInProgress_thenOtherCallersAreServedTheLastKnownSaltWithoutWaiting() throws Exception {
+            byte[] original = accessTokenProvider.getSalt();
+            expireTheMemo();
+            CountDownLatch refreshStarted = new CountDownLatch(1);
+            CountDownLatch releaseRefresh = new CountDownLatch(1);
+            doAnswer(invocation -> {
+                refreshStarted.countDown();
+                releaseRefresh.await(10, TimeUnit.SECONDS);
+                return new CachingServiceClient.KeyValue(SALT_KEY, Base64.getEncoder().encodeToString(ApimlAccessTokenProvider.generateSalt()));
+            }).when(cachingServiceClient).read(SALT_KEY);
+
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            try {
+                Future<byte[]> refreshing = executor.submit(() -> accessTokenProvider.getSalt());
+                assertTrue(refreshStarted.await(10, TimeUnit.SECONDS));
+
+                assertTimeoutPreemptively(Duration.ofSeconds(2), () -> assertArrayEquals(original, accessTokenProvider.getSalt()));
+
+                releaseRefresh.countDown();
+                assertNotNull(refreshing.get(10, TimeUnit.SECONDS));
+            } finally {
+                releaseRefresh.countDown();
+                executor.shutdownNow();
+            }
+            verify(cachingServiceClient, times(2)).read(SALT_KEY);
+        }
+
+        @Test
+        void givenNoSaltYetAndAFailedAttempt_thenCallersFailFastUntilTheRetryInterval() {
+            doThrow(new CachingServiceClientException("timeout", new IOException())).when(cachingServiceClient).read(SALT_KEY);
+
+            assertThrows(CachingServiceClientException.class, accessTokenProvider::getSalt);
+            assertThrows(CachingServiceClientException.class, accessTokenProvider::getSalt);
+            verify(cachingServiceClient, times(1)).read(SALT_KEY);
+
+            expireTheLastAttempt();
+            doReturn(new CachingServiceClient.KeyValue(SALT_KEY, Base64.getEncoder().encodeToString(ApimlAccessTokenProvider.generateSalt())))
+                .when(cachingServiceClient).read(SALT_KEY);
+            assertNotNull(accessTokenProvider.getSalt());
+            verify(cachingServiceClient, times(2)).read(SALT_KEY);
+        }
+
+        @Test
+        void thenTheCallerCannotMutateTheMemoizedSalt() {
+            byte[] salt = accessTokenProvider.getSalt();
+            Arrays.fill(salt, (byte) 0);
+
+            assertFalse(Arrays.equals(salt, accessTokenProvider.getSalt()));
+        }
+
+        @Test
+        void givenTheStoreHasNoSalt_thenTheRegenerationIsCatalogued() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            when(cachingServiceClient.read(SALT_KEY)).thenThrow(new CachingServiceClientException("no record"));
+
+            accessTokenProvider.getSalt();
+
+            verify(apimlLog).log("org.zowe.apiml.zaas.pat.saltRegenerated");
+        }
+
+        @Test
+        void givenAnExistingSalt_thenNoRegenerationIsReported() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+
+            accessTokenProvider.getSalt();
+
+            verify(apimlLog, never()).log("org.zowe.apiml.zaas.pat.saltRegenerated");
+        }
+
+        @Test
+        void givenAnEmptyStore_thenTheFirstSaltIsNotReportedAsAnIncident() {
+            ApimlLogger apimlLog = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(accessTokenProvider, "apimlLog", apimlLog);
+            when(cachingServiceClient.read(SALT_KEY)).thenThrow(new CachingServiceClientException("no record"));
+            when(cachingServiceClient.read(CUTOVER_EPOCH_KEY)).thenThrow(new CachingServiceClientException("no record"));
+
+            accessTokenProvider.getSalt();
+
+            verify(apimlLog, never()).log("org.zowe.apiml.zaas.pat.saltRegenerated");
+        }
+
+        private void expireTheMemo() {
+            advanceClockBy(ApimlAccessTokenProvider.SALT_REFRESH_INTERVAL);
+        }
+
+        private void expireTheLastAttempt() {
+            advanceClockBy(ApimlAccessTokenProvider.SALT_RETRY_INTERVAL);
+        }
+    }
+
+    @Nested
     class SaltInitialization {
 
         @Test
         void givenUnexpectedError_whenReadSalt_thenThrowIt() {
             Exception unexpectedError = new CachingServiceClientException("unexpected error", new IOException("e.g. timeout"));
-            doThrow(unexpectedError).when(cachingServiceClient).read("salt");
+            doThrow(unexpectedError).when(cachingServiceClient).read(SALT_KEY);
             Exception thrownException = assertThrows(CachingServiceClientException.class, accessTokenProvider::initializeSalt);
             assertSame(unexpectedError, thrownException);
         }
@@ -282,7 +952,7 @@ class ApimlAccessTokenProviderTest {
         @Test
         void givenNoSaltInCache_whenInitializing_thenCreateNewOne() {
             Exception noRecordException = new CachingServiceClientException("no record");
-            doThrow(noRecordException).when(cachingServiceClient).read("salt");
+            doThrow(noRecordException).when(cachingServiceClient).read(SALT_KEY);
             String salt = accessTokenProvider.initializeSalt();
             assertTrue(StringUtils.isNotBlank(salt));
             verify(cachingServiceClient, times(1)).create(any());
@@ -292,16 +962,16 @@ class ApimlAccessTokenProviderTest {
         void testInitializeSalt_WhenOldFormat_ShouldMigrateToBase64() {
             String oldRawSalt = "legacy_raw_salt_€_!";
             String expectedBase64 = Base64.getEncoder().encodeToString(oldRawSalt.getBytes());
-            CachingServiceClient.KeyValue mockKeyValue = new CachingServiceClient.KeyValue("salt", oldRawSalt);
+            CachingServiceClient.KeyValue mockKeyValue = new CachingServiceClient.KeyValue(SALT_KEY, oldRawSalt);
 
-            when(cachingServiceClient.read("salt")).thenReturn(mockKeyValue);
+            when(cachingServiceClient.read(SALT_KEY)).thenReturn(mockKeyValue);
             String salt = accessTokenProvider.initializeSalt();
             assertEquals(expectedBase64, salt);
 
             ArgumentCaptor<CachingServiceClient.KeyValue> argumentCaptor = ArgumentCaptor.forClass(CachingServiceClient.KeyValue.class);
             verify(cachingServiceClient, times(1)).update(argumentCaptor.capture());
 
-            assertEquals("salt", argumentCaptor.getValue().getKey());
+            assertEquals(SALT_KEY, argumentCaptor.getValue().getKey());
             assertEquals(expectedBase64, argumentCaptor.getValue().getValue());
         }
 
@@ -310,8 +980,8 @@ class ApimlAccessTokenProviderTest {
             byte[] originalBytes = "1234567890abcdef".getBytes();
             String validBase64Salt = Base64.getEncoder().encodeToString(originalBytes);
 
-            CachingServiceClient.KeyValue mockKeyValue = new CachingServiceClient.KeyValue("salt", validBase64Salt);
-            when(cachingServiceClient.read("salt")).thenReturn(mockKeyValue);
+            CachingServiceClient.KeyValue mockKeyValue = new CachingServiceClient.KeyValue(SALT_KEY, validBase64Salt);
+            when(cachingServiceClient.read(SALT_KEY)).thenReturn(mockKeyValue);
             String salt = accessTokenProvider.initializeSalt();
 
             assertEquals(validBase64Salt, salt);
@@ -321,7 +991,7 @@ class ApimlAccessTokenProviderTest {
 
         @Test
         void givenKeyCollision_whenStoreSalt_thenLogWarnAndThrowException() throws CachingServiceClientException {
-            when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException("Salt not found"));
+            when(cachingServiceClient.read(SALT_KEY)).thenThrow(new CachingServiceClientException("Salt not found"));
 
             CachingServiceClientException mockCollisionException = mock(CachingServiceClientException.class);
             when(mockCollisionException.isKeyCollision()).thenReturn(true);
@@ -335,7 +1005,7 @@ class ApimlAccessTokenProviderTest {
 
         @Test
         void givenGenericCacheError_whenStoreSalt_thenLogErrorAndThrowException() throws CachingServiceClientException {
-            when(cachingServiceClient.read("salt")).thenThrow(new CachingServiceClientException("Salt not found"));
+            when(cachingServiceClient.read(SALT_KEY)).thenThrow(new CachingServiceClientException("Salt not found"));
 
             CachingServiceClientException mockGenericException = mock(CachingServiceClientException.class);
             when(mockGenericException.isKeyCollision()).thenReturn(false);
@@ -360,7 +1030,7 @@ class ApimlAccessTokenProviderTest {
 
         @Test
         void givenNullOrEmptySaltInCache_whenInitializing_thenFallbackToGenerateNewSalt() throws CachingServiceClientException {
-            when(cachingServiceClient.read("salt")).thenReturn(new CachingServiceClient.KeyValue("salt", ""));
+            when(cachingServiceClient.read(SALT_KEY)).thenReturn(new CachingServiceClient.KeyValue(SALT_KEY, ""));
 
             String resultSalt = accessTokenProvider.initializeSalt();
 
