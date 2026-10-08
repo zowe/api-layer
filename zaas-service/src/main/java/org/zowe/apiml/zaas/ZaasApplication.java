@@ -27,10 +27,7 @@ import static org.zowe.apiml.extension.ZoweRuntimeEnvironment.defaultEnv;
 
 @EnableWebSecurity
 @EnableRetry
-@SpringBootApplication(
-    exclude = {
-    }
-)
+@SpringBootApplication
 @EnableDiscoveryClient
 @ComponentScan(
     value = {

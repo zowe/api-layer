@@ -60,12 +60,6 @@ class RequestInfoControllerTest {
 
     }
 
-    /**
-     * The diagnostic response reports the request headers under their lower-case names. The integration
-     * suites look them up that way, and Tomcat 10.1 used to hand back lower-case names from
-     * {@code getHeaderNames()} while Tomcat 11 returns the client's spelling, so the normalisation is the
-     * controller's job now.
-     */
     @Nested
     class GivenRequestWithMixedCaseHeaders {
 
@@ -86,10 +80,7 @@ class RequestInfoControllerTest {
                 .andExpect(jsonPath("$.headers['Authorization']").doesNotExist());
         }
 
-        /**
-         * A Turkish locale lower-cases "I" to a dotless "ı"; the reported name has to stay ASCII so the
-         * lookup keeps working on a host configured that way.
-         */
+
         @Test
         void whenHostLocaleIsTurkish_thenReportTheAsciiName() throws Exception {
             Locale original = Locale.getDefault();

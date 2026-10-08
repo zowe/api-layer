@@ -84,11 +84,6 @@ class ApimlWebSocketSessionTest {
         verify(emptyMock, times(1)).tryEmitError(e);
     }
 
-    /**
-     * The error path logs at debug when debug is enabled and otherwise falls back to info. Tests
-     * normally run with debug enabled, so this pins the fallback: with info-level logging the failure
-     * still has to be reported and the session still has to be closed.
-     */
     @Test
     void givenInfoLevelLogging_WhenError_thenTheErrorIsStillReported() {
         Logger sessionLogger = (Logger) LoggerFactory.getLogger(ApimlWebSocketSession.class);

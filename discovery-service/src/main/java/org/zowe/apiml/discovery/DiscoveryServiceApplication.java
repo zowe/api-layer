@@ -26,10 +26,7 @@ import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 
 @EnableEurekaServer
-@SpringBootApplication(
-    exclude = {
-    }
-)
+@SpringBootApplication
 @ComponentScan({
     "org.zowe.apiml.discovery",
     "org.zowe.apiml.product.eureka.web",

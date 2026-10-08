@@ -162,6 +162,7 @@ dependencyResolutionManagement {
             library('spring_boot_starter_webflux_test', 'org.springframework.boot', 'spring-boot-starter-webflux-test').versionRef('springBoot')
             library('spring_boot_starter_security_test', 'org.springframework.boot', 'spring-boot-starter-security-test').versionRef('springBoot')
             library('spring_boot_jackson2', 'org.springframework.boot', 'spring-boot-jackson2').versionRef('springBoot')
+            library('spring_boot_reactor_netty', 'org.springframework.boot', 'spring-boot-reactor-netty').versionRef('springBoot')
             library('spring_cloud_starter_eureka_client', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-client').versionRef('springCloudNetflix')
             library('spring_cloud_starter_eureka_server', 'org.springframework.cloud', 'spring-cloud-starter-netflix-eureka-server').versionRef('springCloudNetflix')
             library('spring_cloud_starter_gateway', 'org.springframework.cloud', 'spring-cloud-starter-gateway-server-webflux').versionRef('springCloudGateway')

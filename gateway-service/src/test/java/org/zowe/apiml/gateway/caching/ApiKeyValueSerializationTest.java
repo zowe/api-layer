@@ -16,15 +16,6 @@ import tools.jackson.databind.json.JsonMapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-/**
- * The gateway binds caching service responses into {@link CachingServiceClient.ApiKeyValue} with the
- * Jackson 3 mapper Spring Boot 4 builds for its HTTP client. Jackson 3 no longer populates final fields
- * by default, so the DTO needs an explicit creator - otherwise every response deserialises to empty
- * strings and cached entries look missing.
- *
- * <p>The mapper used here has default features, so the test fails if the DTO depends on
- * {@code ALLOW_FINAL_FIELDS_AS_MUTATORS} being enabled.
- */
 class ApiKeyValueSerializationTest {
 
     private final JsonMapper mapper = JsonMapper.builder().build();
@@ -43,10 +34,6 @@ class ApiKeyValueSerializationTest {
             assertEquals("{\"instanceId\":\"host:service:10010\"}", keyValue.getValue());
         }
 
-        /**
-         * The no-argument constructor is what Jackson 3 uses for the response envelope before it
-         * applies the creator; it must produce a well-defined empty entry rather than null fields.
-         */
         @Test
         void whenCreatedWithoutArguments_thenKeyAndValueAreEmpty() {
             CachingServiceClient.ApiKeyValue keyValue = new CachingServiceClient.ApiKeyValue();

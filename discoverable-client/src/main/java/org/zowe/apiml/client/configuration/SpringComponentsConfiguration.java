@@ -23,13 +23,6 @@ import tools.jackson.databind.DeserializationFeature;
 @SpringBootConfiguration
 public class SpringComponentsConfiguration {
 
-    /**
-     * Spring Boot 4 builds the web message converters from a Jackson 3 {@code JsonMapper}, so the
-     * customization has to target the Jackson 3 builder. The previous Jackson 2
-     * {@code Jackson2ObjectMapperBuilderCustomizer} is still on the classpath (kept for the Jackson 2
-     * shim) but is no longer applied to the HTTP converters, which silently dropped this setting and
-     * turned the expected 400 into a 404.
-     */
     @Bean
     JsonMapperBuilderCustomizer failOnUnknownProperties() {
         return jsonMapperBuilder -> jsonMapperBuilder

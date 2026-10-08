@@ -81,16 +81,6 @@ public class AparBasedService {
     /**
      * Normalises the request header names to lower case before the APARs see them.
      *
-     * <p>The APARs look headers up by their lower-case names - {@code AUTHORIZATION_HEADER} is
-     * {@code "authorization"}, {@code COOKIE_HEADER} is {@code "cookie"} - because that is what Tomcat
-     * 10.1 handed back from {@code getHeaderNames()}. Tomcat 11 returns the client's spelling, so
-     * {@code headers.get("authorization")} no longer found an {@code Authorization} header, and the
-     * z/OSMF files endpoint answered 401 instead of the data set list. Normalising here, at the single
-     * point every APAR is invoked through, keeps the mock's contract independent of the container.
-     *
-     * <p>{@link Locale#ROOT} rather than the default locale, so a Turkish host does not turn
-     * {@code "X-Id"} into {@code "x-ıd"}.
-     *
      * @param headers the headers as reported by the container
      * @return the same values under lower-case names
      */
