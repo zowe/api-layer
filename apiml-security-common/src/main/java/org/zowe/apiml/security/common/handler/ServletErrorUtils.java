@@ -17,7 +17,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.zowe.apiml.message.api.ApiMessageView;
-import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.io.IOException;
 import java.util.function.BiConsumer;
