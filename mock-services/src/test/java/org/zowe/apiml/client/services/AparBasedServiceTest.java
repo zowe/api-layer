@@ -54,11 +54,6 @@ class AparBasedServiceTest {
     @Nested
     class whenProcessing {
 
-        /**
-         * The APARs look request headers up by their lower-case names. Tomcat 10.1 reported them that
-         * way; Tomcat 11 reports the client's spelling, so the map has to be normalised before the APARs
-         * see it - otherwise the z/OSMF files endpoint answers 401 instead of the data set list.
-         */
         @Test
         void givenMixedCaseHeaderNames_thenTheAparSeesLowerCaseOnes() {
             when(versions.fullSetOfApplied(any(), any())).thenReturn(List.of(apar));

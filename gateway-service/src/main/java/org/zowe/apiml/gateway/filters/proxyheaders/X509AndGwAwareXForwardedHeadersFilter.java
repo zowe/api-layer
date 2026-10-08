@@ -170,7 +170,6 @@ public class X509AndGwAwareXForwardedHeadersFilter extends XForwardedHeadersFilt
     }
 
     private boolean hasXForwardedHeader(HttpHeaders headers) {
-        return headers.toSingleValueMap().keySet().stream()
-            .anyMatch(this::isXForwardedHeader);
+        return headers.headerNames().stream().anyMatch(this::isXForwardedHeader);
     }
 }
