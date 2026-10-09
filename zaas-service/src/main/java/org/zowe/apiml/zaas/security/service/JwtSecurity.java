@@ -196,7 +196,7 @@ public class JwtSecurity {
     private void loadSigningKeys(HttpsConfig config) {
         Map<String, JWSVerifier> verifiers = new HashMap<>();
         List<JsonWebKey> jwks = new ArrayList<>();
-        for (var signingKey : SecurityUtils.loadSigningKeys(config, getVerificationKeyAliases())) {
+        for (var signingKey : SecurityUtils.loadSigningKeys(config, verificationKeyAliases)) {
             try {
                 var jwk = JsonWebKey.Factory.newJwk(signingKey);
                 jwk.setKeyId(jwk.calculateBase64urlEncodedThumbprint(HashUtil.SHA_256));
@@ -212,13 +212,6 @@ public class JwtSecurity {
 
         jwtVerifiers = Map.copyOf(verifiers);
         signingJwks = List.copyOf(jwks);
-    }
-
-    private List<String> getVerificationKeyAliases() {
-        return verificationKeyAliases.stream()
-            .map(String::trim)
-            .filter(StringUtils::isNotEmpty)
-            .toList();
     }
 
     /**

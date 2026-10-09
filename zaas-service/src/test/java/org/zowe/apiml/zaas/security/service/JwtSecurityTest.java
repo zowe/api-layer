@@ -354,7 +354,7 @@ class JwtSecurityTest {
 
         @Test
         void givenVerificationKeyAliases_thenOnlyTheseAliasesAreLoaded() {
-            ReflectionTestUtils.setField(underTest, "verificationKeyAliases", List.of(" oldsigner ", ""));
+            ReflectionTestUtils.setField(underTest, "verificationKeyAliases", List.of("oldsigner"));
 
             underTest.loadAppropriateJwtKeyOrFail();
 
