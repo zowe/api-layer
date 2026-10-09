@@ -46,6 +46,8 @@
 # - ZWE_configs_apiml_discovery_serviceIdPrefixReplacer - The service ID prefix replacer to be V2 conformant
 # - ZWE_configs_apiml_discovery_userid - Userid for Eureka basic auth (defaults to "eureka" when verifyCertificates is DISABLED)
 # - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
+# - ZWE_configs_apiml_security_domains_onlyWarn - Only log a warning when a URL is not in allowed domains (default: false)
+# - ZWE_configs_apiml_security_domains_portValidationDisabled - Do not validate the port against allowed domains (default: false)
 
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -77,11 +79,6 @@ fi
 if [ "${ATTLS_SERVER_ENABLED}" = "true" ]; then
     add_profile "attlsServer"
     ZWE_configs_server_ssl_enabled="false"
-fi
-
-# HTTPS profile for SSL
-if [ "${ZWE_configs_server_ssl_enabled:-true}" = "true" ]; then
-    add_profile "https"
 fi
 
 # AT-TLS client profile
@@ -116,6 +113,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
+    -Dapiml.security.domains.onlyWarn=${ZWE_configs_apiml_security_domains_onlyWarn:-false} \
+    -Dapiml.security.domains.portValidationDisabled=${ZWE_configs_apiml_security_domains_portValidationDisabled:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \

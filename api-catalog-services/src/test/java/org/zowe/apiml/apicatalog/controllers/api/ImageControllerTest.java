@@ -13,14 +13,14 @@ package org.zowe.apiml.apicatalog.controllers.api;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.reactive.WebFluxTest;
+import org.springframework.boot.security.autoconfigure.web.reactive.ReactiveWebSecurityAutoConfiguration;
+import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
-@WebFluxTest(controllers = ImageControllerMicroservice.class, excludeAutoConfiguration = ReactiveSecurityAutoConfiguration.class)
+@WebFluxTest(controllers = ImageControllerMicroservice.class, excludeAutoConfiguration = ReactiveWebSecurityAutoConfiguration.class)
 @ContextConfiguration(classes = ImageControllerMicroservice.class)
 class ImageControllerTest {
 

@@ -1,6 +1,6 @@
 module.exports = {
     binarySource: "install",
-    globalExtends: ["config:recommended"], // using this instead of "extends" solves the problem with order of the configuration
+    globalExtends: ["config:recommended", "helpers:pinGitHubActionDigests"], // using this instead of "extends" solves the problem with order of the configuration
     repositories: ['zowe/api-layer'],
     baseBranches: ["v2.x.x", "v3.x.x"],
     commitBody: "Signed-off-by: {{{gitAuthor}}}",
@@ -46,6 +46,31 @@ module.exports = {
             "matchBaseBranches": ["v3.x.x"],
             "matchUpdateTypes": ["major"],
             "dependencyDashboardApproval": true,
+        },
+        {
+            // GitHub Actions are pinned to commit SHAs, so keep those pins current. Digest updates
+            // carry updateType "digest"/"pinDigest", which the grouping rules above (patch / minor /
+            // major) do not match - without this rule they would arrive as one PR per action.
+            "matchManagers": ["github-actions"],
+            "matchUpdateTypes": ["pinDigest", "digest"],
+            "groupName": "github-actions digests",
+            "groupSlug": "github-actions-digests",
+        },
+        {
+            // Reusable workflows are a separate depType ("workflow"). The callers in this repository
+            // point at build-conformant-images.yml on the same branch that develops it, so pinning it
+            // would leave caller and callee on different revisions and raise a digest PR on every
+            // merge to the branch. Keep reusable workflow references on their branch/tag.
+            "matchManagers": ["github-actions"],
+            "matchDepTypes": ["workflow"],
+            "pinDigests": false,
+        },
+        {
+            // The workflow files are pinned on v3.x.x by this change; do not open pinning PRs against
+            // the v2.x.x maintenance branch. Delete this rule to extend pinning to v2.x.x as well.
+            "matchBaseBranches": ["v2.x.x"],
+            "matchManagers": ["github-actions"],
+            "pinDigests": false,
         }
     ],
     printConfig: true,

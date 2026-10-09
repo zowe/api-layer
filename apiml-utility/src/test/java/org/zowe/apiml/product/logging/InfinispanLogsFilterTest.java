@@ -20,12 +20,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
-import org.zowe.apiml.message.core.Message;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class InfinispanLogsFilterTest {
 
@@ -42,9 +39,6 @@ class InfinispanLogsFilterTest {
     @BeforeEach
     void setUp() {
         filterInstance = new InfinispanLogsFilter();
-
-        Message mockMessage = mock(Message.class);
-        when(mockMessage.mapToLogMessage()).thenReturn("ZWECS137W: Mocked Message");
     }
 
     @Test

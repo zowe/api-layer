@@ -10,8 +10,14 @@
 
 package org.zowe.apiml.security.common.util;
 
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.Payload;
+import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jwt.JWTClaimsSet;
 import io.jsonwebtoken.Jwts;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
@@ -30,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 public class JWTTestUtils {
 
     public static String createZoweJwtToken(String username, String domain, String ltpaToken, HttpsConfig config) {
@@ -98,6 +105,27 @@ public class JWTTestUtils {
 
     public static String createDummyZOSMFToken(String username) {
         return createDummyJwtToken(username, "ZOSMF");
+    }
+
+    public static String createDummySignedJwt(String username, String issuer, String customPayload, String keyId) {
+        var algorithm = JWSAlgorithm.RS256;
+        var now = Instant.now();
+        Payload payload = null;
+        if (customPayload != null) {
+            payload = new Payload(customPayload);
+        } else if (username != null && issuer != null) {
+            var claims = new JWTClaimsSet.Builder()
+                .subject(username)
+                .issuer(issuer)
+                .issueTime(Date.from(now))
+                .expirationTime(Date.from(now.plusSeconds(1200)))
+                .build();
+            payload = claims.toPayload();
+        }
+        var header = new JWSHeader.Builder(algorithm).keyID(keyId).build().toBase64URL();
+        var signature = Base64URL.encode("signature-bytes");
+        assert payload != null;
+        return header + "." + payload.toBase64URL() + "." + signature;
     }
 
     @SneakyThrows

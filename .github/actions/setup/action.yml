@@ -31,12 +31,12 @@ runs:
             shell: bash
 
         -   name: Set up JDK ${{ inputs.jdkVersion }}
-            uses: actions/setup-java@v4
+            uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
             with:
                 distribution: 'semeru'
                 java-version: ${{ inputs.jdkVersion }}
         -   name: Set up Node
-            uses: actions/setup-node@v4
+            uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
             with:
                 node-version: '24.21.0'
         -   run: npm install -g npm@10.9.9
@@ -46,7 +46,7 @@ runs:
             shell: bash
 
         -   name: Cache Gradle packages
-            uses: actions/cache@v4
+            uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
             with:
                 path: |
                     ~/.gradle/caches
@@ -55,42 +55,42 @@ runs:
                 restore-keys: |
                     ${{ runner.os }}-gradle-
         -   name: Cache Node.js modules of root folder
-            uses: actions/cache@v4
+            uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
             with:
                 path: |
                     ~/.npm
                     node_modules
                 key: ${{ runner.OS }}-node-${{ hashFiles('*.json') }}
         -   name: Cache Node.js modules of API Catalog
-            uses: actions/cache@v4
+            uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
             with:
                 path: |
                     ~/.npm
                     api-catalog-ui/frontend/node_modules
                 key: ${{ runner.OS }}-api-catalog-ui-node-${{ hashFiles('api-catalog-ui/frontend/*.json') }}
         -   name: Cache Node.js modules of Zowe CLI ID Federation Plugin
-            uses: actions/cache@v4
+            uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
             with:
                 path: |
                     ~/.npm
                     zowe-cli-id-federation-plugin/node_modules
                 key: ${{ runner.OS }}-zowe-cli-id-federation-plugin-node-${{ hashFiles('zowe-cli-id-federation-plugin/*.json') }}
         -   name: Cache Node.js modules of Onboarding Enabler Nodejs
-            uses: actions/cache@v4
+            uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
             with:
                 path: |
                     ~/.npm
                     onboarding-enabler-nodejs/node_modules
                 key: ${{ runner.OS }}-onboarding-enabler-nodejs-node-${{ hashFiles('onboarding-enabler-nodejs/*.json') }}
         -   name: Cache Node.js modules of Onboarding Enabler Nodejs Sample App
-            uses: actions/cache@v4
+            uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
             with:
                 path: |
                     ~/.npm
                     onboarding-enabler-nodejs-sample-app/node_modules
                 key: ${{ runner.OS }}-onboarding-enabler-nodejs-sample-app-node-${{ hashFiles('onboarding-enabler-nodejs-sample-app/*.json') }}
         -   name: Cache Node.js modules of ZSS Sample Service
-            uses: actions/cache@v4
+            uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
             with:
                 path: |
                     ~/.npm

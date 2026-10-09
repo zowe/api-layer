@@ -29,4 +29,4 @@ runs:
                 version=$(cat gradle.properties | awk '/version=/' | awk -F= '{print$2;}')
                 echo "version=$version" >> $GITHUB_OUTPUT
 
-        -   uses: zowe-actions/shared-actions/prepare-workflow@main
+        -   uses: zowe-actions/shared-actions/prepare-workflow@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main

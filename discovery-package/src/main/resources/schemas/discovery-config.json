@@ -57,6 +57,28 @@
                         }
                     }
                 },
+                "security": {
+                    "type": "object",
+                    "description": "Security configuration of the Discovery Service.",
+                    "properties": {
+                        "domains": {
+                            "type": "object",
+                            "description": "Configuration of the allowed domains validation.",
+                            "properties": {
+                                "onlyWarn": {
+                                    "type": "boolean",
+                                    "description": "When a URL is not in the allowed domains, only log a warning instead of rejecting it.",
+                                    "default": false
+                                },
+                                "portValidationDisabled": {
+                                    "type": "boolean",
+                                    "description": "Disables validation of the port against the allowed domains.",
+                                    "default": false
+                                }
+                            }
+                        }
+                    }
+                },
                 "service": {
                     "type": "object",
                     "description": "General configuration of the Discovery service.",

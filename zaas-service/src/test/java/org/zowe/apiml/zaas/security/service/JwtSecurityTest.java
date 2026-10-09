@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -52,13 +53,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class JwtSecurityTest {
     public static final String KEY_ALIAS = "localhost";
     private JwtSecurity underTest;
@@ -70,9 +72,9 @@ class JwtSecurityTest {
     @BeforeEach
     void setUp() {
         providers = mock(Providers.class);
-        when(providers.isZosfmUsed()).thenReturn(true);
-        when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(false);
-        when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
+        lenient().when(providers.isZosfmUsed()).thenReturn(true);
+        lenient().when(providers.isZosmfConfigurationSetToLtpa()).thenReturn(false);
+        lenient().when(providers.isZosmfAvailableAndOnline()).thenReturn(true);
     }
 
     @Nested
@@ -270,7 +272,7 @@ class JwtSecurityTest {
         void setUp() {
             underTest = new JwtSecurity(providers, KEY_ALIAS, "../keystore/service/service.keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
 
-            when(providers.isZosfmUsed()).thenReturn(false);
+            lenient().when(providers.isZosfmUsed()).thenReturn(false);
         }
 
         @Test

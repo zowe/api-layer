@@ -21,7 +21,7 @@ import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jws.AlgorithmIdentifiers;
@@ -30,6 +30,7 @@ import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.HttpsConfig;
@@ -42,7 +43,14 @@ import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * JWT Security related configuration. Distinguishes between methods used to generate JWT tokens provided by ZAAS.
@@ -181,6 +189,8 @@ public class JwtSecurity {
             jwtPublicKey = SecurityUtils.loadPublicKey(config);
             jwkPublicKey = getJwkPublicKey();
             loadSigningKeys(config);
+            apimlLog.log(MessageType.DEBUG, "JWT signing key loaded from keystore '{}', alias '{}', kid={}.",
+                keyStore, keyAlias, jwkPublicKey.map(JsonWebKey::getKeyId).orElse("unknown"));
         } catch (HttpsConfigError er) {
             apimlLog.log("org.zowe.apiml.zaas.jwtInitConfigError", er.getCode(), er.getMessage());
         }

@@ -40,6 +40,8 @@ spring:
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
+    autoconfigure:
+        exclude: org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration
 
 otel:
     sdk:
@@ -216,6 +218,11 @@ apiml:
         jwtInitializerTimeout: 5
         personalAccessToken:
             enabled: false
+            maxScopes: 64
+            cutoverDate:
+            cutoverSkewAllowanceSeconds: 300
+            revocationLookupBatchKeys: 66
+            revokeRuleSkewAllowanceMillis: 60000
         useInternalMapper: false
         auth:
             provider: zosmf

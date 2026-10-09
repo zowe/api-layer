@@ -21,13 +21,19 @@ on:
                 required: false
                 type: boolean
                 default: false
+# All release workflows push commits to protected branches and must not interleave
+# with each other or with the enabler release workflow.
+concurrency:
+    group: release-train
+    cancel-in-progress: false
+
 jobs:
     release:
         runs-on: ubuntu-latest
         timeout-minutes: 40
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   ref: ${{ github.head_ref }}
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
@@ -74,7 +80,7 @@ jobs:
                   BRANCH_NAME: ${{ github.ref_name }}
                   RELEASE_ARGS: ${{ github.event.inputs.enablers == 'true' && '-PreleaseEnablers' || '' }}
             -  name: Store test results
-               uses: actions/upload-artifact@v4
+               uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                if: failure()
                with:
                     name: ReleaseAutomated-${{ github.run_number }}

@@ -7,11 +7,12 @@ dependencies {
     implementation libs.spring.cloud.commons
 
     compileOnly libs.eh.cache
-    compileOnly libs.spring.boot.starter.web
+    compileOnly libs.spring.boot.starter.webmvc
 
     testImplementation libs.eh.cache
     testImplementation libs.spring.boot.starter.test
-    testImplementation libs.spring.boot.starter.web
+    testImplementation libs.spring.boot.starter.webmvc
+    testImplementation libs.spring.boot.jackson2
     testImplementation libs.spring.cloud.starter.eureka.client
 
     compileOnly libs.lombok

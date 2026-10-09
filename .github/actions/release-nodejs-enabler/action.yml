@@ -9,6 +9,10 @@ inputs:
     description: Automatic increment of the semver (patch, minor, major) unless specific version is provided
     required: false
     default: patch
+  dry-run:
+    description: Validate the release (version bump, pack, publish check) without uploading and without pushing to the repository
+    required: false
+    default: "false"
   npm-token:
     description: NPM Registry publishing token
     required: true
@@ -32,14 +36,22 @@ runs:
       run: |
         cd onboarding-enabler-nodejs
         echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > ~/.npmrc
-        npm version ${{ inputs.scope }}
-        npm publish --access public
-        git add package.json
-        git add package-lock.json
-        git commit -m "[skip ci] Update version"
-        git push --no-verify
+        # --no-git-tag-version: the vX.Y.Z tag space belongs to the Zowe core
+        # releases; the enabler bump must not create colliding tags (v3.2.7 etc.).
+        npm version ${{ inputs.scope }} --no-git-tag-version
+        npm publish --access public $NPM_PUBLISH_ARGS
+        if [ "$DRY_RUN" != "true" ]; then
+          git add package.json
+          git add package-lock.json
+          git commit -m "[skip ci] Update version"
+          git push --no-verify
+        else
+          echo "Dry run: version bump kept local, nothing pushed, nothing published"
+        fi
         cd ..
       env:
         NPM_TOKEN: ${{ inputs.npm-token }}
+        DRY_RUN: ${{ inputs.dry-run }}
+        NPM_PUBLISH_ARGS: ${{ inputs.dry-run == 'true' && '--dry-run' || '' }}
 
     -  uses: ./.github/actions/teardown

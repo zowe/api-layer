@@ -14,7 +14,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,8 @@ import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.function.UnaryOperator;
 
 import static org.apache.hc.core5.http.HttpHeaders.ACCEPT;
@@ -38,7 +42,7 @@ import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ApiDocRetrievalServiceRest {
+public class ApiDocRetrievalServiceRest implements InitializingBean {
 
     private static final UnaryOperator<String> exceptionMessage = serviceId -> "No API Documentation was retrieved for the service " + serviceId + ".";
 
@@ -48,14 +52,41 @@ public class ApiDocRetrievalServiceRest {
     @InjectApimlLogger
     private ApimlLogger apimlLogger = ApimlLogger.empty();
 
+    private boolean allowAnyApiDocUrl = false;
+
+    @Value("${apiml.security.domains.allowAnyApiDocUrl:false}")
+    private boolean allowAnyApiDocUrlProp;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        allowAnyApiDocUrl = Boolean.getBoolean("ZWE_APIML_ALLOW_ANY_SWAGGER_URL") || allowAnyApiDocUrlProp;
+    }
+
     public Mono<ApiDocInfo> retrieveApiDoc(ServiceInstance serviceInstance, ApiInfo apiInfo) {
-        String serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
+        var serviceId = StringUtils.lowerCase(serviceInstance.getServiceId());
         log.debug("Retrieving API doc for '{} {}'", serviceId, apiInfo.getVersion());
 
-        String apiDocUrl = apiInfo.getSwaggerUrl();
+        var apiDocUrl = apiInfo.getSwaggerUrl();
+
+        if (!allowAnyApiDocUrl && !verifySwaggerUrl(serviceInstance, apiDocUrl)) {
+            log.debug("URL {} does not match declared host: {} and/or port: {} in instance {}", apiDocUrl, serviceInstance.getHost(), serviceInstance.getPort(), serviceInstance.getInstanceId());
+            return Mono.error(new ApiDocNotFoundException("Swagger URL validation failed"));
+        }
 
         return getApiDocContentByUrl(serviceId, apiDocUrl)
             .map(content -> ApiDocInfo.builder().apiInfo(apiInfo).apiDocContent(content).build());
+    }
+
+    private boolean verifySwaggerUrl(ServiceInstance serviceInstance, String apiDocUrl) {
+        try {
+            var url = new URL(apiDocUrl);
+            return StringUtils.isNotBlank(url.getHost())
+                && url.getPort() > 0
+                && url.getHost().equalsIgnoreCase(serviceInstance.getHost())
+                && url.getPort() == serviceInstance.getPort();
+        } catch (MalformedURLException e) {
+            return false;
+        }
     }
 
     /**

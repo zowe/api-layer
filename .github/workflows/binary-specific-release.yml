@@ -11,13 +11,19 @@ on:
                 description: 'The version that should be used as a new one after the release.'
                 required: true
 
+# All release workflows push commits to protected branches and must not interleave
+# with each other or with the enabler release workflow.
+concurrency:
+    group: release-train
+    cancel-in-progress: false
+
 jobs:
     release:
         runs-on: ubuntu-latest
         timeout-minutes: 40
 
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   ref: ${{ github.head_ref }}
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
@@ -76,13 +82,13 @@ jobs:
 
         steps:
             - name: Checkout Repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   fetch-depth: 0
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
 
             - name: Setup Python
-              uses: actions/setup-python@v5
+              uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
               with:
                   python-version: "3.14"
 
@@ -103,7 +109,7 @@ jobs:
                   ./gradlew onboarding-enabler-python:buildPython
 
             - name: Upload wheels
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                 name: wheels
                 path: onboarding-enabler-python/dist/
@@ -111,7 +117,7 @@ jobs:
             - name: Install twine globally
               run: python3 -m pip install --upgrade twine
 
-            - uses: zowe-actions/octorelease@v1
+            - uses: zowe-actions/octorelease@6cf71bdb7ca82117775295e076d63fe7a812f3c8 # v1
               env:
                 GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
                 GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
@@ -131,7 +137,7 @@ jobs:
 
         steps:
             - name: Store test results
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
               with:
                   name: BinarySpecificRelease-${{ github.run_number }}
                   path: |

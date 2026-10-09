@@ -31,6 +31,7 @@ import org.zowe.apiml.util.config.TestConfig;
 public abstract class DiscoveryFunctionalTest {
 
     protected static final String DISCOVERY_REALM = "API Mediation Discovery Service realm";
+
     @LocalServerPort
     protected int port;
 
@@ -40,13 +41,15 @@ public abstract class DiscoveryFunctionalTest {
     @BeforeEach
     void setUp() throws Exception {
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
+        RestAssured.useRelaxedHTTPSValidation();
     }
 
     protected String getProtocol() {
-        return "http";
+        return "https";
     }
 
     protected String getDiscoveryUriWithPath(String path) {
         return String.format("%s://%s:%d", getProtocol(), hostname, port) + path;
     }
+
 }

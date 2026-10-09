@@ -5,7 +5,7 @@ on:
     workflow_dispatch:
         inputs:
             scope:
-                description: 'Specify scope that is to be used.'
+                description: 'Version component to increment (patch: x.y.Z, minor: x.Y.0, major: X.0.0). Used unless an explicit version is provided.'
                 required: true
                 type: choice
                 options:
@@ -25,13 +25,24 @@ on:
                     - node
                     - python
                 default: node
+            dryRun:
+                description: 'Validate the release end to end (build, version bump, publish) without uploading to npm/PyPI and without pushing to the repository.'
+                required: false
+                type: boolean
+                default: false
+
+# All release workflows push commits to protected branches and must not interleave
+# with each other or with the API ML release train.
+concurrency:
+    group: release-train
+    cancel-in-progress: false
 
 jobs:
     release:
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   ref: ${{ github.head_ref }}
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
@@ -48,7 +59,7 @@ jobs:
               run: git config user.name "Zowe Robot"
 
             - name: Checkout Repository
-              uses: actions/checkout@v4
+              uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
               with:
                   fetch-depth: 0
                   token: ${{ secrets.ZOWE_ROBOT_TOKEN }}
@@ -58,6 +69,8 @@ jobs:
               uses: ./.github/actions/release-nodejs-enabler
               with:
                 version: ${{ github.event.inputs.version }}
+                scope: ${{ inputs.scope }}
+                dry-run: ${{ inputs.dryRun }}
                 npm-token: ${{ secrets.NPM_PUBLIC_TOKEN }}
 
             - name: Release Python enabler
@@ -65,6 +78,7 @@ jobs:
               uses: ./.github/actions/release-python-enabler
               with:
                 version: ${{ github.event.inputs.version }}
+                dry-run: ${{ inputs.dryRun }}
                 zowe-robot-user: ${{ secrets.ZOWE_ROBOT_USER }}
                 zowe-robot-email: ${{ secrets.ZOWE_ROBOT_EMAIL }}
                 zowe-robot-token: x-access-token:${{ secrets.ZOWE_ROBOT_TOKEN }}

@@ -13,6 +13,7 @@ package org.zowe.apiml.client.services;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,9 @@ import java.util.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AparBasedServiceTest {
@@ -50,6 +53,20 @@ class AparBasedServiceTest {
 
     @Nested
     class whenProcessing {
+
+        @Test
+        void givenMixedCaseHeaderNames_thenTheAparSeesLowerCaseOnes() {
+            when(versions.fullSetOfApplied(any(), any())).thenReturn(List.of(apar));
+            when(apar.apply(any(), any(), any(), any(), any())).thenReturn(Optional.of(new ResponseEntity<>(HttpStatus.OK)));
+
+            underTest.process(SERVICE, METHOD, response, Map.of("Authorization", "Basic dXNlcjpwYXNz", "X-Test", "value"));
+
+            ArgumentCaptor<Map<String, String>> headersCaptor = ArgumentCaptor.forClass(Map.class);
+            verify(apar).apply(eq(SERVICE), eq(METHOD), any(), eq(response), headersCaptor.capture());
+            assertThat(headersCaptor.getValue().get("authorization"), is("Basic dXNlcjpwYXNz"));
+            assertThat(headersCaptor.getValue().get("x-test"), is("value"));
+        }
+
         @Test
         void givenInvalidVersion_InternalServerErrorIsReturned() {
             ResponseEntity<?> expected = new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

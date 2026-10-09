@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -30,7 +31,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -39,12 +39,14 @@ import org.zowe.apiml.message.yaml.YamlMessageService;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.TokenAuthentication;
 import org.zowe.apiml.security.common.token.TokenNotValidException;
+import org.zowe.apiml.zaas.cache.CachingServiceClientException;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.JwtSecurity;
 import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerProvider;
 import org.zowe.apiml.zaas.security.webfinger.WebFingerResponse;
+import org.zowe.apiml.zaas.zaas.ZaasExceptionHandler;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -59,13 +61,14 @@ import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpMethod.DELETE;
 import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
 
     private static final String INVALIDATE = "/zaas/api/v1/auth/invalidate";
@@ -100,7 +103,7 @@ class AuthControllerTest {
     void setUp() throws JSONException, JoseException {
         messageService = new YamlMessageService("/zaas-log-messages.yml");
         authController = new AuthController(authenticationService, jwtSecurity, zosmfService, messageService, tokenProvider, oidcProvider, webFingerProvider);
-        mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(authController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
         body = new JSONObject()
             .put("token", "token")
             .put("serviceId", "service");
@@ -164,13 +167,13 @@ class AuthControllerTest {
 
     private void initPublicKeys() {
         var zosmf = mock(JsonWebKeySet.class);
-        when(zosmf.getJsonWebKeys()).thenReturn(
+        lenient().when(zosmf.getJsonWebKeys()).thenReturn(
             Collections.singletonList(zosmfJwk)
         );
 
-        when(zosmfService.getPublicKeys()).thenReturn(zosmf);
-        when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(Collections.singletonList(apimlJwk)));
-        when(jwtSecurity.getAllSigningJwks()).thenReturn(Collections.singletonList(apimlJwk));
+        lenient().when(zosmfService.getPublicKeys()).thenReturn(zosmf);
+        lenient().when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(Collections.singletonList(apimlJwk)));
+        lenient().when(jwtSecurity.getAllSigningJwks()).thenReturn(Collections.singletonList(apimlJwk));
     }
 
     @Test
@@ -272,9 +275,11 @@ class AuthControllerTest {
                 var badKey = mock(RSAPublicKey.class);
                 when(badKey.getModulus()).thenReturn(new BigInteger(badModulus));
                 when(badKey.getPublicExponent()).thenReturn(BigInteger.ONE);
-                when(badKey.getAlgorithm()).thenReturn("RSA");
-                when(badKey.getFormat()).thenReturn(null);
-                when(badKey.getEncoded()).thenReturn(new byte[0]);
+                // newJwk() does not read every one of these, so which are consumed depends on the
+                // factory's internals rather than on the test intent.
+                lenient().when(badKey.getAlgorithm()).thenReturn("RSA");
+                lenient().when(badKey.getFormat()).thenReturn(null);
+                lenient().when(badKey.getEncoded()).thenReturn(new byte[0]);
 
                 var badJwk = JsonWebKey.Factory.newJwk(badKey);
 
@@ -408,7 +413,6 @@ class AuthControllerTest {
                     SecurityContext context = new SecurityContextImpl();
                     var tokenAuthenticationMock = mock(TokenAuthentication.class);
                     when(tokenAuthenticationMock.getPrincipal()).thenReturn("user");
-                    when(tokenAuthenticationMock.getType()).thenReturn(TokenAuthentication.Type.JWT);
                     context.setAuthentication(tokenAuthenticationMock);
                     SecurityContextHolder.setContext(context);
                     body = new JSONObject()
@@ -428,6 +432,69 @@ class AuthControllerTest {
                             .content(body.toString()))
                         .andExpect(status().is(SC_BAD_REQUEST)).andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAT607E")));
                 }
+            }
+
+            @Nested
+            class WhenTheTimestampIsInTheFuture {
+
+                @ParameterizedTest
+                @ValueSource(strings = {"/zaas/api/v1/auth/access-token/revoke/tokens/user", "/zaas/api/v1/auth/access-token/revoke/tokens/scope"})
+                void thenRejectIt(String url) throws Exception {
+                    body = new JSONObject()
+                        .put("userId", "user")
+                        .put("serviceId", "user")
+                        .put("timestamp", System.currentTimeMillis() + 86_400_000L);
+                    mockMvc.perform(delete(url)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_BAD_REQUEST));
+                    verify(tokenProvider, never()).invalidateAllTokensForUser(anyString(), anyLong());
+                    verify(tokenProvider, never()).invalidateAllTokensForService(anyString(), anyLong());
+                }
+
+                @Test
+                void thenRejectItForOwnTokensToo() throws Exception {
+                    SecurityContext context = new SecurityContextImpl();
+                    var tokenAuthenticationMock = mock(TokenAuthentication.class);
+                    when(tokenAuthenticationMock.getPrincipal()).thenReturn("user");
+                    context.setAuthentication(tokenAuthenticationMock);
+                    SecurityContextHolder.setContext(context);
+                    body = new JSONObject()
+                        .put("timestamp", System.currentTimeMillis() + 86_400_000L);
+                    mockMvc.perform(delete("/zaas/api/v1/auth//access-token/revoke/tokens")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body.toString()))
+                        .andExpect(status().is(SC_BAD_REQUEST));
+                    verify(tokenProvider, never()).invalidateAllTokensForUser(anyString(), anyLong());
+                }
+            }
+        }
+
+        @Nested
+        class GivenTheRevocationStoreIsUnreachable {
+
+            @Test
+            void thenTheRevokeEndpointAnswersServiceUnavailable() throws Exception {
+                doThrow(new CachingServiceClientException("cannot reach the caching service"))
+                    .when(tokenProvider).invalidateToken(anyString());
+                body = new JSONObject().put("token", "token");
+
+                mockMvc.perform(delete("/zaas/api/v1/auth/access-token/revoke")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body.toString()))
+                    .andExpect(status().is(SC_SERVICE_UNAVAILABLE))
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.messages[0].messageNumber", is("ZWEAZ606E")));
+            }
+
+            @Test
+            void thenTheEvictEndpointAnswersServiceUnavailable() throws Exception {
+                doThrow(new CachingServiceClientException("cannot reach the caching service"))
+                    .when(tokenProvider).evictNonRelevantTokensAndRules();
+
+                mockMvc.perform(delete("/zaas/api/v1/auth/access-token/evict")
+                        .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is(SC_SERVICE_UNAVAILABLE));
             }
         }
     }

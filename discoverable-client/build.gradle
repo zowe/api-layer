@@ -89,9 +89,11 @@ dependencies {
     implementation libs.spring.boot.starter.actuator
     implementation libs.spring.doc
     implementation libs.spring.boot.starter.graphql
+    implementation libs.spring.boot.jackson2
     implementation libs.eureka.jersey.client
 
     testImplementation libs.spring.boot.starter.test
+    testImplementation libs.spring.boot.starter.webmvc.test
     testImplementation(testFixtures(project(":apiml-common")))
 
     compileOnly libs.lombok
