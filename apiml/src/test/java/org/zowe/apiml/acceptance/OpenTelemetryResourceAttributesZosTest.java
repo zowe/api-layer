@@ -66,7 +66,6 @@ import static org.zowe.apiml.security.common.util.JWTTestUtils.createExpiredZowe
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createZoweJwtToken;
 import static org.zowe.apiml.security.common.util.JWTTestUtils.createZowePatJwtToken;
 
-@Disabled
 class OpenTelemetryResourceAttributesZosTest {
 
     private static final String LOGIN_ENDPOINT = "/gateway/api/v1/auth/login";

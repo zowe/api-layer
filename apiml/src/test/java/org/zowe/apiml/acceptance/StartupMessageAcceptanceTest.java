@@ -13,7 +13,6 @@ package org.zowe.apiml.acceptance;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.eureka.EurekaServerConfig;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -48,7 +47,6 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@Disabled
 class StartupMessageAcceptanceTest {
 
     abstract static class BaseStartupTest extends AcceptanceTestWithMockServices {
