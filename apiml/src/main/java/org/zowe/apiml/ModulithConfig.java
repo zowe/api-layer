@@ -376,8 +376,8 @@ public class ModulithConfig {
 
         var factory = new TomcatReactiveWebServerFactory() {
             @Override
-            protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet) {
-                super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, preFluxFilters));
+            protected void prepareContext(Host host, TomcatHttpHandlerAdapter servlet, TempDirs tempDirs) {
+                super.prepareContext(host, new ServletWithFilters(httpHandler, servlet, preFluxFilters), tempDirs);
             }
 
             @Override
