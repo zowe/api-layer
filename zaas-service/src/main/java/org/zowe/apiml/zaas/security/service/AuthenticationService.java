@@ -24,7 +24,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
@@ -62,9 +61,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
-import static org.zowe.apiml.security.common.util.JwtUtils.describeJwtForLogging;
-import static org.zowe.apiml.security.common.util.JwtUtils.getJwtClaims;
-import static org.zowe.apiml.security.common.util.JwtUtils.handleJwtParserException;
+import static org.zowe.apiml.security.common.util.JwtUtils.*;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.JWT;
 import static org.zowe.apiml.zaas.security.service.zosmf.ZosmfService.TokenType.LTPA;
 
@@ -360,23 +357,13 @@ public class AuthenticationService {
                 }
                 apimlLog.log(MessageType.DEBUG, "JWT signature verification failed for token [{}], currently active signing key kid={}. " +
                         "If the token's kid does not match the active kid, this instance does not hold the key that signed the token.",
-                    describeJwtForLogging(signedJwt), activeKid);
+                    describeJwtForLogging(signedJwt), keyId);
                 throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get());
             } else {
                 throw new BadJWTException("Token is not signed");
             }
         } catch (RuntimeException | BadJWTException | JOSEException exception) {
             throw handleJwtParserException(exception);
-        }
-    }
-
-    private boolean isVerified(SignedJWT signedJwt, String activeKid) throws JOSEException {
-        try {
-            return signedJwt.verify(jwtSecurityInitializer.getJwtVerifier());
-        } catch (JOSEException exception) {
-            apimlLog.log(MessageType.DEBUG, "JWT signature verification threw an exception for token [{}], currently active signing key kid={}: {}",
-                describeJwtForLogging(signedJwt), activeKid, exception.getMessage());
-            throw exception;
         }
     }
 

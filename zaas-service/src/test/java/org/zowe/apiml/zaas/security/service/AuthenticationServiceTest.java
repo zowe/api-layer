@@ -321,7 +321,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             var verifier = mock(RSASSAVerifier.class);
             lenient().when(verifier.getPublicKey()).thenReturn((RSAPublicKey) publicKey);
             lenient().when(verifier.verify(any(), any(), any())).thenReturn(false);
-            lenient().when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(verifier);
+            lenient().when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(verifier);
 
             String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
             var exception = assertThrows(TokenNotValidException.class,
