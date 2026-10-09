@@ -41,7 +41,7 @@ dependencyResolutionManagement {
             version('commonsFileUpload', '1.6.0')
             version('ehCache', '3.10.9')
             version('eureka', '1.10.19')
-            version('githubClassgraph', '4.8.196')
+            version('githubClassgraph', '4.8.197')
             version('gradleGitProperties', '2.3.1') // Used in classpath dependencies
             version('gradleNode', '3.6.0') // Used in classpath dependencies
             version('gson', '2.14.0')
@@ -163,7 +163,7 @@ dependencyResolutionManagement {
             version('testLogger', '4.0.0')
             version('mailapi', '1.6.8')
             // version 4.x is not compatible with Java 8
-            version('micronaut', '3.10.14')
+            version('micronaut', '3.10.15')
             version('micronautPlugin', '3.7.10')
             version('shadow', '8.1.1')
             version('gradleTomcatPlugin', '2.7.0')
