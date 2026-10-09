@@ -14,6 +14,7 @@ import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.shared.Application;
 import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
 import com.nimbusds.jwt.proc.ExpiredJWTException;
@@ -24,6 +25,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.NumericDate;
@@ -345,25 +347,38 @@ public class AuthenticationService {
             var parsedJwt = tokenAuthentication.getJwt();
             if (parsedJwt instanceof SignedJWT signedJwt) {
                 var keyId = signedJwt.getHeader().getKeyID();
+                String activeKid = jwtSecurityInitializer.getJwkPublicKey().map(JsonWebKey::getKeyId).orElse("unknown");
                 var verifier = jwtSecurityInitializer.getJwtVerifier(keyId);
                 if (verifier == null) {
+                    apimlLog.log(MessageType.DEBUG, "No public key to verify token [{}], currently active signing key kid={}. " +
+                            "This instance does not hold the key that signed the token.",
+                        describeJwtForLogging(signedJwt), activeKid);
                     throw new BadJWTException("No public key found to verify token signed with key ID: " + keyId);
                 }
-                if (signedJwt.verify(verifier)) {
+                if (isVerified(signedJwt, verifier, activeKid)) {
                     if (tokenAuthentication.isExpired()) {
                         throw new ExpiredJWTException("Token expired on %s".formatted(tokenAuthentication.getExpiration()));
                     }
                     return;
                 }
-                apimlLog.log(MessageType.DEBUG, "JWT signature verification failed for token [{}], currently active signing key kid={}. " +
-                        "If the token's kid does not match the active kid, this instance does not hold the key that signed the token.",
-                    describeJwtForLogging(signedJwt), keyId);
+                apimlLog.log(MessageType.DEBUG, "JWT signature verification failed for token [{}], currently active signing key kid={}",
+                    describeJwtForLogging(signedJwt), activeKid);
                 throw new BadJWTException("Token signature is invalid for public key: " + jwtSecurityInitializer.getJwkPublicKey().get());
             } else {
                 throw new BadJWTException("Token is not signed");
             }
         } catch (RuntimeException | BadJWTException | JOSEException exception) {
             throw handleJwtParserException(exception);
+        }
+    }
+
+    private boolean isVerified(SignedJWT signedJwt, JWSVerifier verifier, String activeKid) throws JOSEException {
+        try {
+            return signedJwt.verify(verifier);
+        } catch (JOSEException exception) {
+            apimlLog.log(MessageType.DEBUG, "JWT signature verification threw an exception for token [{}], currently active signing key kid={}: {}",
+                describeJwtForLogging(signedJwt), activeKid, exception.getMessage());
+            throw exception;
         }
     }
 

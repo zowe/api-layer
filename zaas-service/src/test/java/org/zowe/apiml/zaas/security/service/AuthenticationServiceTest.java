@@ -46,10 +46,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
+import org.zowe.apiml.message.core.MessageType;
+import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.security.SecurityUtils;
@@ -87,6 +90,9 @@ import java.util.function.Consumer;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpMethod.DELETE;
 
@@ -194,6 +200,34 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
                 () -> authService.validateJwtToken(tokenAuthentication)
             );
             verify(validatedJwtTokensCache, never()).put(any(), any());
+        }
+
+        @Test
+        void givenNoVerifierForKeyIdOfToken_thenMissingPublicKeyIsLoggedWithActiveKid() {
+            var apimlLogger = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(authService, "apimlLog", apimlLogger);
+            when(jwtSecurityInitializer.getJwtVerifier("kid")).thenReturn(null);
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+            TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
+
+            assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(tokenAuthentication));
+
+            verify(apimlLogger).log(eq(MessageType.DEBUG), startsWith("No public key to verify token"), contains("kid=kid"), eq("kid"));
+        }
+
+        @Test
+        void givenVerifierThrowsException_thenExceptionIsLoggedAndTokenIsNotValid() throws JOSEException {
+            var apimlLogger = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(authService, "apimlLog", apimlLogger);
+            var verifier = mock(RSASSAVerifier.class);
+            when(verifier.verify(any(), any(), any())).thenThrow(new JOSEException("verification error"));
+            when(jwtSecurityInitializer.getJwtVerifier("kid")).thenReturn(verifier);
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+            TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
+
+            assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(tokenAuthentication));
+
+            verify(apimlLogger).log(eq(MessageType.DEBUG), startsWith("JWT signature verification threw an exception"), any(), eq("kid"), eq("verification error"));
         }
 
         @Test
