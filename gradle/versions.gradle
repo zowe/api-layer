@@ -38,7 +38,7 @@ dependencyResolutionManagement {
             version('fileupload', '1.6.0')
             version('netflixServo', '0.13.2')
             // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
-            version('archaius', '0.7.6')
+            version('archaius', '0.7.12')
             version('googleErrorprone', '2.50.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.14.0')
@@ -80,7 +80,7 @@ dependencyResolutionManagement {
             version('junitJupiter', '5.14.4')
             version('junitPlatform', '1.14.4')
             version('jxpath', '1.4.0')
-            version('kotlinStdlib', '2.4.20')
+            version('kotlinStdlib', '2.4.21')
             // force version in build.gradle file - compatibility with Slf4j
             version('log4j', '2.26.1')
             version('lombok', '1.18.48')
@@ -96,7 +96,7 @@ dependencyResolutionManagement {
             // REST Assured 6.x is the Spring Framework 7 line (its spring-web-test-client declares
             // spring 7.0.1) and requires Groovy 5, which is what the SB 4.1 BOM already manages.
             // 5.5.7 is compiled against Spring 6 and Groovy 4 and fails on both.
-            version('restAssured', '6.0.1')
+            version('restAssured', '6.1.0')
             version('rhino', '1.9.1')
             // springdoc 3.x is the Spring Boot 4 line. 2.9.1 references the SB3-only
             // org.springframework.boot.autoconfigure.web.reactive.WebFluxProperties from
@@ -121,7 +121,7 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
-            version('micronaut', '4.10.30')
+            version('micronaut', '4.10.31')
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
@@ -134,7 +134,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.84.0')
+            version('ioGrpc', '1.84.2')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
