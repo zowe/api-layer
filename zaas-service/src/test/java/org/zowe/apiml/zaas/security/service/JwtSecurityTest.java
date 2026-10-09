@@ -17,19 +17,29 @@ import com.netflix.discovery.StatusChangeEvent;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.ECDSAVerifier;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
+import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.lang.HashUtil;
+import org.jose4j.lang.JoseException;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.security.HttpsConfigError;
+import org.zowe.apiml.security.SecurityUtils;
 import org.zowe.apiml.zaas.security.login.Providers;
 
+import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -41,7 +51,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -282,6 +294,111 @@ class JwtSecurityTest {
             var result = underTest.getJwkPublicKey();
 
             assertThat(result.isPresent(), is(false));
+        }
+
+        @Test
+        void whenKeyNotLoaded_noSigningJwks() {
+            assertTrue(underTest.getAllSigningJwks().isEmpty());
+        }
+
+        @Test
+        void whenKeyNotLoaded_noVerifierForAnyKeyId() {
+            assertNull(underTest.getJwtVerifier(null));
+            assertNull(underTest.getJwtVerifier("unknown"));
+        }
+    }
+
+    @Nested
+    class GivenMultipleSigningKeysInKeystore {
+        private KeyPair signingKeyPair;
+        private KeyPair rotatedKeyPair;
+        private MockedStatic<SecurityUtils> securityUtils;
+
+        @BeforeEach
+        void setUp() throws NoSuchAlgorithmException {
+            signingKeyPair = generateRsaKeyPair();
+            rotatedKeyPair = generateRsaKeyPair();
+
+            securityUtils = mockStatic(SecurityUtils.class);
+            securityUtils.when(() -> SecurityUtils.loadKey(any())).thenReturn(signingKeyPair.getPrivate());
+            securityUtils.when(() -> SecurityUtils.loadPublicKey(any())).thenReturn(signingKeyPair.getPublic());
+            securityUtils.when(() -> SecurityUtils.loadSigningKeys(any(), any()))
+                .thenReturn(List.of(rotatedKeyPair.getPublic(), signingKeyPair.getPublic()));
+
+            when(providers.isZosfmUsed()).thenReturn(false);
+            underTest = new JwtSecurity(providers, KEY_ALIAS, "keystore.p12", "password".toCharArray(), "password".toCharArray(), eurekaClient);
+            underTest.loadAppropriateJwtKeyOrFail();
+        }
+
+        @AfterEach
+        void tearDown() {
+            securityUtils.close();
+        }
+
+        @Test
+        void givenTokenWithoutKeyId_thenVerifierOfCurrentSigningKeyIsReturned() {
+            var verifier = underTest.getJwtVerifier(null);
+
+            assertThat(verifier, is(instanceOf(RSASSAVerifier.class)));
+            assertThat(((RSASSAVerifier) verifier).getPublicKey(), is(signingKeyPair.getPublic()));
+        }
+
+        @Test
+        void givenKeyIdOfCurrentSigningKey_thenVerifierOfCurrentSigningKeyIsReturned() throws JoseException {
+            var verifier = underTest.getJwtVerifier(thumbprint(signingKeyPair.getPublic()));
+
+            assertThat(((RSASSAVerifier) verifier).getPublicKey(), is(signingKeyPair.getPublic()));
+        }
+
+        @Test
+        void givenKeyIdOfRotatedKey_thenVerifierOfRotatedKeyIsReturned() throws JoseException {
+            var verifier = underTest.getJwtVerifier(thumbprint(rotatedKeyPair.getPublic()));
+
+            assertThat(((RSASSAVerifier) verifier).getPublicKey(), is(rotatedKeyPair.getPublic()));
+        }
+
+        @Test
+        void givenNoVerificationKeyAliases_thenAllPrivateKeyEntriesAreLoaded() {
+            securityUtils.verify(() -> SecurityUtils.loadSigningKeys(any(), eq(List.of())));
+        }
+
+        @Test
+        void givenVerificationKeyAliases_thenOnlyTheseAliasesAreLoaded() {
+            ReflectionTestUtils.setField(underTest, "verificationKeyAliases", List.of(" oldsigner ", ""));
+
+            underTest.loadAppropriateJwtKeyOrFail();
+
+            securityUtils.verify(() -> SecurityUtils.loadSigningKeys(any(), eq(List.of("oldsigner"))));
+        }
+
+        @Test
+        void givenUnknownKeyId_thenNoVerifierIsReturned() {
+            assertNull(underTest.getJwtVerifier("unknown"));
+        }
+
+        @Test
+        void thenAllSigningJwksAreReturnedWithCurrentSigningKeyFirst() throws JoseException {
+            var kids = underTest.getAllSigningJwks().stream().map(JsonWebKey::getKeyId).toList();
+
+            assertThat(kids, is(List.of(thumbprint(signingKeyPair.getPublic()), thumbprint(rotatedKeyPair.getPublic()))));
+        }
+
+        @Test
+        void thenPublicKeyInSetContainsOnlyCurrentSigningKey() throws JoseException {
+            var keys = underTest.getPublicKeyInSet().getJsonWebKeys();
+
+            assertThat(keys.size(), is(1));
+            assertThat(keys.get(0).getKeyId(), is(thumbprint(signingKeyPair.getPublic())));
+        }
+
+        private KeyPair generateRsaKeyPair() throws NoSuchAlgorithmException {
+            KeyPairGenerator gen = KeyPairGenerator.getInstance("RSA");
+            gen.initialize(2048);
+            return gen.generateKeyPair();
+        }
+
+        private String thumbprint(PublicKey publicKey) throws JoseException {
+            return JsonWebKey.Factory.newJwk(publicKey).calculateBase64urlEncodedThumbprint(HashUtil.SHA_256);
         }
     }
 }

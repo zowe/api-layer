@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.jose4j.lang.HashUtil;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -563,7 +564,7 @@ public class WebSecurity {
 
         private static String createHash(String value) {
             try {
-                var md = MessageDigest.getInstance("SHA-256");
+                var md = MessageDigest.getInstance(HashUtil.SHA_256);
                 byte[] digest = md.digest(value.getBytes(StandardCharsets.US_ASCII));
                 return Base64.getUrlEncoder().withoutPadding().encodeToString(digest);
             } catch (NoSuchAlgorithmException e) {

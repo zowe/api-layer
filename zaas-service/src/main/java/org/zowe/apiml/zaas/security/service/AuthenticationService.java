@@ -339,7 +339,11 @@ public class AuthenticationService {
             var parsedJwt = tokenAuthentication.getJwt();
             if (parsedJwt instanceof SignedJWT signedJwt) {
                 var keyId = signedJwt.getHeader().getKeyID();
-                if (signedJwt.verify(jwtSecurityInitializer.getJwtVerifier(keyId))) {
+                var verifier = jwtSecurityInitializer.getJwtVerifier(keyId);
+                if (verifier == null) {
+                    throw new BadJWTException("No public key found to verify token signed with key ID: " + keyId);
+                }
+                if (signedJwt.verify(verifier)) {
                     if (tokenAuthentication.isExpired()) {
                         throw new ExpiredJWTException("Token expired on %s".formatted(tokenAuthentication.getExpiration()));
                     }

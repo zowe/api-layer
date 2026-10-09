@@ -163,17 +163,25 @@ public class SecurityUtils {
         return null;
     }
 
-    public static List<PublicKey> loadSigningKeys(HttpsConfig config) {
+    /**
+     * Loads public keys which can be used to verify JWT tokens from keystore or keyring.
+     *
+     * @param config  {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword
+     * @param aliases aliases of certificates to load, if empty the certificates of all entries with a private key are
+     *                loaded
+     * @return list of {@link PublicKey}, aliases without a certificate are skipped
+     */
+    public static List<PublicKey> loadSigningKeys(HttpsConfig config, Collection<String> aliases) {
         if (StringUtils.isNotEmpty(config.getKeyStore())) {
             try {
-                List<PublicKey> pubKeys = new ArrayList<>();
                 KeyStore ks = loadKeyStore(config);
-                for (Enumeration<String> e = ks.aliases(); e.hasMoreElements(); ) {
-                    String alias = e.nextElement();
-                    if (ks.isKeyEntry(alias)) {
-                        var cert = ks.getCertificate(alias);
-                        var legacyPublicKey = cert.getPublicKey();
-                        pubKeys.add(legacyPublicKey);
+                List<PublicKey> pubKeys = new ArrayList<>();
+                for (String alias : aliases.isEmpty() ? getPrivateKeyAliases(ks) : aliases) {
+                    var cert = ks.getCertificate(alias);
+                    if (cert != null) {
+                        pubKeys.add(cert.getPublicKey());
+                    } else {
+                        log.warn("There is no certificate with alias '{}' in the keystore, it is not used to verify JWT tokens", alias);
                     }
                 }
                 return pubKeys;
@@ -184,6 +192,17 @@ public class SecurityUtils {
             }
         }
         return Collections.emptyList();
+    }
+
+    private static List<String> getPrivateKeyAliases(KeyStore ks) throws KeyStoreException {
+        List<String> aliases = new ArrayList<>();
+        for (Enumeration<String> e = ks.aliases(); e.hasMoreElements(); ) {
+            String alias = e.nextElement();
+            if (ks.isKeyEntry(alias)) {
+                aliases.add(alias);
+            }
+        }
+        return aliases;
     }
 
     /**

@@ -39,6 +39,7 @@
 # - ZWE_configs_apiml_security_authorization_resourceClass
 # - ZWE_configs_apiml_security_authorization_resourceNamePrefix
 # - ZWE_configs_apiml_security_jwtInitializerTimeout
+# - ZWE_configs_apiml_security_jwtVerificationKeyAliases
 # - ZWE_configs_apiml_security_useInternalMapper
 # - ZWE_configs_apiml_security_x509_enabled
 # - ZWE_configs_apiml_security_x509_externalMapperUrl
@@ -201,6 +202,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${ZAAS_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-true} \
     -Dapiml.security.auth.zosmf.jwtAutoconfiguration=${ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration:-${ZWE_components_gateway_apiml_security_auth_zosmf_jwtAutoconfiguration:-jwt}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_configs_apiml_security_jwtInitializerTimeout:-${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-5}} \
+    -Dapiml.security.jwtVerificationKeyAliases="${ZWE_configs_apiml_security_jwtVerificationKeyAliases:-${ZWE_components_gateway_apiml_security_jwtVerificationKeyAliases:-}}" \
     -Dapiml.security.useInternalMapper=${ZWE_configs_apiml_security_useInternalMapper:-${ZWE_components_gateway_apiml_security_useInternalMapper:-true}} \
     -Dapiml.security.x509.enabled=${ZWE_configs_apiml_security_x509_enabled:-${ZWE_components_gateway_apiml_security_x509_enabled:-false}} \
     -Dapiml.security.x509.externalMapperUrl=${ZWE_configs_apiml_security_x509_externalMapperUrl:-${ZWE_components_gateway_apiml_security_x509_externalMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/x509/map"}} \

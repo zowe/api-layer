@@ -363,8 +363,7 @@ public class AuthController {
         } else {
             keys = new LinkedList<>();
         }
-        var key = jwtSecurity.getJwkPublicKey();
-        key.ifPresent(keys::add);
+        keys.addAll(jwtSecurity.getAllSigningJwks());
         if ((oidcProvider != null) && (oidcProvider instanceof OIDCTokenProvider oidcTokenProvider)) {
             var oidcSet = oidcTokenProvider.getJwkSet();
             if (oidcSet != null) {

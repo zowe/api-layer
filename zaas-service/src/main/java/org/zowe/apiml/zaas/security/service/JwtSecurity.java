@@ -25,6 +25,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKeySet;
 import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.lang.HashUtil;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,10 +67,14 @@ public class JwtSecurity {
     @Value("${server.ssl.keyAlias:#{null}}")
     private String keyAlias;
 
+    @Value("${apiml.security.jwtVerificationKeyAliases:}")
+    private List<String> verificationKeyAliases = Collections.emptyList();
+
     private JWSAlgorithm signatureAlgorithm;
     private PrivateKey jwtSecret;
     private PublicKey jwtPublicKey;
-    private Map<String, JWSVerifier> jwtVerifier;
+    private Map<String, JWSVerifier> jwtVerifiers = Collections.emptyMap();
+    private List<JsonWebKey> signingJwks = Collections.emptyList();
 
     private Optional<JsonWebKey> jwkPublicKey = Optional.empty();
 
@@ -174,17 +179,43 @@ public class JwtSecurity {
         try {
             jwtSecret = SecurityUtils.loadKey(config);
             jwtPublicKey = SecurityUtils.loadPublicKey(config);
-            jwtVerifier = new HashMap<>();
-            for (var signingKey : SecurityUtils.loadSigningKeys(config)) {
-                var jwk = JsonWebKey.Factory.newJwk(signingKey);
-                jwtVerifier.put(jwk.calculateBase64urlEncodedThumbprint("SHA-256"), buildVerifier(signingKey));
-            }
             jwkPublicKey = getJwkPublicKey();
+            loadSigningKeys(config);
         } catch (HttpsConfigError er) {
             apimlLog.log("org.zowe.apiml.zaas.jwtInitConfigError", er.getCode(), er.getMessage());
-        } catch (JoseException e) {
-            apimlLog.log("org.zowe.apiml.zaas.jwkInitError", e.getMessage());
         }
+    }
+
+    /**
+     * Load public keys used to verify JWT tokens. If apiml.security.jwtVerificationKeyAliases is set, only the keys of
+     * these aliases and the signing key are loaded, otherwise the keys of all entries with a private key in the keystore.
+     */
+    private void loadSigningKeys(HttpsConfig config) {
+        Map<String, JWSVerifier> verifiers = new HashMap<>();
+        List<JsonWebKey> jwks = new ArrayList<>();
+        for (var signingKey : SecurityUtils.loadSigningKeys(config, getVerificationKeyAliases())) {
+            try {
+                var jwk = JsonWebKey.Factory.newJwk(signingKey);
+                jwk.setKeyId(jwk.calculateBase64urlEncodedThumbprint(HashUtil.SHA_256));
+                var verifier = buildVerifier(signingKey);
+                if (verifier != null && verifiers.putIfAbsent(jwk.getKeyId(), verifier) == null) {
+                    jwks.add(jwk);
+                }
+            } catch (JoseException e) {
+                log.warn("Unable to create JWK for signing key of type {}: {}", signingKey.getClass(), e.getMessage());
+            }
+        }
+        jwkPublicKey.ifPresent(jwk -> verifiers.computeIfAbsent(jwk.getKeyId(), kid -> buildVerifier(jwtPublicKey)));
+
+        jwtVerifiers = Map.copyOf(verifiers);
+        signingJwks = List.copyOf(jwks);
+    }
+
+    private List<String> getVerificationKeyAliases() {
+        return verificationKeyAliases.stream()
+            .map(String::trim)
+            .filter(StringUtils::isNotEmpty)
+            .toList();
     }
 
     /**
@@ -248,8 +279,15 @@ public class JwtSecurity {
         return AlgorithmIdentifiers.RSA_USING_SHA256;
     }
 
+    /**
+     * @param kid key ID from the JWT header, can be null
+     * @return verifier for the key or null if there is no such key
+     */
     public JWSVerifier getJwtVerifier(String kid) {
-        return jwtVerifier.get(kid);
+        return Optional.ofNullable(kid)
+            .or(() -> getJwkPublicKey().map(JsonWebKey::getKeyId))
+            .map(jwtVerifiers::get)
+            .orElse(null);
     }
 
     @VisibleForTesting
@@ -279,12 +317,24 @@ public class JwtSecurity {
         return new JsonWebKeySet(keys);
     }
 
+    public List<JsonWebKey> getAllSigningJwks() {
+        var primary = getJwkPublicKey();
+        var primaryKid = primary.map(JsonWebKey::getKeyId).orElse(null);
+
+        List<JsonWebKey> keys = new ArrayList<>();
+        primary.ifPresent(keys::add);
+        signingJwks.stream()
+            .filter(jwk -> !jwk.getKeyId().equals(primaryKid))
+            .forEach(keys::add);
+        return keys;
+    }
+
     public Optional<JsonWebKey> getJwkPublicKey() {
         if (jwkPublicKey.isPresent()) return jwkPublicKey;
         if (jwtPublicKey instanceof RSAPublicKey rsaPublicKey) {
             try {
                 var jwk = JsonWebKey.Factory.newJwk(rsaPublicKey);
-                jwk.setKeyId(jwk.calculateBase64urlEncodedThumbprint("SHA-256"));
+                jwk.setKeyId(jwk.calculateBase64urlEncodedThumbprint(HashUtil.SHA_256));
                 jwkPublicKey = Optional.of(jwk);
                 return jwkPublicKey;
             } catch (JoseException e) {
