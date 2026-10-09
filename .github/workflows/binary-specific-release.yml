@@ -117,7 +117,7 @@ jobs:
             - name: Install twine globally
               run: python3 -m pip install --upgrade twine
 
-            - uses: zowe-actions/octorelease@6cf71bdb7ca82117775295e076d63fe7a812f3c8 # v1
+            - uses: zowe-actions/octorelease@e4c509e08c4dfca0186571e937c605284a50de06 # v1
               env:
                 GIT_COMMITTER_NAME: ${{ secrets.ZOWE_ROBOT_USER }}
                 GIT_COMMITTER_EMAIL: ${{ secrets.ZOWE_ROBOT_EMAIL }}
