@@ -455,6 +455,8 @@ logging:
         org.apache.hc.client5.http: DEBUG
         org.springframework.cloud.gateway: DEBUG
         org.springframework.web.reactive: DEBUG
+        org.zowe.apiml.gateway.service.RouteLocator: DEBUG
+        org.zowe.apiml.util.CorsUtils: DEBUG
 
 ---
 spring.config.activate.on-profile: debug-discovery
@@ -465,9 +467,7 @@ logging:
         com.netflix.discovery.shared.transport.decorator: DEBUG
         org.zowe.apiml.discovery.staticdef.ServiceDefinitionProcessor: DEBUG
         org.zowe.apiml.discovery.staticdef.StaticServicesRegistrationService: DEBUG
-        org.zowe.apiml.gateway.service.RouteLocator: DEBUG
         org.zowe.apiml.product.eureka.web.MetadataFilterService: DEBUG
-        org.zowe.apiml.util.CorsUtils: DEBUG
 
 ---
 spring.config.activate.on-profile: debug-caching
@@ -515,8 +515,8 @@ spring:
 
 logging:
     level:
-        reactor.netty.http.client.HttpClient: TRACE
-        reactor.netty.http.server.HttpServer: TRACE
+        reactor.netty.http.client.HttpClient: DEBUG
+        reactor.netty.http.server.HttpServer: DEBUG
 
 ---
 spring.config.activate.on-profile: debug-control
