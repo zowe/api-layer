@@ -57,7 +57,9 @@ dependencyResolutionManagement {
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
             version('openTelemetry-starter', '2.32.0')
-            version('openTelemetry-core', '1.67.0')
+            // Keep the SDK aligned with the Spring Boot starter's OpenTelemetry API dependency.
+            // Starter 2.32.0 uses internal API classes removed in SDK 1.67.0.
+            version('openTelemetry-core', '1.66.0')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
@@ -107,6 +109,7 @@ dependencyResolutionManagement {
             version('swagger2Parser', '1.0.76')
             version('swagger3Parser', '2.1.48')
             version('thymeleaf', '3.1.5.RELEASE')
+            version('tomcat', '11.0.26')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.3.0')
             version('jgit', '7.8.0.202609011348-r')
@@ -271,6 +274,9 @@ dependencyResolutionManagement {
             library('thymeleaf_spring5', 'org.thymeleaf', 'thymeleaf-spring5').versionRef('thymeleaf')
             library('thymeleaf_spring6', 'org.thymeleaf', 'thymeleaf-spring6').versionRef('thymeleaf')
             library('thymeleaf', 'org.thymeleaf', 'thymeleaf').versionRef('thymeleaf')
+            library('tomcat_embed_core', 'org.apache.tomcat.embed', 'tomcat-embed-core').versionRef('tomcat')
+            library('tomcat_embed_el', 'org.apache.tomcat.embed', 'tomcat-embed-el').versionRef('tomcat')
+            library('tomcat_embed_websocket', 'org.apache.tomcat.embed', 'tomcat-embed-websocket').versionRef('tomcat')
             library('woodstox_core', 'com.fasterxml.woodstox', 'woodstox-core').versionRef('woodstoxCore')
             // version managed by spring-boot-dependencies
             library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').withoutVersion()
