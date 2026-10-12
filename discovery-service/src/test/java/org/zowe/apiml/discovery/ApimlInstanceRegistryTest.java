@@ -36,6 +36,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
 import java.lang.invoke.MethodHandles;
@@ -309,6 +310,20 @@ class ApimlInstanceRegistryTest {
             doThrow(new RuntimeException("test")).when(apimlInstanceRegistry).register(any(), anyInt(), anyBoolean());
             assertThrows(IllegalStateException.class, () -> apimlInstanceRegistry.registerStatically(standardInstance, false, false));
 
+            assertEquals(5, ReflectionTestUtils.getField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews"));
+            assertNull(renewCorrection.get());
+        }
+
+        @Test
+        @SuppressWarnings("unchecked")
+        void givenStaticDefinitionWithDisallowedDomain_thenSkipRegistration() {
+            doThrow(new DomainAllowListMetadataException("Domain not allowed"))
+                .when(metadataFilterService).verifyAllowedDomains(any());
+
+            assertDoesNotThrow(() -> apimlInstanceRegistry.registerStatically(standardInstance, false, true));
+
+            assertNull(apimlInstanceRegistry.getApplication(standardInstance.getAppName()));
+            assertTrue(((Set<String>) ReflectionTestUtils.getField(apimlInstanceRegistry, "staticRegistrationIds")).isEmpty());
             assertEquals(5, ReflectionTestUtils.getField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews"));
             assertNull(renewCorrection.get());
         }

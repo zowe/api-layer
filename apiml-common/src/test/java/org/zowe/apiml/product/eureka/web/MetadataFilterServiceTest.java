@@ -21,10 +21,12 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -35,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -60,6 +63,49 @@ class MetadataFilterServiceTest {
         ReflectionTestUtils.setField(metadataFilterService, "apimlLogger", apimlLogger);
         lenient().when(instanceInfo.getHostName()).thenReturn("localhost");
         lenient().when(instanceInfo.getSecurePort()).thenReturn(8080);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"localhost,10010", "localhost,10011", "127.0.0.1,10010"})
+    void givenNoAllowedDomainsConfigured_thenRejectServicePort(String hostname, int port) {
+        var runner = new ApplicationContextRunner().withBean(MetadataFilterService.class);
+        if (!"localhost".equals(hostname)) {
+            runner = runner.withPropertyValues("apiml.service.hostname=" + hostname);
+        }
+        var info = localInstance(hostname, port);
+
+        runner.run(context -> assertThrows(DomainAllowListMetadataException.class,
+            () -> context.getBean(MetadataFilterService.class).verifyAllowedDomains(new EurekaServiceInstance(info))));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"10010,true", "10011,false"})
+    void givenExplicitAllowedPort_thenEnforcePortRestriction(int port, boolean allowed) {
+        var info = localInstance("localhost", port);
+        new ApplicationContextRunner()
+            .withBean(MetadataFilterService.class)
+            .withPropertyValues("apiml.security.allowedDomains=localhost:10010")
+            .run(context -> {
+                var filter = context.getBean(MetadataFilterService.class);
+                if (allowed) {
+                    assertDoesNotThrow(() -> filter.verifyAllowedDomains(new EurekaServiceInstance(info)));
+                } else {
+                    assertThrows(DomainAllowListMetadataException.class,
+                        () -> filter.verifyAllowedDomains(new EurekaServiceInstance(info)));
+                }
+            });
+    }
+
+    private static InstanceInfo localInstance(String hostname, int port) {
+        return InstanceInfo.Builder.newBuilder()
+            .setAppName("gateway")
+            .setInstanceId(hostname + ":gateway:" + port)
+            .setHostName(hostname)
+            .setSecurePort(port)
+            .enablePort(InstanceInfo.PortType.SECURE, true)
+            .enablePort(InstanceInfo.PortType.UNSECURE, false)
+            .setHomePageUrl(null, "https://" + hostname + ":" + port + "/")
+            .build();
     }
 
     @Nested
