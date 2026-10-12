@@ -203,8 +203,8 @@ else
     fi
 
     if [ "${ZWE_configs_logging_debug_wiretap:-false}" = "true" ]; then
-            add_profile debug-wiretap
-        fi
+        add_profile debug-wiretap
+    fi
 fi
 
 # Per-logger log levels, entries in the logger=level format are passed as -Dlogging.level.<logger>=<level>
