@@ -57,6 +57,7 @@
 # - ZWE_configs_apiml_security_domains_onlyWarn
 # - ZWE_configs_apiml_security_domains_portValidationDisabled
 # - ZWE_configs_apiml_security_enableStrictUrlValidation
+# - ZWE_configs_apiml_security_jwtVerificationKeyAliases
 # - ZWE_configs_apiml_security_x509_acceptForwardedCert
 # - ZWE_configs_apiml_security_x509_certificatesUrl
 # - ZWE_configs_apiml_security_x509_enabled
@@ -298,6 +299,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.domains.portValidationDisabled=${ZWE_components_discovery_apiml_security_domains_portValidationDisabled:-${ZWE_configs_apiml_security_domains_portValidationDisabled:-false}} \
     -Dapiml.security.enableStrictUrlValidation=${ZWE_components_gateway_apiml_security_enableStrictUrlValidation:-${ZWE_configs_apiml_security_enableStrictUrlValidation:-true}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-${ZWE_configs_apiml_security_jwtInitializerTimeout:-5}} \
+    -Dapiml.security.jwtVerificationKeyAliases="${ZWE_components_gateway_apiml_security_jwtVerificationKeyAliases:-${ZWE_configs_apiml_security_jwtVerificationKeyAliases:-}}" \
     -Dapiml.security.oidc.enabled=${ZWE_components_gateway_apiml_security_oidc_enabled:-${ZWE_configs_apiml_security_oidc_enabled:-false}} \
     -Dapiml.security.oidc.identityMapperUrl=${ZWE_components_gateway_apiml_security_oidc_identityMapperUrl:-${ZWE_configs_apiml_security_oidc_identityMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"}} \
     -Dapiml.security.oidc.identityMapperUser=${ZWE_components_gateway_apiml_security_oidc_identityMapperUser:-${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}}} \

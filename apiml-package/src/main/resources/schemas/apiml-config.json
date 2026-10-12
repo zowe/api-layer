@@ -514,6 +514,10 @@
                             "description": "Timeout for initialization of JWT in minutes.",
                             "default": 5
                         },
+                        "jwtVerificationKeyAliases": {
+                            "type": "string",
+                            "description": "Comma-separated list of aliases (labels) of certificates in the keystore or key ring, which are used to verify JWT tokens in addition to the signing key. If not set, the certificates of all entries with a private key are used."
+                        },
                         "personalAccessToken": {
                             "type": "object",
                             "description": "Personal Access Tokens configuration.",

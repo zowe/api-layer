@@ -25,10 +25,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Enumeration;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -167,6 +164,48 @@ public class SecurityUtils {
     }
 
     /**
+     * Loads public keys which can be used to verify JWT tokens from keystore or keyring.
+     *
+     * @param config  {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword
+     * @param aliases aliases of certificates to load, if empty the certificates of all entries with a private key are
+     *                loaded
+     * @return list of {@link PublicKey}, aliases without a certificate are skipped
+     */
+    public static List<PublicKey> loadSigningKeys(HttpsConfig config, Collection<String> aliases) {
+        if (StringUtils.isNotEmpty(config.getKeyStore())) {
+            try {
+                KeyStore ks = loadKeyStore(config);
+                List<PublicKey> pubKeys = new ArrayList<>();
+                for (String alias : aliases.isEmpty() ? getPrivateKeyAliases(ks) : aliases) {
+                    var cert = ks.getCertificate(alias);
+                    if (cert != null) {
+                        pubKeys.add(cert.getPublicKey());
+                    } else {
+                        log.warn("There is no certificate with alias '{}' in the keystore, it is not used to verify JWT tokens", alias);
+                    }
+                }
+                return pubKeys;
+            } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException | IOException e) {
+                apimlLog.log("org.zowe.apiml.common.errorLoadingPublicKey", e.getMessage());
+                throw new HttpsConfigError(e.getMessage(), e,
+                    HttpsConfigError.ErrorCode.HTTP_CLIENT_INITIALIZATION_FAILED, config);
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    private static List<String> getPrivateKeyAliases(KeyStore ks) throws KeyStoreException {
+        List<String> aliases = new ArrayList<>();
+        for (Enumeration<String> e = ks.aliases(); e.hasMoreElements(); ) {
+            String alias = e.nextElement();
+            if (ks.isKeyEntry(alias)) {
+                aliases.add(alias);
+            }
+        }
+        return aliases;
+    }
+
+    /**
      * Finds a private key by public key in keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}
      *
      * @param config    {@link HttpsConfig} with mandatory filled fields: keyStore, keyStoreType, keyStorePassword, keyPassword,
@@ -221,6 +260,7 @@ public class SecurityUtils {
             return ks;
         }
     }
+
     /**
      * Loads keystore or key ring, if keystore URL has proper format {@link #KEYRING_PATTERN}, from specified location
      *
