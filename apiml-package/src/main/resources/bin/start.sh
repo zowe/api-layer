@@ -170,40 +170,26 @@ fi
 # Logging level
 add_profile "${ZWE_configs_logging_level:-${ZWE_components_gateway_logging_level:-info}}"
 
+DEBUG_FEATURES="gateway discovery authentication caching catalog wiretap"
+
 if [ "${ZWE_configs_debug:-${ZWE_components_gateway_debug:-false}}" = "true" ]; then
     add_profile "debug"
     LOG_TO_FILE="true"
 else
-    # Enable common debug profile if any feature is set to debug
-    case ":${ZWE_configs_logging_debug_gateway}:${ZWE_configs_logging_debug_discovery}:${ZWE_configs_logging_debug_authentication}:${ZWE_configs_logging_debug_caching}:${ZWE_configs_logging_debug_catalog}:${ZWE_configs_logging_debug_wiretap}:" in
-      *:true:*)
-        add_profile debug-common
+    ENABLED_DEBUG_FEATURES=""
+    for feature in ${DEBUG_FEATURES}; do
+        eval "feature_enabled=\${ZWE_configs_logging_debug_${feature}:-false}"
+        if [ "${feature_enabled}" = "true" ]; then
+            ENABLED_DEBUG_FEATURES="${ENABLED_DEBUG_FEATURES} ${feature}"
+        fi
+    done
+
+    if [ -n "${ENABLED_DEBUG_FEATURES}" ]; then
+        add_profile "debug-common"
         LOG_TO_FILE="true"
-        ;;
-    esac
-
-    if [ "${ZWE_configs_logging_debug_gateway:-false}" = "true" ]; then
-        add_profile debug-gateway
-    fi
-
-    if [ "${ZWE_configs_logging_debug_discovery:-false}" = "true" ]; then
-        add_profile debug-discovery
-    fi
-
-    if [ "${ZWE_configs_logging_debug_authentication:-false}" = "true" ]; then
-        add_profile debug-authentication
-    fi
-
-    if [ "${ZWE_configs_logging_debug_caching:-false}" = "true" ]; then
-        add_profile debug-caching
-    fi
-
-    if [ "${ZWE_configs_logging_debug_catalog:-false}" = "true" ]; then
-        add_profile debug-catalog
-    fi
-
-    if [ "${ZWE_configs_logging_debug_wiretap:-false}" = "true" ]; then
-        add_profile debug-wiretap
+        for feature in ${ENABLED_DEBUG_FEATURES}; do
+            add_profile "debug-${feature}"
+        done
     fi
 fi
 
