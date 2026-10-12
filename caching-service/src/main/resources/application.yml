@@ -109,7 +109,7 @@ spring:
             enabled: false # Should be removed when upgrade to Spring Cloud 3.x
         gateway:
             mvc.enabled: false
-            enabled: false
+            server.webflux.enabled: false
         discovery:
             client:
                 health-indicator:
@@ -122,6 +122,8 @@ spring:
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
         allow-bean-definition-overriding: true
+    autoconfigure:
+        exclude: org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration
 
 otel:
     sdk:

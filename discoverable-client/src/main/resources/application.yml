@@ -34,6 +34,14 @@ spring:
     profiles.group:
         dev: diag
 
+    web:
+        error:
+            # Spring Boot 4 moved this from server.error.include-message to spring.web.error.include-message
+            # (the old name is deprecated at level=error in the 4.x configuration metadata and is no longer
+            # read). With the stale name the 500 body lost its "message" field, which is what
+            # PassticketSchemeTest.givenIssuedForIncorrectApplId asserts on.
+            include-message: always
+
     graphql:
         graphiql:
             enabled: true
@@ -149,9 +157,6 @@ apiml:
         readTimeout: 10
 
 server:
-    error:
-        include-message: always
-
     port: ${apiml.service.port}
 
     servlet:

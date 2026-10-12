@@ -58,6 +58,9 @@ spring:
         gateway:
             server:
                 webflux:
+                    # APIML configures trusted proxies through apiml.security.forwardHeader.trustedProxies
+                    # instead, which X509AndGwAwareXForwardedHeadersFilter consumes directly. Keep this
+                    # property unset so the APIML filter remains the active XForwardedHeadersFilter.
                     x-forwarded:
                         prefix-append: false
                         prefix-enabled: true
@@ -72,6 +75,8 @@ spring:
         allow-circular-references: true
         banner-mode: ${apiml.banner:"off"}
         web-application-type: reactive
+    autoconfigure:
+        exclude: org.springframework.boot.reactor.netty.autoconfigure.NettyReactiveWebServerAutoConfiguration
 
 otel:
     sdk:

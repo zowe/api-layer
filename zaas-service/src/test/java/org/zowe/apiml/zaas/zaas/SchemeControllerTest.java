@@ -16,9 +16,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.Mock;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.zowe.apiml.constants.ApimlConstants;
@@ -41,7 +41,6 @@ import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -50,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_ATTR;
 import static org.zowe.apiml.zaas.zaas.ExtractAuthSourceFilter.AUTH_SOURCE_PARSED_ATTR;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 class SchemeControllerTest {
 
     @Mock
@@ -82,8 +81,7 @@ class SchemeControllerTest {
     private static final String SAFIDT = "saf_id_token";
 
     @BeforeEach
-    void setUp() throws PassTicketException, JSONException {
-        when(passTicketService.generate(anyString(), anyString())).thenReturn(PASSTICKET);
+    void setUp() throws JSONException {
         SchemeController zaasController = new SchemeController(authSourceService, passTicketService, zosmfService, tokenCreationService);
         MessageService messageService = new YamlMessageService("/zaas-messages.yml");
         mockMvc = MockMvcBuilders.standaloneSetup(zaasController).setControllerAdvice(new ZaasExceptionHandler(messageService)).build();
@@ -125,6 +123,8 @@ class SchemeControllerTest {
 
         @Test
         void whenRequestPassticketAndApplNameProvided_thenPassTicketInResponse() throws Exception {
+            when(passTicketService.generate(USER, APPLID)).thenReturn(PASSTICKET);
+
             mockMvc.perform(post(PASSTICKET_URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(ticketBody.toString())

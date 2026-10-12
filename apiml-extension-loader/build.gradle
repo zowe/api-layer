@@ -1,6 +1,6 @@
 dependencies {
     api project(':common-service-core')
-    compileOnly libs.spring.boot.starter.web
+    compileOnly libs.spring.boot.starter.webmvc
 
     implementation libs.apache.commons.lang3
     implementation libs.jackson.dataformat.yaml

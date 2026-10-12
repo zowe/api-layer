@@ -18,7 +18,7 @@ import org.apache.coyote.http11.Http11NioProtocol;
 import org.apache.tomcat.util.net.*;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.exception.AttlsHandlerException;
 import org.zowe.commons.attls.ContextIsNotInitializedException;

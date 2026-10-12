@@ -12,10 +12,10 @@ package org.zowe.apiml.zaas.cache;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
@@ -88,7 +88,7 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
 
     @Value("${apiml.security.personalAccessToken.revocationLookupCircuitOpenMillis:10000}")
     private long lookupCircuitOpenMillis = 10_000;
-    
+
     @Value("${apiml.service.http.userId:#{null}}")
     private String cachingServiceUserId;
 
@@ -449,29 +449,40 @@ public class CachingServiceClient implements CachingClient, InitializingBean {
         }
     }
 
-    @RequiredArgsConstructor
+    /**
+     * Data POJO that represents entry in caching service
+     */
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Data
     public static class KeyValue {
+
         private final String key;
         private final String value;
 
         /**
          * Requested lifespan of the entry, in seconds.
          */
-        private Long ttlSeconds;
+        private final Long ttlSeconds;
 
-        @JsonCreator
         public KeyValue() {
-            key = "";
-            value = "";
+            this("", "", null);
         }
 
-        public KeyValue(String key, String value, Long ttlSeconds) {
+        public KeyValue(String key, String value) {
+            this(key, value, null);
+        }
+
+        @JsonCreator
+        public KeyValue(
+            @JsonProperty("key") String key,
+            @JsonProperty("value") String value,
+            @JsonProperty("ttlSeconds") Long ttlSeconds
+        ) {
             this.key = key;
             this.value = value;
             this.ttlSeconds = ttlSeconds;
         }
+
     }
 
 }

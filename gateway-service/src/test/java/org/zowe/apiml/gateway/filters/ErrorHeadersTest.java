@@ -39,7 +39,7 @@ class ErrorHeadersTest {
         ErrorHeaders headers = new ErrorHeaders(failureMessage);
 
         HttpHeaders httpHeaders = headers.asHttpHeaders();
-        assertTrue(httpHeaders.containsKey(ApimlConstants.AUTH_FAIL_HEADER));
+        assertTrue(httpHeaders.containsHeader(ApimlConstants.AUTH_FAIL_HEADER));
         assertEquals(List.of(failureMessage), httpHeaders.get(ApimlConstants.AUTH_FAIL_HEADER));
     }
 

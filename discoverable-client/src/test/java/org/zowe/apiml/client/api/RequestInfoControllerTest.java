@@ -13,12 +13,14 @@ package org.zowe.apiml.client.api;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.zowe.apiml.client.configuration.SecurityConfiguration;
 import org.zowe.apiml.util.config.TestConfig;
+
+import java.util.Locale;
 
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.nullValue;
@@ -54,6 +56,43 @@ class RequestInfoControllerTest {
                 .andExpect(jsonPath("$.headers", aMapWithSize(0)))
                 .andExpect(jsonPath("$.cookies", aMapWithSize(0)))
                 .andExpect(jsonPath("$.content", is("")));
+        }
+
+    }
+
+    @Nested
+    class GivenRequestWithMixedCaseHeaders {
+
+        @Test
+        void whenRequest_thenReportHeaderNamesLowerCase() throws Exception {
+            mockMvc.perform(get("/api/v1/request")
+                    .header("Authorization", "Bearer token")
+                    .header("Cookie", "apimlAuthenticationToken=token")
+                    .header("X-Zowe-Auth-Failure", "ZWEAG160E No authentication provided in the request")
+                    .header("X-Forwarded-Proto", "https")
+                    .header("X-Test", "value"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.headers['authorization']", is("Bearer token")))
+                .andExpect(jsonPath("$.headers['cookie']", is("apimlAuthenticationToken=token")))
+                .andExpect(jsonPath("$.headers['x-zowe-auth-failure']", is("ZWEAG160E No authentication provided in the request")))
+                .andExpect(jsonPath("$.headers['x-forwarded-proto']", is("https")))
+                .andExpect(jsonPath("$.headers['x-test']", is("value")))
+                .andExpect(jsonPath("$.headers['Authorization']").doesNotExist());
+        }
+
+
+        @Test
+        void whenHostLocaleIsTurkish_thenReportTheAsciiName() throws Exception {
+            Locale original = Locale.getDefault();
+            try {
+                Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+
+                mockMvc.perform(get("/api/v1/request").header("X-Id", "value"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.headers['x-id']", is("value")));
+            } finally {
+                Locale.setDefault(original);
+            }
         }
 
     }

@@ -12,8 +12,8 @@ package org.zowe.apiml.gateway.caching;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
 public interface CachingServiceClient {
@@ -29,17 +29,28 @@ public interface CachingServiceClient {
     /**
      * Data POJO that represents entry in caching service
      */
-    @RequiredArgsConstructor
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     @Data
     class ApiKeyValue {
         private final String key;
         private final String value;
 
-        @JsonCreator
         public ApiKeyValue() {
-            key = "";
-            value = "";
+            this("", "");
+        }
+
+        /**
+         * Binds a caching service response. The creator has to be explicit because Jackson 3 no longer
+         * populates final fields by default; see {@code CachingServiceClient.KeyValue} in the zaas
+         * service for the failure that a no-argument-only constructor causes.
+         *
+         * @param key   the cache key
+         * @param value the stored value
+         */
+        @JsonCreator
+        public ApiKeyValue(@JsonProperty("key") String key, @JsonProperty("value") String value) {
+            this.key = key;
+            this.value = value;
         }
     }
 

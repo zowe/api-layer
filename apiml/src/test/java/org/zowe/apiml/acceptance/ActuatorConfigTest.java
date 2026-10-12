@@ -218,7 +218,7 @@ class ActuatorConfigTest {
             "/application/gateway"
         })
         void whenAccessDangerousActuatorWithCredentials_thenBlockModify(String endpoint) {
-            when(safAuthorizationManager.check(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(true, List.of())));
+            when(safAuthorizationManager.authorize(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(true, List.of())));
 
             var jwt = login(USER);
             // change the level of the ROOT logger
@@ -311,7 +311,7 @@ class ActuatorConfigTest {
 
         @Test
         void whenAccessDangerousActuatorWithCredentialsWithPermission_thenAllowModify() {
-            when(safAuthorizationManager.check(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(true, List.of())));
+            when(safAuthorizationManager.authorize(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(true, List.of())));
 
             var jwt = login(USER);
             // change the level of the ROOT logger
@@ -335,7 +335,7 @@ class ActuatorConfigTest {
 
         @Test
         void whenAccessDangerousActuatorWithCredentialsWithoutPermission_thenBlock() {
-            when(safAuthorizationManager.check(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(false, List.of())));
+            when(safAuthorizationManager.authorize(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(false, List.of())));
 
             var jwt = login(USER_NO_PERMISSION);
             String endpoint = "/application/loggers";

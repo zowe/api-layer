@@ -83,7 +83,7 @@ class LoginFilterTest {
 
     @BeforeEach
     void setup() {
-        loginFilter = new LoginFilter("TEST_ENDPOINT",
+        loginFilter = new LoginFilter("/TEST_ENDPOINT",
             authenticationSuccessHandler,
             authenticationFailureHandler,
             mapper,
@@ -224,7 +224,7 @@ class LoginFilterTest {
         MessageService messageService = new YamlMessageService("/security-service-messages.yml");
         ResourceAccessExceptionHandler resourceAccessExceptionHandler = new ResourceAccessExceptionHandler(messageService, objectMapper);
         loginFilter = new LoginFilter(
-            "TEST_ENDPOINT",
+            "/TEST_ENDPOINT",
             authenticationSuccessHandler,
             authenticationFailureHandler,
             objectMapper,

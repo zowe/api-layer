@@ -10,16 +10,21 @@
 
 package org.zowe.apiml.product.config;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.boot.tomcat.reactive.TomcatReactiveWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 class ServerAddressPropertiesUpdaterTest {
 
@@ -56,6 +61,33 @@ class ServerAddressPropertiesUpdaterTest {
             assertEquals(8000, ReflectionTestUtils.getField(customizers.get("tomcatAdditionalConnector-8000-2"), "port"));
             assertEquals("10.0.0.1", ReflectionTestUtils.getField(customizers.get("tomcatAdditionalConnector-8000-2"), "address"));
         });
+    }
+
+    /**
+     * Spring Boot 4 renamed {@code TomcatReactiveWebServerFactory.addAdditionalTomcatConnectors} to
+     * {@code addAdditionalConnectors}; the reactive service has to hand its connector to the factory
+     * through the new method or the additional listener address silently never opens.
+     */
+    @Test
+    void givenReactiveService_whenConnectorIsInitialized_thenTheConnectorIsRegisteredOnTheFactory() {
+        var customizer = new ServerAddressPropertiesUpdater.AdditionalConnectorReactive(List.of());
+        var factory = new TomcatReactiveWebServerFactory();
+
+        customizer.initFactory(factory);
+
+        assertEquals(1, factory.getAdditionalConnectors().size());
+        assertSame(ReflectionTestUtils.getField(customizer, "connector"), factory.getAdditionalConnectors().get(0));
+    }
+
+    @Test
+    void givenServletService_whenConnectorIsInitialized_thenTheConnectorIsRegisteredOnTheFactory() {
+        var customizer = new ServerAddressPropertiesUpdater.AdditionalConnectorServlet(List.of());
+        var factory = new TomcatServletWebServerFactory();
+
+        customizer.initFactory(factory);
+
+        assertEquals(1, factory.getAdditionalConnectors().size());
+        assertSame(ReflectionTestUtils.getField(customizer, "connector"), factory.getAdditionalConnectors().get(0));
     }
 
 }

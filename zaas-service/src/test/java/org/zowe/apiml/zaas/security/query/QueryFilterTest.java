@@ -58,7 +58,7 @@ class QueryFilterTest {
 
     @BeforeEach
     void setup() {
-        queryFilter = new QueryFilter("TEST_ENDPOINT",
+        queryFilter = new QueryFilter("/TEST_ENDPOINT",
             authenticationSuccessHandler,
             authenticationFailureHandler,
             authenticationService,
@@ -115,7 +115,7 @@ class QueryFilterTest {
         authentication.setAuthenticated(true);
         SecurityContextHolder.setContext(new SecurityContextImpl(authentication));
 
-        QueryFilter protectedQueryFilter = new QueryFilter("TEST_ENDPOINT",
+        QueryFilter protectedQueryFilter = new QueryFilter("/TEST_ENDPOINT",
             authenticationSuccessHandler,
             authenticationFailureHandler,
             authenticationService,

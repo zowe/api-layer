@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.product.compatibility;
 
-import org.springframework.boot.actuate.autoconfigure.system.DiskSpaceHealthContributorAutoConfiguration;
-import org.springframework.boot.actuate.autoconfigure.system.DiskSpaceHealthIndicatorProperties;
-import org.springframework.boot.actuate.system.DiskSpaceHealthIndicator;
+import org.springframework.boot.health.autoconfigure.application.DiskSpaceHealthContributorAutoConfiguration;
+import org.springframework.boot.health.autoconfigure.application.DiskSpaceHealthIndicatorProperties;
+import org.springframework.boot.health.application.DiskSpaceHealthIndicator;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

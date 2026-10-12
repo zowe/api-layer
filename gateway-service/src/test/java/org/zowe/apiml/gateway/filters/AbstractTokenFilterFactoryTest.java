@@ -109,7 +109,7 @@ class AbstractTokenFilterFactoryTest {
                     .build()
                 ));
                 assertEquals(1, request.getHeaders().size());
-                assertTrue(request.getHeaders().containsKey(ApimlConstants.AUTH_FAIL_HEADER));
+                assertTrue(request.getHeaders().containsHeader(ApimlConstants.AUTH_FAIL_HEADER));
                 assertEquals("Invalid or missing authentication", request.getHeaders().getFirst(ApimlConstants.AUTH_FAIL_HEADER));
             }
 
@@ -125,7 +125,7 @@ class AbstractTokenFilterFactoryTest {
                         .build()
                 ));
                 assertEquals(1, request.getHeaders().size());
-                assertTrue(request.getHeaders().containsKey(ApimlConstants.AUTH_FAIL_HEADER));
+                assertTrue(request.getHeaders().containsHeader(ApimlConstants.AUTH_FAIL_HEADER));
                 assertEquals("anError", request.getHeaders().getFirst(ApimlConstants.AUTH_FAIL_HEADER));
             }
 

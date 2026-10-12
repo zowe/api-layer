@@ -47,9 +47,8 @@ public class DummyAuthenticationProvider extends DaoAuthenticationProvider {
                                        @Qualifier("dummyService") UserDetailsService userDetailsService,
                                        AuthenticationService authenticationService,
                                        ApplicationEventPublisher publisher) {
-        super();
+        super(userDetailsService);
         this.setPasswordEncoder(encoder);
-        this.setUserDetailsService(userDetailsService);
         this.authenticationService = authenticationService;
         this.publisher = publisher;
     }

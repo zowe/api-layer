@@ -21,6 +21,7 @@ import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
 class HeaderSocketServerHandlerTest {
@@ -56,4 +57,59 @@ class HeaderSocketServerHandlerTest {
             verify(session, times(1)).close();
         }
     }
+
+    @Nested
+    class GivenHandshakeHeaders {
+
+        /**
+         * Tomcat 11 hands back the header names exactly as the client spelled them, while the endpoint's
+         * output is matched case-insensitively by the integration tests, so the handler has to normalise
+         * them itself.
+         */
+        @Test
+        void whenHeaderNameIsMixedCase_thenReportItLowerCase() throws Exception {
+            WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+            headers.add("X-Test", "value");
+            when(session.getHandshakeHeaders()).thenReturn(headers);
+
+            handler.handleMessage(session, new TextMessage("gimme those headers"));
+
+            ArgumentCaptor<WebSocketMessage<?>> messageCaptor = ArgumentCaptor.forClass(WebSocketMessage.class);
+            verify(session).sendMessage(messageCaptor.capture());
+            assertEquals("[x-test:\"value\"]", messageCaptor.getValue().getPayload().toString());
+        }
+
+        @Test
+        void whenHeaderHasMultipleValues_thenReportAllOfThem() throws Exception {
+            WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+            headers.add("X-Test", "one");
+            headers.add("X-Test", "two");
+            when(session.getHandshakeHeaders()).thenReturn(headers);
+
+            handler.handleMessage(session, new TextMessage("gimme those headers"));
+
+            ArgumentCaptor<WebSocketMessage<?>> messageCaptor = ArgumentCaptor.forClass(WebSocketMessage.class);
+            verify(session).sendMessage(messageCaptor.capture());
+            assertEquals("[x-test:\"one,two\"]", messageCaptor.getValue().getPayload().toString());
+        }
+
+        /**
+         * The Turkish locale lower-cases "I" to a dotless "ı", which would make the reported name
+         * unrecognisable on a host running with that locale.
+         */
+        @Test
+        void whenHostLocaleIsTurkish_thenStillReportTheAsciiName() {
+
+                WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+                headers.add("X-Id", "value");
+                headers.add(HttpHeaders.ACCEPT_LANGUAGE, "tr-TR");
+
+            String result = HeaderSocketServerHandler.describe(headers);
+            assertTrue(
+                result.contains("x-id:\"value\""),
+                () -> "Expected result to contain ASCII 'x-id', but was: " + result
+            );       }
+
+    }
+
 }

@@ -13,6 +13,7 @@ package org.zowe.apiml.caching.model;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -112,6 +113,53 @@ class KeyValueTest {
 
             assertEquals("k", restored.getKey());
             assertNull(restored.getTtlSeconds());
+        }
+    }
+
+    @Nested
+    class WhenJsonDeserializedWithJackson3 {
+
+        private final JsonMapper jsonMapper = JsonMapper.builder().build();
+
+        @Test
+        void givenAllFields_thenTheFinalFieldsAreBound() {
+            KeyValue restored = jsonMapper.readValue(
+                "{\"key\":\"k\",\"value\":\"v\",\"serviceId\":\"service\",\"created\":\"1\",\"ttlSeconds\":60}", KeyValue.class);
+
+            assertEquals("k", restored.getKey());
+            assertEquals("v", restored.getValue());
+            assertEquals("service", restored.getServiceId());
+            assertEquals("1", restored.getCreated());
+            assertEquals(60L, restored.getTtlSeconds());
+        }
+
+        @Test
+        void givenNoCreated_thenTheCurrentTimeIsUsed() {
+            long before = System.currentTimeMillis();
+
+            KeyValue restored = jsonMapper.readValue("{\"key\":\"k\",\"value\":\"v\"}", KeyValue.class);
+
+            assertTrue(Long.parseLong(restored.getCreated()) >= before);
+            assertEquals("", restored.getServiceId());
+        }
+
+        @Test
+        void givenNoKeyAndNoValue_thenTheyAreNull() {
+            KeyValue restored = jsonMapper.readValue("{}", KeyValue.class);
+
+            assertNull(restored.getKey());
+            assertNull(restored.getValue());
+        }
+
+        @Test
+        void thenItRoundTrips() {
+            KeyValue original = new KeyValue("key", "value", 60L);
+            original.setServiceId("service");
+
+            KeyValue restored = jsonMapper.readValue(jsonMapper.writeValueAsString(original), KeyValue.class);
+
+            assertEquals(original, restored);
+            assertEquals(60L, restored.getTtlSeconds());
         }
     }
 

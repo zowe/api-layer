@@ -10,14 +10,12 @@
 
 package org.zowe.apiml.client.api;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -30,6 +28,10 @@ import org.zowe.apiml.message.api.ApiMessage;
 import org.zowe.apiml.message.api.ApiMessageView;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.core.MessageService;
+
+import tools.jackson.core.exc.StreamReadException;
+import tools.jackson.databind.exc.InvalidFormatException;
+import tools.jackson.databind.exc.UnrecognizedPropertyException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -139,13 +141,43 @@ public class PetControllerExceptionHandler {
     }
 
     /**
+     * Spring Boot 4 surfaces Jackson binding failures as HttpMessageNotReadableException with the Jackson
+     * exception as the cause, rather than letting the Jackson exception itself reach the handler methods.
+     * Without this, the specific handlers below are never selected and the client got a bare 400 with an
+     * empty body instead of the ApiMessageView the API promises.
+     *
+     * @param exception the wrapper thrown by the message converter
+     * @return 400 with the message for the underlying Jackson failure
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiMessageView> handleNotReadable(HttpMessageNotReadableException exception) {
+        Throwable cause = exception.getCause();
+        if (cause instanceof UnrecognizedPropertyException unrecognized) {
+            return handleUnrecognizedProperty(unrecognized);
+        }
+        if (cause instanceof InvalidFormatException invalidFormat) {
+            return handleInvalidFormatException(invalidFormat);
+        }
+        Throwable message = messageForUnreadable(exception);
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(messageService.createMessage("org.zowe.apiml.sampleservice.api.jsonParseException", message.getMessage()).mapToView());
+    }
+
+    private Throwable messageForUnreadable(HttpMessageNotReadableException exception) {
+        Throwable cause = exception.getCause();
+        return cause == null ? exception : cause;
+    }
+
+    /**
      * The jsonParseException method creates a response when the provided body is not a valid JSON
      *
-     * @param exception JsonParseException
+     * @param exception StreamReadException (Jackson 3's replacement for JsonParseException)
      * @return 400 and the message 'Request is not valid JSON'
      */
-    @ExceptionHandler(JsonParseException.class)
-    public ResponseEntity<ApiMessageView> jsonParseException(JsonParseException exception) {
+    @ExceptionHandler(StreamReadException.class)
+    public ResponseEntity<ApiMessageView> jsonParseException(StreamReadException exception) {
         Message message = messageService.createMessage("org.zowe.apiml.sampleservice.api.jsonParseException", exception.getMessage());
 
         return ResponseEntity
@@ -162,7 +194,7 @@ public class PetControllerExceptionHandler {
      */
     @ExceptionHandler(InvalidFormatException.class)
     public ResponseEntity<ApiMessageView> handleInvalidFormatException(InvalidFormatException exception) {
-        String fieldName = exception.getPath().get(0).getFieldName();
+        String fieldName = exception.getPath().get(0).getPropertyName();
         Message message = messageService.createMessage("org.zowe.apiml.sampleservice.api.petInvalidFormatException", fieldName);
 
         return ResponseEntity

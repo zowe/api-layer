@@ -2,7 +2,7 @@ dependencies {
     compileOnly libs.spring.beans
     compileOnly libs.spring.context
 
-    implementation libs.jackson.databind
+    implementation libs.jackson2.databind
     implementation libs.http.client5
 
     compileOnly libs.jakarta.servlet.api

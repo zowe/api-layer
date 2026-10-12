@@ -12,8 +12,8 @@ package org.zowe.apiml.caching.model;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serial;
@@ -23,7 +23,6 @@ import java.util.Date;
 /**
  * Data POJO that represents entry in caching service
  */
-@RequiredArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @Data
 public class KeyValue implements Serializable {
@@ -44,11 +43,29 @@ public class KeyValue implements Serializable {
     @ToString.Exclude
     private transient Long ttlSeconds;
 
-    public KeyValue(String key, String value) {
+    /**
+     * Creates the entry from its final fields. Used by Jackson, so the final fields are bound without
+     * relying on {@code MapperFeature.ALLOW_FINAL_FIELDS_AS_MUTATORS}, which Jackson 3 disables by default.
+     * A missing {@code key} or {@code value} stays {@code null} so the payload validation can reject it.
+     *
+     * @param key     the key of the entry
+     * @param value   the value of the entry
+     * @param created the creation timestamp in milliseconds, the current time when {@code null}
+     */
+    @JsonCreator
+    public KeyValue(
+        @JsonProperty("key") String key,
+        @JsonProperty("value") String value,
+        @JsonProperty("created") String created
+    ) {
         this.key = key;
         this.value = value;
         this.serviceId = "";
-        this.created = currentTime();
+        this.created = created == null ? currentTime() : created;
+    }
+
+    public KeyValue(String key, String value) {
+        this(key, value, (String) null);
     }
 
     public KeyValue(String key, String value, Long ttlSeconds) {
@@ -58,13 +75,5 @@ public class KeyValue implements Serializable {
 
     private static String currentTime() {
         return String.valueOf(new Date().getTime());
-    }
-
-    @JsonCreator
-    public KeyValue() {
-        key = "";
-        value = "";
-        serviceId = "";
-        created = currentTime();
     }
 }

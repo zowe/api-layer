@@ -12,8 +12,8 @@ package org.zowe.apiml.product.compatibility;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.actuate.autoconfigure.system.DiskSpaceHealthIndicatorProperties;
-import org.springframework.boot.actuate.system.DiskSpaceHealthIndicator;
+import org.springframework.boot.health.autoconfigure.application.DiskSpaceHealthIndicatorProperties;
+import org.springframework.boot.health.application.DiskSpaceHealthIndicator;
 import org.springframework.util.unit.DataSize;
 
 import java.io.File;

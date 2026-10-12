@@ -59,7 +59,7 @@ class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactoryTest {
 
         ServerWebExchange result = runFilter(request);
 
-        assertTrue(result.getRequest().getHeaders().containsKey(HttpHeaders.ORIGIN));
+        assertTrue(result.getRequest().getHeaders().containsHeader(HttpHeaders.ORIGIN));
     }
 
     @ParameterizedTest
@@ -72,7 +72,7 @@ class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactoryTest {
 
         ServerWebExchange result = runFilter(request);
 
-        assertFalse(result.getRequest().getHeaders().containsKey(HttpHeaders.ORIGIN));
+        assertFalse(result.getRequest().getHeaders().containsHeader(HttpHeaders.ORIGIN));
     }
 
     @Test
@@ -83,7 +83,7 @@ class RemoveRequestHeaderIfNotCrossSiteGatewayFilterFactoryTest {
 
         ServerWebExchange result = runFilter(request);
 
-        assertFalse(result.getRequest().getHeaders().containsKey(HttpHeaders.ORIGIN));
+        assertFalse(result.getRequest().getHeaders().containsHeader(HttpHeaders.ORIGIN));
     }
 
 }

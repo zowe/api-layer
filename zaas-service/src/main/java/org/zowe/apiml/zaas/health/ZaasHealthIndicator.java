@@ -11,16 +11,16 @@
 package org.zowe.apiml.zaas.health;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.actuate.health.AbstractHealthIndicator;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.AbstractHealthIndicator;
+import org.springframework.boot.health.contributor.Health;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Component;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.zaas.security.login.Providers;
 
-import static org.springframework.boot.actuate.health.Status.DOWN;
-import static org.springframework.boot.actuate.health.Status.UP;
+import static org.springframework.boot.health.contributor.Status.DOWN;
+import static org.springframework.boot.health.contributor.Status.UP;
 
 /**
  * ZAAS health information (/application/health)

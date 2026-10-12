@@ -53,7 +53,7 @@ class SafAuthorizationManagerTest {
             when(authentication.isAuthenticated()).thenReturn(true);
             when(safResourceAccessVerifying.hasSafResourceAccess(authentication, RESOURCE_CLASS, RESOURCE_NAME, RESOURCE_ACCESS)).thenReturn(true);
 
-            StepVerifier.create(safAuthorizationManager.check(Mono.just(authentication), new Object()))
+            StepVerifier.create(safAuthorizationManager.authorize(Mono.just(authentication), new Object()))
                 .assertNext(decision -> {
                     assertTrue(decision.isGranted());
                     var authorities = ((AuthorityAuthorizationDecision) decision).getAuthorities();
@@ -68,7 +68,7 @@ class SafAuthorizationManagerTest {
             when(authentication.isAuthenticated()).thenReturn(true);
             when(safResourceAccessVerifying.hasSafResourceAccess(authentication, RESOURCE_CLASS, RESOURCE_NAME, RESOURCE_ACCESS)).thenReturn(false);
 
-            StepVerifier.create(safAuthorizationManager.check(Mono.just(authentication), new Object()))
+            StepVerifier.create(safAuthorizationManager.authorize(Mono.just(authentication), new Object()))
                 .assertNext(decision -> {
                     assertFalse(decision.isGranted());
                     assertTrue(((AuthorityAuthorizationDecision) decision).getAuthorities().isEmpty());
@@ -80,7 +80,7 @@ class SafAuthorizationManagerTest {
         void whenNotAuthenticated_thenDenyWithoutCallingVerifier() {
             when(authentication.isAuthenticated()).thenReturn(false);
 
-            StepVerifier.create(safAuthorizationManager.check(Mono.just(authentication), new Object()))
+            StepVerifier.create(safAuthorizationManager.authorize(Mono.just(authentication), new Object()))
                 .assertNext(decision -> assertFalse(decision.isGranted()))
                 .verifyComplete();
 

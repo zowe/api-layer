@@ -18,8 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.gateway.GatewayClient;
@@ -56,7 +54,7 @@ public class CachingServiceClientRest implements CachingServiceClient, Initializ
     private volatile String cachingBalancerUrl;
     private final GatewayClient gatewayClient;
 
-    private static final MultiValueMap<String, String> defaultHeaders = new LinkedMultiValueMap<>();
+    private static final HttpHeaders defaultHeaders = new HttpHeaders();
 
     static {
         defaultHeaders.add("Content-Type", "application/json");

@@ -155,7 +155,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     @Test
                     void headers() throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        if (!VALID_AUTH_HEADERS.containsKey("X-Test")) {
+                        if (!VALID_AUTH_HEADERS.containsHeader("X-Test")) {
                             VALID_AUTH_HEADERS.add("X-Test", "value");
                         }
                         VALID_AUTH_HEADERS.add("Cookie", validToken);
@@ -210,7 +210,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     @Test
                     void whenHandshakeRequestIsTooLarge() throws Exception {
                         final StringBuilder response = new StringBuilder();
-                        if (!VALID_AUTH_HEADERS.containsKey("X-Test")) {
+                        if (!VALID_AUTH_HEADERS.containsHeader("X-Test")) {
                             VALID_AUTH_HEADERS.add("X-Test", "value");
                         }
                         VALID_AUTH_HEADERS.add("Cookie", validToken);
