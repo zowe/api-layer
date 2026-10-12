@@ -54,7 +54,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
@@ -174,7 +173,7 @@ class AuthControllerTest {
 
         lenient().when(zosmfService.getPublicKeys()).thenReturn(zosmf);
         lenient().when(jwtSecurity.getPublicKeyInSet()).thenReturn(new JsonWebKeySet(Collections.singletonList(apimlJwk)));
-        lenient().when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
+        lenient().when(jwtSecurity.getAllSigningJwks()).thenReturn(Collections.singletonList(apimlJwk));
     }
 
     @Test
@@ -192,6 +191,18 @@ class AuthControllerTest {
         initPublicKeys();
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
         var jwkSet = new JsonWebKeySet(Collections.singletonList(apimlJwk));
+        this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
+            .andExpect(status().is(SC_OK))
+            .andExpect(content().json(jwkSet.toJson()));
+    }
+
+    @Test
+    void givenMultipleSigningKeys_whenGetAllPublicKeys_thenReturnsAllOfThem() throws Exception {
+        initPublicKeys();
+        var rotatedJwk = getJwk(4);
+        when(jwtSecurity.getAllSigningJwks()).thenReturn(Arrays.asList(apimlJwk, rotatedJwk));
+        when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
+        var jwkSet = new JsonWebKeySet(Arrays.asList(apimlJwk, rotatedJwk));
         this.mockMvc.perform(get("/zaas/api/v1/auth/keys/public/all"))
             .andExpect(status().is(SC_OK))
             .andExpect(content().json(jwkSet.toJson()));
