@@ -139,6 +139,7 @@
     },
     "overrides": {
         "browserslist": "4.29.3",
+        "dompurify": "3.4.14",
         "openapi-snippet": {
             "openapi-sampler": {
                 "fast-xml-parser": "5.11.2"
