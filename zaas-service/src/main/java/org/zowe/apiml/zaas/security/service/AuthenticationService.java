@@ -407,9 +407,9 @@ public class AuthenticationService {
             .orElse(null);
         if (tokenAuthentication != null) {
             if (tokenAuthentication.isAuthenticated()) {
-                log.trace("JWT ...{} found in validated token cache as valid.", StringUtils.right(jwtToken, 15));
+                log.trace("JWT ...{} found in validated token cache is authenticated.", StringUtils.right(jwtToken, 15));
             } else {
-                log.debug("JWT ...{} found in validated token cache as invalid.", StringUtils.right(jwtToken, 15));
+                log.debug("JWT ...{} found in validated token cache is not authenticated", StringUtils.right(jwtToken, 15));
             }
 
             if (tokenAuthentication.isExpired()) {
