@@ -281,9 +281,27 @@ teardown() {
 
     [ "${logToFile}" = "true" ]
     [ "${onlyDebugToFile}" = "false" ]
+
+    [[ ! "$output" =~ "APIML logging debug only to file was enabled, but logging to file disabled. The option is ignored." ]]
 }
 
-@test "apiml-start: When apiml.logging.logging.toFile.debugOnly=true, then the property is set" {
+@test "apiml-start: When When apiml.logging.logging.toFile.enabled=true, then property is set and no message about debugOnly" {
+    export ZWE_configs_logging_toFile_enabled=false
+
+    run "${APIML_DIR}/start.sh"
+
+    [ "$status" -eq 0 ]
+
+    logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
+    onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
+
+    [ "${logToFile}" = "false" ]
+    [ "${onlyDebugToFile}" = "false" ]
+
+    [[ ! "$output" =~ "APIML logging debug only to file was enabled, but logging to file disabled. The option is ignored." ]]
+}
+
+@test "apiml-start: When When apiml.logging.logging.toFile.debugOnly=true, then print a message and disable both" {
     export ZWE_configs_logging_toFile_debugOnly=true
     run "${APIML_DIR}/start.sh"
 
@@ -293,8 +311,28 @@ teardown() {
     onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
 
     [ "${logToFile}" = "false" ]
-    [ "${onlyDebugToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "false" ]
+
+    [[ "$output" =~ "APIML logging debug only to file was enabled, but logging to file disabled. The option is ignored." ]]
 }
+
+@test "apiml-start: When apiml logging to file is enabled and debugOnly enabled, then no message about debugOnly" {
+    export ZWE_configs_logging_toFile_enabled=true
+    export ZWE_configs_logging_toFile_debugOnly=true
+    run "${APIML_DIR}/start.sh"
+
+    [ "$status" -eq 0 ]
+
+    logToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.enabled=\([^ "]*\).*/\1/p')
+    onlyDebugToFile=$(printf '%s\n' "$output" | sed -n 's/.*-Dapiml\.logging\.toFile\.debugOnly=\([^ "]*\).*/\1/p')
+
+    [ "${logToFile}" = "true" ]
+    [ "${onlyDebugToFile}" = "true" ]
+
+    [[ ! "$output" =~ "APIML logging debug only to file was enabled, but logging to file disabled. The option is ignored." ]]
+}
+
+
 
 @test "apiml-start: Default configuration: info, no file" {
     run "${APIML_DIR}/start.sh"

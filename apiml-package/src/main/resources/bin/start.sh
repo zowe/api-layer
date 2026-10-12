@@ -161,6 +161,12 @@ if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_p
         ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active}}"
     fi
 
+# Log debug only to file
+DEBUG_ONLY_TO_FILE="false"
+if [ "${ZWE_configs_logging_toFile_debugOnly:-false}" = "true" ]; then
+    DEBUG_ONLY_TO_FILE="true"
+fi
+
 # Log to file
 LOG_TO_FILE="false"
 if [ "${ZWE_configs_logging_toFile_enabled:-false}" = "true" ]; then
@@ -191,6 +197,11 @@ else
             add_profile "debug-${feature}"
         done
     fi
+fi
+
+if [ "${DEBUG_ONLY_TO_FILE}" = "true" ] && [ "${LOG_TO_FILE}" = "false" ]; then
+    DEBUG_ONLY_TO_FILE="false"
+    echo "APIML logging debug only to file was enabled, but logging to file disabled. The option is ignored."
 fi
 
 # Per-logger log levels, entries in the logger=level format are passed as -Dlogging.level.<logger>=<level>
@@ -324,7 +335,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
     -Dapiml.logging.toFile.enabled=${LOG_TO_FILE:-false} \
-    -Dapiml.logging.toFile.debugOnly=${ZWE_configs_logging_toFile_debugOnly:-false} \
+    -Dapiml.logging.toFile.debugOnly=${DEBUG_ONLY_TO_FILE:-false} \
     -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.allowTokenRefresh=${ZWE_components_gateway_apiml_security_allowtokenrefresh:-${ZWE_configs_apiml_security_allowtokenrefresh:-false}} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
