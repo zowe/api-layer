@@ -198,6 +198,11 @@ logging:
 ---
 spring.config.activate.on-profile: debug
 
+apiml:
+    logging:
+        toFile:
+            enabled: true
+
 logging:
     level:
         ROOT: INFO

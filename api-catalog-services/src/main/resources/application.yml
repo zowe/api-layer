@@ -214,6 +214,11 @@ logging:
 ---
 spring.config.activate.on-profile: debug
 
+apiml:
+    logging:
+        toFile:
+            enabled: true
+
 management:
     endpoints:
         migrate-legacy-ids: true
