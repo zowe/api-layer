@@ -16,7 +16,7 @@
     "license": "EPL-2.0",
     "dependencies": {
         "@zowe/apiml-onboarding-enabler-nodejs": "file:../onboarding-enabler-nodejs",
-        "express": "5.2.1"
+        "express": "5.3.0"
     },
     "overrides": {
         "body-parser": "2.3.0",

@@ -36,6 +36,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
 import java.lang.invoke.MethodHandles;
@@ -51,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -309,6 +311,22 @@ class ApimlInstanceRegistryTest {
             doThrow(new RuntimeException("test")).when(apimlInstanceRegistry).register(any(), anyInt(), anyBoolean());
             assertThrows(IllegalStateException.class, () -> apimlInstanceRegistry.registerStatically(standardInstance, false, false));
 
+            assertEquals(5, ReflectionTestUtils.getField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews"));
+            assertNull(renewCorrection.get());
+        }
+
+        @Test
+        @SuppressWarnings("unchecked")
+        void givenStaticDefinitionWithDisallowedDomain_thenReportRejectionWithoutRegistering() {
+            var rejection = new DomainAllowListMetadataException("Domain not allowed");
+            doThrow(rejection)
+                .when(metadataFilterService).verifyAllowedDomains(any());
+
+            assertSame(rejection, assertThrows(DomainAllowListMetadataException.class,
+                () -> apimlInstanceRegistry.registerStatically(standardInstance, false, true)));
+
+            assertNull(apimlInstanceRegistry.getApplication(standardInstance.getAppName()));
+            assertTrue(((Set<String>) ReflectionTestUtils.getField(apimlInstanceRegistry, "staticRegistrationIds")).isEmpty());
             assertEquals(5, ReflectionTestUtils.getField(apimlInstanceRegistry, "expectedNumberOfClientsSendingRenews"));
             assertNull(renewCorrection.get());
         }
