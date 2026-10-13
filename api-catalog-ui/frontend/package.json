@@ -46,7 +46,7 @@
         "rxjs": "7.8.2",
         "sass": "1.105.1",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.33.1",
+        "swagger-ui-react": "5.33.2",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -87,7 +87,7 @@
         "@testing-library/dom": "10.4.2",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "16.3.3",
-        "@testing-library/user-event": "14.6.7",
+        "@testing-library/user-event": "14.6.8",
         "@vitejs/plugin-basic-ssl": "2.3.0",
         "@vitejs/plugin-react": "4.7.0",
         "ajv": "8.20.0",
@@ -139,7 +139,7 @@
     },
     "overrides": {
         "browserslist": "4.29.3",
-        "dompurify": "3.4.16",
+        "dompurify": "3.4.17",
         "openapi-snippet": {
             "openapi-sampler": {
                 "fast-xml-parser": "5.11.2"
