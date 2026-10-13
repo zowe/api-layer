@@ -10,6 +10,10 @@
 
 package org.zowe.apiml.zaas.security.service;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -18,6 +22,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -25,6 +30,7 @@ import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang3.time.DateUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +39,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -46,13 +53,10 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.product.gateway.GatewayClient;
 import org.zowe.apiml.security.SecurityUtils;
@@ -90,9 +94,6 @@ import java.util.function.Consumer;
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.contains;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpMethod.DELETE;
 
@@ -165,10 +166,17 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Nested
     class GivenCorrectInputsTest {
 
+        private Runnable logCleanup = () -> { };
+
         @BeforeEach
         void setup() {
             stubJWTSecurityForSign();
 
+        }
+
+        @AfterEach
+        void restoreLogger() {
+            logCleanup.run();
         }
 
         @Test
@@ -204,30 +212,54 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenNoVerifierForKeyIdOfToken_thenMissingPublicKeyIsLoggedWithActiveKid() {
-            var apimlLogger = mock(ApimlLogger.class);
-            ReflectionTestUtils.setField(authService, "apimlLog", apimlLogger);
             when(jwtSecurityInitializer.getJwtVerifier("kid")).thenReturn(null);
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
             TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
 
+            var logs = captureDebugLogs();
             assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(tokenAuthentication));
 
-            verify(apimlLogger).log(eq(MessageType.DEBUG), startsWith("No public key to verify token"), contains("kid=kid"), eq("kid"));
+            assertTrue(logs.list.stream().anyMatch(event -> event.getLevel() == Level.DEBUG
+                && event.getFormattedMessage().equals("No public key to verify token [%s], currently active signing key kid=kid. This instance does not hold the key that signed the token."
+                    .formatted(JwtUtils.describeJwtForLogging(parseJwt(jwtToken))))));
         }
 
         @Test
         void givenVerifierThrowsException_thenExceptionIsLoggedAndTokenIsNotValid() throws JOSEException {
-            var apimlLogger = mock(ApimlLogger.class);
-            ReflectionTestUtils.setField(authService, "apimlLog", apimlLogger);
             var verifier = mock(RSASSAVerifier.class);
             when(verifier.verify(any(), any(), any())).thenThrow(new JOSEException("verification error"));
             when(jwtSecurityInitializer.getJwtVerifier("kid")).thenReturn(verifier);
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
             TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
 
+            var logs = captureDebugLogs();
             assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(tokenAuthentication));
 
-            verify(apimlLogger).log(eq(MessageType.DEBUG), startsWith("JWT signature verification threw an exception"), any(), eq("kid"), eq("verification error"));
+            assertTrue(logs.list.stream().anyMatch(event -> event.getLevel() == Level.DEBUG
+                && event.getFormattedMessage().equals("JWT signature verification threw an exception for token [%s], currently active signing key kid=kid: verification error"
+                    .formatted(JwtUtils.describeJwtForLogging(parseJwt(jwtToken))))));
+        }
+
+        private SignedJWT parseJwt(String jwtToken) {
+            try {
+                return SignedJWT.parse(jwtToken);
+            } catch (ParseException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        private ListAppender<ILoggingEvent> captureDebugLogs() {
+            var logger = (Logger) LoggerFactory.getLogger(AuthenticationService.class);
+            var appender = new ListAppender<ILoggingEvent>();
+            appender.start();
+            var originalLevel = logger.getLevel();
+            logger.setLevel(Level.DEBUG);
+            logger.addAppender(appender);
+            logCleanup = () -> {
+                logger.detachAppender(appender);
+                logger.setLevel(originalLevel);
+            };
+            return appender;
         }
 
         @Test

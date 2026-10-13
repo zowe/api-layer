@@ -348,7 +348,7 @@ public class AuthenticationService {
                 String activeKid = jwtSecurityInitializer.getJwkPublicKey().map(JsonWebKey::getKeyId).orElse("unknown");
                 var verifier = jwtSecurityInitializer.getJwtVerifier(keyId);
                 if (verifier == null) {
-                    apimlLog.log(MessageType.DEBUG, "No public key to verify token [{}], currently active signing key kid={}. " +
+                    log.debug("No public key to verify token [{}], currently active signing key kid={}. " +
                             "This instance does not hold the key that signed the token.",
                         describeJwtForLogging(signedJwt), activeKid);
                     throw new BadJWTException("No public key found to verify token signed with key ID: " + keyId);
