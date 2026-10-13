@@ -18,7 +18,6 @@ import org.apache.commons.lang3.Strings;
 import org.jose4j.lang.HashUtil;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -31,11 +30,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpCookie;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseCookie;
+import org.springframework.http.*;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -47,20 +42,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
-import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.*;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
-import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerAuthorizationRequestRepository;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.*;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -102,19 +88,14 @@ import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -204,15 +185,16 @@ public class WebSecurity {
         return defaultCookieAttr(ResponseCookie.from(name, value)).build();
     }
 
+    private ResponseCookie expiredCookie(String name) {
+        return defaultCookieAttr(ResponseCookie.from(name).maxAge(0)).build();
+    }
+
     private GatewayExceptionHandler gatewayExceptionHandler() {
         return applicationContext.getBean("gatewayExceptionHandler", GatewayExceptionHandler.class);
     }
 
-    @Bean
-    OidcAuthenticationFailureHandler oidcAuthenticationFailureHandler(
-        @Qualifier("gatewayExceptionHandler") GatewayExceptionHandler exceptionHandler
-    ) {
-        return new OidcAuthenticationFailureHandler(exceptionHandler, this::clearCookies);
+    OidcAuthenticationFailureHandler oidcAuthenticationFailureHandler() {
+        return new OidcAuthenticationFailureHandler(this::gatewayExceptionHandler, this::clearCookies);
     }
 
     /**
@@ -223,12 +205,12 @@ public class WebSecurity {
         ServerHttpSecurity http,
         Optional<ReactiveOAuth2AuthorizedClientService> reactiveOAuth2AuthorizedClientService,
         Optional<ApimlServerAuthorizationRequestRepository> requestRepository,
-        Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver,
-        OidcAuthenticationFailureHandler failureHandler
+        Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver
     ) {
         if (!clientConfiguration.isConfigured()) {
             return null;
         }
+        var failureHandler = oidcAuthenticationFailureHandler();
         return http
             .headers(headers -> headers
                 .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
@@ -264,6 +246,7 @@ public class WebSecurity {
      * Sanitize the return URL
      * Validates a relative return URI.
      * Only relative paths are accepted, paths with an authority component, and other ambiguous forms are rejected.
+     *
      * @param forwardUrlString the return URL to check
      * @return the sanitized return URL
      */
@@ -282,14 +265,12 @@ public class WebSecurity {
         try {
             var uriBuilder =
                 UriComponentsBuilder.fromUriString(decodedUrl)
-                .build();
+                    .build();
             var forwardUrl = uriBuilder
                 .toUri();
 
             if (forwardUrl.getScheme() != null || forwardUrl.getHost() != null) {
-                if (allowedDomainsSet.stream()
-                    .noneMatch(allowed -> StringUtils.equalsIgnoreCase(allowed, forwardUrl.getHost())
-                    )) {
+                if (allowedDomainsSet.stream().noneMatch(allowed -> isAllowedDomain(allowed, forwardUrl))) {
                     throw new InvalidForwardException(decodedUrl);
                 }
             } else {
@@ -301,6 +282,31 @@ public class WebSecurity {
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new InvalidForwardException(decodedUrl, e);
         }
+    }
+
+    /**
+     * Matches the URL against an allowed domain entry in the format {@code host}, {@code host:port} or {@code host:*}.
+     * An entry without a port allows any port.
+     */
+    private static boolean isAllowedDomain(String allowed, URI url) {
+        var host = allowed;
+        String port = null;
+        var portSeparator = allowed.startsWith("[") ? allowed.indexOf("]:") + 1 : allowed.indexOf(':');
+        if (portSeparator > 0 && portSeparator == allowed.lastIndexOf(':')) {
+            host = allowed.substring(0, portSeparator);
+            port = allowed.substring(portSeparator + 1);
+        }
+        if (!Strings.CI.equals(host, url.getHost())) {
+            return false;
+        }
+        return port == null || "*".equals(port) || port.equals(String.valueOf(getPort(url)));
+    }
+
+    private static int getPort(URI url) {
+        if (url.getPort() != -1) {
+            return url.getPort();
+        }
+        return "http".equalsIgnoreCase(url.getScheme()) ? 80 : 443;
     }
 
     public Mono<Void> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {
@@ -327,7 +333,7 @@ public class WebSecurity {
     }
 
     private void clearCookies(WebFilterExchange webFilterExchange) {
-        COOKIES.forEach(cookie -> webFilterExchange.getExchange().getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(cookie).maxAge(0)).build()));
+        COOKIES.forEach(cookie -> webFilterExchange.getExchange().getResponse().addCookie(expiredCookie(cookie)));
     }
 
     @Bean
@@ -485,10 +491,10 @@ public class WebSecurity {
                 }
             )
             .authorizeExchange(exchange -> exchange.matchers(
-                new OrServerWebExchangeMatcher(
-                    pathMatchers(HttpMethod.GET, APPLICATION),
-                    pathMatchers(HttpMethod.HEAD, APPLICATION)
-                ))
+                    new OrServerWebExchangeMatcher(
+                        pathMatchers(HttpMethod.GET, APPLICATION),
+                        pathMatchers(HttpMethod.HEAD, APPLICATION)
+                    ))
                 .authenticated()
             )
             .authorizeExchange(exchange -> exchange.matchers(pathMatchers(APPLICATION))
@@ -603,7 +609,7 @@ public class WebSecurity {
             if (StringUtils.isNotEmpty(codeVerifier)) {
                 exchange.getResponse().addCookie(createCookie(COOKIE_CODE_VERIFIER, codeVerifier));
             } else {
-                exchange.getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_CODE_VERIFIER).maxAge(0)).build());
+                exchange.getResponse().addCookie(expiredCookie(COOKIE_CODE_VERIFIER));
             }
             return Mono.empty();
         }

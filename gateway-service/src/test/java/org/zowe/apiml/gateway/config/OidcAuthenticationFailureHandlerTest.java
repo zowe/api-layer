@@ -20,6 +20,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
@@ -39,6 +40,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.web.server.WebFilterChainProxy;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.i18n.AcceptHeaderLocaleContextResolver;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
 import org.zowe.apiml.gateway.config.oidc.OidcAuthenticationFailureHandler;
@@ -83,7 +85,7 @@ class OidcAuthenticationFailureHandlerTest {
         when(context.getBean("gatewayExceptionHandler", GatewayExceptionHandler.class)).thenReturn(exceptionHandler);
         webSecurity = new WebSecurity(configuration, null, null, context);
         webSecurity.sameSite = "Lax";
-        handler = webSecurity.oidcAuthenticationFailureHandler(exceptionHandler);
+        handler = webSecurity.oidcAuthenticationFailureHandler();
         registrations = new InMemoryReactiveClientRegistrationRepository(ClientRegistration.withRegistrationId("test")
             .clientId("client").clientSecret("secret").authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
             .redirectUri("https://gateway.example/gateway/login/oauth2/code/test").scope("openid")
@@ -98,6 +100,15 @@ class OidcAuthenticationFailureHandlerTest {
             Arguments.of(oauth2("access_denied", PRIVATE_DESCRIPTION), 401, "oidcLoginRejected"),
             Arguments.of(oauth2("login_required", PRIVATE_DESCRIPTION), 401, "oidcLoginRejected"),
             Arguments.of(oauth2("invalid_grant", PRIVATE_DESCRIPTION), 401, "oidcLoginRejected"),
+            Arguments.of(new OAuth2AuthenticationException(new OAuth2Error("invalid_grant"),
+                new WebClientRequestException(new IllegalStateException(PRIVATE_DESCRIPTION), HttpMethod.POST,
+                    URI.create("https://provider.example/token"), new HttpHeaders())), 401, "oidcLoginRejected"),
+            Arguments.of(oauth2("client_registration_not_found", PRIVATE_DESCRIPTION), 400, "oidcInvalidLogin"),
+            Arguments.of(oauth2("invalid_id_token", PRIVATE_DESCRIPTION), 500, "oidcConfigurationError"),
+            Arguments.of(oauth2("invalid_token_response", PRIVATE_DESCRIPTION), 502, "oidcProviderUnavailable"),
+            Arguments.of(new OAuth2AuthorizationException(new OAuth2Error("invalid_token_response"),
+                new WebClientRequestException(new IllegalStateException(PRIVATE_DESCRIPTION), HttpMethod.POST,
+                    URI.create("https://provider.example/token"), new HttpHeaders())), 503, "oidcProviderUnavailable"),
             Arguments.of(oauth2("invalid_state_parameter", PRIVATE_DESCRIPTION), 400, "oidcInvalidLogin"),
             Arguments.of(oauth2("invalid_nonce", PRIVATE_DESCRIPTION), 400, "oidcInvalidLogin"),
             Arguments.of(oauth2("invalid_client", PRIVATE_DESCRIPTION), 500, "oidcConfigurationError"),
@@ -106,7 +117,6 @@ class OidcAuthenticationFailureHandlerTest {
             Arguments.of(oauth2("temporarily_unavailable", PRIVATE_DESCRIPTION), 503, "oidcProviderUnavailable"),
             Arguments.of(oauth2("server_error", PRIVATE_DESCRIPTION), 502, "oidcProviderUnavailable"),
             Arguments.of(new AuthenticationServiceException(PRIVATE_DESCRIPTION), 500, "oidcAuthenticationFailed"),
-            Arguments.of(new IllegalStateException(PRIVATE_DESCRIPTION), 500, "oidcAuthenticationFailed"),
             Arguments.of(new TimeoutException(PRIVATE_DESCRIPTION), 503, "oidcProviderUnavailable"),
             Arguments.of(new WebClientRequestException(new ConnectException(PRIVATE_DESCRIPTION), HttpMethod.POST,
                 URI.create("https://provider.example/token"), new HttpHeaders()), 503, "oidcProviderUnavailable"),
@@ -115,6 +125,8 @@ class OidcAuthenticationFailureHandlerTest {
             Arguments.of(new OAuth2AuthenticationException(new OAuth2Error("invalid_user_info_response"),
                 new TimeoutException(PRIVATE_DESCRIPTION)), 503, "oidcProviderUnavailable"),
             Arguments.of(WebClientResponseException.create(503, PRIVATE_DESCRIPTION, null, null, null),
+                503, "oidcProviderUnavailable"),
+            Arguments.of(WebClientResponseException.create(504, PRIVATE_DESCRIPTION, null, null, null),
                 503, "oidcProviderUnavailable"),
             Arguments.of(WebClientResponseException.create(500, PRIVATE_DESCRIPTION, null, null, null),
                 502, "oidcProviderUnavailable")
@@ -156,10 +168,41 @@ class OidcAuthenticationFailureHandlerTest {
     }
 
     @Test
+    void rejectedLoginReportsLogMessageToOpenTelemetry() {
+        var exchange = callback();
+        var filters = securityChain(oauth2("access_denied", PRIVATE_DESCRIPTION), false);
+
+        StepVerifier.create(filters.filter(exchange, ignored -> Mono.empty())).verifyComplete();
+
+        assertThat(OtelRequestContext.of(exchange).toString()).contains("ZWEAG720E OIDC login was unsuccessful");
+    }
+
+    @Test
+    void nonOidcFailureIsPropagatedWithoutClearingCookies() {
+        var exchange = callback();
+        var failure = new IllegalStateException(PRIVATE_DESCRIPTION);
+
+        StepVerifier.create(handler.filter(exchange, ignored -> Mono.error(failure)))
+            .expectErrorMatches(error -> error == failure).verify();
+        assertThat(exchange.getResponse().getStatusCode()).isNull();
+        assertThat(exchange.getResponse().getCookies()).isEmpty();
+    }
+
+    @Test
+    void unknownRegistrationIdKeepsBadRequestStatus() {
+        var exchange = callback();
+        var failure = new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid client registration id");
+
+        StepVerifier.create(handler.filter(exchange, ignored -> Mono.error(failure)))
+            .expectErrorMatches(error -> error == failure).verify();
+        assertThat(exchange.getResponse().getCookies()).isEmpty();
+    }
+
+    @Test
     void failureAfterResponseCommittedIsPropagated() {
         var exchange = callback();
         exchange.getResponse().setComplete().block();
-        var failure = new IllegalStateException(PRIVATE_DESCRIPTION);
+        var failure = oauth2("access_denied", PRIVATE_DESCRIPTION);
 
         StepVerifier.create(handler.filter(exchange, ignored -> Mono.error(failure)))
             .expectErrorMatches(error -> error == failure).verify();
@@ -180,7 +223,7 @@ class OidcAuthenticationFailureHandlerTest {
             .attributes(attributes -> attributes.put(OAuth2ParameterNames.REGISTRATION_ID, "test")).build();
         when(repository.removeAuthorizationRequest(any())).thenReturn(failConversion ? Mono.error(failure) : Mono.just(saved));
         var chain = webSecurity.oauth2WebFilterChain(http, Optional.of(clients), Optional.of(repository),
-            Optional.of(new DefaultServerOAuth2AuthorizationRequestResolver(registrations)), handler);
+            Optional.of(new DefaultServerOAuth2AuthorizationRequestResolver(registrations)));
         return new WebFilterChainProxy(chain);
     }
 

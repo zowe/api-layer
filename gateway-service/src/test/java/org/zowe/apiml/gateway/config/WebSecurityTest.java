@@ -66,7 +66,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
-import org.zowe.apiml.gateway.config.oidc.OidcAuthenticationFailureHandler;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import reactor.core.publisher.Mono;
@@ -250,7 +249,7 @@ class WebSecurityTest {
         when(mockClientConfig.isConfigured()).thenReturn(false);
 
         SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
-            Optional.empty(), Optional.empty(), Optional.empty(), mock(OidcAuthenticationFailureHandler.class));
+            Optional.empty(), Optional.empty(), Optional.empty());
 
         assertThat(filterChain).isNull();
     }
@@ -284,7 +283,7 @@ class WebSecurityTest {
         when(http.build()).thenReturn(mock(SecurityWebFilterChain.class));
 
         SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
-            Optional.empty(), Optional.empty(), Optional.empty(), mock(OidcAuthenticationFailureHandler.class));
+            Optional.empty(), Optional.empty(), Optional.empty());
 
         assertThat(filterChain).isNotNull();
         verify(http).headers(any());
@@ -353,7 +352,7 @@ class WebSecurityTest {
         SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
             Optional.of(clientService),
             Optional.of(requestRepository),
-            Optional.of(authResolver), mock(OidcAuthenticationFailureHandler.class));
+            Optional.of(authResolver));
 
         assertThat(filterChain).isNotNull();
 
@@ -516,7 +515,7 @@ class WebSecurityTest {
 
     @ParameterizedTest
     @CsvSource({"true", "false"})
-    void givenAuthorizationRoundTrip_thenTokenRequestUsesOriginalPkceVerifier(boolean pkceEnabled) throws Exception {
+    void givenAuthorizationRoundTrip_thenTokenRequestCarriesOriginalVerifierOnlyWhenPkceIsRequired(boolean pkceEnabled) throws Exception {
         var registration = ClientRegistration.withRegistrationId("authhub")
             .clientId("test-client").clientSecret("test-secret")
             .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
@@ -694,6 +693,36 @@ class WebSecurityTest {
         @Test
         void whenNoReturnUrlParam_thenFallsBackToOriginHeader_crossOrigin() {
             assertRejected(null, "https://attacker.example");
+        }
+
+        static Stream<Arguments> allowedDomainsWithPorts() {
+            return Stream.of(
+                Arguments.of("localhost:*", "https://localhost:10010/apicatalog/ui/v1/", true),
+                Arguments.of("localhost:*", "https://localhost/apicatalog/ui/v1/", true),
+                Arguments.of("localhost:*", "https://localhost2:10010/apicatalog/ui/v1/", false),
+                Arguments.of("gateway.zowe.example:10010", "https://gateway.zowe.example:10010/x", true),
+                Arguments.of("gateway.zowe.example:10010", "https://gateway.zowe.example:10011/x", false),
+                Arguments.of("gateway.zowe.example:443", "https://gateway.zowe.example/x", true),
+                Arguments.of("gateway.zowe.example:80", "http://gateway.zowe.example/x", true),
+                Arguments.of("[::1]:10010", "https://[::1]:10010/x", true),
+                Arguments.of("[::1]:10010", "https://[::1]:10011/x", false),
+                Arguments.of("[::1]", "https://[::1]:10010/x", true)
+            );
+        }
+
+        @ParameterizedTest
+        @MethodSource("allowedDomainsWithPorts")
+        void whenAllowedDomainContainsPort_thenReturnUrlIsMatchedByHostAndPort(String allowedDomain, String returnUrl, boolean accepted) {
+            var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains", allowedDomain);
+            webSecurity.initScopes();
+            requestRepository = webSecurity.new ApimlServerAuthorizationRequestRepository(mock(ServerOAuth2AuthorizationRequestResolver.class));
+
+            if (accepted) {
+                assertThat(sanitize(returnUrl, null)).isEqualTo(returnUrl);
+            } else {
+                assertRejected(returnUrl, null);
+            }
         }
 
         @Test
