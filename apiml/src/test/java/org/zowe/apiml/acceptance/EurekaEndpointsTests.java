@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -57,7 +58,17 @@ public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
             .auth().preemptive().basic(USER_ID, "user")
             .get(URI.create("https://localhost:10011"))
         .then()
-            .statusCode(200);
+            .statusCode(200)
+            .body(equalTo("status page"));
+    }
+
+    @Test
+    void givenGatewayPort_whenGetEurekaApi_thenReturnNotFound() {
+        given()
+        .when()
+            .get(basePath + "/eureka/apps")
+        .then()
+            .statusCode(404);
     }
 
     @Test

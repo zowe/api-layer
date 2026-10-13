@@ -40,29 +40,43 @@ import org.springframework.security.oauth2.client.InMemoryReactiveOAuth2Authoriz
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.endpoint.DefaultOAuth2TokenRequestParametersConverter;
+import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.server.DefaultServerOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationResponse;
+import org.springframework.security.oauth2.core.endpoint.PkceParameterNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
 import org.springframework.security.web.server.authentication.ServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.context.NoOpServerSecurityContextRepository;
 import org.springframework.security.web.server.firewall.StrictServerWebExchangeFirewall;
+import org.springframework.security.web.server.util.matcher.PathPatternParserServerWebExchangeMatcher;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
+import org.zowe.apiml.gateway.config.oidc.OidcAuthenticationFailureHandler;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
@@ -138,6 +152,7 @@ class WebSecurityTest {
             assertEquals(token, Objects.requireNonNull(serverHttpResponse.getCookies().getFirst("apimlAuthenticationToken")).getValue());
             assertEquals("", Objects.requireNonNull(serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_NONCE)).getValue());
             assertEquals("", Objects.requireNonNull(serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_STATE)).getValue());
+            assertThat(Objects.requireNonNull(serverHttpResponse.getCookies().getFirst(WebSecurity.COOKIE_CODE_VERIFIER)).getMaxAge()).isZero();
             assertEquals(location, serverHttpResponse.getHeaders().getFirst(HttpHeaders.LOCATION));
         }
 
@@ -235,7 +250,7 @@ class WebSecurityTest {
         when(mockClientConfig.isConfigured()).thenReturn(false);
 
         SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
-            Optional.empty(), Optional.empty(), Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty(), mock(OidcAuthenticationFailureHandler.class));
 
         assertThat(filterChain).isNull();
     }
@@ -253,6 +268,7 @@ class WebSecurityTest {
         when(http.headers(any())).thenReturn(http);
         when(http.securityContextRepository(any())).thenReturn(http);
         when(http.securityMatcher(any())).thenReturn(http);
+        when(http.addFilterBefore(any(), any())).thenReturn(http);
 
         doAnswer(invocation -> {
             Customizer<ServerHttpSecurity.AuthorizeExchangeSpec> customizer = invocation.getArgument(0);
@@ -268,7 +284,7 @@ class WebSecurityTest {
         when(http.build()).thenReturn(mock(SecurityWebFilterChain.class));
 
         SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
-            Optional.empty(), Optional.empty(), Optional.empty());
+            Optional.empty(), Optional.empty(), Optional.empty(), mock(OidcAuthenticationFailureHandler.class));
 
         assertThat(filterChain).isNotNull();
         verify(http).headers(any());
@@ -299,6 +315,7 @@ class WebSecurityTest {
 
         when(http.securityContextRepository(any())).thenReturn(http);
         when(http.securityMatcher(any())).thenReturn(http);
+        when(http.addFilterBefore(any(), any())).thenReturn(http);
 
         doAnswer(invocation -> {
             Customizer<ServerHttpSecurity.AuthorizeExchangeSpec> customizer = invocation.getArgument(0);
@@ -336,7 +353,7 @@ class WebSecurityTest {
         SecurityWebFilterChain filterChain = webSecurity.oauth2WebFilterChain(http,
             Optional.of(clientService),
             Optional.of(requestRepository),
-            Optional.of(authResolver));
+            Optional.of(authResolver), mock(OidcAuthenticationFailureHandler.class));
 
         assertThat(filterChain).isNotNull();
 
@@ -497,6 +514,57 @@ class WebSecurityTest {
 
     }
 
+    @ParameterizedTest
+    @CsvSource({"true", "false"})
+    void givenAuthorizationRoundTrip_thenTokenRequestUsesOriginalPkceVerifier(boolean pkceEnabled) throws Exception {
+        var registration = ClientRegistration.withRegistrationId("authhub")
+            .clientId("test-client").clientSecret("test-secret")
+            .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+            .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+            .authorizationUri("https://idp.example/authorize").tokenUri("https://idp.example/token")
+            .redirectUri("https://api.example/gateway/login/oauth2/code/{registrationId}")
+            .scope("openid").jwkSetUri("https://idp.example/jwks")
+            .clientSettings(ClientRegistration.ClientSettings.builder().requireProofKey(pkceEnabled).build())
+            .build();
+        var resolver = new DefaultServerOAuth2AuthorizationRequestResolver(
+            new InMemoryReactiveClientRegistrationRepository(registration),
+            new PathPatternParserServerWebExchangeMatcher(WebSecurity.OAUTH_2_AUTHORIZATION_URI));
+        var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
+        webSecurity.sameSite = "Lax";
+        var repository = webSecurity.new ApimlServerAuthorizationRequestRepository(resolver);
+        var login = MockServerWebExchange.from(MockServerHttpRequest.get(
+            "https://api.example/gateway/oauth2/authorization/authhub?returnUrl=/apicatalog/ui/v1/"));
+        var original = Objects.requireNonNull(resolver.resolve(login).block());
+        String originalVerifier = original.getAttribute(PkceParameterNames.CODE_VERIFIER);
+        repository.saveAuthorizationRequest(original, login).block();
+
+        var callbackBuilder = MockServerHttpRequest.get("https://api.example/gateway/login/oauth2/code/authhub");
+        login.getResponse().getCookies().values().forEach(values -> values.forEach(cookie -> {
+            if (!cookie.getMaxAge().isZero()) {
+                callbackBuilder.cookie(new HttpCookie(cookie.getName(), cookie.getValue()));
+            }
+        }));
+        var restored = Objects.requireNonNull(repository.loadAuthorizationRequest(MockServerWebExchange.from(callbackBuilder)).block());
+        var grant = new OAuth2AuthorizationCodeGrantRequest(registration, new OAuth2AuthorizationExchange(restored,
+            OAuth2AuthorizationResponse.success("test-code").state(original.getState()).redirectUri(original.getRedirectUri()).build()));
+        var parameters = new DefaultOAuth2TokenRequestParametersConverter<OAuth2AuthorizationCodeGrantRequest>().convert(grant);
+
+        if (pkceEnabled) {
+            assertThat(originalVerifier).isNotBlank();
+            assertThat(parameters.getFirst(PkceParameterNames.CODE_VERIFIER)).isEqualTo(originalVerifier);
+            var challenge = Base64.getUrlEncoder().withoutPadding().encodeToString(
+                MessageDigest.getInstance("SHA-256").digest(originalVerifier.getBytes(StandardCharsets.US_ASCII)));
+            assertThat(original.getAdditionalParameters().get(PkceParameterNames.CODE_CHALLENGE)).isEqualTo(challenge);
+            var cookie = Objects.requireNonNull(login.getResponse().getCookies().getFirst(WebSecurity.COOKIE_CODE_VERIFIER));
+            assertThat(cookie.isHttpOnly()).isTrue();
+            assertThat(cookie.isSecure()).isTrue();
+            assertThat(cookie.getSameSite()).isEqualTo("Lax");
+        } else {
+            assertThat(parameters).doesNotContainKey(PkceParameterNames.CODE_VERIFIER);
+            assertThat(Objects.requireNonNull(login.getResponse().getCookies().getFirst(WebSecurity.COOKIE_CODE_VERIFIER)).getMaxAge()).isZero();
+        }
+    }
+
     @Nested
     class SanitizeReturnUrl {
 
@@ -626,6 +694,31 @@ class WebSecurityTest {
         @Test
         void whenNoReturnUrlParam_thenFallsBackToOriginHeader_crossOrigin() {
             assertRejected(null, "https://attacker.example");
+        }
+
+        @Test
+        void whenExactDomainIsAllowed_thenAcceptReturnUrlBeforeAndAfterLogin() {
+            var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains",
+                "*.lvn.company.net:*,domain.subdomain.com,*.mfd.company.net:*,10.222.140.2,mylogin.company.com");
+            webSecurity.initScopes();
+            requestRepository = webSecurity.new ApimlServerAuthorizationRequestRepository(mock(ServerOAuth2AuthorizationRequestResolver.class));
+            var returnUrl = "https://domain.subdomain.com:40324/apicatalog/ui/v1/";
+
+            assertThat(sanitize(returnUrl, null)).isEqualTo(returnUrl);
+
+            var exchange = MockServerWebExchange.from(MockServerHttpRequest
+                .get("https://domain.subdomain.com:40324/gateway/login/oauth2/code/test-client")
+                .cookie(new HttpCookie(WebSecurity.COOKIE_RETURN_URL, returnUrl)));
+            var authorizedClient = mock(OAuth2AuthorizedClient.class);
+            var accessToken = mock(OAuth2AccessToken.class);
+            when(authorizedClient.getAccessToken()).thenReturn(accessToken);
+            when(accessToken.getTokenValue()).thenReturn("test-access-token");
+
+            webSecurity.updateCookies(new WebFilterExchange(exchange, ignored -> Mono.empty()), authorizedClient).block();
+
+            assertThat(exchange.getResponse().getHeaders().getLocation()).isEqualTo(URI.create(returnUrl));
+            assertEquals(302, exchange.getResponse().getStatusCode().value());
         }
 
     }

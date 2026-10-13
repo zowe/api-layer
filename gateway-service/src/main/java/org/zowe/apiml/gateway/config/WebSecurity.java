@@ -18,6 +18,7 @@ import org.apache.commons.lang3.Strings;
 import org.jose4j.lang.HashUtil;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -64,6 +65,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
+import org.springframework.security.oauth2.core.endpoint.PkceParameterNames;
 import org.springframework.security.oauth2.core.oidc.endpoint.OidcParameterNames;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.WebFilterExchange;
@@ -80,6 +82,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.zowe.apiml.config.ApplicationInfo;
 import org.zowe.apiml.gateway.config.oidc.ClientConfiguration;
+import org.zowe.apiml.gateway.config.oidc.OidcAuthenticationFailureHandler;
 import org.zowe.apiml.gateway.controllers.GatewayExceptionHandler;
 import org.zowe.apiml.gateway.filters.proxyheaders.AdditionalRegistrationGatewayRegistry;
 import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeadersFilter;
@@ -134,6 +137,7 @@ public class WebSecurity {
     public static final String REGISTRY_PATH = CONTEXT_PATH + "/api/v1/registry";
     public static final String COOKIE_NONCE = "oidc_nonce";
     public static final String COOKIE_STATE = "oidc_state";
+    public static final String COOKIE_CODE_VERIFIER = "oidc_code_verifier";
     public static final String COOKIE_RETURN_URL = "oidc_return_url";
 
     private static final String APPLICATION = "/application/**";
@@ -142,7 +146,7 @@ public class WebSecurity {
 
     private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + CONTEXT_PATH + "/login/oauth2/code/([^/]+)$");
     private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
-    private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL);
+    private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL, COOKIE_CODE_VERIFIER);
 
     public static final String OAUTH_2_AUTHORIZATION = CONTEXT_PATH + "/oauth2/authorization/**";
     public static final String OAUTH_2_AUTHORIZATION_BASE_URI = CONTEXT_PATH + "/oauth2/authorization/";
@@ -204,6 +208,13 @@ public class WebSecurity {
         return applicationContext.getBean("gatewayExceptionHandler", GatewayExceptionHandler.class);
     }
 
+    @Bean
+    OidcAuthenticationFailureHandler oidcAuthenticationFailureHandler(
+        @Qualifier("gatewayExceptionHandler") GatewayExceptionHandler exceptionHandler
+    ) {
+        return new OidcAuthenticationFailureHandler(exceptionHandler, this::clearCookies);
+    }
+
     /**
      * Security chain for oauth2 client. To enable this chain, please refer to Zowe OIDC configuration.
      */
@@ -212,7 +223,8 @@ public class WebSecurity {
         ServerHttpSecurity http,
         Optional<ReactiveOAuth2AuthorizedClientService> reactiveOAuth2AuthorizedClientService,
         Optional<ApimlServerAuthorizationRequestRepository> requestRepository,
-        Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver
+        Optional<ServerOAuth2AuthorizationRequestResolver> authorizationRequestResolver,
+        OidcAuthenticationFailureHandler failureHandler
     ) {
         if (!clientConfiguration.isConfigured()) {
             return null;
@@ -239,13 +251,8 @@ public class WebSecurity {
                         .loadAuthorizedClient(getClientRegistrationId(webFilterExchange.getExchange()), authentication.getName())
                         .flatMap(oAuth2AuthorizedClient -> updateCookies(webFilterExchange, oAuth2AuthorizedClient))
                 )
-                .authenticationFailureHandler((webFilterExchange, exception) -> {
-                        var clientRegistrationId = getClientRegistrationId(webFilterExchange.getExchange());
-                        clearCookies(webFilterExchange);
-                        redirect(webFilterExchange.getExchange().getResponse(), OAUTH_2_AUTHORIZATION_BASE_URI + clientRegistrationId);
-                        return Mono.empty();
-                    }
-                ))
+                .authenticationFailureHandler(failureHandler))
+            .addFilterBefore(failureHandler::filter, SecurityWebFiltersOrder.AUTHENTICATION)
             .oauth2Client(oAuth2ClientSpec -> oAuth2ClientSpec.authorizationRequestRepository(
                 requestRepository.orElseThrow(() -> new NoSuchBeanDefinitionException(ApimlServerAuthorizationRequestRepository.class))
             ))
@@ -546,11 +553,15 @@ public class WebSecurity {
             }
             var nonce = nonceCookie.getValue();
             String nonceHash = createHash(nonce);
+            var codeVerifierCookie = exchange.getRequest().getCookies().getFirst(COOKIE_CODE_VERIFIER);
 
             return OAuth2AuthorizationRequest.authorizationCode()
                 .attributes((attrs) -> {
                         attrs.put(OAuth2ParameterNames.REGISTRATION_ID, original.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID));
                         attrs.put(OidcParameterNames.NONCE, nonce);
+                        if (!HAS_NO_VALUE.test(codeVerifierCookie)) {
+                            attrs.put(PkceParameterNames.CODE_VERIFIER, codeVerifierCookie.getValue());
+                        }
                     }
                 )
                 .additionalParameters((params) -> params.put(OidcParameterNames.NONCE, nonceHash))
@@ -588,6 +599,12 @@ public class WebSecurity {
                 return Mono.error(new InvalidForwardException(targetUrl, e));
             }
             exchange.getResponse().addCookie(createCookie(COOKIE_STATE, authorizationRequest.getState()));
+            String codeVerifier = authorizationRequest.getAttribute(PkceParameterNames.CODE_VERIFIER);
+            if (StringUtils.isNotEmpty(codeVerifier)) {
+                exchange.getResponse().addCookie(createCookie(COOKIE_CODE_VERIFIER, codeVerifier));
+            } else {
+                exchange.getResponse().addCookie(defaultCookieAttr(ResponseCookie.from(COOKIE_CODE_VERIFIER).maxAge(0)).build());
+            }
             return Mono.empty();
         }
 
