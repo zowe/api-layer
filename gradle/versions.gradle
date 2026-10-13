@@ -59,7 +59,7 @@ dependencyResolutionManagement {
             version('openTelemetry-starter', '2.32.0')
             // Keep the SDK aligned with the Spring Boot starter's OpenTelemetry API dependency.
             // Starter 2.32.0 uses internal API classes removed in SDK 1.67.0.
-            version('openTelemetry-core', '1.67.0')
+            version('openTelemetry-core', '1.66.0')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
