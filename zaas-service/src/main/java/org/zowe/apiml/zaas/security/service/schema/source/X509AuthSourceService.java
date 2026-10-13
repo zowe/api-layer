@@ -11,12 +11,12 @@
 package org.zowe.apiml.zaas.security.service.schema.source;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.TokenCreationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
 import org.zowe.apiml.zaas.security.service.schema.source.X509AuthSource.Parsed;
-import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.InvalidCertificateException;
@@ -36,6 +36,7 @@ import static org.zowe.apiml.security.common.filter.CategorizeCertsFilter.ATTR_N
  */
 
 @RequiredArgsConstructor
+@Slf4j
 public class X509AuthSourceService implements AuthSourceService {
     @InjectApimlLogger
     protected final ApimlLogger logger = ApimlLogger.empty();
@@ -54,10 +55,10 @@ public class X509AuthSourceService implements AuthSourceService {
      */
     @Override
     public Optional<AuthSource> getAuthSourceFromRequest(HttpServletRequest request) {
-        logger.log(MessageType.DEBUG, "Getting X509 client certificate from custom attribute '" + ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE + "'.");
+        log.debug("Getting X509 client certificate from custom attribute '" + ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE + "'.");
         X509Certificate clientCert = getCertificateFromRequest(request, ATTR_NAME_CLIENT_AUTH_X509_CERTIFICATE);
         clientCert = isValid(clientCert) ? clientCert : null;
-        logger.log(MessageType.DEBUG, String.format("X509 client certificate %s in request.", clientCert == null ? "not found" : "found"));
+        log.debug(String.format("X509 client certificate %s in request.", clientCert == null ? "not found" : "found"));
         return clientCert == null ? Optional.empty() : Optional.of(new X509AuthSource(clientCert));
     }
 
@@ -83,7 +84,7 @@ public class X509AuthSourceService implements AuthSourceService {
      * @return true if client certificate is valid, false otherwise.
      */
     protected boolean isValid(X509Certificate clientCert) {
-        logger.log(MessageType.DEBUG, "Validating X509 client certificate.");
+        log.debug("Validating X509 client certificate.");
         return clientCert != null;
     }
 
@@ -95,7 +96,7 @@ public class X509AuthSourceService implements AuthSourceService {
      */
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
-            logger.log(MessageType.DEBUG, "Parsing X509 client certificate.");
+            log.debug("Parsing X509 client certificate.");
             return isValid(authSource) ? parseClientCert((X509AuthSource) authSource, mapper) : null;
         }
         return null;
@@ -129,7 +130,7 @@ public class X509AuthSourceService implements AuthSourceService {
             return new Parsed(commonName, clientCert.getNotBefore(), clientCert.getNotAfter(),
                 Origin.X509, encodedCert, distinguishedName);
         } catch (CertificateEncodingException e) {
-            logger.log(MessageType.ERROR, "Exception parsing certificate.", e);
+            log.error("Exception parsing certificate.", e);
             throw new InvalidCertificateException("Exception parsing certificate. " + e.getLocalizedMessage());
         }
     }
@@ -137,16 +138,16 @@ public class X509AuthSourceService implements AuthSourceService {
     @Override
     public String getJWT(AuthSource authSource) {
         if (authSource instanceof X509AuthSource) {
-            logger.log(MessageType.DEBUG, "Get JWT token from X509 client certificate.");
+            log.debug("Get JWT token from X509 client certificate.");
             String userId = mapper.mapToMainframeUserId(authSource);
             if (userId == null) {
-                logger.log(MessageType.DEBUG, "It was not possible to map provided certificate to the mainframe identity.");
+                log.debug("It was not possible to map provided certificate to the mainframe identity.");
                 throw new AuthSchemeException("org.zowe.apiml.zaas.security.schema.x509.mappingFailed");
             }
             try {
                 return tokenService.createJwtTokenWithoutCredentials(userId);
             } catch (Exception e) {
-                logger.log(MessageType.DEBUG, "ZAAS failed to obtain token - authentication request to get token failed.", e.getLocalizedMessage());
+                log.debug("ZAAS failed to obtain token - authentication request to get token failed.", e.getLocalizedMessage());
                 throw new AuthSchemeException("org.zowe.apiml.zaas.security.token.authenticationFailed");
             }
         }

@@ -19,8 +19,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
 import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
@@ -42,12 +40,10 @@ public class StoreAccessTokenInfoFilter extends OncePerRequestFilter {
     private static final ObjectReader mapper = new ObjectMapper().reader();
 
     private final AuthExceptionHandler authExceptionHandler;
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException {
-        var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+        var consumer = ServletErrorUtils.createApiErrorWriter(response);
         var addHeader = (BiConsumer<String, String>) response::addHeader;
         try {
             ServletInputStream inputStream = request.getInputStream();

@@ -10,9 +10,9 @@
 
 package org.zowe.apiml.client.ws;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
-import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.springframework.stereotype.Component;
@@ -20,6 +20,7 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 @Component
+@Slf4j
 public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigurer {
 
     @InjectApimlLogger
@@ -34,7 +35,7 @@ public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigure
         registry.addHandler(new WebSocketServerHandler(), webSocketEndpoint).setAllowedOrigins("*");
 
         webSocketEndpoint = "/ws/header";
-        logger.log(MessageType.DEBUG, "Registering WebSocket handler to {}", webSocketEndpoint);
+        log.debug("Registering WebSocket handler to {}", webSocketEndpoint);
 
         registry.addHandler(new HeaderSocketServerHandler(), webSocketEndpoint);
     }

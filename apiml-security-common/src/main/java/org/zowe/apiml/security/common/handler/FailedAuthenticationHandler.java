@@ -19,8 +19,6 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 
 import java.io.IOException;
@@ -36,9 +34,6 @@ import java.util.function.BiConsumer;
 public class FailedAuthenticationHandler implements AuthenticationFailureHandler {
     private final AuthExceptionHandler handler;
 
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
-
     /**
      * Handles authentication failure by printing a debug message and passes control to {@link AuthExceptionHandler}
      *
@@ -49,7 +44,7 @@ public class FailedAuthenticationHandler implements AuthenticationFailureHandler
      */
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
-        var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+        var consumer = ServletErrorUtils.createApiErrorWriter(response);
 
         var addHeader = (BiConsumer<String, String>) response::addHeader;
         handler.handleException(request.getRequestURI(), consumer, addHeader, exception);

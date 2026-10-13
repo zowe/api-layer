@@ -226,7 +226,7 @@ public class ApimlPeerEurekaNode extends PeerEurekaNode {
             }
         };
         long expiryTime = System.currentTimeMillis() + getLeaseRenewalOf(info);
-        log.debug("Heartbeat update");
+        log.trace("Heartbeat update");
         batchingDispatcher.process(taskId("heartbeat", info), replicationTask, expiryTime);
     }
 
