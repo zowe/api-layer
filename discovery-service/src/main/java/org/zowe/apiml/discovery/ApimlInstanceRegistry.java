@@ -161,7 +161,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
             }
         } catch (DomainAllowListMetadataException e) {
             log.debug("Domains not allowed found in instance {}. Instance will not be registered", instanceInfo.getInstanceId());
-            return;
+            throw e;
         } catch (Throwable e) {
             throw new IllegalStateException(EXCEPTION_MESSAGE, e);
         } finally {

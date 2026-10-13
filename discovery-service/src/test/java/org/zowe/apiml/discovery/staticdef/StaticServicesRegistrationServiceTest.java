@@ -34,6 +34,7 @@ import org.zowe.apiml.discovery.metadata.MetadataDefaultsService;
 import org.zowe.apiml.message.core.Message;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.product.discovery.StaticRegistrationResult;
+import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
@@ -215,6 +216,32 @@ class StaticServicesRegistrationServiceTest {
             var result = service.registerServices(null);
             assertEquals(1, result.getErrors().size());
             assertSame(testMessage, result.getErrors().get(0));
+            assertTrue(result.getRegisteredServices().isEmpty());
+            assertTrue(service.getStaticInstances().isEmpty());
+        }
+
+        @Test
+        void givenDisallowedDomain_whenReload_thenReportErrorAndRemoveRejectedInstance() {
+            var rejectedInstance = InstanceInfo.Builder.newBuilder()
+                .setAppName("rejected").setInstanceId("localhost:rejected:10010").build();
+            var allowedInstance = InstanceInfo.Builder.newBuilder()
+                .setAppName("allowed").setInstanceId("localhost:allowed:10011").build();
+            var sourceSearchResult = new StaticRegistrationResult();
+            sourceSearchResult.getInstances().addAll(List.of(rejectedInstance, allowedInstance));
+            doReturn(sourceSearchResult).when(serviceDefinitionProcessor).findStaticServicesData(any());
+            doThrow(new DomainAllowListMetadataException("Domain not allowed"))
+                .when(mockRegistry).registerStatically(rejectedInstance, false, false);
+            doReturn(testMessage).when(apimlLogger).log(
+                eq("org.zowe.apiml.discovery.staticDefinitionRegistration"), any(), eq("Domain not allowed"));
+            service.getStaticInstances().add(rejectedInstance);
+
+            var result = service.reloadServices();
+
+            assertEquals(List.of(testMessage), result.getErrors());
+            assertEquals(List.of(allowedInstance.getInstanceId()), result.getRegisteredServices());
+            assertEquals(List.of(allowedInstance), service.getStaticInstances());
+            verify(mockRegistry).registerStatically(allowedInstance, false, false);
+            verify(mockRegistry).cancel(rejectedInstance.getAppName(), rejectedInstance.getId(), false);
         }
 
         @Test

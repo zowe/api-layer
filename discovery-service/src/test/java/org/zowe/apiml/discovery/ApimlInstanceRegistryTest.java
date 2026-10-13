@@ -52,6 +52,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -316,11 +317,13 @@ class ApimlInstanceRegistryTest {
 
         @Test
         @SuppressWarnings("unchecked")
-        void givenStaticDefinitionWithDisallowedDomain_thenSkipRegistration() {
-            doThrow(new DomainAllowListMetadataException("Domain not allowed"))
+        void givenStaticDefinitionWithDisallowedDomain_thenReportRejectionWithoutRegistering() {
+            var rejection = new DomainAllowListMetadataException("Domain not allowed");
+            doThrow(rejection)
                 .when(metadataFilterService).verifyAllowedDomains(any());
 
-            assertDoesNotThrow(() -> apimlInstanceRegistry.registerStatically(standardInstance, false, true));
+            assertSame(rejection, assertThrows(DomainAllowListMetadataException.class,
+                () -> apimlInstanceRegistry.registerStatically(standardInstance, false, true)));
 
             assertNull(apimlInstanceRegistry.getApplication(standardInstance.getAppName()));
             assertTrue(((Set<String>) ReflectionTestUtils.getField(apimlInstanceRegistry, "staticRegistrationIds")).isEmpty());
