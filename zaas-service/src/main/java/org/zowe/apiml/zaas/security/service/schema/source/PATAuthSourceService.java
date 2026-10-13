@@ -14,9 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
@@ -32,17 +29,9 @@ public class PATAuthSourceService extends TokenAuthSourceService {
 
     public static final String SERVICE_ID_HEADER = "X-Service-Id";
 
-    @InjectApimlLogger
-    protected final ApimlLogger logger = ApimlLogger.empty();
-
     private final AuthenticationService authenticationService;
     private final AccessTokenProvider tokenProvider;
     private final TokenCreationService tokenService;
-
-    @Override
-    protected ApimlLogger getLogger() {
-        return logger;
-    }
 
     @Override
     public Function<String, AuthSource> getMapper() {
@@ -84,13 +73,13 @@ public class PATAuthSourceService extends TokenAuthSourceService {
             String token = (String) authSource.getRawSource();
             String serviceId = ((PATAuthSource) authSource).getDefaultServiceId();
             boolean validForScopes = tokenProvider.isValidForScopes(token, serviceId);
-            logger.log(MessageType.DEBUG, "PAT is {} for scope: {} ", validForScopes ? "valid" : "not valid", serviceId);
+            log.debug( "PAT is {} for scope: {} ", validForScopes ? "valid" : "not valid", serviceId);
             if (!validForScopes) return false;
             boolean invalidate = tokenProvider.isInvalidated(token);
-            logger.log(MessageType.DEBUG, "PAT was {}}", invalidate ? "invalidated" : "not invalidated");
+            log.debug("PAT was {}}", invalidate ? "invalidated" : "not invalidated");
             return !invalidate;
         } catch (Exception e) {
-            logger.log(MessageType.ERROR, "PAT is not valid due to the exception: {}", e.getMessage());
+            log.error( "PAT is not valid due to the exception: {}", e.getMessage());
             if (log.isDebugEnabled()) {
                 log.debug("PAT is not valid due to the exception:", e);
             }

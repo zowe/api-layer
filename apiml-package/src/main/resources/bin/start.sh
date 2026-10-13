@@ -84,7 +84,16 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_loggerLevels - comma separated list of logger=level entries (e.g. org.zowe.apiml=DEBUG,org.apache.http=TRACE) to fine tune the log levels per class or package
 # - ZWE_configs_logging_level - logging level to activate (default: info)
+# - ZWE_configs_logging_debug_gateway - enable debug log for the gateway feature only (default: false)
+# - ZWE_configs_logging_debug_authentication - enable debug log for the authentication feature only (default: false)
+# - ZWE_configs_logging_debug_discovery - enable debug log for the discovery feature only (default: false)
+# - ZWE_configs_logging_debug_caching - enable debug log for the caching feature only (default: false)
+# - ZWE_configs_logging_debug_catalog - enable debug log for the catalog feature only (default: false)
+# - ZWE_configs_logging_debug_wiretap - enable wiretap http logging (default: false)
+# - ZWE_configs_logging_toFile_enabled - write logs to a file, always on when debug or feature debug is enabled (default: false)
+# - ZWE_configs_logging_toFile_debugOnly - keep debug level logs out of stdout and write them to the log file only (default: false)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
 # - ZWE_configs_port - the port the api discovery service will use
@@ -118,7 +127,6 @@
 #                       Example: ZWE_configs_jvm_Xss=512k becomes -Xss512k
 #                                ZWE_configs_jvm_Dmy_custom_property=value becomes -Dmy.custom.property=value
 #                       Note: Underscores in the property name (after 'D') are converted to dots
-
 # Source common APIML scripts (sets up common variables and functions)
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -149,16 +157,62 @@ if [ -n "${ZWE_DISCOVERY_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
 
+# Setup spring profiles
+if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active}}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active}}"
+    fi
+
+# Log debug only to file
+DEBUG_ONLY_TO_FILE="false"
+if [ "${ZWE_configs_logging_toFile_debugOnly:-false}" = "true" ]; then
+    DEBUG_ONLY_TO_FILE="true"
+fi
+
+# Log to file
+LOG_TO_FILE="false"
+if [ "${ZWE_configs_logging_toFile_enabled:-false}" = "true" ]; then
+    LOG_TO_FILE="true"
+fi
+
 # Logging level
 add_profile "${ZWE_configs_logging_level:-${ZWE_components_gateway_logging_level:-info}}"
 
-# Debug profile
-if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then
-    if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}"
-    fi
+DEBUG_FEATURES="gateway discovery authentication caching catalog wiretap"
+
+if [ "${ZWE_configs_debug:-${ZWE_components_gateway_debug:-false}}" = "true" ]; then
     add_profile "debug"
+    LOG_TO_FILE="true"
+else
+    ENABLED_DEBUG_FEATURES=""
+    for feature in ${DEBUG_FEATURES}; do
+        eval "feature_enabled=\${ZWE_configs_logging_debug_${feature}:-false}"
+        if [ "${feature_enabled}" = "true" ]; then
+            ENABLED_DEBUG_FEATURES="${ENABLED_DEBUG_FEATURES} ${feature}"
+        fi
+    done
+
+    if [ -n "${ENABLED_DEBUG_FEATURES}" ]; then
+        add_profile "debug-common"
+        LOG_TO_FILE="true"
+        for feature in ${ENABLED_DEBUG_FEATURES}; do
+            add_profile "debug-${feature}"
+        done
+    fi
 fi
+
+if [ "${DEBUG_ONLY_TO_FILE}" = "true" ] && [ "${LOG_TO_FILE}" = "false" ]; then
+    DEBUG_ONLY_TO_FILE="false"
+    echo "APIML logging debug only to file was enabled, but logging to file disabled. The option is ignored."
+fi
+
+# Per-logger log levels, entries in the logger=level format are passed as -Dlogging.level.<logger>=<level>
+LOGGING_LEVEL_OPTS=""
+for entry in $(echo "${ZWE_configs_logging_loggerLevels:-}" | tr ',' ' '); do
+    case "${entry}" in
+        ?*=?*) LOGGING_LEVEL_OPTS="${LOGGING_LEVEL_OPTS} -Dlogging.level.${entry}" ;;
+        *) echo "Ignoring invalid logger level entry '${entry}', expected format is <logger>=<level>" ;;
+    esac
+done
 
 # Cookie name for unique cookie support
 if [ "${ZWE_configs_apiml_security_auth_uniqueCookie:-${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}}" = "true" ]; then
@@ -243,6 +297,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${ADD_OPENS} \
     ${VIRTUAL_THREADS_OPTS} \
     ${LOGBACK} \
+    ${LOGGING_LEVEL_OPTS} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
     ${EUREKA_IP_ADDRESS} \
@@ -280,6 +335,8 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.internal-discovery.address=${ZWE_configs_internal_discovery_address:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}}} \
     -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.logging.toFile.enabled=${LOG_TO_FILE:-false} \
+    -Dapiml.logging.toFile.debugOnly=${DEBUG_ONLY_TO_FILE:-false} \
     -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.allowTokenRefresh=${ZWE_components_gateway_apiml_security_allowtokenrefresh:-${ZWE_configs_apiml_security_allowtokenrefresh:-false}} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \

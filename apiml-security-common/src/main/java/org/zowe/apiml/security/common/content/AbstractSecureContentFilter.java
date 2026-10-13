@@ -23,8 +23,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.handler.ServletErrorUtils;
 
@@ -43,8 +41,6 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final String[] endpoints;
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -92,7 +88,7 @@ public abstract class AbstractSecureContentFilter extends OncePerRequestFilter {
             } catch (AuthenticationException authenticationException) {
                 failureHandler.onAuthenticationFailure(request, response, authenticationException);
             } catch (RuntimeException e) {
-                var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+                var consumer = ServletErrorUtils.createApiErrorWriter(response);
                 var addHeader = (BiConsumer<String, String>) response::addHeader;
                 resourceAccessExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, e);
             } finally {
