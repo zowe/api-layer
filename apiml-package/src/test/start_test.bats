@@ -270,7 +270,7 @@ teardown() {
     [ "${onlyDebugToFile}" = "false" ]
 }
 
-@test "apiml-start: When apiml.logging.logging.toFile.enabled=true, then the property is set" {
+@test "apiml-start: When apiml.logging.logging.toFile.enabled=true, then the property is set and no message about debugOnly" {
     export ZWE_configs_logging_toFile_enabled=true
     run "${APIML_DIR}/start.sh"
 
@@ -285,7 +285,7 @@ teardown() {
     [[ ! "$output" =~ "APIML logging debug only to file was enabled, but logging to file disabled. The option is ignored." ]]
 }
 
-@test "apiml-start: When When apiml.logging.logging.toFile.enabled=true, then property is set and no message about debugOnly" {
+@test "apiml-start: When When apiml.logging.logging.toFile.enabled=false, then property is set and no message about debugOnly" {
     export ZWE_configs_logging_toFile_enabled=false
 
     run "${APIML_DIR}/start.sh"
