@@ -54,6 +54,7 @@ class ZaasSchemeTransformApiTest {
     static void messageService() {
         messageService = YamlMessageServiceInstance.getInstance();
         messageService.loadMessages("/zaas-log-messages.yml");
+        messageService.loadMessages("/security-common-log-messages.yml");
     }
 
     private final String MISSING_AUTH_MSG = "ZWEAG160E No authentication provided in the request";
