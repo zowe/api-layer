@@ -24,6 +24,7 @@ management:
 logging:
     level:
         org.springframework: DEBUG
+        org.zowe.apiml: INFO
 
 server:
     ssl:

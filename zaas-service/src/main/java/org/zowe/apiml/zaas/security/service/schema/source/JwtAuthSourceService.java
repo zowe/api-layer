@@ -12,15 +12,13 @@ package org.zowe.apiml.zaas.security.service.schema.source;
 
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.zaas.security.service.AuthenticationService;
 import org.zowe.apiml.zaas.security.service.schema.source.AuthSource.Origin;
-import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.token.QueryResponse;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,19 +29,13 @@ import java.util.function.Function;
  * Implementation of AuthSourceService which supports JWT token as authentication source.
  */
 @Service
+@Slf4j
 @Scope(proxyMode = ScopedProxyMode.TARGET_CLASS)
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @RequiredArgsConstructor
 public class JwtAuthSourceService extends TokenAuthSourceService {
-    @InjectApimlLogger
-    protected final ApimlLogger logger = ApimlLogger.empty();
 
     private final AuthenticationService authenticationService;
-
-    @Override
-    protected ApimlLogger getLogger() {
-        return logger;
-    }
 
     @Override
     public Function<String, AuthSource> getMapper() {
@@ -71,7 +63,7 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
     public boolean isValid(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource) authSource).getRawSource();
-            logger.log(MessageType.DEBUG, "Validating JWT token.");
+            log.debug("Validating JWT token.");
             return jwtToken != null && authenticationService.validateJwtToken(jwtToken).isAuthenticated();
         }
         return false;
@@ -86,7 +78,7 @@ public class JwtAuthSourceService extends TokenAuthSourceService {
     public AuthSource.Parsed parse(AuthSource authSource) {
         if (authSource instanceof JwtAuthSource) {
             String jwtToken = ((JwtAuthSource) authSource).getRawSource();
-            logger.log(MessageType.DEBUG, "Parsing JWT token.");
+            log.debug("Parsing JWT token.");
             QueryResponse queryResponse = jwtToken == null ? null : authenticationService.parseJwtToken(jwtToken).getQueryResponse();
             return queryResponse == null ? null : new ParsedTokenAuthSource(queryResponse.getUserId(), queryResponse.getCreation(), queryResponse.getExpiration(),
                 Origin.valueByTokenSource(queryResponse.getSource()));

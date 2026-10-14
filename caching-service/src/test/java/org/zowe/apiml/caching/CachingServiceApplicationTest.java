@@ -42,6 +42,7 @@ class CachingServiceApplicationTest {
     @Nested
     @SpringBootTest(
         properties = {
+            "logging.config=classpath:logback-testlogger.xml",
             "apiml.enabled=false",
             "logging.level.org.zowe.apiml.product.web=DEBUG",
             "logging.level.org.zowe.apiml.product.security=DEBUG"
