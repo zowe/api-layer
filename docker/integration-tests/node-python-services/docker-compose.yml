@@ -1,0 +1,35 @@
+services:
+
+    apiml:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml
+        volumes:
+            - ./api-defs:/api-defs
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"
+
+    # These two aren't Jib images and have no public "ghcr.io/zowe" release, so - unlike every
+    # other service here - there's nothing to fall back to for local dev without building first.
+    # PublishJibContainers's "Build Nodejs/Python Sample App" steps show the exact prep (copying
+    # config/certs into the sample app directory) before a plain `docker build`; do the same
+    # locally and tag the results nodejs-sample-app:local / nodejs-sample-app:pythonlocal (or set
+    # SAMPLE_APP_IMAGE_PREFIX/APIML_TAG to match whatever you tagged them). CI sets
+    # SAMPLE_APP_IMAGE_PREFIX=ghcr.io/balhar-jakub/ so these resolve to the per-run images
+    # PublishJibContainers already pushed. See docker/integration-tests/README.md.
+    nodejs-sample-app:
+        image: ${SAMPLE_APP_IMAGE_PREFIX:-}nodejs-sample-app:${APIML_TAG:-local}
+        hostname: nodejs-sample-app
+
+    python-sample-app:
+        image: ${SAMPLE_APP_IMAGE_PREFIX:-}nodejs-sample-app:python${APIML_TAG:-local}
+        hostname: python-sample-app

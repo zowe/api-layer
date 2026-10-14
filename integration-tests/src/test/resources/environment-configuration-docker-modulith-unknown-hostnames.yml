@@ -1,0 +1,52 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: USER
+    password: validPassword
+    clientUser: APIMTST
+gatewayServiceConfiguration:
+    scheme: https
+    host: apiml
+    port: 10010
+    internalPorts: 10010
+    externalPort: 10010
+    instances: 1
+    servicesEndpoint: gateway/api/v1/services
+    bucketCapacity: 20
+    authProvider: zosmf
+discoveryServiceConfiguration:
+    scheme: https
+    user: user
+    password: user
+    host: apiml
+    additionalHost: apiml
+    additionalPort: 10011
+    port: 10011
+    instances: 1
+discoverableClientConfiguration:
+    scheme: https
+    port: 10012
+    applId: ZOWEAPPL
+    host: discoverable-client-unknown
+    instances: 1
+apiCatalogServiceConfiguration:
+    scheme: https
+    host: apiml
+    port: 10010
+    instances: 1
+tlsConfiguration:
+    keyAlias: localhost
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: ../keystore/service/client-cert.p12
+    serverKeyStore: ../keystore/service/server-only.p12
+    clientKeystore: ../keystore/client/client-certs.p12
+    clientCN: APIMTST
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: ../keystore/service/service.truststore.p12
+    trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: mock-services-unknown
+    port: 10013
+    serviceId: mockzosmf
