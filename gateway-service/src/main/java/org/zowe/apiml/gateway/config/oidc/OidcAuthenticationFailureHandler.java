@@ -12,6 +12,7 @@ package org.zowe.apiml.gateway.config.oidc;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.core5.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
@@ -69,7 +70,7 @@ public class OidcAuthenticationFailureHandler implements ServerAuthenticationFai
         clearCookies.accept(webFilterExchange);
         var failure = classify(exception);
         var requestId = exchange.getRequest().getId();
-        log.warn("OIDC login failed (request ID {}): {}, exception type {}",
+        log.debug("OIDC login failed (request ID {}): {}, exception type {}",
             requestId, failure.getMessageKey(), exception.getClass().getSimpleName());
         log.debug("OIDC login failure details (request ID {})", requestId, exception);
         var handler = exceptionHandler.get();
@@ -113,7 +114,7 @@ public class OidcAuthenticationFailureHandler implements ServerAuthenticationFai
             }
             if (cause instanceof WebClientResponseException response && response.getStatusCode().is5xxServerError()) {
                 var status = response.getStatusCode().value();
-                return status == 503 || status == 504 ? Failure.PROVIDER_UNAVAILABLE : Failure.PROVIDER_ERROR;
+                return status == HttpStatus.SC_SERVICE_UNAVAILABLE || status == HttpStatus.SC_GATEWAY_TIMEOUT ? Failure.PROVIDER_UNAVAILABLE : Failure.PROVIDER_ERROR;
             }
             if (isTransportFailure(cause)) {
                 return Failure.PROVIDER_UNAVAILABLE;

@@ -49,9 +49,9 @@ public class MetadataValidator {
 
     private final boolean disablePortValidation;
 
-    boolean isAllowedDomain(String input, boolean validatePort) {
+    public boolean isAllowedDomain(String input, boolean validatePort) {
         if (StringUtils.isBlank(input)) {
-            return true;
+            return  true;
         }
         var inputToCheck = input.endsWith("null") ? input.substring(0, input.lastIndexOf("null")) : input;
         var result = allowedDomainsSet.stream().anyMatch(allowedDomain -> isAllowed(allowedDomain, inputToCheck, validatePort));
@@ -191,7 +191,7 @@ public class MetadataValidator {
         if ("*".equals(allowedDomainPort) || Objects.equal(port, allowedDomainPort)) {
             return true;
         }
-        log.debug("Port {} in input value {} from service {} does not match port {}", port, input, instanceInfo.getInstanceId(), allowedDomainPort);
+        log.debug("Port {} in input value {} does not match port {}", port, input, allowedDomainPort);
         return false;
     }
 

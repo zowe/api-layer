@@ -575,7 +575,7 @@ class WebSecurityTest {
         @BeforeEach
         void setUp() {
             var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
-            ReflectionTestUtils.setField(webSecurity, "allowedDomains", ALLOWED_HOST);
+            ReflectionTestUtils.setField(webSecurity, "allowedDomains", ALLOWED_HOST + ":*");
             webSecurity.initScopes();
             var resolver = mock(ServerOAuth2AuthorizationRequestResolver.class);
             requestRepository = webSecurity.new ApimlServerAuthorizationRequestRepository(resolver);
@@ -638,13 +638,10 @@ class WebSecurityTest {
                 // absolute URLs whose host is allow-listed are accepted unchanged
                 Arguments.of(EXTERNAL_URL + "/gateway/foo?x=1#frag", EXTERNAL_URL + "/gateway/foo?x=1#frag"),
                 Arguments.of(EXTERNAL_URL, EXTERNAL_URL),
-                Arguments.of("//gateway.zowe.example", "//gateway.zowe.example"),
                 Arguments.of("HTTPS://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo", "https://GATEWAY.ZOWE.EXAMPLE:10010/gateway/foo"),
                 Arguments.of("http://gateway.zowe.example:10010/x", "http://gateway.zowe.example:10010/x"),
-                Arguments.of("https://www.ibm.com/docs", "https://www.ibm.com/docs"),
                 Arguments.of("/gateway/foo%2Bmore?bar=%2f1#frag", "/gateway/foo+more?bar=/1#frag"),
-                Arguments.of("https://user:password@gateway.zowe.example:10010/x", "https://user:password@gateway.zowe.example:10010/x"),
-                Arguments.of("https://www.ibm.com/docs", "https://www.ibm.com/docs")
+                Arguments.of("https://user:password@gateway.zowe.example:10010/x", "https://user:password@gateway.zowe.example:10010/x")
             );
         }
 
@@ -652,6 +649,8 @@ class WebSecurityTest {
             return Stream.of(
                 "",
                 "//attacker.example/x",
+                "//gateway.zowe.example",
+                "https://www.ibm.com/docs",
                 "/\\attacker.example",
                 "/foo%5Cattacker.example",
                 "/foo%0D%0ASet-Cookie:evil=1",
@@ -703,16 +702,24 @@ class WebSecurityTest {
                 Arguments.of("gateway.zowe.example:10010", "https://gateway.zowe.example:10010/x", true),
                 Arguments.of("gateway.zowe.example:10010", "https://gateway.zowe.example:10011/x", false),
                 Arguments.of("gateway.zowe.example:443", "https://gateway.zowe.example/x", true),
-                Arguments.of("gateway.zowe.example:80", "http://gateway.zowe.example/x", true),
-                Arguments.of("[::1]:10010", "https://[::1]:10010/x", true),
+                Arguments.of("gateway.zowe.example", "https://gateway.zowe.example:10010/x", false),
+                Arguments.of("gateway.zowe.example:80", "http://gateway.zowe.example:80/x", true),
+                Arguments.of("gateway.zowe.example:443", "http://gateway.zowe.example/x", true),
+                Arguments.of("gateway.zowe.example:80", "http://gateway.zowe.example/x", false),
+                Arguments.of("*.zowe.example:*", "https://gateway.zowe.example:10010/x", true),
+                Arguments.of("*.zowe.example:10010", "https://gateway.zowe.example:10011/x", false),
+                Arguments.of("*.zowe.example:*", "https://zowe.example:10010/x", false),
+                Arguments.of("192.0.2.0/24", "https://192.0.2.10:10010/x", false),
+                Arguments.of("192.0.2.0/24", "https://192.0.3.10:10010/x", false),
+                Arguments.of("[::1]:10010", "https://[::1]:10010/x", false),
                 Arguments.of("[::1]:10010", "https://[::1]:10011/x", false),
-                Arguments.of("[::1]", "https://[::1]:10010/x", true)
+                Arguments.of("[::1]", "https://[::1]:10010/x", false)
             );
         }
 
         @ParameterizedTest
         @MethodSource("allowedDomainsWithPorts")
-        void whenAllowedDomainContainsPort_thenReturnUrlIsMatchedByHostAndPort(String allowedDomain, String returnUrl, boolean accepted) {
+        void whenValidatingReturnUrl_thenApplyMetadataDomainAndPortRules(String allowedDomain, String returnUrl, boolean accepted) {
             var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
             ReflectionTestUtils.setField(webSecurity, "allowedDomains", allowedDomain);
             webSecurity.initScopes();
@@ -729,7 +736,7 @@ class WebSecurityTest {
         void whenExactDomainIsAllowed_thenAcceptReturnUrlBeforeAndAfterLogin() {
             var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
             ReflectionTestUtils.setField(webSecurity, "allowedDomains",
-                "*.lvn.company.net:*,domain.subdomain.com,*.mfd.company.net:*,10.222.140.2,mylogin.company.com");
+                "*.lvn.company.net:*,domain.subdomain.com:40324,*.mfd.company.net:*,10.222.140.2,mylogin.company.com");
             webSecurity.initScopes();
             requestRepository = webSecurity.new ApimlServerAuthorizationRequestRepository(mock(ServerOAuth2AuthorizationRequestResolver.class));
             var returnUrl = "https://domain.subdomain.com:40324/apicatalog/ui/v1/";

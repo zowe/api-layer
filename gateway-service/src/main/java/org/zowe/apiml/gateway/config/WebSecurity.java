@@ -78,6 +78,7 @@ import org.zowe.apiml.gateway.filters.security.TokenAuthFilter;
 import org.zowe.apiml.gateway.service.BasicAuthProvider;
 import org.zowe.apiml.gateway.service.TokenProvider;
 import org.zowe.apiml.product.constants.CoreService;
+import org.zowe.apiml.product.eureka.web.MetadataValidator;
 import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
@@ -88,7 +89,6 @@ import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyStoreException;
@@ -150,7 +150,7 @@ public class WebSecurity {
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname:localhost}}")
     private String allowedDomains;
 
-    private Set<String> allowedDomainsSet;
+    private MetadataValidator returnUrlValidator;
 
     private final ClientConfiguration clientConfiguration;
 
@@ -164,7 +164,8 @@ public class WebSecurity {
     @PostConstruct
     void initScopes() {
         boolean authorizeAnyUsers = "*".equals(allowedUsers);
-        allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
+        var allowedDomainsSet = Stream.concat(Arrays.stream(allowedDomains.split(",")).map(String::trim), Arrays.stream(DEFAULT_ALLOWED_DOMAINS)).map(String::toLowerCase).collect(Collectors.toSet());
+        returnUrlValidator = MetadataValidator.builder().allowedDomainsSet(allowedDomainsSet).build();
 
         Set<String> users = Optional.ofNullable(allowedUsers)
             .map(line -> line.split("[,;]"))
@@ -243,9 +244,8 @@ public class WebSecurity {
     }
 
     /**
-     * Sanitize the return URL
-     * Validates a relative return URI.
-     * Only relative paths are accepted, paths with an authority component, and other ambiguous forms are rejected.
+     * Sanitize the return URL.
+     * Accepts relative paths and URLs matching the domain allow list; ambiguous forms are rejected.
      *
      * @param forwardUrlString the return URL to check
      * @return the sanitized return URL
@@ -270,7 +270,7 @@ public class WebSecurity {
                 .toUri();
 
             if (forwardUrl.getScheme() != null || forwardUrl.getHost() != null) {
-                if (allowedDomainsSet.stream().noneMatch(allowed -> isAllowedDomain(allowed, forwardUrl))) {
+                if (!returnUrlValidator.isAllowedDomain(forwardUrl.toString(), true)) {
                     throw new InvalidForwardException(decodedUrl);
                 }
             } else {
@@ -282,31 +282,6 @@ public class WebSecurity {
         } catch (IllegalArgumentException | IllegalStateException e) {
             throw new InvalidForwardException(decodedUrl, e);
         }
-    }
-
-    /**
-     * Matches the URL against an allowed domain entry in the format {@code host}, {@code host:port} or {@code host:*}.
-     * An entry without a port allows any port.
-     */
-    private static boolean isAllowedDomain(String allowed, URI url) {
-        var host = allowed;
-        String port = null;
-        var portSeparator = allowed.startsWith("[") ? allowed.indexOf("]:") + 1 : allowed.indexOf(':');
-        if (portSeparator > 0 && portSeparator == allowed.lastIndexOf(':')) {
-            host = allowed.substring(0, portSeparator);
-            port = allowed.substring(portSeparator + 1);
-        }
-        if (!Strings.CI.equals(host, url.getHost())) {
-            return false;
-        }
-        return port == null || "*".equals(port) || port.equals(String.valueOf(getPort(url)));
-    }
-
-    private static int getPort(URI url) {
-        if (url.getPort() != -1) {
-            return url.getPort();
-        }
-        return "http".equalsIgnoreCase(url.getScheme()) ? 80 : 443;
     }
 
     public Mono<Void> updateCookies(WebFilterExchange webFilterExchange, OAuth2AuthorizedClient oAuth2AuthorizedClient) {

@@ -40,7 +40,7 @@ import static org.mockito.Mockito.when;
 class ModulithWebServerFactoryTest {
 
     @Test
-    void givenGatewayAndDiscoveryConnectors_thenApplyPreFluxFilters() throws Exception {
+    void whenTomcatStarts_thenCustomFactoryAppliesPreFluxFiltersOnBothPorts() throws Exception {
         var messageService = mock(MessageService.class);
         when(messageService.createMessage("org.zowe.apiml.common.notFound"))
             .thenReturn(Message.of("org.zowe.apiml.common.notFound", new MessageTemplate(
