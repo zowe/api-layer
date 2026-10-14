@@ -126,7 +126,8 @@ public class WebSecurity {
     private static final String APPLICATION_VERSION_GW_ROUTE = "/gateway/api/v1/version";
 
     private static final Pattern CLIENT_REG_ID = Pattern.compile("^" + CONTEXT_PATH + "/login/oauth2/code/([^/]+)$");
-    private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> cookie == null || StringUtils.isEmpty(cookie.getValue());
+    private static final Predicate<HttpCookie> HAS_VALUE = cookie -> cookie != null && StringUtils.isNotEmpty(cookie.getValue());
+    private static final Predicate<HttpCookie> HAS_NO_VALUE = cookie -> !HAS_VALUE.test(cookie);
     private static final List<String> COOKIES = Arrays.asList(COOKIE_NONCE, COOKIE_STATE, COOKIE_RETURN_URL, COOKIE_CODE_VERIFIER);
 
     public static final String OAUTH_2_AUTHORIZATION = CONTEXT_PATH + "/oauth2/authorization/**";
@@ -291,7 +292,7 @@ public class WebSecurity {
 
         var location = exchange.getRequest().getCookies().getFirst(COOKIE_RETURN_URL);
 
-        if (!HAS_NO_VALUE.test(location) && location != null) {
+        if (HAS_VALUE.test(location) && location != null) {
             try {
                 redirect(exchange.getResponse(), getSafeReturnUrl(location.getValue()));
             } catch (InvalidForwardException e) {
