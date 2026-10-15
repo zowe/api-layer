@@ -71,14 +71,14 @@ public class OidcAuthenticationFailureHandler implements ServerAuthenticationFai
         var failure = classify(exception);
         var requestId = exchange.getRequest().getId();
         log.debug("OIDC login failed (request ID {}): {}, exception type {}",
-            requestId, failure.getMessageKey(), exception.getClass().getSimpleName());
+            requestId, failure.messageKey, exception.getClass().getSimpleName());
         log.debug("OIDC login failure details (request ID {})", requestId, exception);
         var handler = exceptionHandler.get();
-        var message = handler.getMessageService().createMessage(failure.getMessageKey(), requestId);
+        var message = handler.getMessageService().createMessage(failure.messageKey, requestId);
         OtelRequestContext.of(exchange).authenticationFailed()
             .authErrorType(exception.getClass().getName()).authErrorMessage(message.mapToLogMessage());
         exchange.getResponse().getHeaders().set("X-Request-ID", requestId);
-        return handler.setBodyResponse(exchange, failure.status, failure.getMessageKey(), requestId);
+        return handler.setBodyResponse(exchange, failure.status, failure.messageKey, requestId);
     }
 
     private static boolean isOidcFailure(Throwable exception) {
@@ -154,18 +154,14 @@ public class OidcAuthenticationFailureHandler implements ServerAuthenticationFai
 
     @RequiredArgsConstructor
     private enum Failure {
-        REJECTED(401, "oidcLoginRejected"),
-        INVALID_LOGIN(400, "oidcInvalidLogin"),
-        CONFIGURATION(500, "oidcConfigurationError"),
-        PROVIDER_UNAVAILABLE(503, "oidcProviderUnavailable"),
-        PROVIDER_ERROR(502, "oidcProviderUnavailable"),
-        UNKNOWN(500, "oidcAuthenticationFailed");
+        REJECTED(401, "org.zowe.apiml.gateway.oidcLoginRejected"),
+        INVALID_LOGIN(400, "org.zowe.apiml.gateway.oidcInvalidLogin"),
+        CONFIGURATION(500, "org.zowe.apiml.gateway.oidcConfigurationError"),
+        PROVIDER_UNAVAILABLE(503, "org.zowe.apiml.gateway.oidcProviderUnavailable"),
+        PROVIDER_ERROR(502, "org.zowe.apiml.gateway.oidcProviderUnavailable"),
+        UNKNOWN(500, "org.zowe.apiml.gateway.oidcAuthenticationFailed");
 
         private final int status;
-        private final String message;
-
-        private String getMessageKey() {
-            return "org.zowe.apiml.gateway." + message;
-        }
+        private final String messageKey;
     }
 }

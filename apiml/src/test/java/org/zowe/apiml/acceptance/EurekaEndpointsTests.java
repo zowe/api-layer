@@ -10,56 +10,63 @@
 
 package org.zowe.apiml.acceptance;
 
-import com.sun.net.httpserver.Headers;
 import freemarker.template.TemplateException;
+import io.restassured.config.RestAssuredConfig;
+import io.restassured.config.SSLConfig;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.zowe.apiml.EurekaDashboardController;
-import org.zowe.apiml.gateway.MockService;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
-import java.net.URI;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @AcceptanceTest
 public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
 
     private static final String USER_ID = "user";
+    private static final String DISCOVERY_BASE_PATH = "https://localhost:" + DISCOVERY_PORT;
 
     @MockitoBean
     EurekaDashboardController eurekaDashboardController;
 
     @Test
-    void testEurekaHomePage() throws TemplateException, IOException {
-        var headers = new Headers();
-        headers.add("Set-Cookie", "jwtToken=jwt");
-        headers.add("Set-Cookie", "LtpaToken2=ltpatoken");
-
+    void givenDiscoveryPort_whenGetRoot_thenForwardToEurekaHomePage() throws TemplateException, IOException {
         when(eurekaDashboardController.status(any(), any())).thenReturn(Mono.just("status page"));
-
-        mockService("zosmf").scope(MockService.Scope.TEST)
-            .addEndpoint("/zosmf/info")
-                .responseCode(200)
-                .contentType("application/json")
-                .headers(headers)
-                .bodyJson("{\"zosmf_version\":\"29\",\"zosmf_saf_realm\":\"SAFRealm\",\"zosmf_full_version\":\"29.0\"}")
-        .and()
-            .start();
+        mockZosmfSuccess();
 
         given()
+            .redirects().follow(false)
         .when()
             .auth().preemptive().basic(USER_ID, "user")
-            .get(URI.create("https://localhost:10011"))
+            .get(DISCOVERY_BASE_PATH + "/")
         .then()
             .statusCode(200)
             .body(equalTo("status page"));
+    }
+
+    @Test
+    void givenGatewayPort_whenGetRoot_thenReturnGatewayHomePage() {
+        given()
+            .redirects().follow(false)
+        .when()
+            .get(basePath + "/")
+        .then()
+            .statusCode(200)
+            .contentType(MediaType.TEXT_HTML_VALUE)
+            .body(containsString("<title>API Mediation Layer</title>"));
+
+        verifyNoInteractions(eurekaDashboardController);
     }
 
     @Test
@@ -68,7 +75,24 @@ public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
         .when()
             .get(basePath + "/eureka/apps")
         .then()
-            .statusCode(404);
+            .statusCode(404)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body("messages[0].messageKey", equalTo("org.zowe.apiml.common.notFound"));
+    }
+
+    @Test
+    void givenDiscoveryPort_whenGetEurekaApiWithClientCertificate_thenReturnApplications() {
+        given()
+            .config(RestAssuredConfig.newConfig().sslConfig(new SSLConfig().sslSocketFactory(
+                new SSLSocketFactory(httpConfig.secureSslContext(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER)
+            )))
+            .accept(MediaType.APPLICATION_JSON_VALUE)
+        .when()
+            .get(DISCOVERY_BASE_PATH + "/eureka/apps")
+        .then()
+            .statusCode(200)
+            .contentType(MediaType.APPLICATION_JSON_VALUE)
+            .body("applications", notNullValue());
     }
 
     @Test
@@ -82,7 +106,7 @@ public class EurekaEndpointsTests extends AcceptanceTestWithMockServices {
                 """
             )
         .when()
-            .post(URI.create("https://localhost:10011/eureka/peerreplication/batch/"))
+            .post(DISCOVERY_BASE_PATH + "/eureka/peerreplication/batch/")
         .then()
             .statusCode(403);
     }

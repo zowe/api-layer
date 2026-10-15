@@ -541,7 +541,7 @@ public class WebSecurity {
                 .attributes((attrs) -> {
                         attrs.put(OAuth2ParameterNames.REGISTRATION_ID, original.getAttributes().get(OAuth2ParameterNames.REGISTRATION_ID));
                         attrs.put(OidcParameterNames.NONCE, nonce);
-                        if (!HAS_NO_VALUE.test(codeVerifierCookie)) {
+                        if (HAS_VALUE.test(codeVerifierCookie)) {
                             attrs.put(PkceParameterNames.CODE_VERIFIER, codeVerifierCookie.getValue());
                         }
                     }
