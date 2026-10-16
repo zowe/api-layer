@@ -67,6 +67,9 @@ public class OIDCTokenProvider implements OIDCProvider {
     @Value("${apiml.security.oidc.userInfo.uri}")
     private String endpointUrl;
 
+    @Value("${apiml.security.oidc.aud:}")
+    private String requiredAudience;
+
     private final JWKResolver jwkResolver;
     private final CloseableHttpClient secureHttpClientWithKeystore;
     @Getter
@@ -122,6 +125,23 @@ public class OIDCTokenProvider implements OIDCProvider {
 
     }
 
+    boolean isRequiredAudienceSet(JWTClaimsSet claims) {
+        if (StringUtils.isEmpty(requiredAudience)) {
+            return true;
+        }
+
+        return claims.getAudience().contains(requiredAudience);
+    }
+
+    boolean isRequiredAudienceSet(String jwt) {
+        try {
+            return isRequiredAudienceSet(JWTParser.parse(jwt).getJWTClaimsSet());
+        } catch (ParseException pe) {
+            log.debug("Cannot parse token ...{}: {}", StringUtils.right(jwt, 15), pe.getMessage());
+            return false;
+        }
+    }
+
     public boolean isValidExternal(String token) {
         try {
             if (StringUtils.isBlank(endpointUrl)) {
@@ -135,7 +155,7 @@ public class OIDCTokenProvider implements OIDCProvider {
             return secureHttpClientWithKeystore.execute(httpGet, response -> {
                 final int responseCode = response.getCode();
                 log.debug("Response code: {}", responseCode);
-                return HttpStatus.valueOf(responseCode).is2xxSuccessful();
+                return HttpStatus.valueOf(responseCode).is2xxSuccessful() && isRequiredAudienceSet(token);
             });
         } catch (IOException e) {
             log.error("An error occurred during validation of OIDC token using userInfo URI {}: {}", endpointUrl, e.getMessage());
@@ -183,6 +203,9 @@ public class OIDCTokenProvider implements OIDCProvider {
                 if (claims.getExpirationTime().toInstant().isBefore(clock.instant())) {
                     log.debug("OIDC Token is expired");
                     return null;
+                }
+                if (!isRequiredAudienceSet(claims)) {
+                    throw new BadJOSEException("Audience '%s' is not set in token.".formatted(requiredAudience));
                 }
                 return claims;
             } else {
