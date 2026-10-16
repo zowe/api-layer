@@ -53,11 +53,10 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import lodash from 'lodash';
-const { findIndex, merge } = lodash;
-import { findInstance, normalizeDelta } from './deltaUtils.js';
+import {findInstance, normalizeDelta} from './deltaUtils.js';
 import path from 'path';
-import { series, waterfall } from 'async';
-import { EventEmitter } from 'events';
+import {series, waterfall} from 'async';
+import {EventEmitter} from 'events';
 
 import AwsMetadata from './AwsMetadata.js';
 import CircuitBreaker from './CircuitBreaker.js';
@@ -67,6 +66,8 @@ import Logger from './Logger.js';
 import defaultConfig from './defaultConfig.js';
 import envConfig from './envConfig.js';
 import https from 'https';
+
+const { findIndex, merge } = lodash;
 
 function noop() {}
 
@@ -836,19 +837,28 @@ export default class Eureka extends EventEmitter {
         const headers = requestOpts.headers || {};
         headers['Content-Type'] = 'application/json';
 
-        const options = {
+        let options = {
           method,
           hostname: url.hostname,
           port: url.port,
           path: url.pathname,
           headers,
-          cert: requestOpts.cert,
-          key: requestOpts.key,
-          ca: requestOpts.ca,
-          pfx: requestOpts.pfx,
-          passphrase: requestOpts.passphrase,
         };
-        this.logger.debug(`prepared options for the request ${JSON.stringify(options)}`);
+        const isSetLabel = val => val ? "isn't set" : "is set";
+        this.logger.debug(`prepared options for the request ${JSON.stringify(options)}, ` +
+            `cert ${isSetLabel(requestOpts.cert)}, ` +
+            `key ${isSetLabel(requestOpts.key)}, ` +
+            `ca ${isSetLabel(requestOpts.ca)}, ` +
+            `pfx ${isSetLabel(requestOpts.pfx)}, ` +
+            `passphrase ${isSetLabel(requestOpts.passphrase)}`
+        );
+        options = {...options,
+            cert: requestOpts.cert,
+            key: requestOpts.key,
+            ca: requestOpts.ca,
+            pfx: requestOpts.pfx,
+            passphrase: requestOpts.passphrase,
+        };
 
         let response;
         let req;
