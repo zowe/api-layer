@@ -8,6 +8,22 @@
  * Copyright Contributors to the Zowe Project.
  */
 
+const MAX_LENGTH_MAINFRAME_ID = 8;
+const MAX_LENGTH_DISTRIBUTED_ID = 246;
+const MAX_LENGTH_LABEL = 32;
+
 export function hasValidLength(parameter: string, maxSize: number): boolean {
     return parameter.length <= maxSize;
+}
+
+export function isValidMainframeId(mainframeId: string) {
+    return hasValidLength(mainframeId, MAX_LENGTH_MAINFRAME_ID) && /\^[a-zA-Z0-9#$@]*$/.test(mainframeId);
+}
+
+export function isValidDistributedId(distributedId: string) {
+    return hasValidLength(distributedId, MAX_LENGTH_DISTRIBUTED_ID) && /\^[a-zA-Z0-9-_#$@.]*$/.test(distributedId);
+}
+
+export function isValidUserName(userName: string) {
+    return hasValidLength(userName, MAX_LENGTH_LABEL) && /\^[a-zA-Z0-9#$@ ]*$/.test(userName);
 }
