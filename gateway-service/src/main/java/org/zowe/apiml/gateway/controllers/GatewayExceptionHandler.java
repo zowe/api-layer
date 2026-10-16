@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -59,6 +60,7 @@ public class GatewayExceptionHandler {
     private static final String DEFAULT_REALM = "Realm";
 
     private final ObjectMapper mapper;
+    @Getter
     private final MessageService messageService;
     private final LocaleContextResolver localeContextResolver;
 
