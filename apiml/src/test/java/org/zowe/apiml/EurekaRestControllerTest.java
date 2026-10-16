@@ -36,17 +36,21 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
+import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.EurekaRestController.UriInfoAdapter;
+import org.zowe.apiml.discovery.registration.RegistrationRequestContext;
 import reactor.test.StepVerifier;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Random;
 import java.util.function.Predicate;
 
@@ -159,13 +163,33 @@ public class EurekaRestControllerTest {
             .verifyComplete();
     }
 
+    private static final InetSocketAddress PEER_ADDRESS = new InetSocketAddress("10.0.0.1", 12345);
+
+    private MockServerWebExchange exchangeWithPeer() {
+        return MockServerWebExchange.from(MockServerHttpRequest.post("/eureka/apps/anAppId").remoteAddress(PEER_ADDRESS));
+    }
+
+    @Test
+    void givenNoRemoteAddress_whenAddInstance_thenFail() throws IOException {
+        var exchange = MockServerWebExchange.from(MockServerHttpRequest.post("/eureka/apps/anAppId"));
+        when(applicationsResource.getApplicationResource("v2", "anAppId"))
+            .thenReturn(mock(ApplicationResource.class));
+
+        StepVerifier.create(controller.addInstance(exchange, null, "{\"instance\": {\"app\": \"TESTAPP\"}}", "anAppId"))
+            .expectError(IllegalStateException.class)
+            .verify();
+    }
+
     @Test
     void addInstance() throws IOException {
         var appResource = mock(ApplicationResource.class);
         when(applicationsResource.getApplicationResource("v2", "anAppId"))
             .thenReturn(appResource);
         when(appResource.addInstance(any(InstanceInfo.class), eq("true")))
-            .thenReturn(response);
+            .thenAnswer(invocation -> {
+                assertEquals(Optional.of(PEER_ADDRESS.getAddress()), RegistrationRequestContext.getPeerAddress());
+                return response;
+            });
 
         var instanceInfoJson = """
             {
@@ -188,9 +212,10 @@ public class EurekaRestControllerTest {
             }
             """;
 
-        StepVerifier.create(controller.addInstance("true", instanceInfoJson, "anAppId"))
+        StepVerifier.create(controller.addInstance(exchangeWithPeer(), "true", instanceInfoJson, "anAppId"))
             .expectNextMatches(entityMatcher)
             .verifyComplete();
+        assertTrue(RegistrationRequestContext.getPeerAddress().isEmpty());
     }
 
     @Test
@@ -341,7 +366,10 @@ public class EurekaRestControllerTest {
     @Test
     void batchReplication() throws IOException {
         when(peerReplicationResource.batchReplication(any(ReplicationList.class)))
-            .thenReturn(response);
+            .thenAnswer(invocation -> {
+                assertEquals(Optional.of(PEER_ADDRESS.getAddress()), RegistrationRequestContext.getPeerAddress());
+                return response;
+            });
 
         var replicationListJson = """
             {
@@ -355,9 +383,10 @@ public class EurekaRestControllerTest {
             }
             """;
 
-        StepVerifier.create(controller.batchReplication(replicationListJson))
+        StepVerifier.create(controller.batchReplication(exchangeWithPeer(), replicationListJson))
             .expectNextMatches(entityMatcher)
             .verifyComplete();
+        assertTrue(RegistrationRequestContext.getPeerAddress().isEmpty());
     }
 
     @Nested
