@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
@@ -36,6 +37,8 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.discovery.registration.RegistrantNetworkIdentityException;
+import org.zowe.apiml.discovery.registration.RegistrantNetworkIdentityVerifier;
 import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
@@ -43,6 +46,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,10 +64,12 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -93,6 +99,7 @@ class ApimlInstanceRegistryTest {
     @Mock private EurekaInstanceConfig eurekaInstanceConfig;
     @Mock private PeerEurekaNodes peerEurekaNodes;
     @Mock private MetadataFilterService metadataFilterService;
+    @Mock private RegistrantNetworkIdentityVerifier registrantNetworkIdentityVerifier;
     private InstanceInfo standardInstance;
 
     private EurekaServerConfig serverConfig;
@@ -114,7 +121,7 @@ class ApimlInstanceRegistryTest {
             instanceRegistryProperties,
             appCntx,
             new EurekaConfig.Tuple("service*,hello"),
-            metadataFilterService)));
+            metadataFilterService, registrantNetworkIdentityVerifier)));
 
         doReturn("zowe").when(eurekaInstanceConfig).getNamespace();
         doReturn("discovery").when(eurekaInstanceConfig).getAppname();
@@ -164,12 +171,34 @@ class ApimlInstanceRegistryTest {
                 instanceRegistryProperties,
                 appCntx,
                 new EurekaConfig.Tuple(""),
-                metadataFilterService)));
+                metadataFilterService, registrantNetworkIdentityVerifier)));
             assertDoesNotThrow( () ->
                 apimlInstanceRegistry.register(wrongInstance, 1, false)
             );
 
         }
+    }
+
+    @Nested
+    class GivenRegistrantNetworkIdentity {
+
+        @ParameterizedTest
+        @ValueSource(booleans = {true, false})
+        void whenRegister_thenVerifyIdentityWithReplicationFlag(boolean isReplication) {
+            apimlInstanceRegistry.register(standardInstance, isReplication);
+
+            verify(registrantNetworkIdentityVerifier, atLeastOnce()).verify(standardInstance, isReplication, List.of());
+        }
+
+        @Test
+        void whenIdentityDoesNotMatch_thenRejectRegistration() {
+            doThrow(new RegistrantNetworkIdentityException("mismatch"))
+                .when(registrantNetworkIdentityVerifier).verify(any(), anyBoolean(), any());
+
+            assertThrows(RegistrantNetworkIdentityException.class, () -> apimlInstanceRegistry.register(standardInstance, false));
+            assertNull(apimlInstanceRegistry.getApplication(standardInstance.getAppName()));
+        }
+
     }
 
     @Nested
@@ -187,7 +216,7 @@ class ApimlInstanceRegistryTest {
                 instanceRegistryProperties,
                 appCntx,
                 new EurekaConfig.Tuple(null),
-                metadataFilterService)));
+                metadataFilterService, registrantNetworkIdentityVerifier)));
             assertDoesNotThrow(() -> apimlInstanceRegistry.register(standardInstance, false));
         }
 
@@ -242,7 +271,7 @@ class ApimlInstanceRegistryTest {
             instanceRegistryProperties,
             appCntx,
             new EurekaConfig.Tuple(tuple),
-            metadataFilterService)));
+            metadataFilterService, registrantNetworkIdentityVerifier)));
         apimlInstanceRegistry.register(standardInstance, false);
         assertEquals(expectedServiceIdInResult, standardInstance.getInstanceId());
     }
@@ -259,7 +288,7 @@ class ApimlInstanceRegistryTest {
             instanceRegistryProperties,
             appCntx,
             new EurekaConfig.Tuple(tuple),
-            metadataFilterService)));
+            metadataFilterService, registrantNetworkIdentityVerifier)));
         apimlInstanceRegistry.register(standardInstance, 1, false);
         assertEquals(expectedServiceIdInResult, standardInstance.getInstanceId());
     }
@@ -399,7 +428,7 @@ class ApimlInstanceRegistryTest {
             registry = new ApimlInstanceRegistry(
                 serverConfig, clientConfig, serverCodecs, eurekaClient,
                 eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new EurekaConfig.Tuple(""),
-                metadataFilterService
+                metadataFilterService, registrantNetworkIdentityVerifier
             );
             renewCorrection = (ThreadLocal<Integer>) ReflectionTestUtils.getField(registry, "RENEW_CORRECTION");
         }
