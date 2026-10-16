@@ -699,13 +699,27 @@ class WebSecurityTest {
                 Arguments.of("localhost:*", "https://localhost:10010/apicatalog/ui/v1/", true),
                 Arguments.of("localhost:*", "https://localhost/apicatalog/ui/v1/", true),
                 Arguments.of("localhost:*", "https://localhost2:10010/apicatalog/ui/v1/", false),
+                Arguments.of("localhost", "https://localhost:10010/apicatalog/ui/v1/", false),
+                Arguments.of("", "https://www.ibm.com/docs", false),
+                Arguments.of("gateway.zowe.example", "https://gateway.zowe.example/x", false),
+                Arguments.of("gateway.zowe.example", "http://gateway.zowe.example/x", false),
+                Arguments.of("gateway.zowe.example", "http://gateway.zowe.example:10010/x", false),
+                Arguments.of("gateway.zowe.example", "https://attacker.example/x", false),
                 Arguments.of("gateway.zowe.example:10010", "https://gateway.zowe.example:10010/x", true),
                 Arguments.of("gateway.zowe.example:10010", "https://gateway.zowe.example:10011/x", false),
+                Arguments.of("gateway.zowe.example:10010", "https://gateway.zowe.example/x", false),
                 Arguments.of("gateway.zowe.example:443", "https://gateway.zowe.example/x", true),
+                Arguments.of("gateway.zowe.example:443", "https://gateway.zowe.example:443/x", true),
                 Arguments.of("gateway.zowe.example", "https://gateway.zowe.example:10010/x", false),
                 Arguments.of("gateway.zowe.example:80", "http://gateway.zowe.example:80/x", true),
                 Arguments.of("gateway.zowe.example:443", "http://gateway.zowe.example/x", true),
+                Arguments.of("gateway.zowe.example:443", "http://gateway.zowe.example:443/x", true),
                 Arguments.of("gateway.zowe.example:80", "http://gateway.zowe.example/x", false),
+                Arguments.of("gateway.zowe.example:80", "https://gateway.zowe.example/x", false),
+                Arguments.of("gateway.zowe.example:80", "http://gateway.zowe.example:10010/x", false),
+                Arguments.of("gateway.zowe.example:80", "http://gateway.zowe.example:80/x?next=/app#section", true),
+                Arguments.of("gateway.zowe.example:80", "//gateway.zowe.example/x", false),
+                Arguments.of("*.zowe.example", "https://gateway.zowe.example:10010/x", false),
                 Arguments.of("*.zowe.example:*", "https://gateway.zowe.example:10010/x", true),
                 Arguments.of("*.zowe.example:10010", "https://gateway.zowe.example:10011/x", false),
                 Arguments.of("*.zowe.example:*", "https://zowe.example:10010/x", false),
@@ -719,7 +733,7 @@ class WebSecurityTest {
 
         @ParameterizedTest
         @MethodSource("allowedDomainsWithPorts")
-        void whenValidatingReturnUrl_thenApplyMetadataDomainAndPortRules(String allowedDomain, String returnUrl, boolean accepted) {
+        void whenValidatingReturnUrl_thenApplyMetadataDomainAndPortRulesBeforeAndAfterLogin(String allowedDomain, String returnUrl, boolean accepted) {
             var webSecurity = new WebSecurity(null, tokenProvider, basicAuthProvider, applicationContext);
             ReflectionTestUtils.setField(webSecurity, "allowedDomains", allowedDomain);
             webSecurity.initScopes();
@@ -729,6 +743,25 @@ class WebSecurityTest {
                 assertThat(sanitize(returnUrl, null)).isEqualTo(returnUrl);
             } else {
                 assertRejected(returnUrl, null);
+            }
+
+            var exchange = MockServerWebExchange.from(MockServerHttpRequest
+                .get("https://gateway.zowe.example/gateway/login/oauth2/code/test-client")
+                .cookie(new HttpCookie(WebSecurity.COOKIE_RETURN_URL, returnUrl)));
+            var authorizedClient = mock(OAuth2AuthorizedClient.class);
+            var accessToken = mock(OAuth2AccessToken.class);
+            when(authorizedClient.getAccessToken()).thenReturn(accessToken);
+            when(accessToken.getTokenValue()).thenReturn("test-access-token");
+            var result = webSecurity.updateCookies(new WebFilterExchange(exchange, ignored -> Mono.empty()), authorizedClient);
+
+            if (accepted) {
+                StepVerifier.create(result).verifyComplete();
+                assertThat(exchange.getResponse().getHeaders().getFirst(HttpHeaders.LOCATION))
+                    .isEqualTo(returnUrl);
+                assertThat(exchange.getResponse().getStatusCode().value()).isEqualTo(302);
+            } else {
+                StepVerifier.create(result).expectError(InvalidForwardException.class).verify();
+                assertThat(exchange.getResponse().getHeaders().getLocation()).isNull();
             }
         }
 
