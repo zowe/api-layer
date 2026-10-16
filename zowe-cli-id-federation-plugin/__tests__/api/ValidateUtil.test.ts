@@ -25,35 +25,39 @@ describe("ValidateUtil unit tests", () => {
         expect(isValidMainframeId("\ninv")).toBeFalsy();
     });
 
-    it('provided invalid MF userId with enter returns false', () => {
+    it('provided invalid MF userId with exclamation mark returns false', () => {
         expect(isValidMainframeId("user !")).toBeFalsy();
     });
 
-    it('provided valid MF userId with enter returns false', () => {
+    it('provided valid MF userId returns true', () => {
         expect(isValidMainframeId("MFUSER")).toBeTruthy();
+    });
+
+    it('provided valid MF userId with enter returns false', () => {
+        expect(isValidMainframeId("MFUSER\n")).toBeFalsy();
     });
 
     it('provided distributed label with enter returns false', () => {
         expect(isValidDistributedId("\ninv")).toBeFalsy();
     });
 
-    it('provided invalid distributed label with enter returns false', () => {
-        expect(isValidDistributedId("user !")).toBeFalsy();
+    it('provided invalid distributed label with slash returns false', () => {
+        expect(isValidDistributedId("dept01/user")).toBeFalsy();
     });
 
-    it('provided valid distributed label with enter returns false', () => {
+    it('provided valid distributed label as email returns false', () => {
         expect(isValidDistributedId("user@oidc.com")).toBeTruthy();
     });
 
-    it('provided label userId with enter returns false', () => {
+    it('provided invalid username with enter returns false', () => {
         expect(isValidUserName("\ninv")).toBeFalsy();
     });
 
-    it('provided invalid distributed userId with enter returns false', () => {
-        expect(isValidUserName("user !")).toBeFalsy();
+    it('provided invalid username userId with slash mark returns false', () => {
+        expect(isValidUserName("user_name")).toBeFalsy();
     });
 
-    it('provided valid distributed userId with enter returns false', () => {
+    it('provided valid username as email return true', () => {
         expect(isValidUserName("user@oidc.com")).toBeTruthy();
     });
 
