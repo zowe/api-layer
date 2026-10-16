@@ -53,10 +53,10 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import lodash from 'lodash';
-import {findInstance, normalizeDelta} from './deltaUtils.js';
+import { findInstance, normalizeDelta } from './deltaUtils.js';
 import path from 'path';
-import {series, waterfall} from 'async';
-import {EventEmitter} from 'events';
+import { series, waterfall } from 'async';
+import { EventEmitter } from 'events';
 
 import AwsMetadata from './AwsMetadata.js';
 import CircuitBreaker from './CircuitBreaker.js';
@@ -844,7 +844,7 @@ export default class Eureka extends EventEmitter {
           path: url.pathname,
           headers,
         };
-        const isSetLabel = val => val ? "isn't set" : "is set";
+        const isSetLabel = val => (val ? 'isn\'t set' : 'is set');
         this.logger.debug(`prepared options for the request ${JSON.stringify(options)}, ` +
             `cert ${isSetLabel(requestOpts.cert)}, ` +
             `key ${isSetLabel(requestOpts.key)}, ` +
@@ -852,12 +852,13 @@ export default class Eureka extends EventEmitter {
             `pfx ${isSetLabel(requestOpts.pfx)}, ` +
             `passphrase ${isSetLabel(requestOpts.passphrase)}`
         );
-        options = {...options,
-            cert: requestOpts.cert,
-            key: requestOpts.key,
-            ca: requestOpts.ca,
-            pfx: requestOpts.pfx,
-            passphrase: requestOpts.passphrase,
+        options = {
+          ...options,
+          cert: requestOpts.cert,
+          key: requestOpts.key,
+          ca: requestOpts.ca,
+          pfx: requestOpts.pfx,
+          passphrase: requestOpts.passphrase,
         };
 
         let response;
