@@ -17,13 +17,13 @@ export function hasValidLength(parameter: string, maxSize: number): boolean {
 }
 
 export function isValidMainframeId(mainframeId: string) {
-    return hasValidLength(mainframeId, MAX_LENGTH_MAINFRAME_ID) && /\^[a-zA-Z0-9#$@]*$/.test(mainframeId);
+    return hasValidLength(mainframeId, MAX_LENGTH_MAINFRAME_ID) && /^[a-zA-Z0-9#$@]+$/.test(mainframeId);
 }
 
 export function isValidDistributedId(distributedId: string) {
-    return hasValidLength(distributedId, MAX_LENGTH_DISTRIBUTED_ID) && /\^[a-zA-Z0-9-_#$@.]*$/.test(distributedId);
+    return hasValidLength(distributedId, MAX_LENGTH_DISTRIBUTED_ID) && /^[a-zA-Z0-9_#$@. -]*$/.test(distributedId);
 }
 
 export function isValidUserName(userName: string) {
-    return hasValidLength(userName, MAX_LENGTH_LABEL) && /\^[a-zA-Z0-9#$@ ]*$/.test(userName);
+    return hasValidLength(userName, MAX_LENGTH_LABEL) && /^[a-zA-Z0-9#$@. ]*$/.test(userName);
 }

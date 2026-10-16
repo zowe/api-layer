@@ -29,8 +29,12 @@ describe("ValidateUtil unit tests", () => {
         expect(isValidMainframeId("user !")).toBeFalsy();
     });
 
-    it('provided valid MF userId with enter returns false', () => {
+    it('provided valid MF userId returns true', () => {
         expect(isValidMainframeId("MFUSER")).toBeTruthy();
+    });
+
+    it('provided valid MF userId with enter returns false', () => {
+        expect(isValidMainframeId("MFUSER\n")).toBeFalsy();
     });
 
     it('provided distributed label with enter returns false', () => {
