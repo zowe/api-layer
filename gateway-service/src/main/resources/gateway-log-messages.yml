@@ -52,6 +52,13 @@ messages:
       reason: "The requested return URL is absolute but its domain is not present in the allowed domains allowedlist, or the URL is relative but malformed."
       action: "Add the domain to 'apiml.security.allowedDomains' or use a valid relative path."
 
+    - key: org.zowe.apiml.gateway.webSocketSubprotocolMismatch
+      number: ZWEAG725
+      type: ERROR
+      text: "WebSocket subprotocol mismatch for service %s: client '%s', backend '%s'."
+      reason: "The client and service selected different WebSocket application protocols."
+      action: "Configure the client and service to select the same subprotocol."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.authRequired

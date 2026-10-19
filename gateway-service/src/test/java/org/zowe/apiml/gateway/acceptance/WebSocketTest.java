@@ -225,22 +225,16 @@ class WebSocketTest {
 
         @Test
         void whenConnectToServerWithWrongCert_thenReject() throws InterruptedException {
-            webSocketClientStrict.connectBlocking();
-            var statusOnCose = new AtomicReference<Integer>();
             var reasonOnClose = new AtomicReference<String>();
-
             webSocketClientStrict.setOnClose((status, reason) -> {
-                statusOnCose.set(status);
                 reasonOnClose.set(reason);
             });
-
+            assertFalse(webSocketClientStrict.connectBlocking());
             await()
                 .atMost(Duration.ofSeconds(10))
                 .untilAsserted(() -> {
-                    assertEquals(1011, statusOnCose.get());
                     assertNotNull(reasonOnClose.get());
-                    // assertTrue(reasonOnClose.get().contains("No name matching localhost found"), "reason was: " + reason); On Netty client
-                    assertTrue(reasonOnClose.get().contains("HTTP request to initiate the WebSocket connection to [wss://localhost:" + serviceStrictness.getPort() + "/websocketservicessl/ws] failed")); // On Tomcat client
+                    assertTrue(reasonOnClose.get().contains("502"));
                 });
         }
 

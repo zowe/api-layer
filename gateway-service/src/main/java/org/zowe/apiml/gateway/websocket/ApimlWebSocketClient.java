@@ -22,19 +22,29 @@ import java.util.List;
 public class ApimlWebSocketClient extends TomcatWebSocketClient {
 
     private final SSLContext sslContext;
+    private final WebSocketProperties properties;
 
     public ApimlWebSocketClient(SSLContext sslContext, WsWebSocketContainer webSocketContainer) {
+        this(sslContext, webSocketContainer, new WebSocketProperties());
+    }
+
+    public ApimlWebSocketClient(SSLContext sslContext, WsWebSocketContainer webSocketContainer,
+        WebSocketProperties properties) {
         super(webSocketContainer);
         this.sslContext = sslContext;
+        this.properties = properties;
     }
 
     @Override
     protected ClientEndpointConfig createEndpointConfig(Configurator configurator, List<String> subProtocols) {
-        return ClientEndpointConfig.Builder.create()
+        var config = ClientEndpointConfig.Builder.create()
                 .configurator(configurator)
                 .preferredSubprotocols(subProtocols)
                 .sslContext(sslContext)
                 .build();
+        config.getUserProperties().put(org.apache.tomcat.websocket.Constants.IO_TIMEOUT_MS_PROPERTY,
+            Long.toString(properties.getConnectTimeout()));
+        return config;
     }
 
 }
