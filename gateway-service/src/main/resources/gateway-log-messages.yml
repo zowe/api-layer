@@ -49,8 +49,43 @@ messages:
       number: ZWEAG703
       type: ERROR
       text: "The OIDC return URL is invalid, malformed, or untrusted."
-      reason: "The requested return URL is absolute but its domain is not present in the allowed domains allowedlist, or the URL is relative but malformed."
+      reason: "The requested return URL is absolute but its domain is not present in the list of allowed domains, or the URL is relative but malformed."
       action: "Add the domain to 'apiml.security.allowedDomains' or use a valid relative path."
+
+    - key: org.zowe.apiml.gateway.oidcLoginRejected
+      number: ZWEAG720
+      type: ERROR
+      text: "OIDC login was unsuccessful. Request ID: %s."
+      reason: "The login was denied, requires user interaction, or the authorization grant was rejected."
+      action: "Start a new login attempt. If the problem persists, ask your administrator to check the API ML authentication logs using the request ID."
+
+    - key: org.zowe.apiml.gateway.oidcInvalidLogin
+      number: ZWEAG721
+      type: ERROR
+      text: "The OIDC login attempt is invalid or has expired. Request ID: %s."
+      reason: "The gateway could not validate the login state, nonce, or saved authorization request."
+      action: "Start a new login attempt from the application."
+
+    - key: org.zowe.apiml.gateway.oidcConfigurationError
+      number: ZWEAG722
+      type: ERROR
+      text: "OIDC login could not be completed because of a client configuration error. Request ID: %s."
+      reason: "The OIDC client configuration is incomplete or was rejected by the identity provider."
+      action: "Ask your administrator to check the API ML authentication logs using the request ID and verify the OIDC client configuration."
+
+    - key: org.zowe.apiml.gateway.oidcProviderUnavailable
+      number: ZWEAG723
+      type: ERROR
+      text: "The gateway could not complete communication with the OIDC identity provider. Request ID: %s."
+      reason: "The identity provider reported a server error or communication with it failed."
+      action: "Try logging in again later. If the problem persists, ask your administrator to check provider availability, connectivity, and the API ML logs using the request ID."
+
+    - key: org.zowe.apiml.gateway.oidcAuthenticationFailed
+      number: ZWEAG724
+      type: ERROR
+      text: "OIDC authentication failed. Request ID: %s."
+      reason: "The gateway could not complete the OpenID Connect login."
+      action: "Start a new login attempt. If the problem persists, ask your administrator to check the API ML authentication logs using the request ID."
 
     - key: org.zowe.apiml.gateway.webSocketSubprotocolMismatch
       number: ZWEAG725
