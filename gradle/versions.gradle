@@ -60,6 +60,7 @@ dependencyResolutionManagement {
             // Keep the SDK aligned with the Spring Boot starter's OpenTelemetry API dependency.
             // Starter 2.32.0 uses internal API classes removed in SDK 1.67.0.
             version('openTelemetry-core', '1.66.0')
+            version('ow2Asm', '9.11.1')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
@@ -251,6 +252,7 @@ dependencyResolutionManagement {
             library('netty_reactor_http', 'io.projectreactor.netty', 'reactor-netty-http').versionRef('nettyReactor')
             library('nimbus_jose_jwt', 'com.nimbusds', 'nimbus-jose-jwt').versionRef('nimbusJoseJwt')
             library('openapidiff', 'org.openapitools.openapidiff', 'openapi-diff-core').versionRef('openApiDiff')
+            library('ow2Asm', 'org.ow2.asm', 'asm').versionRef('ow2Asm')
             library('picocli', 'info.picocli', 'picocli').versionRef('picocli')
             library('picocli_codegen', 'info.picocli', 'picocli-codegen').versionRef('picocli')
             library('reactor', 'io.projectreactor', 'reactor-core').versionRef('reactor')
