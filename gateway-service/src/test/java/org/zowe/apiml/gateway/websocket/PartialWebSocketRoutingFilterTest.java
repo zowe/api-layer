@@ -11,7 +11,10 @@
 package org.zowe.apiml.gateway.websocket;
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import jakarta.websocket.*;
+import jakarta.websocket.ClientEndpointConfig;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.RemoteEndpoint;
 import org.apache.tomcat.websocket.WsSession;
 import org.apache.tomcat.websocket.WsWebSocketContainer;
 import org.junit.jupiter.api.AfterEach;
@@ -38,7 +41,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.cloud.gateway.support.ServerWebExchangeUtils.*;
 
@@ -51,7 +55,9 @@ class PartialWebSocketRoutingFilterTest {
     private final GatewayFilterChain chain = mock(GatewayFilterChain.class);
 
     @AfterEach
-    void cleanup() { resources.close(); }
+    void cleanup() {
+        resources.close();
+    }
 
     @SuppressWarnings("unchecked")
     private PartialWebSocketRoutingFilter filter() {
@@ -99,19 +105,28 @@ class PartialWebSocketRoutingFilterTest {
         var exchange = exchange(true);
         exchange.getAttributes().put(PRESERVE_HOST_HEADER_ATTRIBUTE, preserveHost);
         var client = mock(WsSession.class);
-        when(client.getAsyncRemote()).thenReturn(mock(RemoteEndpoint.Async.class));
-        when(client.getUserProperties()).thenReturn(new HashMap<>());
-        when(client.getNegotiatedSubprotocol()).thenReturn("first");
+        var backend = mock(WsSession.class);
+        for (var session : List.of(client, backend)) {
+            when(session.getAsyncRemote()).thenReturn(mock(RemoteEndpoint.Async.class));
+            when(session.getUserProperties()).thenReturn(new HashMap<>());
+            when(session.getNegotiatedSubprotocol()).thenReturn("first");
+        }
+        when(container.connectToServer(any(Endpoint.class), any(ClientEndpointConfig.class), any(URI.class))).thenAnswer(call -> {
+            call.<Endpoint>getArgument(0).onOpen(backend, call.getArgument(1));
+            return backend;
+        });
         when(service.handleRequest(eq(exchange), any())).thenAnswer(call -> {
             var handler = (PartialWebSocketHandler) call.<WebSocketHandler>getArgument(1);
             assertThat(handler.getSubProtocols()).containsExactly("first", "second");
-            handler.relay().clientEndpoint().onOpen(client, mock(EndpointConfig.class));
-            return Mono.empty();
+            return handler.connect().doOnNext(protocol -> {
+                assertThat(protocol).isEqualTo("first");
+                handler.relay().clientEndpoint().onOpen(client, mock(EndpointConfig.class));
+            }).then();
         });
         StepVerifier.create(filter().filter(exchange, chain)).verifyComplete();
         var config = org.mockito.ArgumentCaptor.forClass(ClientEndpointConfig.class);
-        await().untilAsserted(() -> verify(container).connectToServer(any(Endpoint.class), config.capture(),
-            eq(URI.create("wss://backend.example:1234/encoded%20path?q=a%2Fb"))));
+        verify(container).connectToServer(any(Endpoint.class), config.capture(),
+            eq(URI.create("wss://backend.example:1234/encoded%20path?q=a%2Fb")));
         assertThat(config.getValue().getPreferredSubprotocols()).containsExactly("first", "second");
         var headers = new HashMap<String, List<String>>();
         config.getValue().getConfigurator().beforeRequest(headers);
