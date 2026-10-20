@@ -1,0 +1,54 @@
+name: "Start a docker compose integration-test environment"
+description: >
+    Adds the loopback hostname aliases the compose stack's services use, then
+    pulls and starts the stack. Used instead of GitHub Actions' native
+    container/services orchestration so the exact same compose file, and the
+    exact same troubleshooting commands (docker compose logs/ps/exec), work
+    both in CI and on a developer machine.
+
+inputs:
+    compose-file:
+        description: "Path to the docker-compose.yml for this test job"
+        required: true
+    image-tag:
+        description: "Tag to pull/run for every service image (APIML_TAG)"
+        required: true
+    image-prefix:
+        description: "Registry/namespace prefix for every service image (APIML_IMAGE_PREFIX)"
+        default: "ghcr.io/balhar-jakub"
+    extra-env:
+        description: >-
+            Extra environment variables the compose file's ${VAR} interpolation needs (e.g. real
+            OIDC tenant secrets), one KEY=VALUE per line
+        required: false
+        default: ""
+
+runs:
+    using: "composite"
+    steps:
+        -   name: yq - portable yaml processor
+            id: extract_hostnames
+            uses: mikefarah/yq@c14f446382944492701b16c1ddb48bb9dbe683e3 # v4.53.6
+            with:
+                cmd: yq '.services | to_entries[] | .value.hostname // .key' "${{ inputs.compose-file }}" | paste -sd " " -
+
+        -   name: Add compose stack hostname aliases
+            shell: bash
+            run: |
+                ./docker/integration-tests/setup-hosts.sh add ${{ steps.extract_hostnames.outputs.result }}
+
+
+        -   name: Pull and start the compose stack
+            shell: bash
+            env:
+                APIML_TAG: ${{ inputs.image-tag }}
+                APIML_IMAGE_PREFIX: ${{ inputs.image-prefix }}
+                EXTRA_ENV: ${{ inputs.extra-env }}
+            run: |
+                # Written to a file and passed via --env-file rather than exported/eval'd, so a
+                # secret value containing shell metacharacters can't be interpreted as a command.
+                env_file="$(mktemp)"
+                printf 'APIML_TAG=%s\nAPIML_IMAGE_PREFIX=%s\n%s\n' "$APIML_TAG" "$APIML_IMAGE_PREFIX" "$EXTRA_ENV" > "$env_file"
+                docker compose --env-file "$env_file" -f "${{ inputs.compose-file }}" pull
+                docker compose --env-file "$env_file" -f "${{ inputs.compose-file }}" up -d
+                rm -f "$env_file"
