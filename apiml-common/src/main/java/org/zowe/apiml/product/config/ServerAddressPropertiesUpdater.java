@@ -20,6 +20,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.tomcat.TomcatWebServerFactory;
 import org.springframework.boot.tomcat.reactive.TomcatReactiveWebServerFactory;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
@@ -203,6 +204,8 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
 
         @Override
         public void customize(F factory) {
+            // Match the main listener's protocol, including API ML's HTTPS redirect extension.
+            connector = new Connector(((TomcatWebServerFactory) factory).getProtocol());
             invokeCustomizer(factory, (Class<? super F>) factory.getClass(), connector);
             connector.setPort(port);
             if (address != null) {

@@ -31,6 +31,59 @@ To override this and run the Gateway without TLS encryption, add the following t
 The source code contains sample certificates that are used by configuration for testing on your local machine. 
 Do not use these certificates in other environments. More details can be found at [/keystore/README.md](/keystore/README.md).
 
+#### Redirect HTTP requests on the HTTPS port
+
+To redirect plaintext HTTP received on API ML's existing HTTPS listeners, enable:
+
+```yaml
+apiml:
+  security:
+    httpRedirect:
+      enabled: true
+```
+
+This feature is disabled by default. It runs inside embedded Tomcat and does not
+open another port. Valid HTTP/1.0 and HTTP/1.1 endpoint requests receive a
+`308 Permanent Redirect`, which preserves the method and body when a client
+follows the redirect. Paths and queries retain their original encoding.
+Plaintext requests do not reach authentication or routing.
+
+The main listener uses `apiml.service.externalUrl` as its destination. Configure
+it as an HTTPS origin (scheme, hostname and optional port, without a path, query,
+fragment or user information). If unset, the destination is
+`https://${apiml.service.hostname}:${server.port}`. Additional connectors use
+`apiml.service.hostname` and their own port, so the modulith's Discovery listener
+continues to redirect to its Discovery port. Incoming `Host` and forwarded
+headers cannot change the destination.
+
+The initial plaintext redirect does not contain HSTS. HTTPS application responses,
+including authentication failures, use `CustomHstsServerHttpHeadersWriter` to send
+`Strict-Transport-Security: max-age=31536000; includeSubDomains`. The shared response
+filter also supports AT-TLS, where transport verification occurs before WebFlux.
+HSTS applies to the hostname and its subdomains; browsers preserve explicit ports
+other than port 80 when upgrading a URL.
+
+The redirect handler bounds the request line using `server.max-http-request-header-size`
+and the connector's connection timeout (60 seconds if no positive timeout is configured).
+Malformed targets, CONNECT requests and cleartext HTTP/2 are rejected; `OPTIONS *`
+redirects to the HTTPS origin's root. TLS negotiation, including client certificate
+authentication, remains handled by Tomcat.
+
+This feature applies to native Java TLS. When inbound AT-TLS is enabled, z/OS can
+reject plaintext before it reaches API ML, so the redirect connector is not installed.
+Plain HTTP mode is also unchanged. Clients should still use HTTPS directly:
+redirecting cannot encrypt data already sent in the first HTTP request.
+
+Run the redirect integration tests with:
+
+```shell
+./gradlew :apiml:test --tests 'org.zowe.apiml.acceptance.HttpsRedirectTest' -x :api-catalog-ui:build
+```
+
+The tests start API ML locally on ports 40985 and 10011 and a test backend on an
+available port. They cover the HTTP redirect, following it through Gateway routing
+with the original method, body and encoded URL, and HSTS on the HTTPS response.
+
 ### Discovery Service
 
 **Note:** If you want to run the Discovery Service using IntelliJ Run Dashboard, you need to add `https` in the `Active profiles` field in `Edit Configuration`. 

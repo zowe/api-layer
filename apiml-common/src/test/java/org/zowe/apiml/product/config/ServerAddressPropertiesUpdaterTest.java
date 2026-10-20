@@ -19,6 +19,7 @@ import org.springframework.boot.tomcat.reactive.TomcatReactiveWebServerFactory;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.apache.coyote.http11.Http11Nio2Protocol;
 
 import java.util.List;
 import java.util.Map;
@@ -88,6 +89,29 @@ class ServerAddressPropertiesUpdaterTest {
 
         assertEquals(1, factory.getAdditionalConnectors().size());
         assertSame(ReflectionTestUtils.getField(customizer, "connector"), factory.getAdditionalConnectors().get(0));
+    }
+
+    @Test
+    void additionalReactiveConnectorUsesFactoryProtocolAndItsOwnPort() {
+        var customizer = new ServerAddressPropertiesUpdater.AdditionalConnectorReactive(List.of());
+        var factory = new TomcatReactiveWebServerFactory();
+        factory.setProtocol(Http11Nio2Protocol.class.getName());
+        factory.setPort(10010);
+        customizer.setPort(10011);
+        customizer.customize(factory);
+        var connector = factory.getAdditionalConnectors().get(0);
+        assertEquals(Http11Nio2Protocol.class, connector.getProtocolHandler().getClass());
+        assertEquals(10011, connector.getPort());
+    }
+
+    @Test
+    void additionalServletConnectorUsesFactoryProtocol() {
+        var customizer = new ServerAddressPropertiesUpdater.AdditionalConnectorServlet(List.of());
+        var factory = new TomcatServletWebServerFactory();
+        factory.setProtocol(Http11Nio2Protocol.class.getName());
+        customizer.setPort(10011);
+        customizer.customize(factory);
+        assertEquals(Http11Nio2Protocol.class, factory.getAdditionalConnectors().get(0).getProtocolHandler().getClass());
     }
 
 }
