@@ -292,7 +292,7 @@ public class DeterministicLoadBalancer extends SameInstancePreferenceServiceInst
             }
             return claims;
         } catch (RuntimeException | ParseException | BadJWTException exception) {
-            log.debug("Exception when trying to parse the JWT token {}: {}", jwt, exception.getMessage());
+            log.debug("Exception when trying to parse the JWT token ...{}: {}", StringUtils.right(jwt, 15), exception.getMessage());
             return null; // NOSONAR
         }
     }
