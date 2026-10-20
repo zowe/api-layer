@@ -10,8 +10,10 @@
 
 package org.zowe.apiml.gateway.acceptance;
 
+import com.sun.net.httpserver.Headers;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.websocket.ClientEndpointConfig;
+import jakarta.websocket.CloseReason;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.EndpointConfig;
 import jakarta.websocket.Session;
@@ -30,6 +32,8 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static io.restassured.RestAssured.given;
@@ -47,6 +51,48 @@ class PartialWebSocketHandshakeTest extends AcceptanceTestWithMockServices {
     MeterRegistry meters;
     @TempDir
     Path directory;
+
+    @ParameterizedTest
+    @CsvSource({"true,401,1003", "false,401,1003", "true,403,1011", "false,403,1011", "true,404,1011", "false,404,1011"})
+    void backendRejectionPreservesTheClientCloseReason(boolean partial, int status, int closeCode) throws Exception {
+        var headers = new Headers();
+        headers.add("WWW-Authenticate", "Basic realm=\"backend\"");
+        var backend = mockService("rejectedservice")
+            .additionalMetadata(Map.of(
+                "apiml.routes.ws-v1.gatewayUrl", "ws/v1",
+                "apiml.routes.ws-v1.serviceUrl", "/backend",
+                "apiml.websocket.partialForwarding", Boolean.toString(partial)))
+            .addEndpoint("/backend").responseCode(status).headers(headers).and().start();
+        var closed = new LinkedBlockingQueue<CloseReason>();
+        var container = new WsWebSocketContainer();
+        Session client = null;
+        try {
+            client = container.connectToServer(new Endpoint() {
+                @Override
+                public void onOpen(Session session, EndpointConfig config) { }
+
+                @Override
+                public void onClose(Session session, CloseReason reason) {
+                    closed.add(reason);
+                }
+            }, ClientEndpointConfig.Builder.create().sslContext(apimlSSLContext).build(),
+                URI.create("wss://localhost:" + port + "/rejectedservice/ws/v1"));
+            var reason = closed.poll(10, TimeUnit.SECONDS);
+            assertThat(reason).isNotNull();
+            assertThat(reason.getCloseCode().getCode()).isEqualTo(closeCode);
+            if (status == 401) {
+                assertThat(reason.getReasonPhrase()).isEqualTo("Invalid login credentials");
+            } else {
+                assertThat(reason.getReasonPhrase()).contains("[" + status + "]");
+            }
+            assertThat(backend.getCounter()).isEqualTo(1);
+        } finally {
+            if (client != null && client.isOpen()) client.close();
+            container.destroy();
+        }
+        await().atMost(Duration.ofSeconds(2)).untilAsserted(() ->
+            assertThat(meters.get("apiml.websocket.active").gauge().value()).isZero());
+    }
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})

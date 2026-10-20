@@ -47,8 +47,9 @@ class KeyValueTest {
 
         @Test
         void thenTheTtlIsNotPartOfTheStream() throws Exception {
-            KeyValue withoutTtl = new KeyValue("key", "value");
-            KeyValue withTtl = new KeyValue("key", "value");
+            String created = "123456789";
+            KeyValue withoutTtl = new KeyValue("key", "value", created);
+            KeyValue withTtl = new KeyValue("key", "value", created);
             withTtl.setServiceId(withoutTtl.getServiceId());
             withTtl.setTtlSeconds(1234L);
 

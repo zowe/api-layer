@@ -12,8 +12,10 @@ package org.zowe.apiml.gateway.websocket;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.websocket.DeploymentException;
 import jakarta.websocket.Endpoint;
 import jakarta.websocket.server.ServerEndpointConfig;
+import org.apache.tomcat.websocket.AuthenticationException;
 import org.springframework.cloud.gateway.config.HttpClientProperties;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
 import org.springframework.lang.Nullable;
+import org.springframework.web.reactive.socket.CloseStatus;
 import org.springframework.web.reactive.socket.HandshakeInfo;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.adapter.ContextWebSocketHandler;
@@ -84,10 +87,34 @@ public class ApimlRequestUpgradeStrategy extends StandardWebSocketUpgradeStrateg
                         original.getPrincipal(), selected, original.getRemoteAddress(), original.getAttributes(), original.getLogPrefix());
                     return upgradeClient(exchange, handler, selected, info);
                 })
+                .onErrorResume(ResponseStatusException.class, error -> {
+                    CloseStatus rejection = backendRejection(error);
+                    if (rejection == null) return Mono.error(error);
+                    backend.abort();
+                    // Preserve the close frame previously emitted by ApimlWebSocketSession.onError.
+                    // No messages are forwarded when the backend has rejected the connection.
+                    return upgradeClient(exchange, session -> session.close(rejection), subProtocol, handshakeInfoFactory.get());
+                })
                 .doOnError(error -> backend.abort())
                 .doOnCancel(backend::abort);
         }
         return upgradeClient(exchange, handler, subProtocol, handshakeInfoFactory.get());
+    }
+
+    @Nullable
+    private CloseStatus backendRejection(ResponseStatusException error) {
+        if (error.getStatusCode() != HttpStatus.BAD_GATEWAY || !(error.getCause() instanceof DeploymentException rejection)) {
+            return null;
+        }
+        if (rejection.getCause() instanceof AuthenticationException) {
+            return new CloseStatus(1003, "Invalid login credentials");
+        }
+        // Tomcat reports a rejected HTTP response as a DeploymentException without a cause.
+        // Transport/TLS failures have a cause and still fail the HTTP handshake.
+        if (rejection.getCause() == null) {
+            return CloseStatus.SERVER_ERROR.withReason(rejection.getMessage());
+        }
+        return null;
     }
 
     private boolean validClientHandshake(ServerWebExchange exchange) {

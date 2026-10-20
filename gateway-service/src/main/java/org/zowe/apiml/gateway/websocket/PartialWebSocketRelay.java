@@ -160,26 +160,30 @@ public final class PartialWebSocketRelay {
                 negotiated.tryEmitValue(java.util.Objects.requireNonNullElse(session.getNegotiatedSubprotocol(), ""));
             }
         } catch (Exception e) {
-            fail("connect", "WebSocket backend connection failed");
+            fail("connect", "WebSocket backend connection failed", e);
         }
     }
 
     public void fail(String category, String reason) {
+        fail(category, reason, null);
+    }
+
+    private void fail(String category, String reason, Throwable cause) {
         var status = "connect-timeout".equals(category) ? HttpStatus.GATEWAY_TIMEOUT : HttpStatus.BAD_GATEWAY;
-        if (terminate(new CloseReason("size".equals(category) ? CloseReason.CloseCodes.TOO_BIG : CloseReason.CloseCodes.UNEXPECTED_CONDITION, reason), status)) {
+        if (terminate(new CloseReason("size".equals(category) ? CloseReason.CloseCodes.TOO_BIG : CloseReason.CloseCodes.UNEXPECTED_CONDITION, reason), status, cause)) {
             resources.failure(category);
         }
     }
 
     private boolean terminate(CloseReason reason) {
-        return terminate(reason, HttpStatus.BAD_GATEWAY);
+        return terminate(reason, HttpStatus.BAD_GATEWAY, null);
     }
 
-    private boolean terminate(CloseReason reason, HttpStatus status) {
+    private boolean terminate(CloseReason reason, HttpStatus status, Throwable cause) {
         if (!closed.compareAndSet(false, true)) {
             return false;
         }
-        negotiated.tryEmitError(new ResponseStatusException(status, reason.getReasonPhrase()));
+        negotiated.tryEmitError(new ResponseStatusException(status, reason.getReasonPhrase(), cause));
         var task = connecting;
         if (task != null && backend == null) {
             task.cancel(true);
