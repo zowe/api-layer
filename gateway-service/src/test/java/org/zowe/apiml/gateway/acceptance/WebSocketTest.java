@@ -40,12 +40,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -257,8 +260,8 @@ class WebSocketTest {
         }
 
         @Test
-        void whenTyrusBinaryFrameResponse_thenSucceed() throws InterruptedException {
-            var connected = webSocketClientTyrus.connectBlocking();
+        void whenTyrusBinaryFrameResponse_thenSucceed() throws Exception {
+            var connected = webSocketClientTyrus.connectBlocking(10, TimeUnit.SECONDS);
             assertTrue(connected);
 
             var data = RandomUtils.insecure().randomBytes(21_504);
@@ -270,14 +273,7 @@ class WebSocketTest {
             webSocketClientTyrus.sendFragmentedFrame(Opcode.BINARY, frame2, false);
             webSocketClientTyrus.sendFragmentedFrame(Opcode.BINARY, frame3, true);
 
-            await()
-                .atMost(Duration.ofSeconds(40))
-                .untilAsserted(() -> {
-                    var response = webSocketClientTyrus.getBuffer();
-                    assertNotNull(response);
-                    assertTrue(response.remaining() > 0);
-                    assertTrue(response.capacity() == 21_504, "capacity was " + response.capacity());
-                });
+            assertArrayEquals(data, webSocketClientTyrus.binaryResponse.get(40, TimeUnit.SECONDS));
         }
 
     }
@@ -285,10 +281,9 @@ class WebSocketTest {
     private static class WebSocketTestClient extends WebSocketClient {
 
         @Getter
-        private List<String> messages = new ArrayList<>();
+        private final List<String> messages = new CopyOnWriteArrayList<>();
 
-        @Getter
-        private ByteBuffer buffer;
+        private final CompletableFuture<byte[]> binaryResponse = new CompletableFuture<>();
 
         @Setter
         private BiConsumer<Integer, String> onClose;
@@ -312,11 +307,15 @@ class WebSocketTest {
 
         @Override
         public void onMessage(ByteBuffer bytes) {
-            buffer = bytes;
+            byte[] response = new byte[bytes.remaining()];
+            bytes.duplicate().get(response);
+            binaryResponse.complete(response);
         }
 
         @Override
         public void onClose(int code, String reason, boolean remote) {
+            binaryResponse.completeExceptionally(new IllegalStateException(
+                "WebSocket closed before the binary response: code=" + code + ", reason=" + reason));
             if (onClose != null) {
                 onClose.accept(code, reason);
             }
@@ -332,6 +331,7 @@ class WebSocketTest {
         @Override
         public void onError(Exception ex) {
             error.compareAndSet(null, ex);
+            binaryResponse.completeExceptionally(ex);
         }
 
         /**
