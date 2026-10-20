@@ -162,7 +162,6 @@ if [ "${ZWE_configs_apiml_catalog_serviceId}" = "none" ]; then
 fi
 
 # Check for Java version and set Java options in case the version is 17 or newer
-ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
     | grep "major version" \
     | cut -d " " -f5)
@@ -171,9 +170,6 @@ ADD_OPENS=""
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
     GATEWAY_LOADER_PATH=${COMMON_LIB},/usr/include/java_classes/IRRRacf.jar
-    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
-        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
-    fi
 else
     GATEWAY_LOADER_PATH=${COMMON_LIB}
 fi
@@ -421,7 +417,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${GATEWAY_CODE} java \
     -Djavax.net.debug=${ZWE_configs_sslDebug:-""} \
     -Djdk.tls.client.cipherSuites=${client_ciphers} \
     -Dloader.path=${GATEWAY_LOADER_PATH} \
-    -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
     -Dserver.address=${ZWE_configs_server_address:-0.0.0.0} \
     -Dserver.internal.address=${ZWE_configs_server_internal_address:-${ZWE_configs_server_address:-0.0.0.0}} \
     -Dserver.internal.enabled=${ZWE_configs_server_internal_enabled:-false} \

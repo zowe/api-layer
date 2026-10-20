@@ -71,7 +71,6 @@ else
 fi
 
 # Check for Java version and set Java options in case the version is 17 or newer
-ZOWE_CONSOLE_LOG_CHARSET=UTF-8
 JAVA_VERSION=$(${JAVA_HOME}/bin/javap -verbose java.lang.String \
     | grep "major version" \
     | cut -d " " -f5)
@@ -79,9 +78,6 @@ ADD_OPENS=""
 
 if [ "$(uname)" = "OS/390" ]; then
     QUICK_START="-Xquickstart"
-    if [ $JAVA_VERSION -ge 65 ]; then # Java 21
-        ZOWE_CONSOLE_LOG_CHARSET=IBM-1047
-    fi
 fi
 
 LIBPATH="$LIBPATH":"/lib"
@@ -234,7 +230,6 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${METRICS_CODE} java \
   -Dsun.io.useCanonCaches=false \
   -Dibm.serversocket.recover=true \
   -Dfile.encoding=UTF-8 \
-  -Dlogging.charset.console=${ZOWE_CONSOLE_LOG_CHARSET} \
   -Djava.io.tmpdir=${TMPDIR:-/tmp} \
   -Dspring.profiles.include=$LOG_LEVEL \
   -Dapiml.health.protected=${ZWE_configs_apiml_health_protected:-false} \
