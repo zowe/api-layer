@@ -65,6 +65,11 @@ apiml:
             version: 1.0.0
 
     security:
+        httpRedirect:
+            enabled: false
+        hsts:
+            maxAge: 31536000
+            includeSubDomains: true
         ssl:
             sslEnabled: true
             protocol: TLS

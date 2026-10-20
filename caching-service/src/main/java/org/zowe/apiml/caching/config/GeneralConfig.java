@@ -24,11 +24,12 @@ import org.zowe.apiml.product.config.ServerAddressPropertiesUpdater;
 import org.zowe.apiml.product.security.WebServerSecurityConfig;
 import org.zowe.apiml.product.service.ServiceStartupEventHandler;
 import org.zowe.apiml.product.web.ApimlTomcatCustomizer;
+import org.zowe.apiml.product.web.HttpsRedirectConfiguration;
 import org.zowe.apiml.product.web.TomcatAcceptFixConfig;
 import org.zowe.apiml.product.web.TomcatKeyringFix;
 
 @Configuration
-@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class, ApimlTomcatCustomizer.class, AttlsHttpHandler.class, WebServerSecurityConfig.class, ServerAddressPropertiesUpdater.class, NonModulithApplicationInfoConfig.class})
+@Import({TomcatKeyringFix.class, TomcatAcceptFixConfig.class, ApimlTomcatCustomizer.class, HttpsRedirectConfiguration.class, AttlsHttpHandler.class, WebServerSecurityConfig.class, ServerAddressPropertiesUpdater.class, NonModulithApplicationInfoConfig.class})
 @Data
 @ToString
 public class GeneralConfig implements WebMvcConfigurer {

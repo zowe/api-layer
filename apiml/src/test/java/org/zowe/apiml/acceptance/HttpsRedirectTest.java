@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.acceptance;
 
+import com.sun.net.httpserver.Headers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -26,8 +27,6 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertAll;
@@ -36,13 +35,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/**
- * Exercises the redirect over real sockets through API ML's TLS connectors, security chains and service routing.
- */
 @AcceptanceTest
 @TestPropertySource(properties = {
     "apiml.security.httpRedirect.enabled=true",
-    "apiml.health.protected=false"
+    "apiml.health.protected=false",
+    "apiml.security.hsts.maxAge=600",
+    "apiml.security.hsts.includeSubDomains=false"
 })
 class HttpsRedirectTest extends AcceptanceTestWithMockServices {
 
@@ -147,7 +145,20 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
     void httpsStillServesRequestsAndAddsHstsAcrossSecurityChains(int connectorPort, String path, int status) {
         given().when().get("https://localhost:" + connectorPort + path)
             .then().statusCode(status)
-            .header("Strict-Transport-Security", allOf(containsString("max-age=31536000"), containsString("includeSubDomains")));
+            .header("Strict-Transport-Security", equalTo("max-age=600"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"max-age=300", "max-age=0", "max-age=600; includeSubDomains; preload"})
+    void preservesBackendHstsPolicy(String policy) {
+        var headers = new Headers();
+        headers.set("Strict-Transport-Security", policy);
+        mockService("redirecttest")
+            .addEndpoint("/redirecttest/hsts").headers(headers).body("backend response").and().start();
+
+        given().when().get(basePath + "/redirecttest/api/v1/hsts")
+            .then().statusCode(200)
+            .header("Strict-Transport-Security", equalTo(policy));
     }
 
     private static void assertSingleRedirectWithHsts(HttpResponse<?> response) {
@@ -161,7 +172,6 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
 
         var hsts = response.headers().allValues("Strict-Transport-Security");
         assertEquals(1, hsts.size(), "The HTTPS response should contain one HSTS header");
-        assertTrue(hsts.get(0).contains("max-age=31536000"));
-        assertTrue(hsts.get(0).contains("includeSubDomains"));
+        assertEquals("max-age=600", hsts.get(0));
     }
 }

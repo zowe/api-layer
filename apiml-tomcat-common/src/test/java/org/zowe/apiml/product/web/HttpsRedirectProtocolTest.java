@@ -22,6 +22,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.boot.tomcat.reactive.TomcatReactiveWebServerFactory;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -40,9 +44,11 @@ import java.security.KeyStore;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.awaitility.Awaitility.await;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class HttpsRedirectProtocolTest {
@@ -58,15 +64,20 @@ class HttpsRedirectProtocolTest {
     void start() throws Exception {
         tomcat = new Tomcat();
         tomcat.setBaseDir(temp.toString());
-        connector = new Connector(new HttpsRedirectProtocol());
+        var factory = new TomcatReactiveWebServerFactory();
+        factory.setPort(0);
+        new HttpsRedirectConfiguration(true, false, "", "localhost").customize(factory);
+        connector = new Connector(factory.getProtocol());
+        factory.getConnectorCustomizers().forEach(customizer -> customizer.customize(connector));
         connector.setPort(0);
         connector.setScheme("https");
         connector.setSecure(true);
         var protocol = (HttpsRedirectProtocol) connector.getProtocolHandler();
         protocol.setSSLEnabled(true);
         protocol.setConnectionTimeout(1000);
-        protocol.setMaxHttpRequestHeaderSize(2048);
-        protocol.setHttpsRedirectOrigin("https://localhost");
+        protocol.setMaxHttpHeaderSize(2048);
+        protocol.setRelaxedPathChars("|{}^[]");
+        protocol.setRelaxedQueryChars("|{}^[]");
         SSLHostConfig ssl = new SSLHostConfig();
         ssl.setCertificateVerification("required");
         ssl.setTruststoreFile(keyFile("service.truststore.p12").toString());
@@ -91,7 +102,6 @@ class HttpsRedirectProtocolTest {
         });
         context.addServletMappingDecoded("/*", "test");
         tomcat.start();
-        protocol.setHttpsRedirectOrigin("https://localhost:" + connector.getLocalPort());
         client = HttpClient.newBuilder().sslContext(sslContext(true))
             .followRedirects(HttpClient.Redirect.ALWAYS).connectTimeout(Duration.ofSeconds(5)).build();
     }
@@ -104,8 +114,8 @@ class HttpsRedirectProtocolTest {
         }
     }
 
-    private static Path keyFile(String name) {
-        return Path.of("../keystore/service", name).toAbsolutePath();
+    private static Path keyFile(String name) throws IOException {
+        return new ClassPathResource("https-redirect/" + name).getFile().toPath();
     }
 
     private static SSLContext sslContext(boolean clientCertificate) throws Exception {
@@ -177,6 +187,57 @@ class HttpsRedirectProtocolTest {
         assertEquals(200, response.statusCode());
         assertEquals("POST /post payload", response.body());
         assertEquals(308, response.previousResponse().orElseThrow().statusCode());
+    }
+
+    @Test
+    void drainsLargeUploadWithoutResettingTheConnection() throws Exception {
+        int before = requests.get();
+        byte[] body = new byte[8 * 1024 * 1024];
+        String headers = "POST /large HTTP/1.1\r\nHost: localhost\r\nContent-Length: " + body.length + "\r\n\r\n";
+        try (Socket socket = socket()) {
+            socket.getOutputStream().write(headers.getBytes(StandardCharsets.US_ASCII));
+            socket.getOutputStream().write(body);
+            socket.shutdownOutput();
+            String response = new String(socket.getInputStream().readAllBytes(), StandardCharsets.US_ASCII);
+            assertTrue(response.startsWith("HTTP/1.1 308 Permanent Redirect\r\n"));
+            assertTrue(response.contains("Location: https://localhost:" + connector.getLocalPort() + "/large\r\n"));
+        }
+        assertEquals(before, requests.get());
+    }
+
+    @Test
+    void boundsDrainTimeEvenWhenClientKeepsSending() throws Exception {
+        try (Socket socket = socket()) {
+            socket.getOutputStream().write("POST /unfinished HTTP/1.1\r\n".getBytes(StandardCharsets.US_ASCII));
+            assertTrue(new String(socket.getInputStream().readAllBytes(), StandardCharsets.US_ASCII).startsWith("HTTP/1.1 308"));
+            await().atMost(3, TimeUnit.SECONDS).until(() -> {
+                try {
+                    socket.getOutputStream().write(new byte[1024]);
+                    return false;
+                } catch (IOException e) {
+                    return true;
+                }
+            });
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {" ", "\u0000", "\t"})
+    void rejectsLeadingJunkWithAnHttpError(String prefix) throws Exception {
+        assertTrue(send(prefix + "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n").startsWith("HTTP/1.1 400"));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"|", "{", "}", "^", "[", "]"})
+    void redirectsRelaxedQueryCharactersToUsableHttpsUris(String character) throws Exception {
+        String response = send("GET /x?filter=a" + character + "b HTTP/1.1\r\nHost: localhost\r\n\r\n");
+        assertTrue(response.startsWith("HTTP/1.1 308"));
+        String location = response.lines().filter(line -> line.startsWith("Location: "))
+            .findFirst().orElseThrow().substring("Location: ".length());
+        var uri = URI.create(location);
+        assertEquals("filter=a" + character + "b", uri.getQuery());
+        var request = HttpRequest.newBuilder(uri).timeout(Duration.ofSeconds(5)).GET().build();
+        assertEquals(200, client.send(request, HttpResponse.BodyHandlers.discarding()).statusCode());
     }
 
     @Test

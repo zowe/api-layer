@@ -30,7 +30,7 @@ spring:
                         prefix-enabled: true
                     filter:
                         secure-headers:
-                            disable: content-security-policy,permitted-cross-domain-policies,download-options
+                            disable: content-security-policy,permitted-cross-domain-policies,download-options,strict-transport-security
                             referrer-policy: strict-origin-when-cross-origin
                             frame-options: sameorigin
     application:
@@ -210,6 +210,9 @@ apiml:
     security:
         httpRedirect:
             enabled: false # Redirect plaintext HTTP received on native TLS connectors to HTTPS
+        hsts:
+            maxAge: 31536000 # Seconds; used when a response has no HSTS header
+            includeSubDomains: true
         csrf:
             preserveOriginForCrossSite: true
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName

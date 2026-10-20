@@ -40,6 +40,8 @@ eureka:
 apiml:
     enabled: true
     security:
+            httpRedirect:
+                enabled: false
             x509:
                 certificatesUrl: https://localhost:10010/gateway/certificates
                 acceptForwardedCert: true

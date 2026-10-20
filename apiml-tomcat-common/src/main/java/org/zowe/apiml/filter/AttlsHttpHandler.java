@@ -101,7 +101,7 @@ public class AttlsHttpHandler implements BeanPostProcessor {
 
     ServerHttpRequest updateCertificate(ServerHttpRequest request, HttpServletRequest nativeRequest, byte[] rawCertificate) throws CertificateException {
         if (ArrayUtils.isEmpty(rawCertificate)) {
-            return request;
+            return request.mutate().sslInfo(AttlsSslInfo.builder().build()).build();
         }
 
         var str = String.format("""

@@ -45,29 +45,47 @@ apiml:
 This feature is disabled by default. It runs inside embedded Tomcat and does not
 open another port. Valid HTTP/1.0 and HTTP/1.1 endpoint requests receive a
 `308 Permanent Redirect`, which preserves the method and body when a client
-follows the redirect. Paths and queries retain their original encoding.
+follows the redirect. Existing percent escapes in paths and queries are preserved.
+Characters explicitly permitted by Tomcat's `relaxedPathChars` or `relaxedQueryChars`
+are percent-encoded in the redirect so clients can follow a valid HTTPS URI.
 Plaintext requests do not reach authentication or routing.
 
 The main listener uses `apiml.service.externalUrl` as its destination. Configure
 it as an HTTPS origin (scheme, hostname and optional port, without a path, query,
-fragment or user information). If unset, the destination is
-`https://${apiml.service.hostname}:${server.port}`. Additional connectors use
+fragment or user information). Invalid origins fail early with a configuration
+error naming the property. If unset or empty, the destination uses
+`apiml.service.hostname` and the actual bound port, including when `server.port=0`.
+The Gateway and modulith supply a default external URL; set it to an empty string
+to use the bound port in tests with random ports. Additional connectors use
 `apiml.service.hostname` and their own port, so the modulith's Discovery listener
 continues to redirect to its Discovery port. Incoming `Host` and forwarded
 headers cannot change the destination.
 
 The initial plaintext redirect does not contain HSTS. HTTPS application responses,
-including authentication failures, use `CustomHstsServerHttpHeadersWriter` to send
-`Strict-Transport-Security: max-age=31536000; includeSubDomains`. The shared response
-filter also supports AT-TLS, where transport verification occurs before WebFlux.
-HSTS applies to the hostname and its subdomains; browsers preserve explicit ports
-other than port 80 when upgrading a URL.
+including authentication failures, use `CustomHstsServerHttpHeadersWriter` to
+preserve any existing HSTS header, including policies from backend services.
+Otherwise, the default is
+`Strict-Transport-Security: max-age=31536000; includeSubDomains`. Set
+`apiml.security.hsts.maxAge` (seconds, zero or greater) and
+`apiml.security.hsts.includeSubDomains` to customize this fallback policy in the
+reactive Gateway, modulith and API Catalog. The shared response filter also
+supports AT-TLS: transport verification supplies SSL information before WebFlux,
+even without a client certificate. An enabled AT-TLS flag alone is insufficient.
+HSTS applies to the entire hostname, and optionally its subdomains, so backend
+policies should be coordinated. Browsers preserve explicit ports other than
+port 80 when upgrading a URL.
 
 The redirect handler bounds the request line using `server.max-http-request-header-size`
 and the connector's connection timeout (60 seconds if no positive timeout is configured).
 Malformed targets, CONNECT requests and cleartext HTTP/2 are rejected; `OPTIONS *`
 redirects to the HTTPS origin's root. TLS negotiation, including client certificate
 authentication, remains handled by Tomcat.
+
+After sending the redirect, API ML half-closes the connection and discards incoming
+data without routing it. Draining uses a fixed deadline of five seconds or the
+connector's connection timeout, whichever is shorter. This avoids resets caused
+by immediately closing connections with uploads in progress while bounding resource
+use. Clients that keep sending beyond the deadline can still receive a reset.
 
 This feature applies to native Java TLS. When inbound AT-TLS is enabled, z/OS can
 reject plaintext before it reaches API ML, so the redirect connector is not installed.

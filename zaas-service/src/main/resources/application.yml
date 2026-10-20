@@ -35,6 +35,8 @@ apiml:
                                              # In Brightside, this holds the DVIPA address and is overridden in PARMLIB to work
                                              # properly.
     security:
+        httpRedirect:
+            enabled: false
         filterChainConfiguration: new
         allowTokenRefresh: false
         jwtInitializerTimeout: 5

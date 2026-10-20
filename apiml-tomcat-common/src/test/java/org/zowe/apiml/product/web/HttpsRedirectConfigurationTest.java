@@ -18,6 +18,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.boot.tomcat.reactive.TomcatReactiveWebServerFactory;
+import org.springframework.boot.web.server.Ssl;
+
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -79,7 +83,8 @@ class HttpsRedirectConfigurationTest {
             }
         }
         verify(main).setHttpsRedirectOrigin("https://public.example:443");
-        verify(extra).setHttpsRedirectOrigin("https://internal.example:10011");
+        verify(extra).setHttpsRedirectHostname("internal.example");
+        verify(extra, never()).setHttpsRedirectOrigin(anyString());
     }
 
     @ParameterizedTest
@@ -90,5 +95,43 @@ class HttpsRedirectConfigurationTest {
     })
     void rejectsInvalidRedirectOrigins(String origin) {
         assertThrows(IllegalArgumentException.class, () -> new HttpsRedirectProtocol().setHttpsRedirectOrigin(origin));
+        var configuration = new HttpsRedirectConfiguration(true, false, origin, "localhost");
+        var failure = assertThrows(IllegalArgumentException.class,
+            () -> configuration.customize(new TomcatReactiveWebServerFactory()));
+        assertTrue(failure.getMessage().contains("apiml.service.externalUrl"));
+    }
+
+    @Test
+    void validatesHostnameBeforeCreatingConnectors() {
+        var configuration = new HttpsRedirectConfiguration(true, false, "", "invalid host");
+        var failure = assertThrows(IllegalArgumentException.class,
+            () -> configuration.customize(new TomcatReactiveWebServerFactory()));
+        assertTrue(failure.getMessage().contains("apiml.service.hostname"));
+    }
+
+    @Test
+    void startsOnRandomPortAndRedirectsToTheBoundPort() throws Exception {
+        var factory = new TomcatReactiveWebServerFactory(0);
+        var ssl = new Ssl();
+        ssl.setKeyStore("classpath:https-redirect/service.keystore.p12");
+        ssl.setKeyStorePassword("password");
+        ssl.setKeyStoreType("PKCS12");
+        factory.setSsl(ssl);
+        new HttpsRedirectConfiguration(true, false, "", "localhost").customize(factory);
+        var server = factory.getWebServer((request, response) -> response.setComplete());
+        try {
+            server.start();
+            assertTrue(server.getPort() > 0);
+            try (var socket = new Socket("localhost", server.getPort())) {
+                socket.setSoTimeout(5000);
+                socket.getOutputStream().write("GET /random HTTP/1.1\r\nHost: localhost\r\n\r\n".getBytes(StandardCharsets.US_ASCII));
+                var response = new String(socket.getInputStream().readAllBytes(), StandardCharsets.US_ASCII);
+                assertTrue(response.startsWith("HTTP/1.1 308"));
+                assertTrue(response.contains("Location: https://localhost:" + server.getPort() + "/random\r\n"));
+            }
+        } finally {
+            server.stop();
+            server.destroy();
+        }
     }
 }

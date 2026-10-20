@@ -16,6 +16,7 @@ import org.springframework.security.web.server.header.StrictTransportSecuritySer
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import java.time.Duration;
+import java.util.List;
 
 /**
  * Custom implementation of ServerHttpHeadersWriter for handling HTTP Strict Transport Security (HSTS).
@@ -35,14 +36,23 @@ import java.time.Duration;
  */
 public class CustomHstsServerHttpHeadersWriter implements ServerHttpHeadersWriter {
 
-    private static final String DEFAULT_MAX_AGE = "max-age=" + Duration.ofDays(365L).getSeconds();
-    private static final String DEFAULT_INCLUDE_SUBDOMAINS = "; includeSubDomains";
-    private static final String HEADER_VALUE = DEFAULT_MAX_AGE + DEFAULT_INCLUDE_SUBDOMAINS;
+    private final String headerValue;
+
+    public CustomHstsServerHttpHeadersWriter() {
+        this(Duration.ofDays(365), true);
+    }
+
+    public CustomHstsServerHttpHeadersWriter(Duration maxAge, boolean includeSubDomains) {
+        if (maxAge.isNegative()) {
+            throw new IllegalArgumentException("apiml.security.hsts.maxAge must not be negative");
+        }
+        headerValue = "max-age=" + maxAge.getSeconds() + (includeSubDomains ? "; includeSubDomains" : "");
+    }
 
     @Override
     public Mono<Void> writeHttpHeaders(ServerWebExchange exchange) {
         HttpHeaders headers = exchange.getResponse().getHeaders();
-        headers.set("Strict-Transport-Security", HEADER_VALUE);
+        headers.putIfAbsent("Strict-Transport-Security", List.of(headerValue));
         return Mono.empty();
     }
 

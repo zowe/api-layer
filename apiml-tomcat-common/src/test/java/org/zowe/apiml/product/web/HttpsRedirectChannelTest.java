@@ -10,6 +10,7 @@
 
 package org.zowe.apiml.product.web;
 
+import org.apache.tomcat.util.http.parser.HttpParser;
 import org.apache.tomcat.util.net.NioEndpoint;
 import org.apache.tomcat.util.net.SocketBufferHandler;
 import org.junit.jupiter.api.Test;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class HttpsRedirectChannelTest {
@@ -58,6 +60,28 @@ class HttpsRedirectChannelTest {
         assertThrows(IllegalArgumentException.class, () -> HttpsRedirectChannel.requestTarget(line + "\r\n"));
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"|", "{", "}", "^", "[", "]", "\\", "\"", "<", ">", "`"})
+    void acceptsAndEncodesOnlyConfiguredRelaxedCharacters(String character) {
+        String escaped = "%" + Integer.toHexString(character.charAt(0)).toUpperCase(java.util.Locale.ROOT);
+        String pathLine = "GET /a" + character + "b?q=%2F HTTP/1.1\r\n";
+        String queryLine = "GET /x?filter=a" + character + "b HTTP/1.1\r\n";
+        assertThrows(IllegalArgumentException.class, () -> HttpsRedirectChannel.requestTarget(pathLine));
+        assertThrows(IllegalArgumentException.class, () -> HttpsRedirectChannel.requestTarget(queryLine));
+        assertEquals("/a" + escaped + "b?q=%2F",
+            HttpsRedirectChannel.requestTarget(pathLine, new HttpParser(character, null)));
+        assertEquals("/x?filter=a" + escaped + "b",
+            HttpsRedirectChannel.requestTarget(queryLine, new HttpParser(null, character)));
+        assertThrows(IllegalArgumentException.class,
+            () -> HttpsRedirectChannel.requestTarget(pathLine, new HttpParser(null, character)));
+    }
+
+    @Test
+    void supportsRelaxedAbsoluteTargetsWithoutTrustingTheirAuthority() {
+        assertEquals("/x?filter=a%7Cb", HttpsRedirectChannel.requestTarget(
+            "GET http://[::1]:1234/x?filter=a|b HTTP/1.1\r\n", new HttpParser(null, "|")));
+    }
+
     @Test
     void finishesPartialWritesBeforeClosing() throws Exception {
         var socket = mock(SocketChannel.class);
@@ -76,14 +100,17 @@ class HttpsRedirectChannelTest {
             return count;
         });
         var channel = new HttpsRedirectChannel(new SocketBufferHandler(1024, 1024, false),
-            new NioEndpoint(), "https://example.com", 1024);
+            new NioEndpoint(), "https://example.com", 1024, new HttpParser(null, null));
         channel.reset(socket, mock(NioEndpoint.NioSocketWrapper.class));
         assertEquals(SelectionKey.OP_WRITE, channel.handshake(true, false));
         int result = SelectionKey.OP_WRITE;
         for (int i = 0; i < 100 && result == SelectionKey.OP_WRITE; i++) {
             result = channel.handshake(false, true);
         }
-        assertEquals(-1, result);
+        assertEquals(SelectionKey.OP_READ, result);
+        verify(socket).shutdownOutput();
+        when(socket.read(any(ByteBuffer.class))).thenReturn(-1);
+        assertEquals(-1, channel.handshake(true, false));
         assertEquals("HTTP/1.1 308 Permanent Redirect\r\nLocation: https://example.com/partial\r\n"
             + "Content-Length: 0\r\nConnection: close\r\n\r\n", output.toString(StandardCharsets.US_ASCII));
         assertFalse(channel.isHandshakeComplete());

@@ -25,9 +25,14 @@ public class HttpsRedirectProtocol extends Http11NioProtocol {
         ((HttpsRedirectEndpoint) getEndpoint()).setRedirectOrigin(origin);
     }
 
+    public void setHttpsRedirectHostname(String hostname) {
+        ((HttpsRedirectEndpoint) getEndpoint()).setRedirectHostname(hostname);
+    }
+
     @Override
-    public void setMaxHttpRequestHeaderSize(int size) {
-        super.setMaxHttpRequestHeaderSize(size);
-        ((HttpsRedirectEndpoint) getEndpoint()).setRequestLimit(size);
+    public void init() throws Exception {
+        ((HttpsRedirectEndpoint) getEndpoint()).configureRequestParsing(
+            getMaxHttpRequestHeaderSize(), getRelaxedPathChars(), getRelaxedQueryChars());
+        super.init();
     }
 }

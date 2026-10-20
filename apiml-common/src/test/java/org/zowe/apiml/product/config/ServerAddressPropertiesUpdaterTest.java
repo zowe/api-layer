@@ -64,17 +64,12 @@ class ServerAddressPropertiesUpdaterTest {
         });
     }
 
-    /**
-     * Spring Boot 4 renamed {@code TomcatReactiveWebServerFactory.addAdditionalTomcatConnectors} to
-     * {@code addAdditionalConnectors}; the reactive service has to hand its connector to the factory
-     * through the new method or the additional listener address silently never opens.
-     */
     @Test
     void givenReactiveService_whenConnectorIsInitialized_thenTheConnectorIsRegisteredOnTheFactory() {
         var customizer = new ServerAddressPropertiesUpdater.AdditionalConnectorReactive(List.of());
         var factory = new TomcatReactiveWebServerFactory();
 
-        customizer.initFactory(factory);
+        customizer.customize(factory);
 
         assertEquals(1, factory.getAdditionalConnectors().size());
         assertSame(ReflectionTestUtils.getField(customizer, "connector"), factory.getAdditionalConnectors().get(0));
@@ -85,7 +80,7 @@ class ServerAddressPropertiesUpdaterTest {
         var customizer = new ServerAddressPropertiesUpdater.AdditionalConnectorServlet(List.of());
         var factory = new TomcatServletWebServerFactory();
 
-        customizer.initFactory(factory);
+        customizer.customize(factory);
 
         assertEquals(1, factory.getAdditionalConnectors().size());
         assertSame(ReflectionTestUtils.getField(customizer, "connector"), factory.getAdditionalConnectors().get(0));

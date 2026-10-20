@@ -18,9 +18,6 @@ import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = "apiml.security.httpRedirect.enabled", havingValue = "true")
 public class HttpsRedirectConfiguration implements WebServerFactoryCustomizer<TomcatWebServerFactory>, Ordered {
@@ -51,24 +48,30 @@ public class HttpsRedirectConfiguration implements WebServerFactoryCustomizer<To
         if (!nativeTls) {
             return;
         }
+        String publicOrigin;
+        try {
+            publicOrigin = externalUrl.isBlank() ? null : HttpsRedirectEndpoint.normalizeOrigin(externalUrl);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid apiml.service.externalUrl for HTTP redirect: expected an HTTPS "
+                + "origin with a valid port and without user information, path, query or fragment", e);
+        }
+        try {
+            HttpsRedirectEndpoint.origin(hostname, -1);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid apiml.service.hostname for HTTP redirect", e);
+        }
         factory.setProtocol(HttpsRedirectProtocol.class.getName());
         factory.addConnectorCustomizers(connector -> connector.addLifecycleListener(event -> {
             if (Lifecycle.BEFORE_INIT_EVENT.equals(event.getType())
                 && connector.getProtocolHandler() instanceof HttpsRedirectProtocol protocol) {
                 // Additional connectors receive their final port AFTER Boot customizes them.
-                String origin = connector.getPort() == factory.getPort() && !externalUrl.isBlank()
-                    ? externalUrl : origin(hostname, connector.getPort());
-                protocol.setHttpsRedirectOrigin(origin);
-                protocol.setMaxHttpRequestHeaderSize(protocol.getMaxHttpRequestHeaderSize());
+                if (connector.getPort() == factory.getPort() && publicOrigin != null) {
+                    protocol.setHttpsRedirectOrigin(publicOrigin);
+                } else {
+                    // The endpoint resolves its actual bound port when accepting a connection, including port 0.
+                    protocol.setHttpsRedirectHostname(hostname);
+                }
             }
         }));
-    }
-
-    private static String origin(String hostname, int port) {
-        try {
-            return new URI("https", null, hostname, port, null, null, null).toASCIIString();
-        } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Invalid HTTPS redirect hostname", e);
-        }
     }
 }

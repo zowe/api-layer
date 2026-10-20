@@ -129,20 +129,22 @@ class AttlsHttpHandlerTest {
         }
 
         @Test
-        void givenNullAsCertificate_whenUpdateCertificate_thenDoNothing() throws CertificateException {
+        void givenNullAsCertificate_whenUpdateCertificate_thenExposeSecureTransportWithoutPeerCertificate() throws CertificateException {
             MockHttpServletRequest requestNative = new MockHttpServletRequest();
             SslInfo sslInfo = attlsHandlerHandlerWrapper.updateCertificate(request, requestNative, null).getSslInfo();
             assertNull(requestNative.getAttribute("jakarta.servlet.request.X509Certificate"));
-            assertNull(sslInfo);
+            assertNotNull(sslInfo);
+            assertNull(sslInfo.getPeerCertificates());
         }
 
 
         @Test
-        void givenEmptyArrayAsCertificate_whenUpdateCertificate_thenDoNothing() throws CertificateException {
+        void givenEmptyArrayAsCertificate_whenUpdateCertificate_thenExposeSecureTransportWithoutPeerCertificate() throws CertificateException {
             MockHttpServletRequest requestNative = new MockHttpServletRequest();
             SslInfo sslInfo = attlsHandlerHandlerWrapper.updateCertificate(request, requestNative, new byte[0]).getSslInfo();
             assertNull(requestNative.getAttribute("jakarta.servlet.request.X509Certificate"));
-            assertNull(sslInfo);
+            assertNotNull(sslInfo);
+            assertNull(sslInfo.getPeerCertificates());
         }
 
     }

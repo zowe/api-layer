@@ -23,7 +23,6 @@ import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
 import org.springframework.boot.tomcat.TomcatWebServerFactory;
 import org.springframework.boot.tomcat.reactive.TomcatReactiveWebServerFactory;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
-import org.springframework.boot.web.server.AbstractConfigurableWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -171,7 +170,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
     }
 
     @RequiredArgsConstructor
-    static abstract class AbstractAdditionalConnector<F extends AbstractConfigurableWebServerFactory> implements WebServerFactoryCustomizer<F> {
+    static abstract class AbstractAdditionalConnector<F extends TomcatWebServerFactory> implements WebServerFactoryCustomizer<F> {
 
         protected final List<TomcatConnectorCustomizer> connectorCustomizers;
 
@@ -180,7 +179,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
         @Setter
         protected String address;
 
-        protected Connector connector = new Connector();
+        protected Connector connector;
 
         private void invokeCustomizer(F factory, Class<? super F> factoryClass, Connector connector) {
             Exception exception;
@@ -205,7 +204,7 @@ public class ServerAddressPropertiesUpdater implements EnvironmentPostProcessor 
         @Override
         public void customize(F factory) {
             // Match the main listener's protocol, including API ML's HTTPS redirect extension.
-            connector = new Connector(((TomcatWebServerFactory) factory).getProtocol());
+            connector = new Connector(factory.getProtocol());
             invokeCustomizer(factory, (Class<? super F>) factory.getClass(), connector);
             connector.setPort(port);
             if (address != null) {
