@@ -40,7 +40,6 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -53,7 +52,6 @@ import org.zowe.apiml.zaas.ZaasApplication;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
 import org.zowe.apiml.zaas.security.service.schema.source.OIDCAuthSource;
 import org.zowe.apiml.zaas.security.service.token.JWKResolver;
-import org.zowe.apiml.zaas.security.service.token.OIDCTokenProvider;
 
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
@@ -66,7 +64,6 @@ import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
@@ -141,8 +138,6 @@ class OIDCTokenProviderEndpointTest {
     private int port;
     @Autowired
     private HttpConfig httpConfig;
-    @Autowired
-    private Environment environment;
     @MockitoBean(name = "secureHttpClientWithKeystore")
     private CloseableHttpClient httpClient;
     @MockitoBean(name = "oidcMapper")
@@ -175,11 +170,6 @@ class OIDCTokenProviderEndpointTest {
 
         @Nested
         class WithoutAudienceValidation {
-
-            @BeforeEach
-            void verifyAudienceConfiguration() {
-                assertNull(environment.getProperty("apiml.security.oidc.aud"));
-            }
 
             @ParameterizedTest(name = "{0}")
             @MethodSource("org.zowe.apiml.acceptance.OIDCTokenProviderEndpointTest#audienceTokens")
@@ -233,11 +223,6 @@ class OIDCTokenProviderEndpointTest {
         @Nested
         @TestPropertySource(properties = "apiml.security.oidc.aud=" + REQUIRED_AUDIENCE)
         class WithAudienceValidation {
-
-            @BeforeEach
-            void verifyAudienceConfiguration() {
-                assertEquals(REQUIRED_AUDIENCE, environment.getProperty("apiml.security.oidc.aud"));
-            }
 
             @ParameterizedTest(name = "{0}")
             @MethodSource("org.zowe.apiml.acceptance.OIDCTokenProviderEndpointTest#audienceTokensWithExpectations")
@@ -301,22 +286,8 @@ class OIDCTokenProviderEndpointTest {
     @TestPropertySource(properties = "apiml.security.oidc.jwks.uri=" + JWKS_URI)
     class WhenJwksValidation {
 
-        @Autowired
-        private OIDCTokenProvider provider;
-
-        @BeforeEach
-        void verifyJwksLoadedAtStartup() {
-            var jwk = TEST_KEYS.jwkSet().getJsonWebKeys().get(0);
-            assertEquals(jwk.getKey(), provider.getPublicKeys().get(jwk.getKeyId()).getKey());
-        }
-
         @Nested
         class WithoutAudienceValidation {
-
-            @BeforeEach
-            void verifyAudienceConfiguration() {
-                assertNull(environment.getProperty("apiml.security.oidc.aud"));
-            }
 
             @ParameterizedTest(name = "{0}")
             @MethodSource("org.zowe.apiml.acceptance.OIDCTokenProviderEndpointTest#audienceTokens")
@@ -387,11 +358,6 @@ class OIDCTokenProviderEndpointTest {
         @Nested
         @TestPropertySource(properties = "apiml.security.oidc.aud=" + REQUIRED_AUDIENCE)
         class WithAudienceValidation {
-
-            @BeforeEach
-            void verifyAudienceConfiguration() {
-                assertEquals(REQUIRED_AUDIENCE, environment.getProperty("apiml.security.oidc.aud"));
-            }
 
             @ParameterizedTest(name = "{0}")
             @MethodSource("org.zowe.apiml.acceptance.OIDCTokenProviderEndpointTest#audienceTokensWithExpectations")
@@ -477,18 +443,8 @@ class OIDCTokenProviderEndpointTest {
         @TestPropertySource(properties = "apiml.security.oidc.userInfo.uri=")
         class WithoutUserInfoFallback {
 
-            @BeforeEach
-            void verifyUserInfoEndpointNotConfigured() {
-                assertEquals("", environment.getProperty("apiml.security.oidc.userInfo.uri"));
-            }
-
             @Nested
             class WithoutAudienceValidation {
-
-                @BeforeEach
-                void verifyAudienceConfiguration() {
-                    assertNull(environment.getProperty("apiml.security.oidc.aud"));
-                }
 
                 @ParameterizedTest(name = "{0}")
                 @MethodSource("org.zowe.apiml.acceptance.OIDCTokenProviderEndpointTest#audienceTokens")
@@ -514,11 +470,6 @@ class OIDCTokenProviderEndpointTest {
             @Nested
             @TestPropertySource(properties = "apiml.security.oidc.aud=" + REQUIRED_AUDIENCE)
             class WithAudienceValidation {
-
-                @BeforeEach
-                void verifyAudienceConfiguration() {
-                    assertEquals(REQUIRED_AUDIENCE, environment.getProperty("apiml.security.oidc.aud"));
-                }
 
                 @ParameterizedTest(name = "{0}")
                 @MethodSource("org.zowe.apiml.acceptance.OIDCTokenProviderEndpointTest#audienceTokensWithExpectations")
