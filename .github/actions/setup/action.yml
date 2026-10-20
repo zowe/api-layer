@@ -10,24 +10,24 @@ inputs:
 runs:
     using: "composite"
     steps:
-        # Certificates are generated at build time by keystore/generate-certificates.sh
-        # rather than committed, and it needs openssl. The hosted runner image ships
-        # it, but jobs that run in a bare container (container: ubuntu:latest) do not -
-        # those fail with "openssl: not found". Guarded, so the hosted runners skip the
-        # apt-get entirely and only the containers install it.
-        -   name: Ensure openssl is available
+        # Certificate generation needs openssl and patchTomcat needs git apply.
+        # Hosted runners provide both, but bare Ubuntu job containers do not.
+        # Checkout can download an archive without Git, so it does not ensure Git is installed.
+        -   name: Ensure build tools are available
             run: |
-                if command -v openssl > /dev/null 2>&1; then
-                    echo "openssl already present: $(openssl version)"
+                if command -v openssl > /dev/null 2>&1 && command -v git > /dev/null 2>&1; then
+                    openssl version
+                    git --version
                     exit 0
                 fi
-                echo "openssl not found - installing"
+                echo "Installing required build tools: openssl and git"
                 if [ "$(id -u)" = "0" ]; then
-                    apt-get update && apt-get install -y --no-install-recommends openssl
+                    apt-get update && apt-get install -y --no-install-recommends openssl git
                 else
-                    sudo apt-get update && sudo apt-get install -y --no-install-recommends openssl
+                    sudo apt-get update && sudo apt-get install -y --no-install-recommends openssl git
                 fi
                 openssl version
+                git --version
             shell: bash
 
         -   name: Set up JDK ${{ inputs.jdkVersion }}

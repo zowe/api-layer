@@ -30,6 +30,7 @@ public class ApimlServerEndpointConfig extends ServerEndpointConfig.Configurator
     private final Endpoint endpoint;
 
     private List<String> protocols = new ArrayList<>();
+    private boolean compressionEnabled = true;
 
 
     /**
@@ -83,6 +84,15 @@ public class ApimlServerEndpointConfig extends ServerEndpointConfig.Configurator
     @Override
     public List<Extension> getExtensions() {
         return new ArrayList<>();
+    }
+
+    public void setCompressionEnabled(boolean compressionEnabled) {
+        this.compressionEnabled = compressionEnabled;
+    }
+
+    @Override
+    public List<Extension> getNegotiatedExtensions(List<Extension> installed, List<Extension> requested) {
+        return compressionEnabled ? super.getNegotiatedExtensions(installed, requested) : List.of();
     }
 
     @Override

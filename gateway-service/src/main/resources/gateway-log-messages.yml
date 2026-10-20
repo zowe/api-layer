@@ -87,6 +87,13 @@ messages:
       reason: "The gateway could not complete the OpenID Connect login."
       action: "Start a new login attempt. If the problem persists, ask your administrator to check the API ML authentication logs using the request ID."
 
+    - key: org.zowe.apiml.gateway.webSocketSubprotocolMismatch
+      number: ZWEAG725
+      type: ERROR
+      text: "WebSocket subprotocol mismatch for service %s: client '%s', backend '%s'."
+      reason: "The client and service selected different WebSocket application protocols."
+      action: "Configure the client and service to select the same subprotocol."
+
     # Legacy messages
 
     - key: org.zowe.apiml.security.authRequired
