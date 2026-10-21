@@ -67,26 +67,30 @@ class HttpsRedirectConfigurationTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-        "", "http://example.com", "https://user:password@example.com", "https://example.com/path",
-        "https://example.com?q=1", "https://example.com/#fragment", "https://example.com:99999",
-        "https://example.com:0", "https://example.com\r\nLocation: evil"
+        "", "/landing", "http://example.com", "https:///landing", "https://",
+        "https://example.com/bad path", "https://example.com\r\nLocation: evil"
     })
     void rejectsInvalidDestinationsBeforeChangingTheResponse(String destination) {
         byte[] original = TLSClientHelloExtractor.USE_TLS_RESPONSE;
         var configuration = new HttpsRedirectConfiguration(true, false, destination);
-        var exception = assertThrows(IllegalArgumentException.class,
+        assertThrows(IllegalArgumentException.class,
             () -> configuration.customize(new TomcatReactiveWebServerFactory()));
-        assertTrue(exception.getMessage().contains("apiml.service.externalUrl"));
         assertSame(original, TLSClientHelloExtractor.USE_TLS_RESPONSE);
     }
 
-    @Test
-    void supportsIpv6Destinations() {
-        var configuration = new HttpsRedirectConfiguration(true, false, "https://[::1]:7554");
+    @ParameterizedTest
+    @CsvSource({
+        "https://example.com, https://example.com",
+        "https://example.com/landing?next=%2Fhome#details, https://example.com/landing?next=%2Fhome#details",
+        "https://[::1]:7554, https://[::1]:7554",
+        "https://example.com/café?q=ž, https://example.com/caf%C3%A9?q=%C5%BE"
+    })
+    void preservesTheConfiguredDestinationAsAnAsciiUri(String destination, String expected) {
+        var configuration = new HttpsRedirectConfiguration(true, false, destination);
         try {
             configuration.customize(new TomcatReactiveWebServerFactory());
             assertTrue(new String(TLSClientHelloExtractor.USE_TLS_RESPONSE, StandardCharsets.US_ASCII)
-                .contains("Location: https://[::1]:7554/\r\n"));
+                .contains("Location: " + expected + "\r\n"));
         } finally {
             configuration.destroy();
         }

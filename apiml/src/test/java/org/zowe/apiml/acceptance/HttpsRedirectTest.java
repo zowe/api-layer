@@ -16,30 +16,76 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.TestPropertySource;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @AcceptanceTest
 @TestPropertySource(properties = {
     "apiml.security.httpRedirect.enabled=true",
-    "apiml.service.externalUrl=https://localhost:40985",
+    "apiml.service.externalUrl=" + HttpsRedirectTest.REDIRECT_URL,
+    "apiml.internal-discovery.port=40986",
     "apiml.health.protected=false"
 })
 class HttpsRedirectTest extends AcceptanceTestWithMockServices {
 
+    static final String REDIRECT_URL = "https://localhost:40985/redirecttest/api/v1/landing?source=http";
+
     @ParameterizedTest
-    @CsvSource({"40985,/application/info", "10011,/application/info", "40985,/gateway/api/v1/auth/login"})
-    void plaintextOnBothConnectorsRedirectsToTheConfiguredHttpsRoot(int connectorPort, String path) {
+    @CsvSource({"40985,/application/info", "40986,/application/info", "40985,/gateway/api/v1/auth/login"})
+    void plaintextOnBothConnectorsRedirectsToTheConfiguredHttpsUrl(int connectorPort, String path) {
         given().redirects().follow(false)
             .header("Host", "untrusted.example")
             .header("X-Forwarded-Host", "untrusted.example")
             .when().get("http://localhost:" + connectorPort + path + "?test=1")
             .then().statusCode(308)
-            .header("Location", equalTo("https://localhost:40985/"))
+            .header("Location", equalTo(REDIRECT_URL))
             .header("Strict-Transport-Security", nullValue())
             .body(equalTo(""));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {40985, 40986})
+    void clientFollowsRedirectToHttpsOnBothConnectors(int connectorPort) throws Exception {
+        var backend = mockService("redirecttest")
+            .addEndpoint("/redirecttest/landing")
+                .assertion(exchange -> assertEquals("source=http", exchange.getRequestURI().getRawQuery()))
+                .body("secure backend response")
+            .and().start();
+
+        var client = HttpClient.newBuilder()
+            .sslContext(httpConfig.getSecureSslContextWithoutKeystore())
+            .version(HttpClient.Version.HTTP_1_1)
+            .followRedirects(HttpClient.Redirect.NORMAL)
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+        var request = HttpRequest.newBuilder(URI.create("http://localhost:" + connectorPort + "/original/path?test=1"))
+            .timeout(Duration.ofSeconds(10))
+            .GET()
+            .build();
+
+        var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        var redirect = response.previousResponse().orElseThrow();
+        assertEquals(308, redirect.statusCode());
+        assertEquals(request.uri(), redirect.uri());
+        assertEquals(REDIRECT_URL, redirect.headers().firstValue("Location").orElseThrow());
+        assertTrue(redirect.headers().firstValue("Strict-Transport-Security").isEmpty());
+        assertTrue(redirect.previousResponse().isEmpty());
+
+        assertEquals(200, response.statusCode());
+        assertEquals(URI.create(REDIRECT_URL), response.uri());
+        assertEquals("secure backend response", response.body());
+        assertTrue(response.headers().firstValue("Strict-Transport-Security").isPresent());
+        assertEquals(1, backend.getEndpoint().getCounter());
     }
 
     @ParameterizedTest
@@ -51,13 +97,13 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
         given().redirects().follow(false)
             .when().request(method, "http://localhost:" + port + "/redirecttest/api/v1/echo?test=1")
             .then().statusCode(308)
-            .header("Location", equalTo("https://localhost:40985/"));
+            .header("Location", equalTo(REDIRECT_URL));
 
         assertEquals(0, backend.getEndpoint().getCounter());
     }
 
     @ParameterizedTest
-    @CsvSource({"40985,/application/info,200", "10011,/application/info,200",
+    @CsvSource({"40985,/application/info,200", "40986,/application/info,200",
         "40985,/gateway/api/v1/auth/query,401"})
     void httpsStillServesRequestsAndIncludesHsts(int connectorPort, String path, int status) {
         given().when().get("https://localhost:" + connectorPort + path)

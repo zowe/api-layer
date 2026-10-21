@@ -63,19 +63,11 @@ public class HttpsRedirectConfiguration implements WebServerFactoryCustomizer<To
     }
 
     private static String redirectLocation(String externalUrl) {
-        try {
-            URI uri = URI.create(externalUrl);
-            if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null
-                || uri.getRawUserInfo() != null || uri.getRawQuery() != null || uri.getRawFragment() != null
-                || (!uri.getRawPath().isEmpty() && !"/".equals(uri.getRawPath()))
-                || uri.getPort() == 0 || uri.getPort() > 65535) {
-                throw new IllegalArgumentException("Expected an HTTPS origin");
-            }
-            return "https://" + uri.getRawAuthority() + "/";
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid apiml.service.externalUrl for HTTP redirect: expected an HTTPS "
-                + "origin with a valid port and without user information, path, query or fragment", e);
+        URI destination = URI.create(externalUrl);
+        if (!"https".equalsIgnoreCase(destination.getScheme()) || destination.getHost() == null) {
+            throw new IllegalArgumentException("apiml.service.externalUrl must be an absolute HTTPS URL");
         }
+        return destination.toASCIIString();
     }
 
     @Override

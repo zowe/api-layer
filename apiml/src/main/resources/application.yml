@@ -209,7 +209,7 @@ apiml:
         externalUrl: ${apiml.service.scheme}://${apiml.service.hostname}:${apiml.service.port}
     security:
         httpRedirect:
-            enabled: false # Redirect plaintext on native TLS connectors to apiml.service.externalUrl + /
+            enabled: true
         csrf:
             preserveOriginForCrossSite: true
         headersToBeCleared: X-Certificate-Public,X-Certificate-DistinguishedName,X-Certificate-CommonName

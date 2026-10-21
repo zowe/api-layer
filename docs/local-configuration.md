@@ -35,10 +35,10 @@ Do not use these certificates in other environments. More details can be found a
 
 For the Gateway or API ML modulith, enable `apiml.security.httpRedirect.enabled=true`
 to replace Tomcat's plaintext-on-TLS error response with a `308 Permanent Redirect`.
-Set `apiml.service.externalUrl` to the public HTTPS origin, for example
-`https://gateway.example:7554`. The destination is always `https://gateway.example:7554/`;
-the original request path and query are not preserved. The origin must not contain
-credentials, a path other than `/`, a query or a fragment.
+Set `apiml.service.externalUrl` to an absolute HTTPS URL with a hostname, for example
+`https://gateway.example:7554/landing?source=http`. The redirect uses that configured
+URL, including any path or query, with non-ASCII characters percent-encoded. It does
+not append a trailing slash or copy the incoming request's path and query.
 
 The redirect is disabled by default and applies only when native TLS is enabled.
 It does not enable TLS on a plain HTTP connector or change AT-TLS processing.

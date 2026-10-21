@@ -56,7 +56,7 @@ class HttpsRedirectTest {
     private Connector additionalConnector;
     private final AtomicInteger requests = new AtomicInteger();
     private final HttpsRedirectConfiguration configuration =
-        new HttpsRedirectConfiguration(true, false, "https://public.example:7554");
+        new HttpsRedirectConfiguration(true, false, "https://public.example:7554/landing?source=http");
 
     @BeforeAll
     void start() throws Exception {
@@ -147,7 +147,7 @@ class HttpsRedirectTest {
                         + "Host: attacker.example\r\nX-Forwarded-Host: attacker.example\r\n\r\n")
                         .getBytes(StandardCharsets.US_ASCII));
                     String response = new String(socket.getInputStream().readAllBytes(), StandardCharsets.US_ASCII);
-                    assertEquals("HTTP/1.1 308 Permanent Redirect\r\nLocation: https://public.example:7554/\r\n"
+                    assertEquals("HTTP/1.1 308 Permanent Redirect\r\nLocation: https://public.example:7554/landing?source=http\r\n"
                         + "Content-Length: 0\r\nConnection: close\r\n\r\n", response);
                 }
             }
