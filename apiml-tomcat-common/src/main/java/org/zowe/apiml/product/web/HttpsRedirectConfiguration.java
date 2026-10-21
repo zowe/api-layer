@@ -63,9 +63,16 @@ public class HttpsRedirectConfiguration implements WebServerFactoryCustomizer<To
     }
 
     private static String redirectLocation(String externalUrl) {
-        URI destination = URI.create(externalUrl);
+        String message = "apiml.security.httpRedirect.enabled requires apiml.service.externalUrl to be an absolute HTTPS URL, but it is '"
+            + externalUrl + "'";
+        URI destination;
+        try {
+            destination = URI.create(externalUrl);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(message, e);
+        }
         if (!"https".equalsIgnoreCase(destination.getScheme()) || destination.getHost() == null) {
-            throw new IllegalArgumentException("apiml.service.externalUrl must be an absolute HTTPS URL");
+            throw new IllegalArgumentException(message);
         }
         return destination.toASCIIString();
     }

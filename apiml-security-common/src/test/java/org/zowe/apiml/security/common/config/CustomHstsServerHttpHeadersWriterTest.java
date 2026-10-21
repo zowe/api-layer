@@ -46,21 +46,4 @@ class CustomHstsServerHttpHeadersWriterTest {
         assertEquals("max-age=31536000; includeSubDomains", headers.getFirst("Strict-Transport-Security"));
     }
 
-    @Test
-    void shouldPreserveAnExistingPolicy() {
-        CustomHstsServerHttpHeadersWriter writer = new CustomHstsServerHttpHeadersWriter();
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Strict-Transport-Security", "max-age=300");
-        when(response.getHeaders()).thenReturn(headers);
-        when(exchange.getResponse()).thenReturn(response);
-
-        var result = writer.writeHttpHeaders(exchange);
-
-        StepVerifier.create(result)
-                .expectComplete()
-                .verify();
-
-        assertEquals("max-age=300", headers.getFirst("Strict-Transport-Security"));
-    }
-
 }

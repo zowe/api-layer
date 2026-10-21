@@ -33,14 +33,14 @@ Do not use these certificates in other environments. More details can be found a
 
 #### Redirecting HTTP sent to the HTTPS port
 
-For the Gateway or API ML modulith, enable `apiml.security.httpRedirect.enabled=true`
-to replace Tomcat's plaintext-on-TLS error response with a `308 Permanent Redirect`.
+For the Gateway or API ML modulith, `apiml.security.httpRedirect.enabled` is `true` by default.
+It replaces Tomcat's plaintext-on-TLS error response with a `308 Permanent Redirect`.
 Set `apiml.service.externalUrl` to an absolute HTTPS URL with a hostname, for example
 `https://gateway.example:7554/landing?source=http`. The redirect uses that configured
 URL, including any path or query, with non-ASCII characters percent-encoded. It does
 not append a trailing slash or copy the incoming request's path and query.
 
-The redirect is disabled by default and applies only when native TLS is enabled.
+Set the property to `false` to turn the redirect off. It applies only when native TLS is enabled.
 It does not enable TLS on a plain HTTP connector or change AT-TLS processing.
 Tomcat still rejects plaintext before application authentication or routing.
 All TLS connectors sharing Tomcat's class loader use the same redirect destination,
@@ -55,6 +55,11 @@ The plaintext redirect carries no HSTS header. Secure reactive responses use the
 existing policy, `Strict-Transport-Security: max-age=31536000; includeSubDomains`,
 when no policy is already present, including on authentication errors. Existing
 backend HSTS policies are preserved. Browsers learn HSTS only from HTTPS responses.
+This includes connections secured by AT-TLS when `server.attlsServer.enabled=true`.
+For TLS-terminating proxies, configure Spring or Tomcat forwarded-header handling
+so the request's effective scheme is HTTPS, for example with
+`server.forward-headers-strategy=framework`. The proxy must replace client-supplied
+forwarded headers before forwarding requests.
 
 ### Discovery Service
 

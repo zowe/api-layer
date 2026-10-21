@@ -10,11 +10,10 @@
 
 package org.zowe.apiml.security.common.config;
 
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.core.Ordered;
 import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
@@ -27,6 +26,11 @@ import reactor.core.publisher.Mono;
 public class HstsResponseFilter implements WebFilter, Ordered {
 
     private final CustomHstsServerHttpHeadersWriter writer = new CustomHstsServerHttpHeadersWriter();
+    private final boolean attlsEnabled;
+
+    public HstsResponseFilter(@Value("${server.attlsServer.enabled:false}") boolean attlsEnabled) {
+        this.attlsEnabled = attlsEnabled;
+    }
 
     @Override
     public int getOrder() {
@@ -35,27 +39,13 @@ public class HstsResponseFilter implements WebFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        if (isSecureTransport(exchange.getRequest())) {
+        if (isSecureRequest(exchange.getRequest())) {
             exchange.getResponse().beforeCommit(() -> writer.writeHttpHeaders(exchange));
         }
         return chain.filter(exchange);
     }
 
-    private boolean isSecureTransport(ServerHttpRequest request) {
-        if (request.getSslInfo() != null) {
-            return true;
-        }
-        Object nativeRequest;
-        try {
-            nativeRequest = ServerHttpRequestDecorator.getNativeRequest(request);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            return false;
-        }
-        // Tomcat's WebFlux adapter may omit SslInfo when TLS has no client certificate.
-        if (nativeRequest instanceof HttpServletRequest servletRequest) {
-            Object sessionId = servletRequest.getAttribute("jakarta.servlet.request.ssl_session_id");
-            return sessionId instanceof String id && !id.isEmpty();
-        }
-        return false;
+    private boolean isSecureRequest(ServerHttpRequest request) {
+        return attlsEnabled || request.getSslInfo() != null || "https".equalsIgnoreCase(request.getURI().getScheme());
     }
 }
