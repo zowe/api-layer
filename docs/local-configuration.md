@@ -31,6 +31,31 @@ To override this and run the Gateway without TLS encryption, add the following t
 The source code contains sample certificates that are used by configuration for testing on your local machine. 
 Do not use these certificates in other environments. More details can be found at [/keystore/README.md](/keystore/README.md).
 
+#### Redirecting HTTP sent to the HTTPS port
+
+For the Gateway or API ML modulith, enable `apiml.security.httpRedirect.enabled=true`
+to replace Tomcat's plaintext-on-TLS error response with a `308 Permanent Redirect`.
+Set `apiml.service.externalUrl` to the public HTTPS origin, for example
+`https://gateway.example:7554`. The destination is always `https://gateway.example:7554/`;
+the original request path and query are not preserved. The origin must not contain
+credentials, a path other than `/`, a query or a fragment.
+
+The redirect is disabled by default and applies only when native TLS is enabled.
+It does not enable TLS on a plain HTTP connector or change AT-TLS processing.
+Tomcat still rejects plaintext before application authentication or routing.
+All TLS connectors sharing Tomcat's class loader use the same redirect destination,
+including the modulith's Discovery connector. Configure one canonical destination
+for the process; this setting is not a redirect destination per connector.
+
+This uses Tomcat's existing HTTP detection and error-response delivery. It does not
+add handling for fragmented HTTP request lines, partial response writes or draining
+uploads. API clients should connect directly with HTTPS.
+
+The plaintext redirect carries no HSTS header. Secure reactive responses use the
+existing policy, `Strict-Transport-Security: max-age=31536000; includeSubDomains`,
+when no policy is already present, including on authentication errors. Existing
+backend HSTS policies are preserved. Browsers learn HSTS only from HTTPS responses.
+
 ### Discovery Service
 
 **Note:** If you want to run the Discovery Service using IntelliJ Run Dashboard, you need to add `https` in the `Active profiles` field in `Edit Configuration`. 

@@ -16,6 +16,7 @@ import org.springframework.security.web.server.header.StrictTransportSecuritySer
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import java.time.Duration;
+import java.util.List;
 
 /**
  * Custom implementation of ServerHttpHeadersWriter for handling HTTP Strict Transport Security (HSTS).
@@ -42,7 +43,7 @@ public class CustomHstsServerHttpHeadersWriter implements ServerHttpHeadersWrite
     @Override
     public Mono<Void> writeHttpHeaders(ServerWebExchange exchange) {
         HttpHeaders headers = exchange.getResponse().getHeaders();
-        headers.set("Strict-Transport-Security", HEADER_VALUE);
+        headers.putIfAbsent("Strict-Transport-Security", List.of(HEADER_VALUE));
         return Mono.empty();
     }
 
