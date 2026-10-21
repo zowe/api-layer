@@ -54,7 +54,7 @@ uploads. API clients should connect directly with HTTPS.
 The plaintext redirect carries no HSTS header. Secure reactive responses use the
 existing policy, `Strict-Transport-Security: max-age=31536000; includeSubDomains`,
 when no policy is already present, including on authentication errors. Existing
-backend HSTS policies are preserved. Browsers learn HSTS only from HTTPS responses.
+backend HSTS policies are overridden. Browsers learn HSTS only from HTTPS responses.
 This includes connections secured by AT-TLS when `server.attlsServer.enabled=true`.
 For TLS-terminating proxies, configure Spring or Tomcat forwarded-header handling
 so the request's effective scheme is HTTPS, for example with

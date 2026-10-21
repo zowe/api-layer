@@ -20,6 +20,8 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.adapter.ForwardedHeaderTransformer;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -65,15 +67,17 @@ class HstsResponseFilterTest {
             exchange.getResponse().getHeaders().getFirst("Strict-Transport-Security"));
     }
 
-    @Test
-    void existingWriterDoesNotProduceDuplicateHeaders() {
+    @ParameterizedTest
+    @ValueSource(strings = {"max-age=0", "max-age=300", "max-age=31536000; includeSubDomains"})
+    void overridesExistingHstsWithoutDuplicateHeaders(String existingPolicy) {
         var exchange = MockServerWebExchange.from(MockServerHttpRequest.get("https://localhost/")
             .sslInfo(mock(SslInfo.class)).build());
         new HstsResponseFilter(false).filter(exchange, e -> {
-            new CustomHstsServerHttpHeadersWriter().writeHttpHeaders(e).block();
+            e.getResponse().getHeaders().set("Strict-Transport-Security", existingPolicy);
             return e.getResponse().setComplete();
         }).block();
-        assertEquals(1, exchange.getResponse().getHeaders().get("Strict-Transport-Security").size());
+        assertEquals(List.of("max-age=31536000; includeSubDomains"),
+            exchange.getResponse().getHeaders().get("Strict-Transport-Security"));
     }
 
     @Test

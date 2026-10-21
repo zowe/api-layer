@@ -20,12 +20,15 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 /** Applies the existing HSTS policy to secure responses across security chains, including errors. */
 @Component
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
 public class HstsResponseFilter implements WebFilter, Ordered {
 
-    private final CustomHstsServerHttpHeadersWriter writer = new CustomHstsServerHttpHeadersWriter();
+    private static final String HEADER_VALUE = "max-age=" + Duration.ofDays(365).getSeconds() + "; includeSubDomains";
+
     private final boolean attlsEnabled;
 
     public HstsResponseFilter(@Value("${server.attlsServer.enabled:false}") boolean attlsEnabled) {
@@ -40,7 +43,8 @@ public class HstsResponseFilter implements WebFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         if (isSecureRequest(exchange.getRequest())) {
-            exchange.getResponse().beforeCommit(() -> writer.writeHttpHeaders(exchange));
+            exchange.getResponse().beforeCommit(() -> Mono.fromRunnable(() ->
+                exchange.getResponse().getHeaders().set("Strict-Transport-Security", HEADER_VALUE)));
         }
         return chain.filter(exchange);
     }

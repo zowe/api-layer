@@ -12,14 +12,17 @@ package org.zowe.apiml.caching;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
 import org.springframework.retry.annotation.EnableRetry;
 import org.zowe.apiml.enable.EnableApiDiscovery;
 import org.zowe.apiml.product.logging.annotations.EnableApimlLogger;
+import org.zowe.apiml.security.common.config.HstsResponseFilter;
 
 @SpringBootApplication
 @EnableApiDiscovery
 @EnableRetry
 @EnableApimlLogger
+@Import(HstsResponseFilter.class)
 public class CachingServiceApplication {
 
     public static void main(String[] args) {

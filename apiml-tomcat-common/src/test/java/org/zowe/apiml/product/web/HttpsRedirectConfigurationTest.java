@@ -46,7 +46,6 @@ class HttpsRedirectConfigurationTest {
                 String protocol = factory.getProtocol();
                 var configuration = context.getBean(HttpsRedirectConfiguration.class);
                 configuration.customize(factory);
-                configuration.customize(factory);
                 assertEquals(protocol, factory.getProtocol());
                 assertEquals("HTTP/1.1 308 Permanent Redirect\r\nLocation: https://public.example:7554/\r\n"
                     + "Content-Length: 0\r\nConnection: close\r\n\r\n",

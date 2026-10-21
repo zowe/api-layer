@@ -51,7 +51,6 @@ import org.zowe.apiml.product.constants.CoreService;
 import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.CustomHstsServerHttpHeadersWriter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.security.common.token.OIDCProvider;
 import org.zowe.apiml.security.common.util.X509Util;
@@ -278,7 +277,6 @@ public class WebSecurityConfig {
         http
             .headers(headers -> headers
                 .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
-                .writer(new CustomHstsServerHttpHeadersWriter())
             )
             .securityMatcher(new AndServerWebExchangeMatcher(
                 discoveryPortMatcher,
@@ -318,7 +316,6 @@ public class WebSecurityConfig {
         http
             .headers(headers -> headers
                 .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
-                .writer(new CustomHstsServerHttpHeadersWriter())
             )
             .securityMatcher(pathMatchers(APPLICATION_HEALTH, APPLICATION_GW_VERSION, APPLICATION_GW_VERSION_ROUTE, APPLICATION_INFO, APPLICATION_VERSION))
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
@@ -735,7 +732,6 @@ public class WebSecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .headers(headers -> headers
                 .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
-                .writer(new CustomHstsServerHttpHeadersWriter())
                 .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN))
                 .contentSecurityPolicy(csp -> csp
                     .policyDirectives("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:; connect-src 'self'; frame-ancestors 'self';")
