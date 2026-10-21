@@ -36,6 +36,7 @@ dependencyResolutionManagement {
             version('ehCache', '3.12.0')
             version('eureka', '2.0.6')
             version('fileupload', '1.6.0')
+            version('freemarker', '2.3.35')
             version('netflixServo', '0.13.2')
             // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
             version('archaius', '0.7.12')
@@ -51,6 +52,7 @@ dependencyResolutionManagement {
             version('jacksonCore', '2.22.3')
             version('jacksonDatabind', '2.22.3')
             version('jacksonDataformatYaml', '2.22.3')
+            version('jackson3Databind', '3.2.3')
             version('janino', '3.1.12')
             version('jakartaValidation', '3.1.1')
             version('jakartaInject', '2.0.1')
@@ -60,6 +62,7 @@ dependencyResolutionManagement {
             // Keep the SDK aligned with the Spring Boot starter's OpenTelemetry API dependency.
             // Starter 2.32.0 uses internal API classes removed in SDK 1.67.0.
             version('openTelemetry-core', '1.66.0')
+            version('ow2Asm', '9.11.1')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
@@ -202,6 +205,7 @@ dependencyResolutionManagement {
             library('eureka_jersey_client', 'com.netflix.eureka', 'eureka-client-jersey3').versionRef('eureka')
             library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
             library('fileupload', 'commons-fileupload', 'commons-fileupload').versionRef('fileupload')
+            library('freemarker', 'org.freemarker', 'freemarker').versionRef('freemarker')
             library('google_errorprone', 'com.google.errorprone', 'error_prone_annotations').versionRef('googleErrorprone') // to define minimum version and avoid duplicity libraries in the classpath
             library('google_gson', 'com.google.code.gson', 'gson').versionRef('googleGson')
             library('guava', 'com.google.guava', 'guava').versionRef('guava')
@@ -219,6 +223,7 @@ dependencyResolutionManagement {
             library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonAnnotations')
             library('jackson_core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jacksonCore')
             library('jackson2_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
+            library('jackson3_databind', 'tools.jackson.core', 'jackson-databind').versionRef('jackson3Databind')
             library('jackson_dataformat_yaml', 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-yaml').versionRef('jacksonDataformatYaml')
             library('janino', 'org.codehaus.janino', 'janino').versionRef('janino')
             library('jakarta_validation', 'jakarta.validation', 'jakarta.validation-api').versionRef('jakartaValidation')
@@ -251,6 +256,7 @@ dependencyResolutionManagement {
             library('netty_reactor_http', 'io.projectreactor.netty', 'reactor-netty-http').versionRef('nettyReactor')
             library('nimbus_jose_jwt', 'com.nimbusds', 'nimbus-jose-jwt').versionRef('nimbusJoseJwt')
             library('openapidiff', 'org.openapitools.openapidiff', 'openapi-diff-core').versionRef('openApiDiff')
+            library('ow2Asm', 'org.ow2.asm', 'asm').versionRef('ow2Asm')
             library('picocli', 'info.picocli', 'picocli').versionRef('picocli')
             library('picocli_codegen', 'info.picocli', 'picocli-codegen').versionRef('picocli')
             library('reactor', 'io.projectreactor', 'reactor-core').versionRef('reactor')
