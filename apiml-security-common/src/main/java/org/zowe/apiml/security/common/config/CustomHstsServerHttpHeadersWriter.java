@@ -30,7 +30,6 @@ import java.time.Duration;
  *   <li>Maintains compatibility with AT-TLS enabled environments</li>
  * </ul>
  *
- * @see WebSecurity
  * @see StrictTransportSecurityServerHttpHeadersWriter
  */
 public class CustomHstsServerHttpHeadersWriter implements ServerHttpHeadersWriter {
