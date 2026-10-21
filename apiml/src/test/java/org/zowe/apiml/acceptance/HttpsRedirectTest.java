@@ -57,8 +57,8 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
     void clientFollowsRedirectToHttpsOnBothConnectors(int connectorPort) throws Exception {
         var backend = mockService("redirecttest")
             .addEndpoint("/redirecttest/landing")
-                .assertion(exchange -> assertEquals("source=http", exchange.getRequestURI().getRawQuery()))
-                .body("secure backend response")
+            .assertion(exchange -> assertEquals("source=http", exchange.getRequestURI().getRawQuery()))
+            .body("secure backend response")
             .and().start();
 
         var client = HttpClient.newBuilder()
@@ -113,7 +113,7 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
 
     @ParameterizedTest
     @ValueSource(strings = {"max-age=300", "max-age=0"})
-    void preservesBackendHstsPolicy(String policy) {
+    void overridesBackendHstsPolicy(String policy) {
         var headers = new Headers();
         headers.set("Strict-Transport-Security", policy);
         mockService("redirecttest")
@@ -121,6 +121,6 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
 
         given().when().get(basePath + "/redirecttest/api/v1/hsts")
             .then().statusCode(200)
-            .header("Strict-Transport-Security", equalTo(policy));
+            .header("Strict-Transport-Security", equalTo("max-age=31536000; includeSubDomains"));
     }
 }
