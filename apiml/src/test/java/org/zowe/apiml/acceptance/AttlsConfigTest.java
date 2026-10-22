@@ -166,6 +166,7 @@ class AttlsConfigTest {
     @TestPropertySource(
         properties = {
             "apiml.health.protected=false",
+            "apiml.internal-discovery.port=40986",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",
@@ -221,6 +222,14 @@ class AttlsConfigTest {
             //@formatter:on
             verify(apimlTomcatCustomizer, times(1)).customize(any());
             verify(attlsHttpHandler, times(1)).postProcessAfterInitialization(any(HttpHandler.class), any());
+        }
+
+        @Test
+        void authenticationFailureIncludesHstsWithoutClientCertificate() {
+            given()
+                .when().get(getGatewayUrlWithPath(hostname, port, "http", "gateway/api/v1/auth/query"))
+                .then().statusCode(HttpStatus.SC_UNAUTHORIZED)
+                .header("Strict-Transport-Security", is("max-age=31536000; includeSubDomains"));
         }
 
     }
