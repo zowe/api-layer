@@ -84,6 +84,7 @@ dependencyResolutionManagement {
             version('jsonSmart', '2.6.0')
             version('junitJupiter', '5.14.4')
             version('junitPlatform', '1.14.4')
+            version('jsr305', '3.0.2')
             version('jxpath', '1.4.0')
             version('kotlinStdlib', '2.4.21')
             // force version in build.gradle file - compatibility with Slf4j
@@ -244,6 +245,7 @@ dependencyResolutionManagement {
             library('junit_platform_launcher', 'org.junit.platform', 'junit-platform-launcher').versionRef('junitPlatform')
             library('junit_platform_commons', 'org.junit.platform', 'junit-platform-commons').versionRef('junitPlatform')
             library('junit_platform_engine', 'org.junit.platform', 'junit-platform-engine').versionRef('junitPlatform')
+            library('jsr305', 'com.google.code.findbugs', 'jsr305').versionRef('jsr305')
             library('jxpath', 'commons-jxpath', 'commons-jxpath').versionRef('jxpath')
             library('kotlin_stdlib', 'org.jetbrains.kotlin', 'kotlin-stdlib').versionRef('kotlinStdlib')
             // version managed by spring-boot-dependencies
