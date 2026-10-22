@@ -94,7 +94,7 @@
         "ansi-regex": "6.4.0",
         "babel-plugin-transform-vite-meta-env": "1.0.3",
         "body-parser": "2.3.0",
-        "caniuse-lite": "1.0.30001818",
+        "caniuse-lite": "1.0.30001819",
         "concurrently": "9.2.5",
         "cors": "2.8.6",
         "cypress": "15.21.1",
@@ -158,6 +158,8 @@
         "semver": "7.8.5",
         "@babel/traverse": "7.29.10",
         "axios": "1.20.0",
+        "follow-redirects": "1.16.1",
+        "markdown-it": "14.3.3",
         "form-data": "3.0.5",
         "sha.js": "2.4.12",
         "swagger-ui-react": {

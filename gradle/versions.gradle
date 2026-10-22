@@ -14,7 +14,7 @@ dependencyResolutionManagement {
             version('springCloudCB', '5.0.3')
             version('springCloudGateway', '5.0.3')
             version('springCloud', '2025.1.3')
-            version('springFramework', '7.0.9')
+            version('springFramework', '7.0.10')
             version('springRetry', '2.0.13')
 
             version('modulith', '2.1.1')
@@ -40,7 +40,7 @@ dependencyResolutionManagement {
             version('netflixServo', '0.13.2')
             // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
             version('archaius', '0.7.12')
-            version('googleErrorprone', '2.50.0')
+            version('googleErrorprone', '2.51.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.14.0')
             version('guava', '33.7.2-jre')
@@ -93,12 +93,12 @@ dependencyResolutionManagement {
             version('mailapi', '1.6.8')
             version('netty', '4.2.19.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
-            version('nettyReactor', '1.3.7')
+            version('nettyReactor', '1.3.8')
             version('nimbusJoseJwt', '10.10')
             version('openApiDiff', '2.1.7')
             version('picocli', '4.7.7')
 
-            version('reactor', '3.8.7')
+            version('reactor', '3.8.8')
             // REST Assured 6.x is the Spring Framework 7 line (its spring-web-test-client declares
             // spring 7.0.1) and requires Groovy 5, which is what the SB 4.1 BOM already manages.
             // 5.5.7 is compiled against Spring 6 and Groovy 4 and fails on both.
