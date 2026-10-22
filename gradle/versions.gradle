@@ -47,12 +47,12 @@ dependencyResolutionManagement {
             version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6.5')
-            version('infinispan', '16.2.3')
+            version('infinispan', '16.3.1')
             version('jacksonAnnotations', '2.22')  // Jackson 2 shim track: review when SB 4.3 lands
-            version('jacksonCore', '2.22.3')
-            version('jacksonDatabind', '2.22.3')
-            version('jacksonDataformatYaml', '2.22.3')
-            version('jackson3Databind', '3.2.3')
+            version('jacksonCore', '2.22.4')
+            version('jacksonDatabind', '2.22.4')
+            version('jacksonDataformatYaml', '2.22.4')
+            version('jackson3Databind', '3.2.4')
             version('janino', '3.1.12')
             version('jakartaValidation', '3.1.1')
             version('jakartaInject', '2.0.1')
@@ -102,7 +102,7 @@ dependencyResolutionManagement {
             // REST Assured 6.x is the Spring Framework 7 line (its spring-web-test-client declares
             // spring 7.0.1) and requires Groovy 5, which is what the SB 4.1 BOM already manages.
             // 5.5.7 is compiled against Spring 6 and Groovy 4 and fails on both.
-            version('restAssured', '6.1.0')
+            version('restAssured', '6.2.0')
             version('rhino', '1.9.1')
             // springdoc 3.x is the Spring Boot 4 line. 2.9.1 references the SB3-only
             // org.springframework.boot.autoconfigure.web.reactive.WebFluxProperties from
@@ -128,7 +128,7 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
-            version('micronaut', '4.10.31')
+            version('micronaut', '4.10.33')
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
@@ -141,7 +141,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.84.2')
+            version('ioGrpc', '1.85.1')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
