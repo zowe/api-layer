@@ -20,6 +20,8 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Feature:  validate port in allowed domains list (#4934) ([d521ba5](https://github.com/zowe/api-layer/commit/d521ba5)), closes [#4934](https://github.com/zowe/api-layer/issues/4934)
 * Feature:  z/OSMF JWT Preflight Check (#4531) ([ecd6587](https://github.com/zowe/api-layer/commit/ecd6587)), closes [#4531](https://github.com/zowe/api-layer/issues/4531)
 * Feature:  OpenTelemetry log signals for invalid authentication (#4551) ([08c315d](https://github.com/zowe/api-layer/commit/08c315d)), closes [#4551](https://github.com/zowe/api-layer/issues/4551)
+* Feature:  upgrade API ML to Spring Boot 4.1.1 (#4968) ([71aa87a](https://github.com/zowe/api-layer/commit/71aa87a)), closes [#4968](https://github.com/zowe/api-layer/issues/4968)
+* Feature:  more restrictive fetch metadata validation (#4908) ([50684ae](https://github.com/zowe/api-layer/commit/50684ae)), closes [#4908](https://github.com/zowe/api-layer/issues/4908)
 
 
 * Bugfix:  Do not show the whole JWT on debug message (#5024) ([fe1de49](https://github.com/zowe/api-layer/commit/fe1de49)), closes [#5024](https://github.com/zowe/api-layer/issues/5024)
@@ -86,6 +88,20 @@ All notable changes to the Zowe API Mediation Layer package will be documented i
 * Bugfix:  fix issue with eureka replicas in case of AT-TLS + HA (#4628) ([88a3ab8](https://github.com/zowe/api-layer/commit/88a3ab8)), closes [#4628](https://github.com/zowe/api-layer/issues/4628)
 * Bugfix:  Fix security rule in Caching Service when certificate validation is relaxed (#4632) ([e0a9329](https://github.com/zowe/api-layer/commit/e0a9329)), closes [#4632](https://github.com/zowe/api-layer/issues/4632)
 * Bugfix:  Safkeyring truststore bug fix in certificate-analyzer (#4595) ([d9f5698](https://github.com/zowe/api-layer/commit/d9f5698)), closes [#4595](https://github.com/zowe/api-layer/issues/4595)
+* Bugfix:  redirect HTTP to HTTPS (#5036) ([edda95d](https://github.com/zowe/api-layer/commit/edda95d)), closes [#5036](https://github.com/zowe/api-layer/issues/5036)
+* Bugfix:  handle OIDC errors (#5018) ([4c61bfc](https://github.com/zowe/api-layer/commit/4c61bfc)), closes [#5018](https://github.com/zowe/api-layer/issues/5018)
+* Bugfix:  catalog-ui: remove tile fields from onboarding wizard (#4987) ([40866b0](https://github.com/zowe/api-layer/commit/40866b0)), closes [#4987](https://github.com/zowe/api-layer/issues/4987)
+* Bugfix:  missing otel logs on info level (#4955) ([eecd3fb](https://github.com/zowe/api-layer/commit/eecd3fb)), closes [#4955](https://github.com/zowe/api-layer/issues/4955)
+* Bugfix:  add a content security policy to the API Catalog for enhanced security (#4926) ([1b3dfdc](https://github.com/zowe/api-layer/commit/1b3dfdc)), closes [#4926](https://github.com/zowe/api-layer/issues/4926)
+* Bugfix:  z/OSMF retry during authentication (#4928) ([f0e1e50](https://github.com/zowe/api-layer/commit/f0e1e50)), closes [#4928](https://github.com/zowe/api-layer/issues/4928)
+* Bugfix:  metadata validation on intermediate segments (#4915) ([57bc553](https://github.com/zowe/api-layer/commit/57bc553)), closes [#4915](https://github.com/zowe/api-layer/issues/4915)
+* Bugfix:  run turbofilters only when they should (#4909) ([f245ab9](https://github.com/zowe/api-layer/commit/f245ab9)), closes [#4909](https://github.com/zowe/api-layer/issues/4909)
+* Bugfix:  reduce conformance criteria violation logging (#4627) ([181a341](https://github.com/zowe/api-layer/commit/181a341)), closes [#4627](https://github.com/zowe/api-layer/issues/4627)
+
+* Breaking change:  make actuator endpoints authenticated (#4917) ([bc467ba](https://github.com/zowe/api-layer/commit/bc467ba)), closes [#4917](https://github.com/zowe/api-layer/issues/4917)
+* Breaking change:  do not allow simple requests for login (#4823) ([207350f](https://github.com/zowe/api-layer/commit/207350f)), closes [#4823](https://github.com/zowe/api-layer/issues/4823)
+* Breaking change:  remove apiml.service.allowEncodedSlashes in favor of enableStrictUrlValidation (#4830) ([b889eef](https://github.com/zowe/api-layer/commit/b889eef)), closes [#4830](https://github.com/zowe/api-layer/issues/4830)
+* Breaking change:  keep strict URL validation as default (#4812) ([fa91df1](https://github.com/zowe/api-layer/commit/fa91df1)), closes [#4812](https://github.com/zowe/api-layer/issues/4812)
 
 ## `APIML 3.5.19 / Zowe 3.5.0 (2026-05-20)`
 
