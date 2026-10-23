@@ -47,6 +47,7 @@ dependencyResolutionManagement {
             version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6.5')
+            version('hibernate_validator', '9.1.5.Final')
             version('infinispan', '16.3.1')
             version('jacksonAnnotations', '2.22')  // Jackson 2 shim track: review when SB 4.3 lands
             version('jacksonCore', '2.22.4')
@@ -213,6 +214,7 @@ dependencyResolutionManagement {
             library('hamcrest', 'org.hamcrest', 'hamcrest').versionRef('hamcrest')
             library('http_client4', 'org.apache.httpcomponents', 'httpclient').versionRef('httpClient4') // to define minimum version and avoid duplicity libraries in the classpath
             library('http_client5', 'org.apache.httpcomponents.client5', 'httpclient5').versionRef('httpClient5')
+            library('hibernate_validator', 'org.hibernate.validator', 'hibernate-validator').versionRef('hibernate_validator')
             library('javax_annotation', 'javax.annotation', 'javax.annotation-api').versionRef('javaxAnnotation') // to define minimum version and avoid duplicity libraries in the classpath
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
             library('archaius_core', 'com.netflix.archaius', 'archaius-core').versionRef('archaius')
