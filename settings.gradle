@@ -1,24 +1,24 @@
 pluginManagement {
     repositories {
         maven {
-            url artifactoryMavenSnapshotRepo
+            url = artifactoryMavenSnapshotRepo
             credentials {
-                username mavenUser
-                password mavenPassword
+                username = mavenUser
+                password = mavenPassword
             }
         }
         maven {
-            url artifactoryMavenRepo
+            url = artifactoryMavenRepo
             credentials {
-                username mavenUser
-                password mavenPassword
+                username = mavenUser
+                password = mavenPassword
             }
         }
         maven {
-            url artifactoryPlugins
+            url = artifactoryPlugins
             credentials {
-                username mavenUser
-                password mavenPassword
+                username = mavenUser
+                password = mavenPassword
             }
         }
     }
