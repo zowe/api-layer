@@ -13,6 +13,7 @@ package org.zowe.apiml.acceptance;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authorization.AuthorityAuthorizationDecision;
@@ -33,6 +35,8 @@ import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -123,6 +127,20 @@ class ActuatorConfigTest {
             assertEquals("health,info", property);
         }
 
+        @Value("${server.ssl.keyPassword}")
+        private char[] keyPassword;
+
+        @Value("${server.ssl.keyStore}")
+        private String keyStore;
+
+        @BeforeAll
+        void initClientCertificate() throws Exception {
+            if (SslContext.isInitialized()) {
+                SslContext.reset();
+            }
+            SslContext.prepareSslAuthentication(new SslContextConfigurer(keyPassword, keyStore, keyStore));
+        }
+
         @ParameterizedTest
         @CsvSource({
             "/application/loggers",
@@ -150,6 +168,21 @@ class ActuatorConfigTest {
         void whenAccessInfoActuatorWithCredentials_thenAllow(String endpoint) {
             given()
                 .cookie(AUTH_COOKIE, login(USER))
+            .when()
+                .get(basePath + endpoint)
+            .then()
+                .statusCode(SC_OK);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "/application/version",
+            "/application/health",
+            "/application/info"
+        })
+        void whenAccessInfoActuatorWithClientCertificateOnly_thenAllow(String endpoint) {
+            given()
+                .config(SslContext.clientCertApiml)
             .when()
                 .get(basePath + endpoint)
             .then()
