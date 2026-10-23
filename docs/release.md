@@ -116,12 +116,12 @@ Properties are stored in GitHub Secrets.
 
 You can get commit messages with the tool:
 
-`npm install -g conventional-changelog-cli`
+`npm install -g conventional-changelog`
 
 Command to display commit messages for a specified number of releases:
 
-`conventional-changelog -r <number_of_releases>`
+`conventional-changelog -r <number_of_releases> --stdout`
 
 More information about the tool:
 
-`https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog-cli`
+`https://github.com/conventional-changelog/conventional-changelog/tree/master/packages/conventional-changelog`
