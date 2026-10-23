@@ -5,19 +5,19 @@ dependencyResolutionManagement {
             version('projectNode', '24.10.0')
             version('projectNpm', '10.9.0')
 
-            version('springBoot', '4.1.1')
+            version('springBoot', '4.1.2')
             // Jersey 3.1.x is Java 17-loadable (major 55). Only jersey-common:4.0.1 is Java 21 (major 65).
             // Pinned via resolutionStrategy.force in build.gradle -- see the comment there.
             version('jersey3', '3.1.12')
-            version('springCloudNetflix', '5.0.2')
-            version('springCloudCommons', '5.0.3')
+            version('springCloudNetflix', '5.0.3')
+            version('springCloudCommons', '5.0.4')
             version('springCloudCB', '5.0.3')
-            version('springCloudGateway', '5.0.3')
-            version('springCloud', '2025.1.3')
+            version('springCloudGateway', '5.0.4')
+            version('springCloud', '2025.1.4')
             version('springFramework', '7.0.10')
             version('springRetry', '2.0.13')
 
-            version('modulith', '2.1.1')
+            version('modulith', '2.1.2')
             version('jmolecules', '2023.3.4')
 
             version('glassfishHk2', '3.1.1')
@@ -61,7 +61,7 @@ dependencyResolutionManagement {
             version('openTelemetry-starter', '2.32.0')
             // Keep the SDK aligned with the Spring Boot starter's OpenTelemetry API dependency.
             // Starter 2.32.0 uses internal API classes removed in SDK 1.67.0.
-            version('openTelemetry-core', '1.66.0')
+            version('openTelemetry-core', '1.67.0')
             version('ow2Asm', '9.11.1')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
