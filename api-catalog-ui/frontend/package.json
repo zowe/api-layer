@@ -172,7 +172,8 @@
         "qs": "6.16.1",
         "path-to-regexp": "8.4.2",
         "minimatch": "3.1.5",
-        "brace-expansion": "1.1.21"
+        "brace-expansion": "1.1.21",
+        "react-is": "19.2.9"
     },
     "engines": {
         "npm": "=10.9.9",
