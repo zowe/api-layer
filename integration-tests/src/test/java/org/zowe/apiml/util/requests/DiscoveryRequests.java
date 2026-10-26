@@ -42,16 +42,16 @@ public class DiscoveryRequests {
     private final int port;
 
     public DiscoveryRequests(String host) {
-        this(discoveryServiceConfiguration.getScheme(), host, discoveryServiceConfiguration.getPort(), new Requests());
+        this(discoveryServiceConfiguration.getScheme(), host, new Requests());
     }
 
-    public DiscoveryRequests(String scheme, String host, int port, Requests requests) {
+    public DiscoveryRequests(String scheme, String host, Requests requests) {
         RestAssured.config = RestAssured.config().sslConfig(getConfiguredSslConfig());
 
         this.requests = requests;
         this.scheme = scheme;
         this.host = host;
-        this.port = port;
+        this.port = discoveryServiceConfiguration.getPortForHost(host);
 
         log.info("Created discovery requests for: {}://{}:{}", scheme, host, port);
     }

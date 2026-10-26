@@ -1,0 +1,33 @@
+services:
+
+    apiml:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: apiml
+        environment:
+            APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: "true"
+            APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: "true"
+            APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /docker/api-defs-unknown-host
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+
+    discoverable-client-unknown:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client-unknown
+        environment:
+            APIML_SERVICE_HOSTNAME: discoverable-client-unknown
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
+            SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
+            SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    mock-services-unknown:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services-unknown
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"
