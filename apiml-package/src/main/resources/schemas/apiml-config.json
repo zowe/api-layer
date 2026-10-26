@@ -746,7 +746,7 @@
                             "properties": {
                                 "standalone": {
                                     "type": "boolean",
-                                    "description": "Use persistent local Infinispan caches without cluster discovery or replication. Enable only for a single API ML instance; keep false for high availability. JGroups settings and initialHosts are ignored when enabled.",
+                                    "description": "Use persistent local Infinispan caches without cluster discovery or replication. Enable only for a single API ML instance. JGroups settings and initialHosts are ignored when enabled.",
                                     "default": false
                                 },
                                 "distributedSyncTimeoutSecs": {
