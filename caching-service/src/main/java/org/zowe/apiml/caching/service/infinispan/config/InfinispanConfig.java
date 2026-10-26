@@ -85,6 +85,9 @@ public class InfinispanConfig implements InitializingBean {
 
     private static final Duration REVOCATION_MAX_TTL = Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS);
 
+    @Value("${caching.storage.infinispan.standalone:false}")
+    private boolean standalone;
+
     @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;
 
@@ -194,6 +197,9 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     public String getInfinispanConfigFile() {
+        if (standalone) {
+            return "infinispan-standalone.xml";
+        }
         return isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
     }
 
@@ -216,21 +222,27 @@ public class InfinispanConfig implements InitializingBean {
             .persistence()
             .addSoftIndexFileStore()
             .clustering()
-            .cacheMode(CacheMode.REPL_SYNC)
+            .cacheMode(getPersistentCacheMode())
             .hash().numSegments(numSegments);
         holder.getGlobalConfigurationBuilder().defaultCacheName("default");
-        holder.getGlobalConfigurationBuilder().transport().stack("prod").distributedSyncTimeout(distributedSyncTimeout, TimeUnit.SECONDS);
+        if (!standalone) {
+            holder.getGlobalConfigurationBuilder().transport().stack("prod").distributedSyncTimeout(distributedSyncTimeout, TimeUnit.SECONDS);
+        }
         return holder;
     }
 
-    private ConfigurationBuilder getDistributedCacheConfig() {
+    private CacheMode getPersistentCacheMode() {
+        return standalone ? CacheMode.LOCAL : CacheMode.REPL_SYNC;
+    }
+
+    private ConfigurationBuilder getPersistentCacheConfig() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
             .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
             .persistence()
             .addSoftIndexFileStore()
             .clustering()
-            .cacheMode(CacheMode.REPL_SYNC)
+            .cacheMode(getPersistentCacheMode())
             .hash().numSegments(numSegments);
         return builder;
     }
@@ -244,7 +256,7 @@ public class InfinispanConfig implements InitializingBean {
             .persistence()
             .addSoftIndexFileStore()
             .clustering()
-            .cacheMode(CacheMode.REPL_SYNC)
+            .cacheMode(getPersistentCacheMode())
             .hash().numSegments(numSegments);
         return builder;
     }
@@ -262,8 +274,7 @@ public class InfinispanConfig implements InitializingBean {
         return builder;
     }
 
-    @Bean(destroyMethod = "stop")
-    LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
+    private void configureClusterProperties() {
         System.setProperty("jgroups.tcpping.initial_hosts", getInitialHosts());
         System.setProperty("jgroups.tcpping.num_discovery_runs", String.valueOf(discoveryRuns));
         System.setProperty("jgroups.bind.port", port);
@@ -279,14 +290,21 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.trustStoreType", trustStoreType);
         System.setProperty("infinispan.ssl.trustStore", trustStore);
         System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
+    }
+
+    @Bean(destroyMethod = "stop")
+    LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
+        if (!standalone) {
+            configureClusterProperties();
+        }
 
         var caches = new HashMap<String, ConfigurationBuilder>();
-        caches.put(CACHE_ZOWE, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE, getPersistentCacheConfig());
         caches.put(CACHE_ZOWE_INVALIDATED_TOKEN_ITEM, getRevocationCacheConfig());
-        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getPersistentCacheConfig());
 
         if (applicationInfo.isModulith()) {
-            caches.put("invalidatedJwtTokens", getDistributedCacheConfig());
+            caches.put("invalidatedJwtTokens", getPersistentCacheConfig());
 
             // 1 minute to force zosmf tokens validation against zosmf for invalidated tokens
             caches.put("validatedJwtTokens", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofMinutes(1)));
@@ -324,7 +342,9 @@ public class InfinispanConfig implements InitializingBean {
 
     @Bean
     public Storage storage(DefaultCacheManager cacheManager, ObjectProvider<MeterRegistry> meterRegistry) {
-        defineLegacyLock(cacheManager);
+        if (!standalone) {
+            defineLegacyLock(cacheManager);
+        }
         var storage = new InfinispanStorage(
             cacheManager,
             REVOCATION_MAX_TTL.toSeconds(),

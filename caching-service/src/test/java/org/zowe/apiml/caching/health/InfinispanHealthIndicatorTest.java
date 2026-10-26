@@ -11,6 +11,7 @@
 package org.zowe.apiml.caching.health;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.remoting.transport.Address;
@@ -36,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
 
@@ -109,6 +111,7 @@ class InfinispanHealthIndicatorTest {
             doReturn(wholeStatus).when(nativeCacheManager).getStatus();
             doReturn(address).when(nativeCacheManager).getAddress();
             doReturn(members).when(nativeCacheManager).getMembers();
+            doReturn(GlobalConfigurationBuilder.defaultClusteredBuilder().build()).when(nativeCacheManager).getCacheManagerConfiguration();
             doReturn(cache).when(nativeCacheManager).getCache(CACHE_1);
             doReturn(cacheStatus).when(cache).getStatus();
 
@@ -121,7 +124,8 @@ class InfinispanHealthIndicatorTest {
 
             verify(builder).withDetail(eq(INFINISPAN), mapCaptor.capture());
             var mapDetails = mapCaptor.getValue();
-            assertEquals(3, mapDetails.size());
+            assertEquals(4, mapDetails.size());
+            assertEquals("clustered", mapDetails.get("mode"));
             assertTrue(mapDetails.containsKey(CACHES));
             assertTrue(mapDetails.containsKey(STATUS));
             assertTrue(mapDetails.containsKey(CLUSTER));
@@ -129,6 +133,31 @@ class InfinispanHealthIndicatorTest {
             assertEquals(cacheStatus, caches.get(CACHE_1));
             assertEquals(wholeStatus, mapDetails.get(STATUS));
             verify(builder).status(result ? Status.UP : Status.DOWN);
+        }
+
+        @ParameterizedTest
+        @CsvSource({"RUNNING,RUNNING,true", "FAILED,RUNNING,false", "RUNNING,FAILED,false"})
+        void givenStandaloneManager_whenBuildHealth_thenOnlyCheckLocalCaches(
+            ComponentStatus wholeStatus, ComponentStatus cacheStatus, boolean healthy
+        ) {
+            doReturn(new GlobalConfigurationBuilder().build()).when(nativeCacheManager).getCacheManagerConfiguration();
+            doReturn(wholeStatus).when(nativeCacheManager).getStatus();
+            doReturn(List.of(CACHE_1)).when(cacheManager).getCacheNames();
+            doReturn(cache).when(nativeCacheManager).getCache(CACHE_1);
+            doReturn(cacheStatus).when(cache).getStatus();
+            var indicator = new InfinispanHealthIndicator();
+            ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(indicator, "cacheManager")).set(cacheManager);
+            var builder = new Health.Builder();
+
+            indicator.doHealthCheck(builder);
+
+            var health = builder.build();
+            assertEquals(healthy ? Status.UP : Status.DOWN, health.getStatus());
+            var details = (Map<?, ?>) health.getDetails().get(INFINISPAN);
+            assertEquals("standalone", details.get("mode"));
+            assertFalse(details.containsKey(CLUSTER));
+            verify(nativeCacheManager, never()).getMembers();
+            verify(nativeCacheManager, never()).getAddress();
         }
 
     }

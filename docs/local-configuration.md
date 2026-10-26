@@ -81,6 +81,48 @@ npm run api-catalog-service-thin
 npm run caching-service
 ```
 
+#### Standalone Infinispan
+
+For a single API ML instance, Infinispan can retain persistent caches without starting
+JGroups discovery, cluster listeners, or replication. In `config/local/apiml-service.yml`
+(or `config/local/caching-service.yml` for the separate caching service), set:
+
+```yaml
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            standalone: true
+```
+
+The equivalent JVM option is `-Dcaching.storage.infinispan.standalone=true`.
+For a packaged modulith deployment, configure:
+
+```yaml
+components:
+    apiml:
+        storage:
+            mode: infinispan
+            infinispan:
+                standalone: true
+```
+
+The separate caching service exposes the same setting under
+`components.caching-service.storage.infinispan.standalone`. As with other caching
+settings, an explicit `components.caching-service` setting takes precedence over
+the modulith's `components.apiml` setting.
+
+`standalone` defaults to `false`, preserving clustered operation. When enabled,
+`initialHosts` and JGroups settings are ignored. Cache persistence, eviction,
+expiration, and personal access token revocation storage remain enabled. The
+Infinispan health details report `mode: standalone` without a cluster membership
+check. Cache files remain in the existing per-instance workspace directory.
+
+Use this mode only when one instance owns the state. Standalone instances do not
+share cached data or token revocations. Keep `standalone: false` for HA, and stop
+the instance before changing modes; do not share its cache directory between
+running processes.
+
 ### Mock Services
 
 ```shell

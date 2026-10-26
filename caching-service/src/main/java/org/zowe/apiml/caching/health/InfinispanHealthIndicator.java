@@ -62,17 +62,21 @@ public class InfinispanHealthIndicator extends AbstractHealthIndicator {
             }
             infinispan.put("caches", caches);
 
-            var initialHosts = System.getProperty("jgroups.tcpping.initial_hosts");
-            var initialHostsArray = StringUtils.split(initialHosts, ",");
-            boolean allMembers = initialHostsArray.length <= nativeCacheManager.getMembers().size();
-            var cluster = Map.of(
-                "status", allMembers ? Status.UP.getCode() : Status.DOWN.getCode(),
-                "address", nativeCacheManager.getAddress().toString(),
-                "initialHosts", initialHostsArray,
-                "members", nativeCacheManager.getMembers().stream().map(Address::toString).toList()
-            );
-            infinispan.put("cluster", cluster);
-            health &= allMembers;
+            boolean clustered = nativeCacheManager.getCacheManagerConfiguration().isClustered();
+            infinispan.put("mode", clustered ? "clustered" : "standalone");
+            if (clustered) {
+                var initialHosts = System.getProperty("jgroups.tcpping.initial_hosts", "");
+                var initialHostsArray = StringUtils.split(initialHosts, ",");
+                boolean allMembers = initialHostsArray.length <= nativeCacheManager.getMembers().size();
+                var cluster = Map.of(
+                    "status", allMembers ? Status.UP.getCode() : Status.DOWN.getCode(),
+                    "address", nativeCacheManager.getAddress().toString(),
+                    "initialHosts", initialHostsArray,
+                    "members", nativeCacheManager.getMembers().stream().map(Address::toString).toList()
+                );
+                infinispan.put("cluster", cluster);
+                health &= allMembers;
+            }
 
             builder.withDetail("infinispan", infinispan);
         }
