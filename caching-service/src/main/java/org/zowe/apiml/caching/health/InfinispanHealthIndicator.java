@@ -44,8 +44,9 @@ public class InfinispanHealthIndicator extends AbstractHealthIndicator {
         boolean health = true;
         if (cm instanceof SpringEmbeddedCacheManager springEmbeddedCacheManager) {
             var nativeCacheManager = springEmbeddedCacheManager.getNativeCacheManager();
-            if (nativeCacheManager instanceof LazyCacheManager lazyCacheManager) {
-                health &= lazyCacheManager.isInitialized();
+            if (nativeCacheManager instanceof LazyCacheManager lazyCacheManager && !lazyCacheManager.isInitialized()) {
+                builder.outOfService().withDetail("infinispan", Map.of("initialized", false));
+                return;
             }
 
             var infinispan = new HashMap<String, Object>();

@@ -29,6 +29,7 @@ import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.Status;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.zowe.apiml.caching.service.infinispan.config.LazyCacheManager;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -52,6 +53,30 @@ class InfinispanHealthIndicatorTest {
             var builder = mock(Health.Builder.class);
             infinispanHealthIndicator.doHealthCheck(builder);
             verify(builder).unknown();
+        }
+
+    }
+
+    @Nested
+    class UninitializedCacheManager {
+
+        @Test
+        void repeatedHealthProbesDoNotInitializeCaches() {
+            var nativeCacheManager = mock(LazyCacheManager.class);
+            var cacheManager = mock(SpringEmbeddedCacheManager.class);
+            when(cacheManager.getNativeCacheManager()).thenReturn(nativeCacheManager);
+            var indicator = new InfinispanHealthIndicator();
+            ((AtomicReference<CacheManager>) ReflectionTestUtils.getField(indicator, "cacheManager")).set(cacheManager);
+
+            for (int i = 0; i < 3; i++) {
+                var health = indicator.health();
+                assertEquals(Status.OUT_OF_SERVICE, health.getStatus());
+                assertEquals(Map.of("initialized", false), health.getDetails().get("infinispan"));
+            }
+
+            verify(nativeCacheManager, times(3)).isInitialized();
+            verify(cacheManager, times(3)).getNativeCacheManager();
+            verifyNoMoreInteractions(nativeCacheManager, cacheManager);
         }
 
     }

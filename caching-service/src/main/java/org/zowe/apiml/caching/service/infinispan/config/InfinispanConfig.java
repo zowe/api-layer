@@ -48,6 +48,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -235,6 +236,45 @@ public class InfinispanConfig implements InitializingBean {
         return standalone ? CacheMode.LOCAL : CacheMode.REPL_SYNC;
     }
 
+    void validateStandaloneConfiguration(Map<String, String> environment, String component) {
+        // Zowe requires sysname on HA instances. Component-level hostname settings must not
+        // be mistaken for additional instance IDs in the flattened environment.
+        Pattern instanceProperty = Pattern.compile("^ZWE_haInstances_(\\w+)_(sysname|components_" + component + "_enabled)$");
+        var instances = new TreeSet<String>();
+        var enabledOverrides = new HashMap<String, String>();
+        environment.forEach((key, value) -> {
+            var matcher = instanceProperty.matcher(key);
+            if (matcher.matches()) {
+                String instance = matcher.group(1);
+                instances.add(instance);
+                if (matcher.group(2).startsWith("components_")) {
+                    enabledOverrides.put(instance, value);
+                }
+            }
+        });
+
+        String currentInstance = environment.get(ZWE_HAINSTANCE_ID);
+        // ZWE_components_* already includes the current instance's overrides. It is a reliable
+        // default for other instances only when the current instance has no enabled override.
+        boolean canUseDefault = enabledOverrides.isEmpty() || instances.stream()
+            .anyMatch(instance -> instance.equalsIgnoreCase(currentInstance) && !enabledOverrides.containsKey(instance));
+        String defaultEnabled = canUseDefault ? environment.get("ZWE_components_" + component + "_enabled") : null;
+        var enabledInstances = instances.stream()
+            .filter(instance -> Boolean.parseBoolean(enabledOverrides.getOrDefault(instance, defaultEnabled)))
+            .toList();
+        if (enabledInstances.size() > 1) {
+            throw new InfinispanConfigException("caching.storage.infinispan.standalone=true cannot be used with multiple enabled "
+                + component.replace('_', '-') + " instances: " + enabledInstances
+                + ". Set standalone=false to share cached data and token revocations, or enable only one instance.");
+        }
+        if (instances.size() > 1 && instances.stream().anyMatch(instance ->
+            enabledOverrides.getOrDefault(instance, defaultEnabled) == null)) {
+            log.warn("Standalone Infinispan cannot determine whether other {} instances are enabled. "
+                + "Verify that only one instance owns the cache; cached data and token revocations are not replicated.",
+                component.replace('_', '-'));
+        }
+    }
+
     private ConfigurationBuilder getPersistentCacheConfig() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
@@ -294,7 +334,9 @@ public class InfinispanConfig implements InitializingBean {
 
     @Bean(destroyMethod = "stop")
     LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
-        if (!standalone) {
+        if (standalone) {
+            validateStandaloneConfiguration(System.getenv(), applicationInfo.isModulith() ? "apiml" : "caching_service");
+        } else {
             configureClusterProperties();
         }
 
