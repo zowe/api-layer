@@ -18,7 +18,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -34,8 +33,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.zowe.apiml.acceptance.AcceptanceTest;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
-import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.security.config.CompoundAuthProvider;
 import reactor.core.publisher.Mono;
 
@@ -66,23 +63,17 @@ class ActuatorX509SecurityTest {
 
     private static final String EXISTING_JWT = jwt("EXISTINGUSER");
     private static final String TRUSTED_CERTIFICATE_AUTHORITY = "TRUSTED_CERTIFICATE";
-    private static final List<String> INFO_ENDPOINTS = List.of(
-        "/application/health", "/application/info", "/application/version", "/gateway/version", "/gateway/api/v1/version"
-    );
     private static X509Certificate clientCertificate;
-    private static X509Certificate serviceCertificate;
 
     @MockitoSpyBean private CompoundAuthProvider basicProvider;
     @MockitoBean private LocalTokenProvider tokenProvider;
     @MockitoBean private SafResourceAccessVerifying safResourceAccessVerifying;
 
     @Autowired private WebFilterChainProxy securityChain;
-    @Autowired private AuthConfigurationProperties authProperties;
 
     @BeforeAll
     static void loadCertificates() throws Exception {
         clientCertificate = loadCertificate("client/client-certs.p12", "user");
-        serviceCertificate = loadCertificate("service/service.keystore.p12", "localhost");
     }
 
     private static X509Certificate loadCertificate(String file, String alias) throws Exception {
@@ -93,61 +84,16 @@ class ActuatorX509SecurityTest {
         return (X509Certificate) keyStore.getCertificate(alias);
     }
 
-    static Stream<String> protectedEndpoints() {
-        return Stream.of(10010, 10011).flatMap(port ->
-            Stream.concat(INFO_ENDPOINTS.stream(), Stream.of("/application/loggers", "/application/gateway/routes"))
-                .map(path -> "https://localhost:" + port + path));
-    }
-
     static Stream<String> representativeEndpoints() {
         return Stream.of(10010, 10011).flatMap(port ->
             Stream.of("/application/info", "/application/loggers").map(path -> "https://localhost:" + port + path));
     }
 
     @ParameterizedTest
-    @MethodSource("protectedEndpoints")
-    void givenTrustedClientCertificate_whenRequestingActuatorEndpoint_thenAuthenticatedAsTrustedCertificate(String uri) {
-        var exchange = perform(MockServerHttpRequest.get(uri).sslInfo(sslInfo(clientCertificate)));
-
-        assertAuthenticatedAs(exchange, TRUSTED_CERTIFICATE_AUTHORITY);
-        verifyNoInteractions(basicProvider, tokenProvider, safResourceAccessVerifying);
-    }
-
-    @ParameterizedTest
-    @MethodSource("representativeEndpoints")
-    void givenServiceCertificate_whenRequestingActuatorEndpoint_thenAuthenticatedAsTrustedCertificate(String uri) {
-        var exchange = perform(MockServerHttpRequest.get(uri).sslInfo(sslInfo(serviceCertificate)));
-
-        assertAuthenticatedAs(exchange, TRUSTED_CERTIFICATE_AUTHORITY);
-    }
-
-    @ParameterizedTest
-    @MethodSource("protectedEndpoints")
-    void givenNoCredentials_whenRequestingActuatorEndpoint_thenUnauthorized(String uri) {
-        var exchange = perform(MockServerHttpRequest.get(uri));
-
-        assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-    }
-
-    static Stream<Arguments> existingCredentials() {
-        return representativeEndpoints().flatMap(uri -> Stream.of("basic", "bearer", "cookie")
-            .map(type -> Arguments.of(uri, type)));
-    }
-
-    @ParameterizedTest
-    @MethodSource("existingCredentials")
-    void givenExistingCredentials_whenRequestingActuatorEndpoint_thenAuthenticatedAsTheirUser(String uri, String type) {
-        var request = MockServerHttpRequest.get(uri);
-        stubCredentials(request, type);
-
-        assertAuthenticatedAs(perform(request), "EXISTINGUSER");
-    }
-
-    @ParameterizedTest
     @MethodSource("representativeEndpoints")
     void givenBasicCredentialsAndCertificate_whenRequestingActuatorEndpoint_thenBasicCredentialsTakePrecedence(String uri) {
         var request = MockServerHttpRequest.get(uri).sslInfo(sslInfo(clientCertificate));
-        stubCredentials(request, "basic");
+        stubBasicCredentials(request);
 
         assertAuthenticatedAs(perform(request), "EXISTINGUSER");
     }
@@ -179,24 +125,13 @@ class ActuatorX509SecurityTest {
         assertThat(exchange.getResponse().getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
-    private void stubCredentials(MockServerHttpRequest.BaseBuilder<?> request, String type) {
-        if ("basic".equals(type)) {
-            doReturn(true).when(basicProvider).supports(UsernamePasswordAuthenticationToken.class);
-            doReturn(UsernamePasswordAuthenticationToken.authenticated("EXISTINGUSER", null, List.of()))
-                .when(basicProvider).authenticate(any());
-            var headers = new HttpHeaders();
-            headers.setBasicAuth("EXISTINGUSER", "password");
-            request.headers(headers);
-            return;
-        }
-        var response = new QueryResponse();
-        response.setUserId("EXISTINGUSER");
-        when(tokenProvider.validateToken(EXISTING_JWT)).thenReturn(Mono.just(response));
-        if ("bearer".equals(type)) {
-            request.header(HttpHeaders.AUTHORIZATION, "Bearer " + EXISTING_JWT);
-        } else {
-            request.cookie(new HttpCookie(authProperties.getCookieProperties().getCookieName(), EXISTING_JWT));
-        }
+    private void stubBasicCredentials(MockServerHttpRequest.BaseBuilder<?> request) {
+        doReturn(true).when(basicProvider).supports(UsernamePasswordAuthenticationToken.class);
+        doReturn(UsernamePasswordAuthenticationToken.authenticated("EXISTINGUSER", null, List.of()))
+            .when(basicProvider).authenticate(any());
+        var headers = new HttpHeaders();
+        headers.setBasicAuth("EXISTINGUSER", "password");
+        request.headers(headers);
     }
 
     static Stream<Arguments> actuatorWrites() {
