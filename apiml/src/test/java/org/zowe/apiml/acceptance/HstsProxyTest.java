@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.nullValue;
     "server.ssl.enabled=false",
     "server.attlsServer.enabled=false",
     "server.forward-headers-strategy=framework",
-    "apiml.internal-discovery.port=40986",
+    "apiml.internal-discovery.port=18088",
     "apiml.security.domains.onlyWarn=true" // The proxy-to-application connection uses HTTP in this test.
 })
 class HstsProxyTest extends AcceptanceTestWithBasePath {

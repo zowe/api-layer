@@ -81,6 +81,58 @@ npm run api-catalog-service-thin
 npm run caching-service
 ```
 
+#### Standalone Infinispan
+
+For a fresh single-instance API ML installation, Infinispan can retain persistent
+caches without starting JGroups discovery, cluster listeners, or replication. In `config/local/apiml-service.yml`
+(or `config/local/caching-service.yml` for the separate caching service), set:
+
+```yaml
+caching:
+    storage:
+        mode: infinispan
+        infinispan:
+            standalone: true
+```
+
+The equivalent JVM option is `-Dcaching.storage.infinispan.standalone=true`.
+For a packaged modulith deployment, configure:
+
+```yaml
+components:
+    apiml:
+        storage:
+            mode: infinispan
+            infinispan:
+                standalone: true
+```
+
+The separate caching service exposes the same setting under
+`components.caching-service.storage.infinispan.standalone`. As with other caching
+settings, an explicit `components.caching-service` setting takes precedence over
+the modulith's `components.apiml` setting.
+
+`standalone` defaults to `false`, preserving clustered operation. When enabled,
+`initialHosts` and JGroups settings are ignored. Cache persistence, eviction,
+expiration, and personal access token revocation storage remain enabled. The
+Infinispan health details report `mode: standalone` without a cluster membership
+check. If the cache manager exists but is not initialized, health reports
+`OUT_OF_SERVICE`; health probes do not initiate cache startup. Cache files remain
+in the existing per-instance workspace directory and survive normal standalone restarts.
+
+Startup rejects `standalone: true` when the exported Zowe configuration identifies
+multiple enabled instances of the running component (`apiml` or `caching-service`).
+The check counts instance IDs, including instances on the same host, and respects
+per-instance `enabled: false` overrides. If several instances are declared but their
+enabled flags cannot be resolved from the exported configuration, startup logs a
+warning instead of rejecting the configuration. The check cannot discover deployments
+absent from that metadata.
+
+Use this mode only when one instance owns the state. Standalone instances do not
+share cached data or token revocations. Keep `standalone: false` for HA; do not
+share a cache directory between running processes. This setting is intended for
+fresh standalone installations, not for rolling conversions of an HA deployment.
+
 ### Mock Services
 
 ```shell
