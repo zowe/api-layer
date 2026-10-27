@@ -248,11 +248,14 @@ public class WebSecurityConfig {
         return x509SecurityConfig(http, true);
     }
 
-    private ServerHttpSecurity addMappedX509Authentication(ServerHttpSecurity http) {
-        var reactiveX509provider = new ReactiveAuthenticationManagerAdapter(new ProviderManager(x509AuthenticationProvider));
-        return http
-            .addFilterAfter(new CategorizeCertsWebFilter(publicKeyCertificatesBase64, certificateValidator), SecurityWebFiltersOrder.FIRST)
-            .addFilterAfter(new X509AuthFilter(reactiveX509provider), SecurityWebFiltersOrder.AUTHENTICATION);
+    private ServerHttpSecurity addTrustedX509Authentication(ServerHttpSecurity http) {
+        if (verifySslCertificatesOfServices) {
+            http.x509(x509 -> x509
+                .principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
+            );
+        }
+        return http;
     }
 
     private OIDCAuthFilter createOidcAuthFilter(AuthConfigurationProperties authConfigurationProperties) {
@@ -308,7 +311,7 @@ public class WebSecurityConfig {
 
     /**
      * Optionally protect the health, info and version endpoints on both Gateway and Discovery connectors.
-     * Supports Basic credentials, JWT tokens and client certificates mapped to a mainframe user.
+     * Supports Basic credentials, JWT tokens and any trusted client certificate.
      *
      * @param http
      * @param authConfigurationProperties  Obtain auth configuration such as auth cookie name
@@ -337,7 +340,7 @@ public class WebSecurityConfig {
         if (isHealthEndpointProtected) {
             http.addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
-            addMappedX509Authentication(http);
+            addTrustedX509Authentication(http);
         }
         return http.build();
     }
@@ -352,14 +355,14 @@ public class WebSecurityConfig {
      * except for health, info and version, which are handled separately based on the configuration.
      * <p>
      * This chain requires that all incoming requests to the matched paths are authenticated,
-     * via Basic credentials, JWT tokens or client certificates mapped to a mainframe user.
+     * via Basic credentials, JWT tokens or any trusted client certificate.
      * <p>
      * The chain relies on custom filters to handle authentication:
      * <ul>
      *     <li>{@link TokenAuthFilter} - Validates JWT tokens</li>
      *     <li>{@link BasicLoginFilter} - Validates Basic Authentication credentials</li>
-     *     <li>{@link X509AuthFilter} - Authenticates a client certificate as its mapped mainframe user</li>
      * </ul>
+     * A trusted client certificate is accepted without being mapped to a mainframe user.
      *
      * @param http                         HTTP security configuration
      * @param authConfigurationProperties  authentication configuration properties
@@ -392,7 +395,7 @@ public class WebSecurityConfig {
             )
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
             .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
-        return addMappedX509Authentication(http).build();
+        return addTrustedX509Authentication(http).build();
     }
 
     /**
@@ -645,12 +648,7 @@ public class WebSecurityConfig {
                 catalogEntryPoint(serverAuthenticationEntryPoint)
             ));
 
-        if (verifySslCertificatesOfServices) {
-            http.x509(x509 -> x509
-                .principalExtractor(X509Util.x509PrincipalExtractor())
-                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
-            );
-        }
+        addTrustedX509Authentication(http);
 
         http
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)

@@ -139,16 +139,15 @@ class GatewayAuthenticationTest {
 
         @ParameterizedTest
         @EnabledIfSystemProperty(named = "environment.modulith", matches = "true")
-        @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
         @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT, INFO_ENDPOINT})
-        void givenServiceCertificate_thenReturnUnauthorized(String endpoint) {
+        void givenServiceCertificate_thenAuthenticate(String endpoint) {
             given()
                 .config(SslContext.clientCertApiml)
                 .auth().none()
             .when()
                 .get(HttpRequestUtils.getUriFromGateway(endpoint))
             .then()
-                .statusCode(SC_UNAUTHORIZED);
+                .statusCode(SC_OK);
         }
 
     }
