@@ -66,16 +66,15 @@ class DiscoveryServiceAuthenticationTest {
         }
 
         @ParameterizedTest
-        @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
         @ValueSource(strings = {ACTUATOR_ENDPOINT, DISCOVERY_HEALTH_ENDPOINT, "/application/info"})
-        void givenServiceCertificate_thenReturnUnauthorized(String endpoint) {
+        void givenServiceCertificate_thenAuthenticate(String endpoint) {
             given()
                 .config(SslContext.clientCertApiml)
                 .auth().none()
             .when()
                 .get(DiscoveryUtils.getDiscoveryUrl() + endpoint)
             .then()
-                .statusCode(SC_UNAUTHORIZED);
+                .statusCode(SC_OK);
         }
 
     }
