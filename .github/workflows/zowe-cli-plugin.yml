@@ -52,7 +52,7 @@ jobs:
                       rm -f .npmrc
                     fi
 
-            - uses: zowe-actions/octorelease@6cf71bdb7ca82117775295e076d63fe7a812f3c8 # v1
+            - uses: zowe-actions/octorelease@e4c509e08c4dfca0186571e937c605284a50de06 # v1
               with:
                 working-dir: zowe-cli-id-federation-plugin
               env:
