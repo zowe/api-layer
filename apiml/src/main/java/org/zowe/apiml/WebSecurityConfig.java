@@ -248,6 +248,16 @@ public class WebSecurityConfig {
         return x509SecurityConfig(http, true);
     }
 
+    private ServerHttpSecurity addTrustedX509Authentication(ServerHttpSecurity http) {
+        if (verifySslCertificatesOfServices) {
+            http.x509(x509 -> x509
+                .principalExtractor(X509Util.x509PrincipalExtractor())
+                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
+            );
+        }
+        return http;
+    }
+
     private OIDCAuthFilter createOidcAuthFilter(AuthConfigurationProperties authConfigurationProperties) {
         List<String> fieldPath = Arrays.asList(oidcUserIdFieldPath.trim().split("\\."));
         return new OIDCAuthFilter(oidcProvider, oidcMapper, authConfigurationProperties, fieldPath);
@@ -300,13 +310,13 @@ public class WebSecurityConfig {
     }
 
     /**
-     * Optionally protect the /application/health endpoint due to the information exposed there
-     * This one applies independently of connector, it covers /application/health in both GW and DS
+     * Optionally protect the health, info and version endpoints on both Gateway and Discovery connectors.
+     * Supports Basic credentials, JWT tokens and any trusted client certificate.
      *
      * @param http
      * @param authConfigurationProperties  Obtain auth configuration such as auth cookie name
      * @param authExceptionHandlerReactive Exception handler
-     * @return The configured {@link SecurityWebFilterChain} to optionally protect /application/health path
+     * @return The configured {@link SecurityWebFilterChain} for the health, info and version endpoints
      */
     @Bean
     @Order(2)
@@ -330,6 +340,7 @@ public class WebSecurityConfig {
         if (isHealthEndpointProtected) {
             http.addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
                 .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
+            addTrustedX509Authentication(http);
         }
         return http.build();
     }
@@ -341,16 +352,17 @@ public class WebSecurityConfig {
 
     /**
      * Security filter chain that protects all endpoints under the path "/application/**",
-     * except for "/application/health" - which is handled separately based on the configuration.
+     * except for health, info and version, which are handled separately based on the configuration.
      * <p>
      * This chain requires that all incoming requests to the matched paths are authenticated,
-     * either via Basic Authentication or Bearer JWT token.
+     * via Basic credentials, JWT tokens or any trusted client certificate.
      * <p>
-     * The chain disables relies on custom filters to handle authentication:
+     * The chain relies on custom filters to handle authentication:
      * <ul>
      *     <li>{@link TokenAuthFilter} - Validates JWT tokens</li>
      *     <li>{@link BasicLoginFilter} - Validates Basic Authentication credentials</li>
      * </ul>
+     * A trusted client certificate is accepted without being mapped to a mainframe user.
      *
      * @param http                         HTTP security configuration
      * @param authConfigurationProperties  authentication configuration properties
@@ -358,12 +370,13 @@ public class WebSecurityConfig {
      * @return the configured {@link SecurityWebFilterChain} for protecting "/application/**" paths
      */
     @Bean
+    @Order(3)
     SecurityWebFilterChain applicationEndpointsProtected(ServerHttpSecurity http,
                                                          AuthConfigurationProperties authConfigurationProperties,
                                                          AuthExceptionHandlerReactive authExceptionHandlerReactive,
                                                          SafAuthorizationManager<AuthorizationContext> actuatorAuthorizationManager) {
 
-        return http
+        http
             .securityMatcher(new AndServerWebExchangeMatcher(
                 pathMatchers(APPLICATION),
                 new NegatedServerWebExchangeMatcher(pathMatchers(APPLICATION_HEALTH, APPLICATION_INFO, APPLICATION_VERSION))
@@ -381,8 +394,8 @@ public class WebSecurityConfig {
                 .access(actuatorAuthorizationManager)
             )
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)
-            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION)
-            .build();
+            .addFilterAfter(new BasicLoginFilter(compoundAuthProvider, failedAuthenticationWebHandler), SecurityWebFiltersOrder.AUTHENTICATION);
+        return addTrustedX509Authentication(http).build();
     }
 
     /**
@@ -635,12 +648,7 @@ public class WebSecurityConfig {
                 catalogEntryPoint(serverAuthenticationEntryPoint)
             ));
 
-        if (verifySslCertificatesOfServices) {
-            http.x509(x509 -> x509
-                .principalExtractor(X509Util.x509PrincipalExtractor())
-                .authenticationManager(X509Util.x509ReactiveAuthenticationManager())
-            );
-        }
+        addTrustedX509Authentication(http);
 
         http
             .addFilterAfter(new TokenAuthFilter(localTokenProvider, authConfigurationProperties, authExceptionHandlerReactive), SecurityWebFiltersOrder.AUTHENTICATION)

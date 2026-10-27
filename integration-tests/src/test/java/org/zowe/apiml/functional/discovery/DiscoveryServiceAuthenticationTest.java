@@ -15,10 +15,14 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.categories.X509Test;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.ItSslConfigFactory;
 import org.zowe.apiml.util.config.SslContext;
@@ -42,6 +46,37 @@ class DiscoveryServiceAuthenticationTest {
     static void setup() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+    }
+
+    @Nested
+    @X509Test
+    @EnabledIfSystemProperty(named = "environment.modulith", matches = "true")
+    class GivenClientCertificate {
+
+        @ParameterizedTest
+        @ValueSource(strings = {ACTUATOR_ENDPOINT, DISCOVERY_HEALTH_ENDPOINT, "/application/info"})
+        void thenAuthenticate(String endpoint) {
+            given()
+                .config(SslContext.clientCertValid)
+                .auth().none()
+            .when()
+                .get(DiscoveryUtils.getDiscoveryUrl() + endpoint)
+            .then()
+                .statusCode(SC_OK);
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {ACTUATOR_ENDPOINT, DISCOVERY_HEALTH_ENDPOINT, "/application/info"})
+        void givenServiceCertificate_thenAuthenticate(String endpoint) {
+            given()
+                .config(SslContext.clientCertApiml)
+                .auth().none()
+            .when()
+                .get(DiscoveryUtils.getDiscoveryUrl() + endpoint)
+            .then()
+                .statusCode(SC_OK);
+        }
+
     }
 
     @Nested

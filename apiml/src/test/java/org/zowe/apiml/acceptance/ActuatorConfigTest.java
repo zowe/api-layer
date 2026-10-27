@@ -13,6 +13,7 @@ package org.zowe.apiml.acceptance;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
 import com.nimbusds.jwt.PlainJWT;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authorization.AuthorityAuthorizationDecision;
@@ -33,6 +35,8 @@ import org.zowe.apiml.ApimlApplication;
 import org.zowe.apiml.handler.LocalTokenProvider;
 import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
 import org.zowe.apiml.security.common.token.QueryResponse;
+import org.zowe.apiml.util.config.SslContext;
+import org.zowe.apiml.util.config.SslContextConfigurer;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
@@ -67,6 +71,28 @@ class ActuatorConfigTest {
 
         @MockitoBean
         SafAuthorizationManager<AuthorizationContext> safAuthorizationManager;
+
+        @Value("${server.ssl.keyStorePassword:password}")
+        private char[] keystorePassword;
+
+        @Value("${server.ssl.keyStore}")
+        private String keystore;
+
+        @BeforeEach
+        void prepareClientCertificates() throws Exception {
+            SslContext.prepareSslAuthentication(
+                new SslContextConfigurer(keystorePassword, "../keystore/client/client-certs.p12", keystore)
+            );
+        }
+
+        @AfterEach
+        void resetClientCertificates() {
+            SslContext.reset();
+        }
+
+        String urlOf(String target, String endpoint) {
+            return ("DISCOVERY".equals(target) ? "https://localhost:" + DISCOVERY_PORT : basePath) + endpoint;
+        }
 
         @BeforeEach
         void mockTokenValidation() {
@@ -143,6 +169,22 @@ class ActuatorConfigTest {
 
         @ParameterizedTest
         @CsvSource({
+            "/application/loggers",
+            "/application/gateway",
+            "/application/version",
+            "/application/health",
+            "/application/info"
+        })
+        void whenAccessActuatorOnDiscoveryPortWithoutCredentials_thenBlock(String endpoint) {
+            given()
+            .when()
+                .get(urlOf("DISCOVERY", endpoint))
+            .then()
+                .statusCode(SC_UNAUTHORIZED);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
             "/application/version",
             "/application/health",
             "/application/info"
@@ -169,6 +211,56 @@ class ActuatorConfigTest {
             .then()
                 .log().ifValidationFails()
                 .statusCode(SC_NOT_FOUND);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "GATEWAY,/application/version",
+            "GATEWAY,/application/health",
+            "GATEWAY,/application/info",
+            "DISCOVERY,/application/version",
+            "DISCOVERY,/application/health",
+            "DISCOVERY,/application/info"
+        })
+        void whenAccessInfoActuatorWithTrustedClientCertificate_thenAllow(String target, String endpoint) {
+            given()
+                .config(SslContext.clientCertValid)
+            .when()
+                .get(urlOf(target, endpoint))
+            .then()
+                .statusCode(SC_OK);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "GATEWAY,/application/health",
+            "GATEWAY,/application/info",
+            "DISCOVERY,/application/health",
+            "DISCOVERY,/application/info"
+        })
+        void whenAccessInfoActuatorWithServiceCertificate_thenAllow(String target, String endpoint) {
+            given()
+                .config(SslContext.clientCertApiml)
+            .when()
+                .get(urlOf(target, endpoint))
+            .then()
+                .statusCode(SC_OK);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "GATEWAY,/application/health",
+            "GATEWAY,/application/info",
+            "DISCOVERY,/application/health",
+            "DISCOVERY,/application/info"
+        })
+        void whenAccessInfoActuatorWithUntrustedCertificate_thenRejectConnection(String target, String endpoint) {
+            given()
+                .config(SslContext.selfSignedUntrusted)
+            .when()
+                .get(urlOf(target, endpoint))
+            .then()
+                .statusCode(SC_UNAUTHORIZED);
         }
 
     }
@@ -383,6 +475,52 @@ class ActuatorConfigTest {
                 .get(basePath + endpoint)
             .then()
                 .statusCode(SC_OK);
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "GATEWAY,/application/loggers",
+            "GATEWAY,/application/gateway/routes",
+            "DISCOVERY,/application/loggers",
+            "DISCOVERY,/application/gateway/routes"
+        })
+        void whenAccessDangerousActuatorWithTrustedClientCertificate_thenAllowRead(String target, String endpoint) {
+            given()
+                .config(SslContext.clientCertValid)
+            .when()
+                .get(urlOf(target, endpoint))
+            .then()
+                .statusCode(SC_OK);
+        }
+
+        @ParameterizedTest
+        @CsvSource({"GATEWAY", "DISCOVERY"})
+        void whenModifyActuatorWithTrustedClientCertificateWithPermission_thenAllowModify(String target) {
+            when(safAuthorizationManager.authorize(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(true, List.of())));
+
+            given()
+                .config(SslContext.clientCertValid)
+                .contentType("application/json")
+                .body("{\"configuredLevel\":\"DEBUG\"}")
+            .when()
+                .post(urlOf(target, "/application/loggers/ROOT"))
+            .then()
+                .statusCode(SC_NO_CONTENT);
+        }
+
+        @ParameterizedTest
+        @CsvSource({"GATEWAY", "DISCOVERY"})
+        void whenModifyActuatorWithTrustedClientCertificateWithoutPermission_thenBlock(String target) {
+            when(safAuthorizationManager.authorize(any(), any())).thenReturn(Mono.just(new AuthorityAuthorizationDecision(false, List.of())));
+
+            given()
+                .config(SslContext.clientCertValid)
+                .contentType("application/json")
+                .body("{\"configuredLevel\":\"DEBUG\"}")
+            .when()
+                .post(urlOf(target, "/application/loggers/ROOT"))
+            .then()
+                .statusCode(SC_FORBIDDEN);
         }
 
     }
