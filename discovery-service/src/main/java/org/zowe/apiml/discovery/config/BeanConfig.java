@@ -11,6 +11,9 @@
 package org.zowe.apiml.discovery.config;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.zowe.apiml.discovery.registration.RegistrationRequestContextFilter;
 import org.zowe.apiml.message.core.MessageService;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
 import org.springframework.context.annotation.Bean;
@@ -34,4 +37,17 @@ public class BeanConfig {
         messageService.loadMessages("/discovery-log-messages.yml");
         return messageService;
     }
+
+    /**
+     * Provides the network address of the registrant to the Eureka registry, see
+     * {@link org.zowe.apiml.discovery.registration.RegistrantNetworkIdentityVerifier}
+     */
+    @Bean
+    @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+    public FilterRegistrationBean<RegistrationRequestContextFilter> registrationRequestContextFilter() {
+        var registration = new FilterRegistrationBean<>(new RegistrationRequestContextFilter());
+        registration.addUrlPatterns("/eureka/*");
+        return registration;
+    }
+
 }

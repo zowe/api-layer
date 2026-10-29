@@ -15,6 +15,7 @@ import com.netflix.appinfo.InstanceInfo.InstanceStatus;
 import com.netflix.discovery.EurekaClient;
 import com.netflix.discovery.EurekaClientConfig;
 import com.netflix.eureka.EurekaServerConfig;
+import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.lease.Lease;
 import com.netflix.eureka.registry.AbstractInstanceRegistry;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistryImpl;
@@ -28,6 +29,7 @@ import org.springframework.cloud.netflix.eureka.server.InstanceRegistryPropertie
 import org.springframework.context.ApplicationContext;
 import org.zowe.apiml.auth.AuthenticationScheme;
 import org.zowe.apiml.discovery.config.EurekaConfig;
+import org.zowe.apiml.discovery.registration.RegistrantNetworkIdentityVerifier;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.message.yaml.YamlMessageServiceInstance;
@@ -41,6 +43,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -73,6 +76,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
     private final EurekaConfig.Tuple tuple;
 
     private final MetadataFilterService metadataFilterService;
+    private final RegistrantNetworkIdentityVerifier registrantNetworkIdentityVerifier;
 
     private ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>> registry;
     private Set<String> staticRegistrationIds = Collections.synchronizedSet(new HashSet<>());
@@ -88,7 +92,8 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         InstanceRegistryProperties instanceRegistryProperties,
         ApplicationContext appCntx,
         EurekaConfig.Tuple tuple,
-        MetadataFilterService metadataFilterService
+        MetadataFilterService metadataFilterService,
+        RegistrantNetworkIdentityVerifier registrantNetworkIdentityVerifier
     ) {
 
         super(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory,
@@ -98,6 +103,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         this.appCntx = appCntx;
         this.tuple = tuple;
         this.metadataFilterService = metadataFilterService;
+        this.registrantNetworkIdentityVerifier = registrantNetworkIdentityVerifier;
         init();
     }
 
@@ -191,7 +197,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      */
     @Override
     public void register(InstanceInfo info, int leaseDuration, boolean isReplication) {
-        info = validateInstanceInfo(info);
+        info = validateInstanceInfo(info, isReplication);
         info = changeServiceId(info);
 
         super.register(info, leaseDuration, isReplication);
@@ -199,7 +205,7 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
 
     @Override
     public void register(InstanceInfo info, final boolean isReplication) {
-        info = validateInstanceInfo(info);
+        info = validateInstanceInfo(info, isReplication);
         info = changeServiceId(info);
 
         super.register(info, isReplication);
@@ -214,9 +220,12 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
      * The instanceId must follow the format 'hostname:serviceId:port'.
      * The serviceId extracted from the instanceId must match the appName, the check is again case-insensitive for the reason
      * described above. For backwards compatibility the validation prints warnings only for non-conformant values.
+     * The hostname must belong to the registrant, see {@link RegistrantNetworkIdentityVerifier}.
      * @param info the instance info
+     * @param isReplication whether the registration is a replication from another Discovery Service
      */
-    private InstanceInfo validateInstanceInfo(InstanceInfo info) {
+    private InstanceInfo validateInstanceInfo(InstanceInfo info, boolean isReplication) {
+        registrantNetworkIdentityVerifier.verify(info, isReplication, getPeerUrls());
         var result = metadataFilterService.verifyAllowedDomains(new EurekaServiceInstance(info));
         var resultInstanceInfo = new InstanceInfo.Builder(info).setIPAddr(result.getInstanceInfo().getIPAddr()).build();
 
@@ -263,6 +272,13 @@ public class ApimlInstanceRegistry extends InstanceRegistry {
         if (usesPassTicket && StringUtils.isEmpty(metadata.get(AUTHENTICATION_APPLID))) {
             apimlLog.log("org.zowe.apiml.discovery.registration.missingApplid", serviceId);
         }
+    }
+
+    private List<String> getPeerUrls() {
+        if (peerEurekaNodes == null) {
+            return Collections.emptyList();
+        }
+        return getReplicaNodes().stream().map(PeerEurekaNode::getServiceUrl).toList();
     }
 
     @Override
