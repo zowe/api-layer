@@ -47,13 +47,11 @@ class KeyValueTest {
 
         @Test
         void thenTheTtlIsNotPartOfTheStream() throws Exception {
-            KeyValue withoutTtl = new KeyValue("key", "value");
-            KeyValue withTtl = new KeyValue("key", "value");
-            withTtl.setServiceId(withoutTtl.getServiceId());
-            withTtl.setTtlSeconds(1234L);
+            KeyValue keyValue = new KeyValue("key", "value");
+            byte[] plain = javaSerialize(keyValue);
 
-            byte[] plain = javaSerialize(withoutTtl);
-            byte[] withTtlBytes = javaSerialize(withTtl);
+            keyValue.setTtlSeconds(1234L);
+            byte[] withTtlBytes = javaSerialize(keyValue);
 
             assertArrayEquals(plain, withTtlBytes, "the Java-serialized form must not change shape");
             assertFalse(new String(plain, StandardCharsets.ISO_8859_1).contains("ttlSeconds"));

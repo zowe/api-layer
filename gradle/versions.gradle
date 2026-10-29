@@ -14,7 +14,7 @@ dependencyResolutionManagement {
             version('springCloudCB', '5.0.3')
             version('springCloudGateway', '5.0.3')
             version('springCloud', '2025.1.3')
-            version('springFramework', '7.0.9')
+            version('springFramework', '7.0.10')
             version('springRetry', '2.0.13')
 
             version('modulith', '2.1.1')
@@ -36,21 +36,24 @@ dependencyResolutionManagement {
             version('ehCache', '3.12.0')
             version('eureka', '2.0.6')
             version('fileupload', '1.6.0')
+            version('freemarker', '2.3.35')
             version('netflixServo', '0.13.2')
             // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
             version('archaius', '0.7.12')
-            version('googleErrorprone', '2.50.0')
+            version('googleErrorprone', '2.51.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.14.0')
             version('guava', '33.7.2-jre')
             version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6.5')
-            version('infinispan', '16.2.3')
+            version('hibernate_validator', '9.1.5.Final')
+            version('infinispan', '16.3.1')
             version('jacksonAnnotations', '2.22')  // Jackson 2 shim track: review when SB 4.3 lands
-            version('jacksonCore', '2.22.3')
-            version('jacksonDatabind', '2.22.3')
-            version('jacksonDataformatYaml', '2.22.3')
+            version('jacksonCore', '2.22.4')
+            version('jacksonDatabind', '2.22.4')
+            version('jacksonDataformatYaml', '2.22.4')
+            version('jackson3Databind', '3.2.4')
             version('janino', '3.1.12')
             version('jakartaValidation', '3.1.1')
             version('jakartaInject', '2.0.1')
@@ -60,6 +63,7 @@ dependencyResolutionManagement {
             // Keep the SDK aligned with the Spring Boot starter's OpenTelemetry API dependency.
             // Starter 2.32.0 uses internal API classes removed in SDK 1.67.0.
             version('openTelemetry-core', '1.66.0')
+            version('ow2Asm', '9.11.1')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
             version('jaxbApi') {
@@ -81,6 +85,7 @@ dependencyResolutionManagement {
             version('jsonSmart', '2.6.0')
             version('junitJupiter', '5.14.4')
             version('junitPlatform', '1.14.4')
+            version('jsr305', '3.0.2')
             version('jxpath', '1.4.0')
             version('kotlinStdlib', '2.4.21')
             // force version in build.gradle file - compatibility with Slf4j
@@ -89,16 +94,16 @@ dependencyResolutionManagement {
             version('mailapi', '1.6.8')
             version('netty', '4.2.19.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
-            version('nettyReactor', '1.3.7')
+            version('nettyReactor', '1.3.8')
             version('nimbusJoseJwt', '10.10')
             version('openApiDiff', '2.1.7')
             version('picocli', '4.7.7')
 
-            version('reactor', '3.8.7')
+            version('reactor', '3.8.8')
             // REST Assured 6.x is the Spring Framework 7 line (its spring-web-test-client declares
             // spring 7.0.1) and requires Groovy 5, which is what the SB 4.1 BOM already manages.
             // 5.5.7 is compiled against Spring 6 and Groovy 4 and fails on both.
-            version('restAssured', '6.1.0')
+            version('restAssured', '6.2.0')
             version('rhino', '1.9.1')
             // springdoc 3.x is the Spring Boot 4 line. 2.9.1 references the SB3-only
             // org.springframework.boot.autoconfigure.web.reactive.WebFluxProperties from
@@ -124,7 +129,7 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
-            version('micronaut', '4.10.31')
+            version('micronaut', '4.10.33')
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
@@ -137,7 +142,7 @@ dependencyResolutionManagement {
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
-            version('ioGrpc', '1.84.2')
+            version('ioGrpc', '1.85.1')
 
             library('zowe_zos_utils', 'org.zowe.apiml.sdk', 'zos-utils').versionRef('zosUtils')
 
@@ -202,12 +207,14 @@ dependencyResolutionManagement {
             library('eureka_jersey_client', 'com.netflix.eureka', 'eureka-client-jersey3').versionRef('eureka')
             library('eureka_core', 'com.netflix.eureka', 'eureka-core').versionRef('eureka')
             library('fileupload', 'commons-fileupload', 'commons-fileupload').versionRef('fileupload')
+            library('freemarker', 'org.freemarker', 'freemarker').versionRef('freemarker')
             library('google_errorprone', 'com.google.errorprone', 'error_prone_annotations').versionRef('googleErrorprone') // to define minimum version and avoid duplicity libraries in the classpath
             library('google_gson', 'com.google.code.gson', 'gson').versionRef('googleGson')
             library('guava', 'com.google.guava', 'guava').versionRef('guava')
             library('hamcrest', 'org.hamcrest', 'hamcrest').versionRef('hamcrest')
             library('http_client4', 'org.apache.httpcomponents', 'httpclient').versionRef('httpClient4') // to define minimum version and avoid duplicity libraries in the classpath
             library('http_client5', 'org.apache.httpcomponents.client5', 'httpclient5').versionRef('httpClient5')
+            library('hibernate_validator', 'org.hibernate.validator', 'hibernate-validator').versionRef('hibernate_validator')
             library('javax_annotation', 'javax.annotation', 'javax.annotation-api').versionRef('javaxAnnotation') // to define minimum version and avoid duplicity libraries in the classpath
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
             library('archaius_core', 'com.netflix.archaius', 'archaius-core').versionRef('archaius')
@@ -219,6 +226,7 @@ dependencyResolutionManagement {
             library('jackson_annotations', 'com.fasterxml.jackson.core', 'jackson-annotations').versionRef('jacksonAnnotations')
             library('jackson_core', 'com.fasterxml.jackson.core', 'jackson-core').versionRef('jacksonCore')
             library('jackson2_databind', 'com.fasterxml.jackson.core', 'jackson-databind').versionRef('jacksonDatabind')
+            library('jackson3_databind', 'tools.jackson.core', 'jackson-databind').versionRef('jackson3Databind')
             library('jackson_dataformat_yaml', 'com.fasterxml.jackson.dataformat', 'jackson-dataformat-yaml').versionRef('jacksonDataformatYaml')
             library('janino', 'org.codehaus.janino', 'janino').versionRef('janino')
             library('jakarta_validation', 'jakarta.validation', 'jakarta.validation-api').versionRef('jakartaValidation')
@@ -239,6 +247,7 @@ dependencyResolutionManagement {
             library('junit_platform_launcher', 'org.junit.platform', 'junit-platform-launcher').versionRef('junitPlatform')
             library('junit_platform_commons', 'org.junit.platform', 'junit-platform-commons').versionRef('junitPlatform')
             library('junit_platform_engine', 'org.junit.platform', 'junit-platform-engine').versionRef('junitPlatform')
+            library('jsr305', 'com.google.code.findbugs', 'jsr305').versionRef('jsr305')
             library('jxpath', 'commons-jxpath', 'commons-jxpath').versionRef('jxpath')
             library('kotlin_stdlib', 'org.jetbrains.kotlin', 'kotlin-stdlib').versionRef('kotlinStdlib')
             // version managed by spring-boot-dependencies
@@ -251,6 +260,7 @@ dependencyResolutionManagement {
             library('netty_reactor_http', 'io.projectreactor.netty', 'reactor-netty-http').versionRef('nettyReactor')
             library('nimbus_jose_jwt', 'com.nimbusds', 'nimbus-jose-jwt').versionRef('nimbusJoseJwt')
             library('openapidiff', 'org.openapitools.openapidiff', 'openapi-diff-core').versionRef('openApiDiff')
+            library('ow2Asm', 'org.ow2.asm', 'asm').versionRef('ow2Asm')
             library('picocli', 'info.picocli', 'picocli').versionRef('picocli')
             library('picocli_codegen', 'info.picocli', 'picocli-codegen').versionRef('picocli')
             library('reactor', 'io.projectreactor', 'reactor-core').versionRef('reactor')

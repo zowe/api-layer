@@ -44,9 +44,9 @@
         "redux-persist-transform-filter": "0.0.22",
         "redux-thunk": "3.1.0",
         "rxjs": "7.8.2",
-        "sass": "1.105.1",
+        "sass": "1.106.1",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.33.2",
+        "swagger-ui-react": "5.34.0",
         "url": "0.11.4",
         "util": "0.12.5"
     },
@@ -94,7 +94,7 @@
         "ansi-regex": "6.4.0",
         "babel-plugin-transform-vite-meta-env": "1.0.3",
         "body-parser": "2.3.0",
-        "caniuse-lite": "1.0.30001815",
+        "caniuse-lite": "1.0.30001819",
         "concurrently": "9.2.5",
         "cors": "2.8.6",
         "cypress": "15.21.1",
@@ -109,7 +109,7 @@
         "eslint-plugin-header": "3.1.1",
         "eslint-plugin-import": "2.32.0",
         "eslint-plugin-jsx-a11y": "6.10.2",
-        "eslint-plugin-prettier": "5.5.6",
+        "eslint-plugin-prettier": "5.5.7",
         "eslint-plugin-react": "7.37.5",
         "express": "5.3.0",
         "globals": "15.15.0",
@@ -133,12 +133,12 @@
         "start-server-and-test": "2.1.5",
         "tmpl": "1.0.5",
         "undici": "6.19.8",
-        "vite": "8.3.4",
+        "vite": "8.3.5",
         "vite-plugin-node-polyfills": "0.28.0",
         "yaml": "2.9.1"
     },
     "overrides": {
-        "browserslist": "4.29.3",
+        "browserslist": "4.29.4",
         "dompurify": "3.4.17",
         "openapi-snippet": {
             "openapi-sampler": {
@@ -158,6 +158,8 @@
         "semver": "7.8.5",
         "@babel/traverse": "7.29.10",
         "axios": "1.20.0",
+        "follow-redirects": "1.16.1",
+        "markdown-it": "14.3.3",
         "form-data": "3.0.5",
         "sha.js": "2.4.12",
         "swagger-ui-react": {
@@ -167,14 +169,14 @@
             "prismjs": "1.30.0"
         },
         "js-yaml": "4.3.2",
-        "qs": "6.16.0",
+        "qs": "6.16.1",
         "path-to-regexp": "8.4.2",
         "minimatch": "3.1.5",
         "brace-expansion": "1.1.21"
     },
     "engines": {
         "npm": "=10.9.9",
-        "node": "=24.21.0"
+        "node": "=24.22.1"
     },
     "notes": {
         "jest": "Cannot be updated to v30 because tests fail with messages relating to the import of enzyme"
