@@ -1,10 +1,33 @@
 {
-  "extends": ["airbnb-base"],
+  // Load the existing rules without legacy.js, which declares obsolete ecmaFeatures.
+  "extends": [
+    "airbnb-base/rules/best-practices",
+    "airbnb-base/rules/errors",
+    "airbnb-base/rules/legacy",
+    "airbnb-base/rules/node",
+    "airbnb-base/rules/style",
+    "airbnb-base/rules/variables",
+    "airbnb-base/rules/es6"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
   "rules": {
+    "strict": 2,
+    "comma-dangle": [2, {
+      "arrays": "always-multiline",
+      "objects": "always-multiline",
+      "imports": "always-multiline",
+      "exports": "always-multiline",
+      "functions": "ignore"
+    }],
     "no-param-reassign": [2, {"props": false}],
     "consistent-return": 0
   },
   "env": {
+    "browser": true,
+    "node": true,
     "mocha": true
   }
 }

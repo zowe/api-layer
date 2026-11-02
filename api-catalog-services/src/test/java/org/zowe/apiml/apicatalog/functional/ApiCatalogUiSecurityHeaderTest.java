@@ -48,6 +48,7 @@ class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
             .get("https://localhost:" + port + "/apicatalog/index.html")
         .then()
             .statusCode(HttpStatus.SC_OK)
+            .header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
             .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
             .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
             .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));
@@ -60,6 +61,7 @@ class ApiCatalogUiSecurityHeaderTest extends ApiCatalogFunctionalTest {
             .get("https://localhost:" + port + "/apicatalog/")
         .then()
             .statusCode(HttpStatus.SC_OK)
+            .header("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
             .header(CONTENT_SECURITY_POLICY, Matchers.containsString(DEFAULT_SRC_SELF))
             .header(X_FRAME_OPTIONS, Matchers.equalTo(SAMEORIGIN))
             .header(X_CONTENT_TYPE_OPTIONS, Matchers.equalTo("nosniff"));

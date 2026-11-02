@@ -7,22 +7,23 @@
  *
  * Copyright Contributors to the Zowe Project.
  */
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
-    IconButton,
-    InputLabel,
-    Select,
-    Typography,
-    FormControl,
-    MenuItem,
-    DialogContent,
-    DialogTitle,
     Dialog,
     DialogActions,
+    DialogContent,
+    DialogTitle,
     Divider,
+    FormControl,
+    IconButton,
+    InputLabel,
+    MenuItem,
+    Select,
+    Typography,
 } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import CloseIcon from '@material-ui/icons/Close';
+import DOMPurify from 'dompurify';
 
 export default class ServiceVersionDiff extends Component {
     constructor(props) {
@@ -120,7 +121,7 @@ export default class ServiceVersionDiff extends Component {
                             </IconButton>
                         </div>
                         {/* eslint-disable-next-line react/no-danger */}
-                        <div className="api-diff-content" dangerouslySetInnerHTML={{ __html: diffText }} />
+                        <div className="api-diff-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(diffText) }} />
                     </DialogContent>
                 </Dialog>
             </div>

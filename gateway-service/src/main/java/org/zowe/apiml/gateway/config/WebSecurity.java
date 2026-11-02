@@ -83,7 +83,6 @@ import org.zowe.apiml.security.HttpsConfig;
 import org.zowe.apiml.security.common.auth.saf.SafAuthorizationManager;
 import org.zowe.apiml.security.common.auth.saf.SafResourceAccessVerifying;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
-import org.zowe.apiml.security.common.config.CustomHstsServerHttpHeadersWriter;
 import org.zowe.apiml.security.common.config.SafSecurityConfigurationProperties;
 import org.zowe.apiml.security.common.util.X509Util;
 import reactor.core.publisher.Mono;
@@ -216,7 +215,6 @@ public class WebSecurity {
         return http
             .headers(headers -> headers
                 .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
-                .writer(new CustomHstsServerHttpHeadersWriter())
                 .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)))
             .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
             .securityMatcher(ServerWebExchangeMatchers.pathMatchers(OAUTH_2_AUTHORIZATION, OAUTH_2_REDIRECT_URI))
@@ -414,7 +412,6 @@ public class WebSecurity {
         return http
             .headers(headers -> headers
                 .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
-                .writer(new CustomHstsServerHttpHeadersWriter())
                 .frameOptions(spec -> spec.mode(XFrameOptionsServerHttpHeadersWriter.Mode.SAMEORIGIN)))
             .x509(x509 -> x509
                 .principalExtractor(X509Util.x509PrincipalExtractor())

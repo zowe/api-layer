@@ -24,8 +24,11 @@
  */
 
 import Eureka from './EurekaClient.js';
+import Logger from './Logger.js';
 import yaml from 'js-yaml';
 import * as fs from 'fs';
+
+const logger = new Logger();
 
 let certFile = null;
 let keyFile = null;
@@ -48,7 +51,7 @@ function readTlsProps() {
     caFile = config.ssl.caFile;
     passPhrase = config.ssl.keyPassword;
   } catch (e) {
-    console.log(e);
+    logger.error(e);
   }
 }
 
@@ -107,7 +110,7 @@ export function connectToEureka() {
   }
   client.start((error) => {
     if (error != null) {
-      console.log(JSON.stringify(error));
+      logger.error(error);
     }
   });
 }
@@ -120,7 +123,7 @@ export function unregisterFromEureka() {
   if (!client) {
     throw new Error('Eureka client not initialized');
   }
-  console.log('\nUnregistering the service from Eureka...');
+  logger.info('\nUnregistering the service from Eureka...');
   client.stop();
 }
 

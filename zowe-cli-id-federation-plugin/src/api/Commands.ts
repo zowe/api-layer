@@ -12,13 +12,9 @@ import {IHandlerResponseApi, ImperativeError, TextUtils} from "@zowe/imperative"
 import { warn } from "console";
 import {IIdentity} from "./CsvParser";
 import {Constants} from "./Constants";
-import {hasValidLength} from "./ValidateUtil";
+import {isValidDistributedId, isValidMainframeId, isValidUserName} from "./ValidateUtil";
 
 export class Commands {
-
-    readonly MAX_LENGTH_MAINFRAME_ID = 8;
-    readonly MAX_LENGTH_DISTRIBUTED_ID = 246;
-    readonly MAX_LENGTH_LABEL = 32;
 
     constructor(
         private registry: string,
@@ -46,22 +42,22 @@ export class Commands {
     }
 
     private getCommand(identity: IIdentity): string {
-        if(!hasValidLength(identity.mainframeId, this.MAX_LENGTH_MAINFRAME_ID)) {
-            warn(`The mainframe user ID '${identity.mainframeId}' has exceeded maximum length of ${this.MAX_LENGTH_MAINFRAME_ID} characters. ` +
+        if(!isValidMainframeId(identity.mainframeId)) {
+            warn(`The mainframe user ID '${identity.mainframeId}' is not valid. ` +
            `Identity mapping for the user '${identity.userName}' has not been created.`);
             this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 
-        if(!hasValidLength(identity.distributedId, this.MAX_LENGTH_DISTRIBUTED_ID)) {
-            warn(`The distributed user ID '${identity.distributedId}' has exceeded maximum length of ${this.MAX_LENGTH_DISTRIBUTED_ID} characters. ` +
+        if(!isValidDistributedId(identity.distributedId)) {
+            warn(`The distributed user ID '${identity.distributedId}' is not valid. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
             this.response.data.setExitCode(Constants.WARN_CODE);
             return '';
         }
 
-        if(!hasValidLength(identity.userName, this.MAX_LENGTH_LABEL)) {
-            warn(`The user name '${identity.userName}' has exceeded maximum length of ${this.MAX_LENGTH_LABEL} characters. ` +
+        if(!isValidUserName(identity.userName)) {
+            warn(`The user name '${identity.userName}' is not valid. ` +
                 `Identity mapping for the user '${identity.userName}' has not been created.`);
             this.response.data.setExitCode(Constants.WARN_CODE);
             return '';

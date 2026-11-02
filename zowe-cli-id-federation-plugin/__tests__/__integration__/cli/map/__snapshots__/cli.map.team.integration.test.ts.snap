@@ -14,9 +14,9 @@ The input CSV file does not exist.
 exports[`id-federation map command integration tests should return command error in case of csv config not found 2`] = `""`;
 
 exports[`id-federation map command integration tests should return command error in case of csv config with all invalid identities 1`] = `
-"The user name 'Too looooooooooooooooooooooooooooong name' has exceeded maximum length of 32 characters. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.
-The distributed user ID 'Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' has exceeded maximum length of 246 characters. Identity mapping for the user 'Name' has not been created.
-The mainframe user ID 'mf_too_long' has exceeded maximum length of 8 characters. Identity mapping for the user 'Name' has not been created.
+"The user name 'Too looooooooooooooooooooooooooooong name' is not valid. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.
+The distributed user ID 'Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' is not valid. Identity mapping for the user 'Name' has not been created.
+The mainframe user ID 'mf_too_long' is not valid. Identity mapping for the user 'Name' has not been created.
 Unable to perform this operation due to the following problem:
 Error when trying to create the identity mapping.
 "
@@ -25,9 +25,9 @@ Error when trying to create the identity mapping.
 exports[`id-federation map command integration tests should return command error in case of csv config with all invalid identities 2`] = `""`;
 
 exports[`id-federation map command integration tests should return command error in case of csv config with some invalid identities 1`] = `
-"The user name 'Too looooooooooooooooooooooooooooong name' has exceeded maximum length of 32 characters. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.
-The distributed user ID 'Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' has exceeded maximum length of 246 characters. Identity mapping for the user 'Name' has not been created.
-The mainframe user ID 'mf_too_long' has exceeded maximum length of 8 characters. Identity mapping for the user 'Name' has not been created.
+"The user name 'Too looooooooooooooooooooooooooooong name' is not valid. Identity mapping for the user 'Too looooooooooooooooooooooooooooong name' has not been created.
+The distributed user ID 'Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame' is not valid. Identity mapping for the user 'Name' has not been created.
+The mainframe user ID 'mf_too_long' is not valid. Identity mapping for the user 'Name' has not been created.
 "
 `;
 

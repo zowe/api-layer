@@ -75,7 +75,8 @@ public class SecurityConfigTest {
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
+                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                .header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
         }
     }
 
@@ -112,7 +113,8 @@ public class SecurityConfigTest {
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.OK.value())
+                .header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
         }
 
         @Test
@@ -122,7 +124,8 @@ public class SecurityConfigTest {
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.OK.value())
+                .header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
         }
 
         @Test
@@ -132,7 +135,8 @@ public class SecurityConfigTest {
                 .get(getUri(hostname, port))
                 .then()
                 .log().ifValidationFails()
-                .statusCode(HttpStatus.UNAUTHORIZED.value());
+                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                .header("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
         }
     }
 }

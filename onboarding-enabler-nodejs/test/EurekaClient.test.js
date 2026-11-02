@@ -86,7 +86,7 @@ function mockSuccessfulResponse(accumulator, statusCode) {
     statusCode: statusCode || 204,
     callback: [],
     on: (event, callback) => {
-      console.log(`EVENT ${event}`);
+      console.log(`EVENT ${event}`); // eslint-disable-line no-console
       res.callback[event] = callback;
     },
   };

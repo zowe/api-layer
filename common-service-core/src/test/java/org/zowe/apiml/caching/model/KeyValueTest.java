@@ -52,8 +52,6 @@ class KeyValueTest {
             KeyValue withTtl = new KeyValue("key", "value", created);
             withTtl.setServiceId(withoutTtl.getServiceId());
             withTtl.setTtlSeconds(1234L);
-
-            byte[] plain = javaSerialize(withoutTtl);
             byte[] withTtlBytes = javaSerialize(withTtl);
 
             assertArrayEquals(plain, withTtlBytes, "the Java-serialized form must not change shape");
