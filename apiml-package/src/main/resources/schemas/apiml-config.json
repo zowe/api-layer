@@ -374,6 +374,16 @@
                                 }
                             ]
                         },
+                        "forwardHeader": {
+                            "type": "object",
+                            "description": "Forward header configuration.",
+                            "properties": {
+                                "trustedProxies": {
+                                    "type": "string",
+                                    "description": "IP address regular expression pattern used to identify trusted proxies from which X-Forwarded-* headers are accepted and forwarded."
+                                }
+                            }
+                        },
                         "x509": {
                             "type": "object",
                             "description": "Client certificate configuration.",

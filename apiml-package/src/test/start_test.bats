@@ -103,6 +103,73 @@ teardown() {
 # Tests for start.sh
 ################################################################################
 
+# Capture arguments directly so regex quoting is checked at the Java process boundary.
+run_trusted_proxy_startup() {
+    cat > "${ZWE_java_home}/bin/java" << 'MOCK_JAVA'
+#!/bin/sh
+printf '%s\n' "$@" > "${JAVA_ARGUMENTS_FILE}"
+printf '%s' "${APIML_SECURITY_FORWARDHEADER_TRUSTEDPROXIES:-}" > "${JAVA_ARGUMENTS_FILE}.environment"
+MOCK_JAVA
+    run env -i PATH="${PATH}" \
+        LAUNCH_COMPONENT="${TEST_TEMP_DIR}" \
+        ZWE_java_home="${ZWE_java_home}" \
+        JAVA_ARGUMENTS_FILE="${TEST_TEMP_DIR}/java-arguments" \
+        "$@" "${APIML_DIR}/start.sh"
+    [ "$status" -eq 0 ]
+    trusted_proxy_arguments=$(sed -n '/^-Dapiml\.security\.forwardHeader\.trustedProxies=/p' "${TEST_TEMP_DIR}/java-arguments")
+}
+
+@test "apiml-start: trusted proxies inherit Gateway regex as one argument" {
+    regex='(?x) ^ (10\.0\.0\.[0-9]+ | proxy[.]example) $'
+    run_trusted_proxy_startup "ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies=${regex}"
+    [ "${trusted_proxy_arguments}" = "-Dapiml.security.forwardHeader.trustedProxies=${regex}" ]
+}
+
+@test "apiml-start: trusted proxies support APIML configuration" {
+    regex='^10\.0\.0\.[0-9]+$'
+    run_trusted_proxy_startup "ZWE_configs_apiml_security_forwardHeader_trustedProxies=${regex}"
+    [ "${trusted_proxy_arguments}" = "-Dapiml.security.forwardHeader.trustedProxies=${regex}" ]
+}
+
+@test "apiml-start: Gateway trusted proxies take precedence over APIML configuration" {
+    run_trusted_proxy_startup \
+        ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies=gateway-proxy \
+        ZWE_configs_apiml_security_forwardHeader_trustedProxies=apiml-proxy
+    [ "${trusted_proxy_arguments}" = '-Dapiml.security.forwardHeader.trustedProxies=gateway-proxy' ]
+}
+
+@test "apiml-start: empty Gateway trusted proxies fall back to APIML configuration" {
+    run_trusted_proxy_startup \
+        ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies= \
+        ZWE_configs_apiml_security_forwardHeader_trustedProxies=apiml-proxy
+    [ "${trusted_proxy_arguments}" = '-Dapiml.security.forwardHeader.trustedProxies=apiml-proxy' ]
+}
+
+@test "apiml-start: absent trusted proxies do not override application defaults" {
+    run_trusted_proxy_startup
+    [ -z "${trusted_proxy_arguments}" ]
+}
+
+@test "apiml-start: trusted proxies preserve JVM-only configuration" {
+    regex='10[.]0[.]0[.][0-9]+'
+    run_trusted_proxy_startup "ZWE_configs_jvm_Dapiml_security_forwardHeader_trustedProxies=${regex}"
+    [ "${trusted_proxy_arguments}" = "-Dapiml.security.forwardHeader.trustedProxies=${regex}" ]
+}
+
+@test "apiml-start: configured trusted proxies override custom JVM value" {
+    run_trusted_proxy_startup \
+        ZWE_configs_jvm_Dapiml_security_forwardHeader_trustedProxies=jvm-proxy \
+        ZWE_configs_apiml_security_forwardHeader_trustedProxies=yaml-proxy
+    [ "$(printf '%s\n' "${trusted_proxy_arguments}" | tail -n 1)" = '-Dapiml.security.forwardHeader.trustedProxies=yaml-proxy' ]
+}
+
+@test "apiml-start: trusted proxies preserve environment-only configuration" {
+    regex='^10\.0\.0\.[0-9]+$'
+    run_trusted_proxy_startup "APIML_SECURITY_FORWARDHEADER_TRUSTEDPROXIES=${regex}"
+    [ -z "${trusted_proxy_arguments}" ]
+    [ "$(cat "${TEST_TEMP_DIR}/java-arguments.environment")" = "${regex}" ]
+}
+
 @test "apiml-start: When apiml.debug=true, then debug profile is active and logging to file enabled" {
     export ZWE_configs_debug=true
     run "${APIML_DIR}/start.sh"

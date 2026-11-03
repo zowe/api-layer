@@ -50,6 +50,8 @@
 # - ZWE_configs_apiml_health_protected
 # - ZWE_configs_apiml_security_auth_jwt_customAuthHeader
 # - ZWE_configs_apiml_security_auth_passticket_customUserHeader
+# - ZWE_configs_apiml_security_forwardHeader_trustedProxies
+# - ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies
 # - ZWE_configs_apiml_security_authorization_endpoint_enabled
 # - ZWE_configs_apiml_security_authorization_endpoint_url
 # - ZWE_configs_apiml_security_authorization_provider
@@ -214,6 +216,9 @@ for entry in $(echo "${ZWE_configs_logging_loggerLevels:-}" | tr ',' ' '); do
     esac
 done
 
+# Leave existing JVM/environment configuration intact when no YAML regex is supplied.
+trustedProxies="${ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies:-${ZWE_configs_apiml_security_forwardHeader_trustedProxies:-}}"
+
 # Cookie name for unique cookie support
 if [ "${ZWE_configs_apiml_security_auth_uniqueCookie:-${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}}" = "true" ]; then
     cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
@@ -355,6 +360,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.domains.onlyWarn=${ZWE_components_discovery_apiml_security_domains_onlyWarn:-${ZWE_configs_apiml_security_domains_onlyWarn:-false}} \
     -Dapiml.security.domains.portValidationDisabled=${ZWE_components_discovery_apiml_security_domains_portValidationDisabled:-${ZWE_configs_apiml_security_domains_portValidationDisabled:-false}} \
     -Dapiml.security.enableStrictUrlValidation=${ZWE_components_gateway_apiml_security_enableStrictUrlValidation:-${ZWE_configs_apiml_security_enableStrictUrlValidation:-true}} \
+    ${trustedProxies:+"-Dapiml.security.forwardHeader.trustedProxies=${trustedProxies}"} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-${ZWE_configs_apiml_security_jwtInitializerTimeout:-5}} \
     -Dapiml.security.jwtVerificationKeyAliases="${ZWE_components_gateway_apiml_security_jwtVerificationKeyAliases:-${ZWE_configs_apiml_security_jwtVerificationKeyAliases:-}}" \
     -Dapiml.security.oidc.enabled=${ZWE_components_gateway_apiml_security_oidc_enabled:-${ZWE_configs_apiml_security_oidc_enabled:-false}} \
