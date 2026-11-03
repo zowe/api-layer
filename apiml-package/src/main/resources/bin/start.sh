@@ -217,7 +217,7 @@ for entry in $(echo "${ZWE_configs_logging_loggerLevels:-}" | tr ',' ' '); do
 done
 
 # Leave existing JVM/environment configuration intact when no YAML regex is supplied.
-trustedProxies="${ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies:-${ZWE_configs_apiml_security_forwardHeader_trustedProxies:-}}"
+trustedProxies="${ZWE_configs_apiml_security_forwardHeader_trustedProxies:-${ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies:-}}"
 
 # Cookie name for unique cookie support
 if [ "${ZWE_configs_apiml_security_auth_uniqueCookie:-${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}}" = "true" ]; then

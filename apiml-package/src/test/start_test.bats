@@ -131,18 +131,18 @@ MOCK_JAVA
     [ "${trusted_proxy_arguments}" = "-Dapiml.security.forwardHeader.trustedProxies=${regex}" ]
 }
 
-@test "apiml-start: Gateway trusted proxies take precedence over APIML configuration" {
+@test "apiml-start: APIML trusted proxies take precedence over Gateway configuration" {
     run_trusted_proxy_startup \
-        ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies=gateway-proxy \
-        ZWE_configs_apiml_security_forwardHeader_trustedProxies=apiml-proxy
-    [ "${trusted_proxy_arguments}" = '-Dapiml.security.forwardHeader.trustedProxies=gateway-proxy' ]
+        ZWE_configs_apiml_security_forwardHeader_trustedProxies=apiml-proxy \
+        ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies=gateway-proxy
+    [ "${trusted_proxy_arguments}" = '-Dapiml.security.forwardHeader.trustedProxies=apiml-proxy' ]
 }
 
-@test "apiml-start: empty Gateway trusted proxies fall back to APIML configuration" {
+@test "apiml-start: empty APIML trusted proxies fall back to Gateway configuration" {
     run_trusted_proxy_startup \
-        ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies= \
-        ZWE_configs_apiml_security_forwardHeader_trustedProxies=apiml-proxy
-    [ "${trusted_proxy_arguments}" = '-Dapiml.security.forwardHeader.trustedProxies=apiml-proxy' ]
+        ZWE_configs_apiml_security_forwardHeader_trustedProxies= \
+        ZWE_components_gateway_apiml_security_forwardHeader_trustedProxies=gateway-proxy
+    [ "${trusted_proxy_arguments}" = '-Dapiml.security.forwardHeader.trustedProxies=gateway-proxy' ]
 }
 
 @test "apiml-start: absent trusted proxies do not override application defaults" {
