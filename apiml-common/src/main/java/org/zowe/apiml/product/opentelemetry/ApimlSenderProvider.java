@@ -84,7 +84,8 @@ public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvid
         var trustManagers = getTrustManagerFromSpring();
 
         return new OkHttpGrpcSender(
-            grpcSenderConfig.getEndpoint().getPath(),
+            // See io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSenderProvider.createSender
+            grpcSenderConfig.getEndpoint().resolve("/" + grpcSenderConfig.getFullMethodName()).toString(),
             grpcSenderConfig.getCompressor(),
             grpcSenderConfig.getTimeout(),
             grpcSenderConfig.getConnectTimeout(),

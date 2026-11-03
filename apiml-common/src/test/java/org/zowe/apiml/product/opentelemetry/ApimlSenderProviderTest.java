@@ -26,16 +26,15 @@ import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsFactory;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mockConstruction;
@@ -45,7 +44,22 @@ import static org.mockito.Mockito.when;
 class ApimlSenderProviderTest {
 
     private static final String INITIALIZED_HTTP_CONFIG = "initializedHttpConfig";
-    private static final String HTTPS_LOCALHOST_4018_ENDPOINT = "https://localhost:4018/endpoint";
+    private static final String COLLECTOR_ENDPOINT = "https://localhost:4018";
+    private static final String GRPC_METHOD = "opentelemetry.proto.collector.metrics.v1.MetricsService/Export";
+    private static final List<String> ENABLED_PROTOCOLS = List.of("TLSv1.3");
+
+    // Positions of the OkHttpHttpSender constructor arguments (the sender is created by calling the constructor directly)
+    private static final int HTTP_SENDER_ARGS_COUNT = 13;
+    private static final int HTTP_SENDER_SSL_CONTEXT = 8;
+    private static final int HTTP_SENDER_TRUST_MANAGER = 9;
+    private static final int HTTP_SENDER_ENABLED_PROTOCOLS = 12;
+
+    // Positions of the OkHttpGrpcSender constructor arguments
+    private static final int GRPC_SENDER_ARGS_COUNT = 11;
+    private static final int GRPC_SENDER_URL = 0;
+    private static final int GRPC_SENDER_SSL_CONTEXT = 6;
+    private static final int GRPC_SENDER_TRUST_MANAGER = 7;
+    private static final int GRPC_SENDER_ENABLED_PROTOCOLS = 10;
 
     private ApimlSenderProvider apimlSenderProvider;
 
@@ -56,7 +70,7 @@ class ApimlSenderProviderTest {
     @Mock
     private HttpSenderConfig senderHttpConfig;
     @Mock
-    private GrpcSenderConfig senderGrcpConfig;
+    private GrpcSenderConfig senderGrpcConfig;
 
     private HttpConfig oldValue;
 
@@ -72,15 +86,38 @@ class ApimlSenderProviderTest {
         ReflectionTestUtils.setField(ApimlOpenTelemetryConfiguration.class, INITIALIZED_HTTP_CONFIG, oldValue);
     }
 
+    /**
+     * Creates an HTTP sender with the tested provider and returns the arguments passed to the OkHttpHttpSender constructor.
+     */
+    private List<Object> createHttpSenderAndGetConstructorArgs() {
+        var constructorArgs = new ArrayList<Object>();
+        try (var ignored = mockConstruction(OkHttpHttpSender.class, (mock, context) -> constructorArgs.addAll(context.arguments()))) {
+            apimlSenderProvider.createSender(senderHttpConfig);
+        }
+        return constructorArgs;
+    }
+
+    /**
+     * Creates a gRPC sender with the tested provider and returns the arguments passed to the OkHttpGrpcSender constructor.
+     */
+    private List<Object> createGrpcSenderAndGetConstructorArgs() {
+        when(senderGrpcConfig.getEndpoint()).thenReturn(URI.create(COLLECTOR_ENDPOINT));
+        when(senderGrpcConfig.getFullMethodName()).thenReturn(GRPC_METHOD);
+
+        var constructorArgs = new ArrayList<Object>();
+        try (var ignored = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> constructorArgs.addAll(context.arguments()))) {
+            apimlSenderProvider.createSender(senderGrpcConfig);
+        }
+        return constructorArgs;
+    }
+
     @Nested
-    class OnSSLConfigured {
+    class WhenSslConfigured {
 
         @Mock
         private SSLContext sslContext;
         @Mock
         private X509TrustManager x509TrustManager;
-        @Mock
-        private SSLSocketFactory socketFactory;
 
         @BeforeEach
         void setUp() {
@@ -90,45 +127,40 @@ class ApimlSenderProviderTest {
         }
 
         @Test
-        void testCreate_https() {
-            var enabledProtocols = List.of("TLSv1.3");
-            when(senderHttpConfig.getEnabledProtocols()).thenReturn(enabledProtocols);
+        void httpSenderUsesSslContextTrustManagerAndProtocolsFromConfiguration() {
+            when(senderHttpConfig.getEnabledProtocols()).thenReturn(ENABLED_PROTOCOLS);
 
-            try (var mockedConstruction = mockConstruction(OkHttpHttpSender.class, (mock, context) -> {
-                var args = context.arguments();
-                assertEquals(13, args.size());
-                assertSame(sslContext, args.get(8));
-                assertSame(x509TrustManager, args.get(9));
-                assertSame(enabledProtocols, args.get(12));
-            })) {
-                var client = apimlSenderProvider.createSender(senderHttpConfig);
-                assertNotNull(client);
-            }
+            var args = createHttpSenderAndGetConstructorArgs();
+
+            assertEquals(HTTP_SENDER_ARGS_COUNT, args.size());
+            assertSame(sslContext, args.get(HTTP_SENDER_SSL_CONTEXT));
+            assertSame(x509TrustManager, args.get(HTTP_SENDER_TRUST_MANAGER));
+            assertSame(ENABLED_PROTOCOLS, args.get(HTTP_SENDER_ENABLED_PROTOCOLS));
         }
 
         @Test
-        void testCreate_Grpc() {
-            when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
-            var enabledProtocols = List.of("TLSv1.3");
-            when(senderGrcpConfig.getEnabledProtocols()).thenReturn(enabledProtocols);
+        void grpcSenderUsesSslContextTrustManagerAndProtocolsFromConfiguration() {
+            when(senderGrpcConfig.getEnabledProtocols()).thenReturn(ENABLED_PROTOCOLS);
 
-            try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
-                var args = context.arguments();
-                assertEquals(11, args.size());
-                assertSame(sslContext, args.get(6));
-                assertSame(x509TrustManager, args.get(7));
-                assertSame(enabledProtocols, args.get(10));
-            })) {
-                var client = apimlSenderProvider.createSender(senderGrcpConfig);
-                assertNotNull(client);
-            }
+            var args = createGrpcSenderAndGetConstructorArgs();
 
+            assertEquals(GRPC_SENDER_ARGS_COUNT, args.size());
+            assertSame(sslContext, args.get(GRPC_SENDER_SSL_CONTEXT));
+            assertSame(x509TrustManager, args.get(GRPC_SENDER_TRUST_MANAGER));
+            assertSame(ENABLED_PROTOCOLS, args.get(GRPC_SENDER_ENABLED_PROTOCOLS));
+        }
+
+        @Test
+        void grpcSenderIsCreatedWithFullUrlOfCollectorAndMethod() {
+            var args = createGrpcSenderAndGetConstructorArgs();
+
+            assertEquals(COLLECTOR_ENDPOINT + "/" + GRPC_METHOD, args.get(GRPC_SENDER_URL));
         }
 
     }
 
     @Nested
-    class OnSSLNotConfigured {
+    class WhenSslNotConfigured {
 
         @BeforeEach
         void setUp() {
@@ -136,37 +168,34 @@ class ApimlSenderProviderTest {
         }
 
         @Test
-        void testCreate_https() {
+        void httpSenderIsCreatedWithoutSslContextTrustManagerAndProtocols() {
             when(senderHttpConfig.getEnabledProtocols()).thenReturn(null);
 
-            try (var mockedConstruction = mockConstruction(OkHttpHttpSender.class, (mock, context) -> {
-                var args = context.arguments();
-                assertEquals(13, args.size());
-                assertNull(args.get(10));
-                assertNull(args.get(10));
-                assertNull(args.get(12));
-            })) {
-                var client = apimlSenderProvider.createSender(senderHttpConfig);
-                assertNotNull(client);
-            }
+            var args = createHttpSenderAndGetConstructorArgs();
+
+            assertEquals(HTTP_SENDER_ARGS_COUNT, args.size());
+            assertNull(args.get(HTTP_SENDER_SSL_CONTEXT));
+            assertNull(args.get(HTTP_SENDER_TRUST_MANAGER));
+            assertNull(args.get(HTTP_SENDER_ENABLED_PROTOCOLS));
         }
 
         @Test
-        void testCreate_Grcp() {
-            when(senderGrcpConfig.getEndpoint()).thenReturn(URI.create(HTTPS_LOCALHOST_4018_ENDPOINT));
-            when(senderGrcpConfig.getEnabledProtocols()).thenReturn(null);
+        void grpcSenderIsCreatedWithoutSslContextTrustManagerAndProtocols() {
+            when(senderGrpcConfig.getEnabledProtocols()).thenReturn(null);
 
-            try (var mockedConstruction = mockConstruction(OkHttpGrpcSender.class, (mock, context) -> {
-                var args = context.arguments();
-                assertEquals(11, args.size());
-                assertNull(args.get(6));
-                assertNull(args.get(7));
-                assertNull(args.get(10));
-            })) {
-                var client = apimlSenderProvider.createSender(senderGrcpConfig);
-                assertNotNull(client);
-            }
+            var args = createGrpcSenderAndGetConstructorArgs();
 
+            assertEquals(GRPC_SENDER_ARGS_COUNT, args.size());
+            assertNull(args.get(GRPC_SENDER_SSL_CONTEXT));
+            assertNull(args.get(GRPC_SENDER_TRUST_MANAGER));
+            assertNull(args.get(GRPC_SENDER_ENABLED_PROTOCOLS));
+        }
+
+        @Test
+        void grpcSenderIsCreatedWithFullUrlOfCollectorAndMethod() {
+            var args = createGrpcSenderAndGetConstructorArgs();
+
+            assertEquals(COLLECTOR_ENDPOINT + "/" + GRPC_METHOD, args.get(GRPC_SENDER_URL));
         }
 
     }
