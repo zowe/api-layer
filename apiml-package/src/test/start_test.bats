@@ -103,6 +103,117 @@ teardown() {
 # Tests for start.sh
 ################################################################################
 
+# Capture the actual arguments supplied to Java without inheriting local configuration.
+capture_mapping_arguments() {
+    cat > "${ZWE_java_home}/bin/java" << 'MOCK_JAVA'
+#!/bin/sh
+printf '%s\n' "$@" > "${JAVA_ARGUMENTS_FILE}"
+MOCK_JAVA
+    cd "${PROJECT_ROOT}"
+    run env -i PATH="${PATH}" \
+        JAVA_ARGUMENTS_FILE="${TEST_TEMP_DIR}/java-arguments" \
+        LAUNCH_COMPONENT="${TEST_TEMP_DIR}" \
+        ZWE_java_home="${ZWE_java_home}" \
+        "$@" "${APIML_DIR}/start.sh"
+    [ "$status" -eq 0 ]
+    [ -f "${TEST_TEMP_DIR}/java-arguments" ]
+}
+
+assert_mapping_argument() {
+    grep -Fxq -- "-D$1=$2" "${TEST_TEMP_DIR}/java-arguments"
+}
+
+catalog_settings() {
+    local prefix="$1"
+    CATALOG_SETTINGS=(
+        "${prefix}_customStyle_backgroundColor=#003366"
+        "${prefix}_customStyle_docLink=https://example.org/docs"
+        "${prefix}_customStyle_fontFamily=Arial"
+        "${prefix}_customStyle_headerColor=#112233"
+        "${prefix}_customStyle_logo=/brand/logo.svg"
+        "${prefix}_customStyle_textColor=#445566"
+        "${prefix}_customStyle_titlesColor=#778899"
+        "${prefix}_hide_serviceInfo=true"
+    )
+}
+
+assert_catalog_settings() {
+    assert_mapping_argument apiml.catalog.customStyle.backgroundColor '#003366'
+    assert_mapping_argument apiml.catalog.customStyle.docLink https://example.org/docs
+    assert_mapping_argument apiml.catalog.customStyle.fontFamily Arial
+    assert_mapping_argument apiml.catalog.customStyle.headerColor '#112233'
+    assert_mapping_argument apiml.catalog.customStyle.logo /brand/logo.svg
+    assert_mapping_argument apiml.catalog.customStyle.textColor '#445566'
+    assert_mapping_argument apiml.catalog.customStyle.titlesColor '#778899'
+    assert_mapping_argument apiml.catalog.hide.serviceInfo true
+}
+
+@test "apiml-start: Catalog mappings use the api-catalog component settings" {
+    catalog_settings ZWE_components_api_catalog_apiml_catalog
+    capture_mapping_arguments "${CATALOG_SETTINGS[@]}"
+    assert_catalog_settings
+}
+
+@test "apiml-start: Catalog mappings fall back to APIML settings" {
+    catalog_settings ZWE_configs_apiml_catalog
+    capture_mapping_arguments "${CATALOG_SETTINGS[@]}"
+    assert_catalog_settings
+}
+
+@test "apiml-start: Catalog component mappings override APIML settings including explicit false" {
+    catalog_settings ZWE_components_api_catalog_apiml_catalog
+    capture_mapping_arguments "${CATALOG_SETTINGS[@]}" \
+        ZWE_configs_apiml_catalog_customStyle_logo=/fallback/logo.svg \
+        ZWE_configs_apiml_catalog_hide_serviceInfo=true \
+        ZWE_components_api_catalog_apiml_catalog_hide_serviceInfo=false
+    assert_mapping_argument apiml.catalog.customStyle.logo /brand/logo.svg
+    assert_mapping_argument apiml.catalog.hide.serviceInfo false
+}
+
+@test "apiml-start: registry mappings use Gateway component settings" {
+    capture_mapping_arguments \
+        ZWE_components_gateway_apiml_gateway_registry_maxSimultaneousRequests=73 \
+        ZWE_components_gateway_apiml_gateway_registry_refreshIntervalMs=9876 \
+        ZWE_components_gateway_apiml_gateway_registry_metadataKeyAllowList=audit.key,example.key
+    assert_mapping_argument apiml.gateway.maxSimultaneousRequests 73
+    assert_mapping_argument apiml.gateway.refresh-interval-ms 9876
+    assert_mapping_argument apiml.gateway.registry.metadata-key-allow-list audit.key,example.key
+}
+
+@test "apiml-start: registry mappings fall back to APIML settings" {
+    capture_mapping_arguments \
+        ZWE_configs_apiml_gateway_registry_maxSimultaneousRequests=51 \
+        ZWE_configs_apiml_gateway_registry_refreshIntervalMs=8765 \
+        ZWE_configs_apiml_gateway_registry_metadataKeyAllowList=apiml.key
+    assert_mapping_argument apiml.gateway.maxSimultaneousRequests 51
+    assert_mapping_argument apiml.gateway.refresh-interval-ms 8765
+    assert_mapping_argument apiml.gateway.registry.metadata-key-allow-list apiml.key
+}
+
+@test "apiml-start: Gateway registry mappings take precedence over APIML settings" {
+    capture_mapping_arguments \
+        ZWE_components_gateway_apiml_gateway_registry_maxSimultaneousRequests=73 \
+        ZWE_components_gateway_apiml_gateway_registry_refreshIntervalMs=9876 \
+        ZWE_components_gateway_apiml_gateway_registry_metadataKeyAllowList=gateway.key \
+        ZWE_configs_apiml_gateway_registry_maxSimultaneousRequests=51 \
+        ZWE_configs_apiml_gateway_registry_refreshIntervalMs=8765 \
+        ZWE_configs_apiml_gateway_registry_metadataKeyAllowList=apiml.key
+    assert_mapping_argument apiml.gateway.maxSimultaneousRequests 73
+    assert_mapping_argument apiml.gateway.refresh-interval-ms 9876
+    assert_mapping_argument apiml.gateway.registry.metadata-key-allow-list gateway.key
+}
+
+@test "apiml-start: Catalog and registry mappings retain defaults when unset" {
+    capture_mapping_arguments
+    for setting in backgroundColor docLink fontFamily headerColor logo textColor titlesColor; do
+        assert_mapping_argument "apiml.catalog.customStyle.${setting}" ''
+    done
+    assert_mapping_argument apiml.catalog.hide.serviceInfo false
+    assert_mapping_argument apiml.gateway.maxSimultaneousRequests 20
+    assert_mapping_argument apiml.gateway.refresh-interval-ms 30000
+    assert_mapping_argument apiml.gateway.registry.metadata-key-allow-list ''
+}
+
 @test "apiml-start: When apiml.debug=true, then debug profile is active and logging to file enabled" {
     export ZWE_configs_debug=true
     run "${APIML_DIR}/start.sh"
