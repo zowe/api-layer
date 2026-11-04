@@ -41,6 +41,7 @@ jobs:
                 run: |
                     bats scripts/test/start_test.bats
                     bats apiml-package/src/test/start_test.bats
+                    bats zaas-package/src/test/start_test.bats
 
             -   name: Build with Gradle
                 run: >
