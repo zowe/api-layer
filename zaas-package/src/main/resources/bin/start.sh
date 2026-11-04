@@ -30,6 +30,8 @@
 # - ZWE_configs_heap_max
 # - ZWE_configs_heap_init
 # - ZWE_configs_apiml_security_auth_provider
+# - ZWE_configs_apiml_security_auth_uniqueCookie - Overrides the Gateway unique-cookie setting
+# - ZWE_components_gateway_apiml_security_auth_uniqueCookie
 # - ZWE_configs_apiml_security_allowtokenrefresh
 # - ZWE_configs_apiml_security_auth_zosmf_jwtAutoconfiguration
 # - ZWE_configs_apiml_security_auth_zosmf_serviceId
@@ -113,7 +115,7 @@ if [ "${ZWE_configs_debug}" = "true" ]; then
 fi
 
 # Cookie name for unique cookie support
-if [ "${ZWE_configs_apiml_security_auth_uniqueCookie}" = "true" ]; then
+if [ "${ZWE_configs_apiml_security_auth_uniqueCookie:-${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}}" = "true" ]; then
     cookieName="apimlAuthenticationToken.${ZWE_zowe_cookieIdentifier}"
 fi
 
