@@ -34,20 +34,25 @@ public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvid
         var sslContext = getSslContextFromSpring();
         var trustManagers = getTrustManagerFromSpring();
 
-        return new OkHttpHttpSender(
-            httpSenderConfig.getEndpoint(),
-            httpSenderConfig.getContentType(),
-            httpSenderConfig.getCompressor(),
-            httpSenderConfig.getTimeout(),
-            httpSenderConfig.getConnectTimeout(),
-            httpSenderConfig.getHeadersSupplier(),
-            httpSenderConfig.getProxyOptions(),
-            httpSenderConfig.getRetryPolicy(),
-            sslContext,
-            trustManagers == null ? null : getX509TrustManager(trustManagers),
-            httpSenderConfig.getExecutorService(),
-            httpSenderConfig.getMaxResponseBodySize(),
-            httpSenderConfig.getEnabledProtocols());
+        try {
+            return new OkHttpHttpSender(
+                httpSenderConfig.getEndpoint(),
+                httpSenderConfig.getContentType(),
+                httpSenderConfig.getCompressor(),
+                httpSenderConfig.getTimeout(),
+                httpSenderConfig.getConnectTimeout(),
+                httpSenderConfig.getHeadersSupplier(),
+                httpSenderConfig.getProxyOptions(),
+                httpSenderConfig.getRetryPolicy(),
+                sslContext,
+                trustManagers == null ? null : getX509TrustManager(trustManagers),
+                httpSenderConfig.getExecutorService(),
+                httpSenderConfig.getMaxResponseBodySize(),
+                httpSenderConfig.getEnabledProtocols());
+        } catch (RuntimeException e) {
+            log.error("Unable to create OpenTelemetry http exporter: {}", e.getMessage());
+            throw e;
+        }
     }
 
     private Collection<TrustManager> getTrustManagerFromSpring() {
@@ -82,20 +87,24 @@ public class ApimlSenderProvider implements GrpcSenderProvider, HttpSenderProvid
     public GrpcSender createSender(GrpcSenderConfig grpcSenderConfig) {
         var sslContext = getSslContextFromSpring();
         var trustManagers = getTrustManagerFromSpring();
-
-        return new OkHttpGrpcSender(
-            // See io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSenderProvider.createSender
-            grpcSenderConfig.getEndpoint().resolve("/" + grpcSenderConfig.getFullMethodName()).toString(),
-            grpcSenderConfig.getCompressor(),
-            grpcSenderConfig.getTimeout(),
-            grpcSenderConfig.getConnectTimeout(),
-            grpcSenderConfig.getHeadersSupplier(),
-            grpcSenderConfig.getRetryPolicy(),
-            sslContext,
-            trustManagers == null ? null : getX509TrustManager(trustManagers),
-            grpcSenderConfig.getExecutorService(),
-            grpcSenderConfig.getMaxResponseBodySize(),
-            grpcSenderConfig.getEnabledProtocols());
+        try {
+            return new OkHttpGrpcSender(
+                // See io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSenderProvider.createSender
+                grpcSenderConfig.getEndpoint().resolve("/" + grpcSenderConfig.getFullMethodName()).toString(),
+                grpcSenderConfig.getCompressor(),
+                grpcSenderConfig.getTimeout(),
+                grpcSenderConfig.getConnectTimeout(),
+                grpcSenderConfig.getHeadersSupplier(),
+                grpcSenderConfig.getRetryPolicy(),
+                sslContext,
+                trustManagers == null ? null : getX509TrustManager(trustManagers),
+                grpcSenderConfig.getExecutorService(),
+                grpcSenderConfig.getMaxResponseBodySize(),
+                grpcSenderConfig.getEnabledProtocols());
+        } catch (RuntimeException e) {
+            log.error("Unable to create OpenTelemetry grpc exporter: {}", e.getMessage());
+            throw e;
+        }
     }
 
 }
