@@ -10,6 +10,10 @@
 
 package org.zowe.apiml.product.opentelemetry;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpGrpcSender;
 import io.opentelemetry.exporter.sender.okhttp.internal.OkHttpHttpSender;
 import io.opentelemetry.sdk.common.export.GrpcSenderConfig;
@@ -21,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.HttpsFactory;
@@ -37,6 +42,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.when;
 
@@ -157,6 +163,55 @@ class ApimlSenderProviderTest {
             assertEquals(COLLECTOR_ENDPOINT + "/" + GRPC_METHOD, args.get(GRPC_SENDER_URL));
         }
 
+    }
+
+    @Nested
+    class WhenSenderCreationFails {
+
+        private final Logger logger = (Logger) LoggerFactory.getLogger(ApimlSenderProvider.class);
+        private final ListAppender<ILoggingEvent> logAppender = new ListAppender<>();
+
+        @BeforeEach
+        void setUp() {
+            when(httpConfig.httpsFactory()).thenReturn(httpsFactory);
+            logAppender.start();
+            logger.addAppender(logAppender);
+        }
+
+        @AfterEach
+        void tearDown() {
+            logger.detachAppender(logAppender);
+            logAppender.stop();
+        }
+
+        @Test
+        void httpSenderLogsErrorAndRethrowsOriginalException() {
+            var failure = new IllegalArgumentException("Invalid HTTP exporter endpoint");
+            when(senderHttpConfig.getEndpoint()).thenThrow(failure);
+
+            var thrown = assertThrows(RuntimeException.class, () -> apimlSenderProvider.createSender(senderHttpConfig));
+
+            assertSame(failure, thrown);
+            assertErrorLogged("Unable to create OpenTelemetry http exporter: " + failure.getMessage());
+        }
+
+        @Test
+        void grpcSenderLogsErrorAndRethrowsOriginalException() {
+            var failure = new IllegalArgumentException("Invalid gRPC exporter endpoint");
+            when(senderGrpcConfig.getEndpoint()).thenThrow(failure);
+
+            var thrown = assertThrows(RuntimeException.class, () -> apimlSenderProvider.createSender(senderGrpcConfig));
+
+            assertSame(failure, thrown);
+            assertErrorLogged("Unable to create OpenTelemetry grpc exporter: " + failure.getMessage());
+        }
+
+        private void assertErrorLogged(String expectedMessage) {
+            assertEquals(1, logAppender.list.size());
+            var event = logAppender.list.get(0);
+            assertEquals(Level.ERROR, event.getLevel());
+            assertEquals(expectedMessage, event.getFormattedMessage());
+        }
     }
 
     @Nested
