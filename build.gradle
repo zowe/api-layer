@@ -58,9 +58,11 @@ apply from: 'gradle/lite.gradle'
 def moduleOpens = [
     'java.base/java.lang',
     'java.base/java.lang.invoke',
+    'java.base/java.lang.reflect',
     'java.base/java.nio.channels.spi',
     'java.base/java.util',
     'java.base/java.util.concurrent',
+    'java.base/java.net',
     'java.base/javax.net.ssl',
     'java.base/sun.nio.ch',
     'java.base/java.io'
