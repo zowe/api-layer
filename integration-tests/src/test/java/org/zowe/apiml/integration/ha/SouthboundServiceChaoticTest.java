@@ -18,7 +18,10 @@ import org.zowe.apiml.util.requests.JsonResponse;
 import org.zowe.apiml.util.requests.ha.HADiscoverableClientRequests;
 import org.zowe.apiml.util.requests.ha.HAGatewayRequests;
 
+import java.time.Duration;
+
 import static org.apache.http.HttpStatus.SC_OK;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -41,8 +44,11 @@ public class SouthboundServiceChaoticTest {
             void routeViaGatewayToTheOtherInstance() {
                 assumeTrue(haDiscoverableClientRequests.existing() > 1);
                 haDiscoverableClientRequests.shutdown(0);
-                JsonResponse result = haGatewayRequests.route(0, Endpoints.DISCOVERABLE_GREET);
-                assertThat(result.getStatus(), is(SC_OK));
+                // Allow some graceful period for the gateway to synchronize with the other discovery after restart
+                await().atMost(Duration.ofMinutes(1)).pollDelay(Duration.ofSeconds(5)).untilAsserted(() -> {
+                    JsonResponse result = haGatewayRequests.route(0, Endpoints.DISCOVERABLE_GREET);
+                    assertThat(result.getStatus(), is(SC_OK));
+                });
             }
         }
     }
