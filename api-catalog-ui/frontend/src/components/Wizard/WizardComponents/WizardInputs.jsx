@@ -13,7 +13,6 @@ import {
     Checkbox,
     FormControl,
     FormControlLabel,
-    FormHelperText,
     Input,              // still needed — used as base component for Select in MUI v4
     InputLabel,
     MenuItem,
@@ -423,16 +422,20 @@ class WizardInputs extends Component {
             );
         }
         if (Array.isArray(options)) {
+            const labelId = `${itemKey}-label`;
             return (
-                <FormControl className="formField" disabled={disabled}>
-                    <InputLabel shrink>{question}</InputLabel>
+                <FormControl variant="outlined" fullWidth className="wizardFormFields" disabled={disabled}>
+                    <InputLabel id={labelId} shrink>{question}</InputLabel>
                     <Select
                         id={itemKey}
+                        labelId={labelId}
+                        label={question}
+                        notched
                         value={value}
                         onChange={(event) => this.handleSelect(event, { index, itemKey })}
                     >
                         {options.map((entry) => (
-                            <MenuItem value={entry}>{entry}</MenuItem>
+                            <MenuItem key={entry} value={entry}>{entry}</MenuItem>
                         ))}
                     </Select>
                 </FormControl>
@@ -442,7 +445,6 @@ class WizardInputs extends Component {
         if (tooltip === undefined) {
             finalTooltip = 'filler';
         }
-        const captionId = `my-helper${itemKey}`;
         return (
             <Tooltip className="wizardTooltip" title={finalTooltip}>
                 <TextField
@@ -457,7 +459,6 @@ class WizardInputs extends Component {
                     className="wizardFormFields"
                     helperText={caption}
                     InputLabelProps={{ shrink: true }}
-                    FormHelperTextProps={{ id: captionId }}
                 />
             </Tooltip>
         );
