@@ -4,6 +4,7 @@ import java.util.regex.Matcher
 import org.gradle.plugins.ide.eclipse.model.AccessRule
 import org.gradle.plugins.ide.eclipse.model.ClasspathEntry
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
+import org.gradle.process.CommandLineArgumentProvider
 
 //noinspection GroovyAssignabilityCheck
 group 'org.zowe.apiml'
@@ -54,6 +55,19 @@ apply from: 'gradle/coverage.gradle'
 apply from: 'gradle/code-quality.gradle'
 apply from: 'gradle/lite.gradle'
 
+def moduleOpens = [
+    'java.base/java.lang',
+    'java.base/java.lang.invoke',
+    'java.base/java.lang.reflect',
+    'java.base/java.nio.channels.spi',
+    'java.base/java.util',
+    'java.base/java.util.concurrent',
+    'java.base/java.net',
+    'java.base/javax.net.ssl',
+    'java.base/sun.nio.ch',
+    'java.base/java.io'
+].collect { "--add-opens=${it}=ALL-UNNAMED".toString() }
+
 allprojects {
     apply plugin: 'idea'
     apply plugin: 'org.cadixdev.licenser'
@@ -62,6 +76,16 @@ allprojects {
     repositories mavenRepositories
 
     version = version
+
+    [Test, JavaExec].each { taskType ->
+        tasks.withType(taskType).configureEach {
+            // Use the forked JVM's version, including any task-specific toolchain.
+            def launcher = javaLauncher
+            jvmArgumentProviders.add({
+                launcher.get().metadata.languageVersion.asInt() >= 17 ? moduleOpens : []
+            } as CommandLineArgumentProvider)
+        }
+    }
 
     eclipse {
         classpath {

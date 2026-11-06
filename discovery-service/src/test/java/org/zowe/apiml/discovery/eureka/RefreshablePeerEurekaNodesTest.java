@@ -17,7 +17,7 @@ import com.netflix.eureka.EurekaServerConfig;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.registry.PeerAwareInstanceRegistry;
 import com.netflix.eureka.resources.ServerCodecs;
-import com.netflix.servo.monitor.StatsMonitor;
+import com.netflix.eureka.util.batcher.TaskDispatchers;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,21 +25,21 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.cloud.netflix.eureka.server.ReplicationClientAdditionalFilters;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.product.eureka.client.ApimlPeerEurekaNode;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executors;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.RETURNS_MOCKS;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 @TestInstance(Lifecycle.PER_CLASS)
@@ -62,12 +62,6 @@ class RefreshablePeerEurekaNodesTest {
 
     RefreshablePeerEurekaNodes eurekaNodes;
 
-    @BeforeAll
-    @SuppressWarnings("unused")
-    void init() {
-        Class<?> monitor = StatsMonitor.class;
-    }
-
     @BeforeEach
     void setUp() {
         Supplier<EurekaJerseyClientImpl.EurekaJerseyClientBuilder> eurekaJerseyClientBuilder = () -> new EurekaJerseyClientImpl.EurekaJerseyClientBuilder();
@@ -75,20 +69,20 @@ class RefreshablePeerEurekaNodesTest {
     }
 
     @Test
-    void givenEurekaNodeUrl_thenCreateNode() throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException {
+    void givenEurekaNodeUrl_thenCreateNode() {
         when(serverConfig.getPeerNodeTotalConnections()).thenReturn(100);
         when(serverConfig.getPeerNodeTotalConnectionsPerHost()).thenReturn(10);
         when(replicationClientAdditionalFilters.getFilters()).thenReturn(Collections.emptyList());
 
-        Field defaultExecutor = StatsMonitor.class.getDeclaredField("DEFAULT_EXECUTOR");
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(defaultExecutor, defaultExecutor.getModifiers() & ~Modifier.FINAL);
-        defaultExecutor.setAccessible(true);
-        defaultExecutor.set(null, Executors.newSingleThreadScheduledExecutor());
-
-        PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
-        assertTrue(node instanceof ApimlPeerEurekaNode);
+        // Other test contexts shut down Servo's shared executor. This test only checks node creation.
+        try (MockedStatic<TaskDispatchers> dispatchers = mockStatic(TaskDispatchers.class, RETURNS_MOCKS)) {
+            PeerEurekaNode node = eurekaNodes.createPeerEurekaNode("https://localhost:10013/");
+            try {
+                assertTrue(node instanceof ApimlPeerEurekaNode);
+            } finally {
+                node.shutDown();
+            }
+        }
     }
 
     static Stream<Set<String>> values() {

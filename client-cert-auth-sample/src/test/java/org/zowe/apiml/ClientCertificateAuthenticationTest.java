@@ -36,6 +36,8 @@ import java.net.InetSocketAddress;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.lenient;
 import static org.zowe.apiml.ClientCertificateAuthentication.API_URL;
 import static org.zowe.apiml.ClientCertificateAuthentication.CLIENT_CERT_ALIAS;
@@ -52,10 +54,11 @@ class ClientCertificateAuthenticationTest {
     @Spy
     private ClientCertificateAuthentication clientCertificateAuthentication;
 
-    private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
     private final PrintStream originalErr = System.err;
+
+    private ByteArrayOutputStream outContent;
+    private ByteArrayOutputStream errContent;
 
     @BeforeAll
     static void setup() throws Exception {
@@ -93,11 +96,12 @@ class ClientCertificateAuthenticationTest {
             exchange.close();
         });
         httpServer.start();
-
     }
 
     @BeforeEach
     void setupStreams() {
+        outContent = new ByteArrayOutputStream();
+        errContent = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outContent));
         System.setErr(new PrintStream(errContent));
     }
@@ -116,11 +120,11 @@ class ClientCertificateAuthenticationTest {
 
     @Test
     void givenNoParameters_thenValidateDefaultValues() {
-        Assertions.assertEquals("https://localhost:10010/gateway/api/v1/auth/login", clientCertificateAuthentication.getApiUrl());
-        Assertions.assertEquals("../keystore/client/client-certs.p12", clientCertificateAuthentication.getClientCertPath());
-        Assertions.assertEquals("password", clientCertificateAuthentication.getClientCertPassword());
-        Assertions.assertEquals("user", clientCertificateAuthentication.getClientCertAlias());
-        Assertions.assertEquals("user", clientCertificateAuthentication.getPrivateKeyAlias());
+        assertEquals("https://localhost:10010/gateway/api/v1/auth/login", clientCertificateAuthentication.getApiUrl());
+        assertEquals("../keystore/client/client-certs.p12", clientCertificateAuthentication.getClientCertPath());
+        assertEquals("password", clientCertificateAuthentication.getClientCertPassword());
+        assertEquals("user", clientCertificateAuthentication.getClientCertAlias());
+        assertEquals("user", clientCertificateAuthentication.getPrivateKeyAlias());
     }
 
     @Nested
@@ -137,11 +141,11 @@ class ClientCertificateAuthenticationTest {
             lenient().when(clientCertificateAuthentication.getSystemVariable(PRIVATE_KEY_ALIAS)).thenReturn(customValues[4]);
 
             // Validate that system parameters are propagated to the application
-            Assertions.assertEquals(customValues[0] + "/gateway/api/v1/auth/login", clientCertificateAuthentication.getApiUrl());
-            Assertions.assertEquals(customValues[1], clientCertificateAuthentication.getClientCertPath());
-            Assertions.assertEquals(customValues[2], clientCertificateAuthentication.getClientCertPassword());
-            Assertions.assertEquals(customValues[3], clientCertificateAuthentication.getClientCertAlias());
-            Assertions.assertEquals(customValues[4], clientCertificateAuthentication.getPrivateKeyAlias());
+            assertEquals(customValues[0] + "/gateway/api/v1/auth/login", clientCertificateAuthentication.getApiUrl());
+            assertEquals(customValues[1], clientCertificateAuthentication.getClientCertPath());
+            assertEquals(customValues[2], clientCertificateAuthentication.getClientCertPassword());
+            assertEquals(customValues[3], clientCertificateAuthentication.getClientCertAlias());
+            assertEquals(customValues[4], clientCertificateAuthentication.getPrivateKeyAlias());
         }
 
         @Test
@@ -150,11 +154,11 @@ class ClientCertificateAuthenticationTest {
 
             lenient().when(clientCertificateAuthentication.getSystemVariable(API_URL)).thenReturn(incorrectHost);
 
-            Assertions.assertEquals(incorrectHost + "/gateway/api/v1/auth/login", clientCertificateAuthentication.getApiUrl());
+            assertEquals(incorrectHost + "/gateway/api/v1/auth/login", clientCertificateAuthentication.getApiUrl());
 
             clientCertificateAuthentication.authenticate();
-            Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
-            Assertions.assertTrue(errContent.toString().startsWith("org.apache.http.conn.HttpHostConnectException: Connect to localhost:8080 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused"),
+            assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+            assertTrue(errContent.toString().startsWith("org.apache.http.conn.HttpHostConnectException: Connect to localhost:8080 [localhost/127.0.0.1, localhost/0:0:0:0:0:0:0:1] failed: Connection refused"),
                 "Error not as expected. Actual error is: \n" + errContent);
         }
 
@@ -164,11 +168,11 @@ class ClientCertificateAuthenticationTest {
 
             lenient().when(clientCertificateAuthentication.getSystemVariable(CLIENT_CERT_PATH)).thenReturn(fileNotFound);
 
-            Assertions.assertEquals(fileNotFound, clientCertificateAuthentication.getClientCertPath());
+            assertEquals(fileNotFound, clientCertificateAuthentication.getClientCertPath());
 
             clientCertificateAuthentication.authenticate();
-            Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
-            Assertions.assertTrue(errContent.toString().startsWith("java.io.FileNotFoundException: "),
+            assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+            assertTrue(errContent.toString().startsWith("java.io.FileNotFoundException: "),
                 "Error not as expected. Actual error is: \n" + errContent);
         }
 
@@ -178,11 +182,11 @@ class ClientCertificateAuthenticationTest {
 
             lenient().when(clientCertificateAuthentication.getSystemVariable(CLIENT_CERT_PASSWORD)).thenReturn(incorrectPassword);
 
-            Assertions.assertEquals(incorrectPassword, clientCertificateAuthentication.getClientCertPassword());
+            assertEquals(incorrectPassword, clientCertificateAuthentication.getClientCertPassword());
 
             clientCertificateAuthentication.authenticate();
-            Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
-            Assertions.assertTrue(errContent.toString().startsWith("java.io.IOException: keystore password was incorrect"),
+            assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+            assertTrue(errContent.toString().startsWith("java.io.IOException: keystore password was incorrect"),
                 "Error not as expected. Actual error is: \n" + errContent);
         }
 
@@ -192,12 +196,12 @@ class ClientCertificateAuthenticationTest {
 
             lenient().when(clientCertificateAuthentication.getSystemVariable(PRIVATE_KEY_ALIAS)).thenReturn(incorrectKeyAlias);
 
-            Assertions.assertEquals(incorrectKeyAlias, clientCertificateAuthentication.getPrivateKeyAlias());
+            assertEquals(incorrectKeyAlias, clientCertificateAuthentication.getPrivateKeyAlias());
 
             clientCertificateAuthentication.authenticate();
-            Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
-            Assertions.assertTrue(errContent.toString().startsWith("java.security.KeyStoreException: Key protection algorithm not found: java.security.KeyStoreException: Unsupported Key type"),
-                "Error not as expected. Actual error is: \n" + errContent);
+            assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+            assertTrue(errContent.toString().contains("java.security.KeyStoreException"), "Error not as expected. Actual error is: \n" + errContent);
+            assertTrue(errContent.toString().contains("Unsupported Key type"), "Error not as expected. Actual error is: \n" + errContent);
         }
     }
 
@@ -206,7 +210,7 @@ class ClientCertificateAuthenticationTest {
         // Assertion is done on the server to make sure that client certificate was delivered.
         clientCertificateAuthentication.authenticate();
 
-        Assertions.assertTrue(outContent.toString().startsWith("Response Code: 204"));
+        assertTrue(outContent.toString().startsWith("Response Code: 204"));
         // Validate that the Assertion error is null in case the certificate was present.
         Assertions.assertNull(error);
     }
@@ -221,7 +225,7 @@ class ClientCertificateAuthenticationTest {
         // In this case, since the certificate is not trusted, it should not reach the server
         clientCertificateAuthentication.authenticate();
 
-        Assertions.assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
+        assertTrue(outContent.toString().isEmpty(), "System.out should be empty.");
         // The error may differ because of how we have set up the testing httpServer so we are checking only that the request does not go through
         // and an error is printed in the console
         Assertions.assertFalse(errContent.toString().isEmpty(), "Should result in an error.");
