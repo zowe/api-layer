@@ -24,7 +24,7 @@ import org.zowe.apiml.message.core.MessageType;
 import org.zowe.apiml.message.template.MessageTemplate;
 import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 
-import static org.apache.http.HttpStatus.SC_BAD_REQUEST;
+import static org.apache.hc.core5.http.HttpStatus.SC_BAD_REQUEST;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 

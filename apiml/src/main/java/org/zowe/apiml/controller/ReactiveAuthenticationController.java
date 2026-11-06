@@ -51,7 +51,7 @@ import reactor.core.publisher.Mono;
 import java.io.IOException;
 import java.util.Objects;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.hc.core5.http.HttpStatus.*;
 
 
 

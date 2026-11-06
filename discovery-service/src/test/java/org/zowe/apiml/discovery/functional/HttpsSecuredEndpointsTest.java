@@ -12,8 +12,8 @@ package org.zowe.apiml.discovery.functional;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.apache.http.HttpHeaders;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

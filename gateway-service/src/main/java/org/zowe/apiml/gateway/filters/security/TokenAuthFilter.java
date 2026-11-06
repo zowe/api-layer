@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.ConnectException;
 
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.zowe.apiml.security.common.token.TokenAuthentication.createAuthenticated;
 
 @RequiredArgsConstructor
