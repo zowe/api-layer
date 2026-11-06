@@ -375,6 +375,31 @@ describe('>>> WizardInputs tests', () => {
         const element = screen.getByText('Optional field; Field must be lowercase; Max length is 40 characters');
         expect(element).toBeInTheDocument();
     });
+    it('should set input aria-describedby pointing to the helper text ID', () => {
+        const dummyData = {
+            text: 'Category',
+            content: [
+                {
+                    testInput: {
+                        value: '',
+                        question: 'Test Question',
+                        optional: true, // triggers helperText caption: "Optional field"
+                    },
+                },
+            ],
+        };
+
+        render(<WizardInputs data={dummyData} validateInput={jest.fn()} updateWizardData={jest.fn()} />);
+
+        const input = screen.getByRole('textbox', { name: /Test Question/i });
+        const helperTextId = input.getAttribute('aria-describedby');
+
+        expect(helperTextId).toBeTruthy();
+
+        const helperTextElement = document.getElementById(helperTextId);
+        expect(helperTextElement).toBeInTheDocument();
+        expect(helperTextElement).toHaveTextContent('Optional field');
+    });
     it("should handle select's onCLick", () => {
         const updateWizardData = jest.fn();
         const dummyCategory = {
