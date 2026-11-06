@@ -15,10 +15,13 @@ import org.junit.platform.commons.util.StringUtils;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 public class RunningService {
@@ -50,6 +53,18 @@ public class RunningService {
                                 .orElse("");
 
         shellCommand.add(path + "java");
+        if (isJava17OrLater(path)) {
+            shellCommand.addAll(Arrays.asList(
+                "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+                "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED",
+                "--add-opens=java.base/java.util=ALL-UNNAMED",
+                "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+                "--add-opens=java.base/javax.net.ssl=ALL-UNNAMED",
+                "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+                "--add-opens=java.base/java.io=ALL-UNNAMED"
+            ));
+        }
         parametersBefore
             .forEach((key1, value1) -> shellCommand.add(key1 + '=' + value1));
 
@@ -62,6 +77,26 @@ public class RunningService {
         ProcessBuilder builder1 = new ProcessBuilder(shellCommand);
         builder1.directory(new File("../"));
         process = builder1.inheritIO().start();
+    }
+
+    private boolean isJava17OrLater(String path) throws IOException {
+        Process versionProcess = new ProcessBuilder(path + "java", "-version")
+            .redirectErrorStream(true)
+            .start();
+        Pattern versionPattern = Pattern.compile("\\bversion\\s+\"(?:1\\.)?(\\d+)");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(versionProcess.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Matcher matcher = versionPattern.matcher(line);
+                if (matcher.find()) {
+                    return Integer.parseInt(matcher.group(1)) >= 17;
+                }
+            }
+        } finally {
+            versionProcess.destroy();
+        }
+        log.error("Unable to parse java version from {}. Defaulting to pre Java 17 mode", path);
+        return false;
     }
 
     public void startWithScript(String binPath, Map<String, String> env) {

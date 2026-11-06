@@ -41,7 +41,7 @@ public class FullApiMediationLayer {
 
     private boolean firstCheck = true;
     private final Map<String, String> env;
-    private static final boolean attlsEnabled = "true".equals(System.getProperty("environment.attls"));
+    private static final boolean ATTLS_ENABLED = "true".equals(System.getProperty("environment.attls"));
 
     private static final FullApiMediationLayer instance = new FullApiMediationLayer();
 
@@ -56,7 +56,7 @@ public class FullApiMediationLayer {
         prepareMockServices();
         prepareDiscovery();
         prepareCloudGateway();
-        if (!attlsEnabled) {
+        if (!ATTLS_ENABLED) {
             prepareNodeJsSampleApp();
         }
     }
@@ -99,7 +99,7 @@ public class FullApiMediationLayer {
     private void prepareMockServices() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-        if (attlsEnabled) {
+        if (ATTLS_ENABLED) {
             before.put("-Dspring.profiles.active", "attls");
         }
         mockZosmfService = new RunningService("zosmf", "mock-services/build/libs/mock-services.jar", before, after);
@@ -108,7 +108,7 @@ public class FullApiMediationLayer {
     private void prepareDiscoverableClient() {
         Map<String, String> before = new HashMap<>();
         Map<String, String> after = new HashMap<>();
-        if (attlsEnabled) {
+        if (ATTLS_ENABLED) {
             before.put("-Dspring.profiles.active", "attls");
         }
 
@@ -138,7 +138,7 @@ public class FullApiMediationLayer {
             Map<String, String> cloudGWEnv = new HashMap<>(env);
             cloudGWEnv.put("ZWE_configs_port", "10023");
             cloudGatewayService.startWithScript("cloud-gateway-package/src/main/resources/bin", cloudGWEnv);
-            if (!attlsEnabled) {
+            if (!ATTLS_ENABLED) {
                 nodeJsSampleApp = nodeJsBuilder.start();
             }
             discoverableClientService.start();
@@ -160,7 +160,7 @@ public class FullApiMediationLayer {
 
             cachingService.stop();
             cloudGatewayService.stop();
-            if (!attlsEnabled && !runsOffPlatform()) {
+            if (!ATTLS_ENABLED && !runsOffPlatform()) {
                 nodeJsSampleApp.destroy();
             }
         } catch (Exception e) {
