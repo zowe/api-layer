@@ -71,13 +71,13 @@ class WebSocketRoutedSessionTest {
 
         when(clientSession.isOpen()).thenReturn(true);
         when(clientSession.getId()).thenReturn(sessionId);
-        when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
+        when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("127.0.0.1", 8080));
         when(serverSession.getUri()).thenReturn(new URI(serverUriPath));
 
         assertThat(underTest.getClientId(), is(sessionId));
         assertThat(underTest.getClientUri(), is(clientUriPath));
 
-        assertThat(underTest.getServerRemoteAddress(), is("gateway:8080"));
+        assertThat(underTest.getServerRemoteAddress(), is("/127.0.0.1:8080"));
         assertThat(underTest.getServerUri(), is(serverUriPath));
     }
 
@@ -157,9 +157,9 @@ class WebSocketRoutedSessionTest {
 
         @Test
         void whenAddressNotNull_thenReturnIt() {
-            when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("gateway",  8080));
+            when(serverSession.getRemoteAddress()).thenReturn(new InetSocketAddress("127.0.0.1", 8080));
             String serverRemoteAddress = underTest.getServerRemoteAddress();
-            assertThat(serverRemoteAddress, is("gateway:8080"));
+            assertThat(serverRemoteAddress, is("/127.0.0.1:8080"));
         }
 
         @Test

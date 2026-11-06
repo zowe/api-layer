@@ -117,7 +117,7 @@ class ApimlSslKeyExchangeTest {
     private String[] acceptedInvalidAddressMessages = {
         /* Windows */"Address is invalid on local machine",
         /* Linux (Github Actions */ "Connection refused",
-        /* MacOS (Local) */ "Can't assign requested address (Address not available)"
+        /* MacOS (Local) */ "Can't assign requested address"
     };
 
     @Test
@@ -130,7 +130,8 @@ class ApimlSslKeyExchangeTest {
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
         assertTrue(containsAny(logMessage, acceptedInvalidAddressMessages), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "ConnectException:", "java.net.NoRouteToHostException"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "ConnectException:", "java.net.NoRouteToHostException", "java.net.BindException: Can't assign requested address"), "Unexpected message: " + logMessage);
+        assertTrue(logMessage.contains(e.getCause().toString()), "Unexpected message: " + logMessage);
     }
 
     @Test
@@ -144,7 +145,8 @@ class ApimlSslKeyExchangeTest {
         String logMessage = getLogMessage();
         assertTrue(logMessage.contains("Cannot create socket to remote address"), "Unexpected message: " + logMessage);
         assertTrue(containsAny(logMessage, acceptedInvalidAddressMessages), "Unexpected message: " + logMessage);
-        assertTrue(containsAny(logMessage, "ConnectException:", "java.net.NoRouteToHostException"), "Unexpected message: " + logMessage);
+        assertTrue(containsAny(logMessage, "ConnectException:", "java.net.NoRouteToHostException", "java.net.BindException: Can't assign requested address"), "Unexpected message: " + logMessage);
+        assertTrue(logMessage.contains(e.getCause().toString()), "Unexpected message: " + logMessage);
     }
 
 }
