@@ -48,6 +48,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -84,6 +85,9 @@ public class InfinispanConfig implements InitializingBean {
     private static final long BIG_CACHE_SIZE = 1000;
 
     private static final Duration REVOCATION_MAX_TTL = Duration.ofDays(PATRevocationStore.RULE_RETENTION_DAYS);
+
+    @Value("${caching.storage.infinispan.standalone:false}")
+    private boolean standalone;
 
     @Value("${caching.storage.infinispan.initialHosts:}")
     private String initialHosts;
@@ -194,6 +198,9 @@ public class InfinispanConfig implements InitializingBean {
     }
 
     public String getInfinispanConfigFile() {
+        if (standalone) {
+            return "infinispan-standalone.xml";
+        }
         return isServerAttlsEnabled ? "infinispan-attls.xml" : "infinispan.xml";
     }
 
@@ -216,21 +223,66 @@ public class InfinispanConfig implements InitializingBean {
             .persistence()
             .addSoftIndexFileStore()
             .clustering()
-            .cacheMode(CacheMode.REPL_SYNC)
+            .cacheMode(getPersistentCacheMode())
             .hash().numSegments(numSegments);
         holder.getGlobalConfigurationBuilder().defaultCacheName("default");
-        holder.getGlobalConfigurationBuilder().transport().stack("prod").distributedSyncTimeout(distributedSyncTimeout, TimeUnit.SECONDS);
+        if (!standalone) {
+            holder.getGlobalConfigurationBuilder().transport().stack("prod").distributedSyncTimeout(distributedSyncTimeout, TimeUnit.SECONDS);
+        }
         return holder;
     }
 
-    private ConfigurationBuilder getDistributedCacheConfig() {
+    private CacheMode getPersistentCacheMode() {
+        return standalone ? CacheMode.LOCAL : CacheMode.REPL_SYNC;
+    }
+
+    void validateStandaloneConfiguration(Map<String, String> environment, String component) {
+        // Zowe requires sysname on HA instances. Component-level hostname settings must not
+        // be mistaken for additional instance IDs in the flattened environment.
+        Pattern instanceProperty = Pattern.compile("^ZWE_haInstances_(\\w+)_(sysname|components_" + component + "_enabled)$");
+        var instances = new TreeSet<String>();
+        var enabledOverrides = new HashMap<String, String>();
+        environment.forEach((key, value) -> {
+            var matcher = instanceProperty.matcher(key);
+            if (matcher.matches()) {
+                String instance = matcher.group(1);
+                instances.add(instance);
+                if (matcher.group(2).startsWith("components_")) {
+                    enabledOverrides.put(instance, value);
+                }
+            }
+        });
+
+        String currentInstance = environment.get(ZWE_HAINSTANCE_ID);
+        // ZWE_components_* already includes the current instance's overrides. It is a reliable
+        // default for other instances only when the current instance has no enabled override.
+        boolean canUseDefault = enabledOverrides.isEmpty() || instances.stream()
+            .anyMatch(instance -> instance.equalsIgnoreCase(currentInstance) && !enabledOverrides.containsKey(instance));
+        String defaultEnabled = canUseDefault ? environment.get("ZWE_components_" + component + "_enabled") : null;
+        var enabledInstances = instances.stream()
+            .filter(instance -> Boolean.parseBoolean(enabledOverrides.getOrDefault(instance, defaultEnabled)))
+            .toList();
+        if (enabledInstances.size() > 1) {
+            throw new InfinispanConfigException("caching.storage.infinispan.standalone=true cannot be used with multiple enabled "
+                + component.replace('_', '-') + " instances: " + enabledInstances
+                + ". Set standalone=false to share cached data and token revocations, or enable only one instance.");
+        }
+        if (instances.size() > 1 && instances.stream().anyMatch(instance ->
+            enabledOverrides.getOrDefault(instance, defaultEnabled) == null)) {
+            log.warn("Standalone Infinispan cannot determine whether other {} instances are enabled. "
+                + "Verify that only one instance owns the cache; cached data and token revocations are not replicated.",
+                component.replace('_', '-'));
+        }
+    }
+
+    private ConfigurationBuilder getPersistentCacheConfig() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder
             .encoding().mediaType(MediaType.APPLICATION_JBOSS_MARSHALLING_TYPE)
             .persistence()
             .addSoftIndexFileStore()
             .clustering()
-            .cacheMode(CacheMode.REPL_SYNC)
+            .cacheMode(getPersistentCacheMode())
             .hash().numSegments(numSegments);
         return builder;
     }
@@ -244,7 +296,7 @@ public class InfinispanConfig implements InitializingBean {
             .persistence()
             .addSoftIndexFileStore()
             .clustering()
-            .cacheMode(CacheMode.REPL_SYNC)
+            .cacheMode(getPersistentCacheMode())
             .hash().numSegments(numSegments);
         return builder;
     }
@@ -262,8 +314,7 @@ public class InfinispanConfig implements InitializingBean {
         return builder;
     }
 
-    @Bean(destroyMethod = "stop")
-    LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
+    private void configureClusterProperties() {
         System.setProperty("jgroups.tcpping.initial_hosts", getInitialHosts());
         System.setProperty("jgroups.tcpping.num_discovery_runs", String.valueOf(discoveryRuns));
         System.setProperty("jgroups.bind.port", port);
@@ -279,14 +330,23 @@ public class InfinispanConfig implements InitializingBean {
         System.setProperty("infinispan.ssl.trustStoreType", trustStoreType);
         System.setProperty("infinispan.ssl.trustStore", trustStore);
         System.setProperty("infinispan.ssl.trustStorePassword", trustStorePass);
+    }
+
+    @Bean(destroyMethod = "stop")
+    LazyCacheManager cacheManager(ResourceLoader resourceLoader, ApplicationInfo applicationInfo) {
+        if (standalone) {
+            validateStandaloneConfiguration(System.getenv(), applicationInfo.isModulith() ? "apiml" : "caching_service");
+        } else {
+            configureClusterProperties();
+        }
 
         var caches = new HashMap<String, ConfigurationBuilder>();
-        caches.put(CACHE_ZOWE, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE, getPersistentCacheConfig());
         caches.put(CACHE_ZOWE_INVALIDATED_TOKEN_ITEM, getRevocationCacheConfig());
-        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getDistributedCacheConfig());
+        caches.put(CACHE_ZOWE_INVALIDATED_TOKEN, getPersistentCacheConfig());
 
         if (applicationInfo.isModulith()) {
-            caches.put("invalidatedJwtTokens", getDistributedCacheConfig());
+            caches.put("invalidatedJwtTokens", getPersistentCacheConfig());
 
             // 1 minute to force zosmf tokens validation against zosmf for invalidated tokens
             caches.put("validatedJwtTokens", getSimpleCacheConfig(BIG_CACHE_SIZE, Duration.ofMinutes(1)));
@@ -324,7 +384,9 @@ public class InfinispanConfig implements InitializingBean {
 
     @Bean
     public Storage storage(DefaultCacheManager cacheManager, ObjectProvider<MeterRegistry> meterRegistry) {
-        defineLegacyLock(cacheManager);
+        if (!standalone) {
+            defineLegacyLock(cacheManager);
+        }
         var storage = new InfinispanStorage(
             cacheManager,
             REVOCATION_MAX_TTL.toSeconds(),

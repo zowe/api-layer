@@ -744,6 +744,11 @@
                             "type": "object",
                             "description": "Use Infinispan as the selected storage solution",
                             "properties": {
+                                "standalone": {
+                                    "type": "boolean",
+                                    "description": "Use persistent local Infinispan caches without cluster discovery or replication. Enable only for a single API ML instance. JGroups settings and initialHosts are ignored when enabled.",
+                                    "default": false
+                                },
                                 "distributedSyncTimeoutSecs": {
                                     "type": "integer",
                                     "description": "How long (in seconds) a cluster-wide operation may take before Infinispan gives up on it.",

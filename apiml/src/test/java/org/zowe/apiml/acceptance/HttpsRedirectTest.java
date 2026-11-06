@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestPropertySource(properties = {
     "apiml.security.httpRedirect.enabled=true",
     "apiml.service.externalUrl=" + HttpsRedirectTest.REDIRECT_URL,
-    "apiml.internal-discovery.port=40986",
+    "apiml.internal-discovery.port=18087",
     "apiml.health.protected=false"
 })
 class HttpsRedirectTest extends AcceptanceTestWithMockServices {
@@ -40,7 +40,7 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
     static final String REDIRECT_URL = "https://localhost:40985/redirecttest/api/v1/landing?source=http";
 
     @ParameterizedTest
-    @CsvSource({"40985,/application/info", "40986,/application/info", "40985,/gateway/api/v1/auth/login"})
+    @CsvSource({"40985,/application/info", "18087,/application/info", "40985,/gateway/api/v1/auth/login"})
     void plaintextOnBothConnectorsRedirectsToTheConfiguredHttpsUrl(int connectorPort, String path) {
         given().redirects().follow(false)
             .header("Host", "untrusted.example")
@@ -53,7 +53,7 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
     }
 
     @ParameterizedTest
-    @ValueSource(ints = {40985, 40986})
+    @ValueSource(ints = {40985, 18087})
     void clientFollowsRedirectToHttpsOnBothConnectors(int connectorPort) throws Exception {
         var backend = mockService("redirecttest")
             .addEndpoint("/redirecttest/landing")
@@ -103,7 +103,7 @@ class HttpsRedirectTest extends AcceptanceTestWithMockServices {
     }
 
     @ParameterizedTest
-    @CsvSource({"40985,/application/info,200", "40986,/application/info,200",
+    @CsvSource({"40985,/application/info,200", "18087,/application/info,200",
         "40985,/gateway/api/v1/auth/query,401"})
     void httpsStillServesRequestsAndIncludesHsts(int connectorPort, String path, int status) {
         given().when().get("https://localhost:" + connectorPort + path)

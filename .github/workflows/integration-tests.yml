@@ -153,11 +153,22 @@ jobs:
 
     CITestsModulith:
         needs: PublishJibContainers
+        name: CITestsModulith (${{ matrix.cacheMode }})
         runs-on: ubuntu-latest
         container:
             image: ubuntu:latest
             options: "--hostname testrunner"
         timeout-minutes: 15
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - cacheMode: clustered
+                      standalone: "false"
+                      artifactName: ContainerCITestsModulith
+                    - cacheMode: standalone
+                      standalone: "true"
+                      artifactName: ContainerCITestsModulithStandaloneInfinispan
 
         services:
             apiml:
@@ -165,6 +176,8 @@ jobs:
                 volumes:
                     - /api-defs:/api-defs
                 env:
+                    CACHING_STORAGE_MODE: infinispan
+                    CACHING_STORAGE_INFINISPAN_STANDALONE: ${{ matrix.standalone }}
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
@@ -214,6 +227,14 @@ jobs:
                     -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
                     -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
                     -Dtest.hostname=testrunner
+            -   name: Run standalone Infinispan caching and revocation tests
+                if: matrix.cacheMode == 'standalone'
+                run: >
+                    ENV_CONFIG=docker-modulith ./gradlew :integration-tests:runModulithInfinispanServiceTests --info
+                    -Ddiscoverableclient.instances=1 -Denvironment.config=-docker-modulith -Denvironment.modulith=true
+                    -Denvironment.infinispan.standalone=true
+                    -Partifactory_user=${{ secrets.ARTIFACTORY_USERNAME }} -Partifactory_password=${{ secrets.ARTIFACTORY_PASSWORD }}
+                    -Dtest.hostname=testrunner
             -   uses: ./.github/actions/dump-jacoco
                 if: always()
                 with:
@@ -222,11 +243,12 @@ jobs:
                 uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
-                    name: ContainerCITestsModulith-${{ env.JOB_ID }}
+                    name: ${{ matrix.artifactName }}-${{ env.JOB_ID }}
                     path: |
                         integration-tests/build/reports/**
                         results/**
                         integration-tests/build/test-results/runContainerModulithTests/binary/**
+                        integration-tests/build/test-results/runModulithInfinispanServiceTests/binary/**
                         integration-tests/build/test-results/runStartUpCheck/binary/**
 
             -   uses: ./.github/actions/teardown
@@ -3029,6 +3051,10 @@ jobs:
                     path: containercitestsmodulith
             -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
+                    name: ContainerCITestsModulithStandaloneInfinispan-${{ env.JOB_ID }}
+                    path: containercitestsmodulithstandaloneinfinispan
+            -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+                with:
                     name: CITestsWithInfinispan-${{ env.JOB_ID }}
                     path: citestswithinfinispan
             -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
@@ -3046,7 +3072,7 @@ jobs:
 
             -   name: Code coverage and publish results
                 run: >
-                    ./gradlew --scan --info coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,ContainerCITestsZaas/results"
+                    ./gradlew --scan --info coverage sonar -Dresults="containercitests/results,containercitestsmodulith/results,containercitestsmodulithstandaloneinfinispan/results,citestswithinfinispan/results,GatewayProxy/results,citestschaoticha/results,ContainerCITestsZaas/results"
                     -Psonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN -Partifactory_user=$ARTIFACTORY_USERNAME -Partifactory_password=$ARTIFACTORY_PASSWORD
                 env:
                     ARTIFACTORY_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
