@@ -79,7 +79,7 @@
     "typescript": "5.9.3"
   },
   "overrides": {
-    "@babel/traverse": "7.29.12",
+    "@babel/traverse": "7.29.13",
     "browserslist": "4.29.5",
     "entities": "8.1.0"
   },

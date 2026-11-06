@@ -40,7 +40,7 @@ dependencyResolutionManagement {
             version('netflixServo', '0.13.2')
             // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
             version('archaius', '0.7.12')
-            version('googleErrorprone', '2.51.0')
+            version('googleErrorprone', '2.52.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.15.0')
             version('guava', '33.7.2-jre')
@@ -82,7 +82,7 @@ dependencyResolutionManagement {
             version('jose4j', '0.9.7')
             version('jodaTime', '2.15.1')
             version('jsonPath', '2.10.0')
-            version('jsonSmart', '2.6.0')
+            version('jsonSmart', '2.6.1')
             version('junitJupiter', '5.14.4')
             version('junitPlatform', '1.14.4')
             version('jsr305', '3.0.2')
@@ -92,7 +92,7 @@ dependencyResolutionManagement {
             version('log4j', '2.26.1')
             version('lombok', '1.18.48')
             version('mailapi', '1.6.8')
-            version('netty', '4.2.19.Final')
+            version('netty', '4.2.20.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
             version('nettyReactor', '1.3.8')
             version('nimbusJoseJwt', '10.10')
@@ -117,7 +117,7 @@ dependencyResolutionManagement {
             version('tomcat', '11.0.27')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.3.0')
-            version('jgit', '7.8.0.202609011348-r')
+            version('jgit', '7.8.1.202611041320-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.5.0.8588')
             version('gradleRelease', '3.2.0')
@@ -129,7 +129,7 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
-            version('micronaut', '4.10.35')
+            version('micronaut', '4.10.36')
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
@@ -138,7 +138,7 @@ dependencyResolutionManagement {
             // this, so a stale value downgrades the committed wrapper on the next :gateway-service:wrapper.
             version('gradle', '9.7.1')
             version('commonsCompress', '1.28.0')
-            version('bucket4j', '8.21.0')
+            version('bucket4j', '8.22.0')
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
