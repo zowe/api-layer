@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -32,13 +33,16 @@ import org.springframework.http.MediaType;
 
 import javax.net.ssl.*;
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -52,6 +56,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -69,6 +75,9 @@ import static org.junit.jupiter.api.Assertions.fail;
  * Because there are two configuration of Infinispan (AT-TLS and regular one) the test is parametrized to verify all
  * combinations.
  *
+ * Silent TCP probes also verify that incomplete handshakes time out and the listener keeps
+ * accepting connections. The AT-TLS variant exercises its JGroups XML stack without z/OS network encryption.
+ *
  * It is possible to test with more than 2 instances by simply adding another base port in {@link #BASE_PORTS}. But is should
  * be covered by integration test org.zowe.apiml.integration.ha.CachingServiceTests.
  *
@@ -81,6 +90,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 class JGroupStabilityTest {
 
     private static final int[] BASE_PORTS = {17000, 27000};
+    private static final int SILENT_CONNECTIONS = 5;
+    private static final int PROBE_TIMEOUT_SECONDS = 15;
 
     private static ExecutorService executorService;
 
@@ -164,6 +175,43 @@ class JGroupStabilityTest {
         }
     }
 
+    @ParameterizedTest(name = "Silent TCP probes -> isModulith: {0}; isAttls: {1}")
+    @CsvSource({
+        "false,false",
+        "false,true",
+        "true,false",
+        "true,true"
+    })
+    void givenCluster_whenTcpClientsSendNoHandshake_thenConnectionsCloseAndClusterRemainsAvailable(
+        boolean isModulith, boolean isAttls
+    ) throws IOException {
+        var cachingServices = IntStream.range(0, BASE_PORTS.length)
+            .mapToObj(index -> new CachingService(index, isModulith, isAttls))
+            .toList();
+
+        try {
+            // Exercise the production startup flags AND XML mapping. Setting JVM properties alone did not
+            // disable JGroups virtual threads before #4731. Low CPU counts can expose carrier starvation.
+            cachingServices.forEach(service -> service.start("-XX:ActiveProcessorCount=2"));
+            await()
+                .pollDelay(20, TimeUnit.SECONDS)
+                .timeout(isModulith ? 3 : 5, TimeUnit.MINUTES)
+                .until(() -> isUp(cachingServices));
+
+            for (var service : cachingServices) {
+                service.assertSilentConnectionsClosed();
+                // Existing cluster connections can mask a stalled acceptor. A second batch must also be served.
+                service.assertSilentConnectionsClosed();
+            }
+
+            await()
+                .timeout(30, TimeUnit.SECONDS)
+                .until(() -> isUp(cachingServices));
+        } finally {
+            cachingServices.forEach(CachingService::kill);
+        }
+    }
+
     public static SSLContext ignoreSslContext() {
         try {
             TrustManager[] trustAllCerts = new TrustManager[]{
@@ -224,9 +272,13 @@ class JGroupStabilityTest {
         private final boolean isAttls;
 
         private Process serviceProcess;
-        private String pid;
+        private volatile String pid;
 
         public void start() {
+            start("");
+        }
+
+        public void start(String additionalJavaOptions) {
             int basePort = BASE_PORTS[index];
             String service = isModulith ? "apiml" : "caching-service";
 
@@ -274,6 +326,10 @@ class JGroupStabilityTest {
 
             ProcessBuilder builder = new ProcessBuilder(service + "-package/src/main/resources/bin/start.sh");
             builder.environment().putAll(env);
+            if (StringUtils.isNotBlank(additionalJavaOptions)) {
+                builder.environment().merge("JAVA_TOOL_OPTIONS", additionalJavaOptions, (existing, extra) -> existing + " " + extra);
+            }
+            builder.redirectErrorStream(true);
 
             File binFolder = new File("../");
             builder.directory(binFolder);
@@ -284,6 +340,45 @@ class JGroupStabilityTest {
             } catch (IOException ioException) {
                 fail(ioException);
             }
+        }
+
+        void assertSilentConnectionsClosed() throws IOException {
+            int port = BASE_PORTS[index] + 600;
+            var sockets = new ArrayList<Socket>();
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(PROBE_TIMEOUT_SECONDS);
+            try {
+                // Leave every socket open without sending the JGroups cookie, as a banner scanner would.
+                for (int i = 0; i < SILENT_CONNECTIONS; i++) {
+                    var socket = new Socket();
+                    sockets.add(socket);
+                    socket.connect(new InetSocketAddress("localhost", port), remainingProbeTimeout(deadline, port));
+                }
+                for (int i = 0; i < sockets.size(); i++) {
+                    var socket = sockets.get(i);
+                    socket.setSoTimeout(remainingProbeTimeout(deadline, port));
+                    try {
+                        assertEquals(-1, socket.getInputStream().read(),
+                            "JGroups must close silent connection " + (i + 1) + " on port " + port);
+                    } catch (SocketTimeoutException e) {
+                        fail("JGroups listener on port " + port + " stalled on silent connection " + (i + 1), e);
+                    }
+                }
+            } finally {
+                for (var socket : sockets) {
+                    try {
+                        socket.close();
+                    } catch (IOException e) {
+                        log.warn("Cannot close probe socket on port {}", port, e);
+                    }
+                }
+            }
+        }
+
+        private int remainingProbeTimeout(long deadline, int port) {
+            long remainingMillis = TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
+            assertTrue(remainingMillis > 0, "JGroups listener on port " + port + " did not drain silent connections within "
+                + PROBE_TIMEOUT_SECONDS + " seconds");
+            return (int) remainingMillis;
         }
 
         void readLogs(Process process, Consumer<String> onPid) {
@@ -344,7 +439,13 @@ class JGroupStabilityTest {
             int basePort = BASE_PORTS[index];
             HttpGet request = new HttpGet("https://localhost:" + (basePort + 25) + (isModulith ? "" : "/cachingservice") + "/application/health");
             request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
-            try (CloseableHttpClient client = HttpClients.custom().setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
+            RequestConfig timeouts = RequestConfig.custom()
+                .setConnectTimeout(5000)
+                .setConnectionRequestTimeout(5000)
+                .setSocketTimeout(5000)
+                .build();
+            try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(timeouts)
+                .setSSLContext(ignoreSslContext()).setSSLHostnameVerifier(new NoopHostnameVerifier()).build()) {
                 final HttpResponse response = client.execute(request);
                 final String jsonResponse = EntityUtils.toString(response.getEntity());
                 log.trace("URI: {}, JsonResponse is {}", request.getURI().toString(), jsonResponse);
