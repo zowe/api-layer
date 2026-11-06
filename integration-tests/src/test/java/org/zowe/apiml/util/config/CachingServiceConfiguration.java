@@ -10,20 +10,13 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Data
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class CachingServiceConfiguration implements ServiceConfiguration {
-
-    private String scheme;
-    private String host;
-    private int port;
-    private String url;
+public class CachingServiceConfiguration extends ServiceConfiguration {
 
     @Override
     public String getServiceId() {

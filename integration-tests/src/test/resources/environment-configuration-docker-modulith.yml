@@ -13,10 +13,6 @@ gatewayServiceConfiguration:
     servicesEndpoint: gateway/api/v1/services
     bucketCapacity: 20
     authProvider: zosmf
-centralGatewayServiceConfiguration:
-    scheme: https
-    host: central-gateway-service
-    port: 10010
 discoveryServiceConfiguration:
     scheme: https
     user: user
@@ -38,8 +34,6 @@ apiCatalogServiceConfiguration:
     host: apiml
     port: 10010
     instances: 1
-cachingServiceConfiguration:
-    url:
 tlsConfiguration:
     keyAlias: localhost
     keyPassword: password

@@ -52,8 +52,8 @@ class DiscoveryBasicAuthProtectionTest implements TestWithStartedInstances {
     void setUp() {
         DiscoveryServiceConfiguration config = ConfigReader.environmentConfiguration().getDiscoveryServiceConfiguration();
         scheme = config.getScheme();
-        host = config.getHost();
-        port = config.getPort();
+        host = config.getFirstHost();
+        port = config.getPortForHost(host);
         RestAssured.useRelaxedHTTPSValidation();
     }
 

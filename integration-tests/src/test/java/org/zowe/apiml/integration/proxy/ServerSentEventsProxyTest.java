@@ -47,7 +47,7 @@ public class ServerSentEventsProxyTest {
         ClientHttpConnector httpConnector = new ReactorClientHttpConnector(
             httpClient);
 
-        String baseUrl = String.format("%s://%s:%d", gatewayConfiguration.getScheme(), gatewayConfiguration.getHost(), gatewayConfiguration.getPort());
+        String baseUrl = String.format("%s://%s:%d", gatewayConfiguration.getScheme(), gatewayConfiguration.getFirstHost(), gatewayConfiguration.getPortForHost(gatewayConfiguration.getFirstHost()));
         webTestClient = WebTestClient.bindToServer(httpConnector).baseUrl(baseUrl).build();
     }
 

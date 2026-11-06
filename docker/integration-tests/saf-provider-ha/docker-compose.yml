@@ -1,0 +1,133 @@
+services:
+
+    # Every "-2" service below binds its own distinct real port via APIML_SERVICE_PORT (a
+    # consistent instance-number-followed-by-primary's-last-4-digits convention used across this
+    # repo's HA compose files), so its host-published port and its real/identity port are the same
+    # number - no connect-vs-identity split needed anymore. environment-configuration-ha.yml still
+    # only ever holds one `port` value per service though (it's shared by several other jobs), so
+    # -D*.connectPorts / -Ddiscovery.additionalPort on this job's gradle invocations still supply
+    # the per-host port list. See docker/integration-tests/README.md.
+    api-catalog-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}
+        hostname: api-catalog-services
+        volumes:
+            - ./api-defs:/api-defs
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:20011/eureka/
+        ports:
+            - "127.0.0.1:10014:10014"
+            - "127.0.0.1:5124:5124"
+            - "127.0.0.1:6304:6304"
+
+    api-catalog-services-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/api-catalog-services:${APIML_TAG:-local}
+        hostname: api-catalog-services-2
+        volumes:
+            - ./api-defs:/api-defs
+        environment:
+            APIML_SERVICE_PORT: "20014"
+            APIML_SERVICE_HOSTNAME: api-catalog-services-2
+            APIML_HEALTH_PROTECTED: "false"
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:20011/eureka/,https://discovery-service:10011/eureka/
+            logbackService: ZWEAAC2
+        ports:
+            - "127.0.0.1:20014:20014"
+            - "127.0.0.1:25124:5124"
+            - "127.0.0.1:26304:6304"
+
+    caching-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/caching-service:${APIML_TAG:-local}
+        hostname: caching-service
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:20011/eureka/
+        ports:
+            - "127.0.0.1:10016:10016"
+            - "127.0.0.1:5126:5126"
+            - "127.0.0.1:6306:6306"
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:20011/eureka/
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    discovery-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service
+        environment:
+            APIML_SERVICE_HOSTNAME: discovery-service
+            APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:20011/eureka,https://discovery-service:10011/eureka
+        ports:
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5121:5121"
+
+    discovery-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discovery-service:${APIML_TAG:-local}
+        hostname: discovery-service-2
+        environment:
+            APIML_SERVICE_PORT: "20011"
+            APIML_SERVICE_HOSTNAME: discovery-service-2
+            APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:20011/eureka
+            logbackService: ZWEADS2
+        ports:
+            - "127.0.0.1:20011:20011"
+            - "127.0.0.1:25121:5121"
+
+    gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service
+        environment:
+            APIML_SERVICE_HOSTNAME: gateway-service
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:20011/eureka/
+            logbackService: ZWEAGW1
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6300:6300"
+
+    gateway-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/gateway-service:${APIML_TAG:-local}
+        hostname: gateway-service-2
+        environment:
+            APIML_SERVICE_PORT: "20010"
+            APIML_SERVICE_HOSTNAME: gateway-service-2
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:20011/eureka/,https://discovery-service:10011/eureka/
+            logbackService: ZWEAGW2
+        ports:
+            - "127.0.0.1:20010:20010"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26300:6300"
+
+    zaas-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service
+        environment:
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
+            APIML_SECURITY_AUTH_PROVIDER: saf
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:20011/eureka/
+        ports:
+            - "127.0.0.1:10023:10023"
+            - "127.0.0.1:5120:5120"
+            - "127.0.0.1:6301:6301"
+
+    zaas-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/zaas-service:${APIML_TAG:-local}
+        hostname: zaas-service-2
+        environment:
+            APIML_SERVICE_PORT: "20023"
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:20010/gateway/certificates
+            APIML_SECURITY_AUTH_PROVIDER: saf
+            APIML_SERVICE_HOSTNAME: zaas-service-2
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:20011/eureka/,https://discovery-service:10011/eureka/
+            logbackService: ZWEAZS2
+        ports:
+            - "127.0.0.1:20023:20023"
+            - "127.0.0.1:25120:5120"
+            - "127.0.0.1:26301:6301"
