@@ -84,6 +84,9 @@ dependencies {
         exclude group: "io.swagger.core.v3", module: "swagger-core"
         // Remove deprecated HTTP client (unused transitive dependency of openDiff)
         exclude group: "commons-httpclient", module: "commons-httpclient"
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'org.apache.httpcomponents', module: 'httpcore'
+        exclude group: 'org.apache.httpcomponents', module: 'httpmime'
     }
     implementation(libs.swagger.inflector) {
         exclude group: "io.swagger.core.v3", module: "swagger-core"
