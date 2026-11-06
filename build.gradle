@@ -116,6 +116,11 @@ allprojects {
 
     configurations.all {
         resolutionStrategy.dependencySubstitution {
+            if (project.name != 'tomcat-websocket-patch') {
+                substitute(module('org.apache.tomcat.embed:tomcat-embed-websocket'))
+                    .using(project(':tomcat-websocket-patch'))
+                    .because('Resume buffered WebSocket fragments before reading from the socket again')
+            }
             substitute(module('javax.servlet:servlet-api')).using(module('javax.servlet:javax.servlet-api:4.0.1'))
 
             substitute(module('com.sun.mail:mailapi')).using(module("jakarta.mail:jakarta.mail-api:${libs.versions.mailapi}"))

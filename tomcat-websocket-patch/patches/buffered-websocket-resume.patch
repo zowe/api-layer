@@ -1,0 +1,83 @@
+--- a/org/apache/tomcat/websocket/WsFrameBase.java
++++ b/org/apache/tomcat/websocket/WsFrameBase.java
+@@ -125,11 +125,22 @@
+      * @throws IOException If an I/O error occurs
+      */
+     protected void processInputBuffer() throws IOException {
++        processAvailableInput();
++    }
++
++    /**
++     * Zowe modification: distinguish input underflow from suspension. A concurrent resume
++     * may already have cleared the suspended state when the caller regains control.
++     *
++     * @return true if more input is needed, false if processing stopped for suspension
++     * @throws IOException if frame processing fails
++     */
++    protected boolean processAvailableInput() throws IOException {
+         while (!isSuspended()) {
+             wsSession.updateLastActiveRead();
+             if (state == State.NEW_FRAME) {
+                 if (!processInitialHeader()) {
+-                    break;
++                    return true;
+                 }
+                 // If a close frame has been received, no further data should
+                 // have seen
+@@ -139,15 +150,16 @@
+             }
+             if (state == State.PARTIAL_HEADER) {
+                 if (!processRemainingHeader()) {
+-                    break;
++                    return true;
+                 }
+             }
+             if (state == State.DATA) {
+                 if (!processData()) {
+-                    break;
+-                }
+-            }
+-        }
++                    return true;
++                }
++            }
++        }
++        return false;
+     }
+ 
+ 
+--- a/org/apache/tomcat/websocket/WsFrameClient.java
++++ b/org/apache/tomcat/websocket/WsFrameClient.java
+@@ -74,7 +74,7 @@
+                     if (!changeReadState(ReadState.WAITING, ReadState.PROCESSING)) {
+                         continue;
+                     }
+-                    while (response.hasRemaining()) {
++                    while (true) {
+                         if (isSuspended()) {
+                             if (!changeReadState(ReadState.SUSPENDING_PROCESS, ReadState.SUSPENDED)) {
+                                 continue;
+@@ -87,6 +87,14 @@
+                             // and then a new socket read will be performed
+                             return;
+                         }
++                        // Zowe modification: drain buffered frames even when response is empty.
++                        // Retry after suspension, including when a concurrent resume already won.
++                        if (!processAvailableInput()) {
++                            continue;
++                        }
++                        if (!response.hasRemaining()) {
++                            break;
++                        }
+                         inputBuffer.mark();
+                         inputBuffer.position(inputBuffer.limit()).limit(inputBuffer.capacity());
+ 
+@@ -102,8 +110,6 @@
+ 
+                         inputBuffer.limit(inputBuffer.position()).reset();
+ 
+-                        // Process the data we have
+-                        processInputBuffer();
+                     }
+                     response.clear();
+ 

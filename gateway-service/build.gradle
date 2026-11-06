@@ -71,6 +71,7 @@ configurations.all {
 dependencies {
     api project(':apiml-utility')
     api project(':apiml-tomcat-common')
+    api project(':tomcat-websocket-patch')
     api project(':apiml-security-common')
 
     implementation libs.spring.boot.starter.security
