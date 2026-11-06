@@ -223,7 +223,7 @@ class CachingServiceTests {
                 given()
                     .config(SslContext.clientCertApiml)
                     .contentType(JSON)
-                    .auth().basic(credentials.getUser(), credentials.getPassword())
+                    .auth().preemptive().basic(credentials.getUser(), credentials.getPassword())
                     .when()
                     .post(baseUrls.get(i) + SERVLET_PATH + "/application/shutdown")
                     .then()
