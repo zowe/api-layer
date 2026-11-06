@@ -74,6 +74,11 @@
                                     "type": "boolean",
                                     "description": "Disables validation of the port against the allowed domains.",
                                     "default": false
+                                },
+                                "networkIdentityValidationDisabled": {
+                                    "type": "boolean",
+                                    "description": "Disables the verification that the hostname of a registered service resolves to the address the registration was sent from. Disable it only if registrations pass through a proxy or NAT.",
+                                    "default": false
                                 }
                             }
                         }

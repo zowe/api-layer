@@ -60,12 +60,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
+import org.zowe.apiml.discovery.registration.RegistrationRequestContext;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import static org.apache.http.HttpHeaders.ACCEPT;
 import static org.apache.http.HttpHeaders.ACCEPT_ENCODING;
@@ -92,6 +96,15 @@ public class EurekaRestController {
 
     private UriInfo getUriInfo(ServerWebExchange serverWebExchange) {
         return new UriInfoAdapter(serverWebExchange.getRequest());
+    }
+
+    /**
+     * @return address of the TCP peer, used to verify the identity of the registrant
+     */
+    private InetAddress getPeerAddress(ServerWebExchange serverWebExchange) {
+        return Optional.ofNullable(serverWebExchange.getRequest().getRemoteAddress())
+            .map(InetSocketAddress::getAddress)
+            .orElseThrow(() -> new IllegalStateException("Remote address of the Eureka request is not available"));
     }
 
     private ResponseEntity<?> convertResponse(Response response) {
@@ -142,6 +155,7 @@ public class EurekaRestController {
 
     @PostMapping("/apps/{appId}")
     public Mono<ResponseEntity<?>> addInstance(
+        ServerWebExchange serverWebExchange,
         @Nullable @RequestHeader(PeerEurekaNode.HEADER_REPLICATION) String isReplication,
 
         @RequestBody String instanceInfoString,
@@ -153,7 +167,8 @@ public class EurekaRestController {
         return just(ResponseEntity.ok())
             .publishOn(Schedulers.boundedElastic())
             .map(bodyBuilder -> {
-                var response = app.addInstance(instanceInfo, isReplication);
+                var response = RegistrationRequestContext.callWith(getPeerAddress(serverWebExchange),
+                    () -> app.addInstance(instanceInfo, isReplication));
                 return convertResponse(response);
             });
     }
@@ -279,10 +294,12 @@ public class EurekaRestController {
 
     @PostMapping({"/peerreplication/batch/", "/peerreplication/batch"})
     public Mono<ResponseEntity<?>> batchReplication(
+        ServerWebExchange serverWebExchange,
         @RequestBody String replicationListString
     ) throws IOException {
         var replicationList = JACKSON_JSON.decode(replicationListString, ReplicationList.class);
-        return Mono.fromCallable(() -> convertResponse(peerReplicationResource.batchReplication(replicationList)));
+        return Mono.fromCallable(() -> convertResponse(RegistrationRequestContext.callWith(getPeerAddress(serverWebExchange),
+            () -> peerReplicationResource.batchReplication(replicationList))));
     }
 
     @RequiredArgsConstructor
