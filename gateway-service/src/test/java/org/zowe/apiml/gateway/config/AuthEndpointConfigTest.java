@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 
 import static io.restassured.RestAssured.given;
 import static jakarta.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;

@@ -37,7 +37,7 @@ import org.zowe.apiml.zaas.security.service.zosmf.ZosmfService;
 import javax.management.ServiceNotFoundException;
 import java.util.Date;
 
-import static org.apache.http.HttpStatus.*;
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;

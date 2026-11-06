@@ -13,9 +13,10 @@ package org.zowe.apiml.discovery.config;
 import com.netflix.eureka.cluster.PeerEurekaNode;
 import com.netflix.eureka.cluster.PeerEurekaNodes;
 import jakarta.ws.rs.client.Client;
-import org.apache.http.HttpStatus;
-import org.apache.http.config.Registry;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.ssl.TlsSocketStrategy;
+import org.apache.hc.core5.http.HttpStatus;
+import org.apache.hc.core5.http.config.Lookup;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.client.ClientConfig;
 import org.junit.jupiter.api.Nested;
@@ -35,7 +36,6 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestInstance(Lifecycle.PER_CLASS)
 class AttlsConfigTest {
@@ -69,11 +69,9 @@ class AttlsConfigTest {
             Object connectionOperator = ReflectionTestUtils.getField(cm, "connectionOperator");
 
             assertNotNull(connectionOperator);
-            var registry = (Registry<?>) ReflectionTestUtils.getField(connectionOperator, "socketFactoryRegistry");
-            assertNotNull(registry);
-
-            assertNotNull(registry.lookup("http"));
-            assertNotNull(registry.lookup("https"));
+            var lookup = (Lookup<TlsSocketStrategy>) ReflectionTestUtils.getField(connectionOperator, "tlsSocketStrategyLookup");
+            assertNotNull(lookup);
+            assertNotNull(lookup.lookup("https"));
         }
 
         private static Client getClient(PeerEurekaNode testPeerNode) {

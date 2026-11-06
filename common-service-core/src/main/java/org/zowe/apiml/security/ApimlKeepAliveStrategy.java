@@ -14,11 +14,12 @@ import org.apache.hc.client5.http.ConnectionKeepAliveStrategy;
 import org.apache.hc.core5.annotation.Contract;
 import org.apache.hc.core5.annotation.ThreadingBehavior;
 import org.apache.hc.core5.http.HeaderElement;
+import org.apache.hc.core5.http.HttpHeaders;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.message.BasicHeaderElementIterator;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.util.TimeValue;
-import org.apache.http.protocol.HTTP;
+
 
 @Contract(threading = ThreadingBehavior.IMMUTABLE)
 public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
@@ -30,7 +31,7 @@ public class ApimlKeepAliveStrategy implements ConnectionKeepAliveStrategy {
     @Override
     public TimeValue getKeepAliveDuration(HttpResponse response, HttpContext context) {
         BasicHeaderElementIterator it = new BasicHeaderElementIterator
-            (response.headerIterator(HTTP.CONN_KEEP_ALIVE));
+            (response.headerIterator(HttpHeaders.KEEP_ALIVE));
         while (it.hasNext()) {
             HeaderElement he = it.next();
             String param = he.getName();

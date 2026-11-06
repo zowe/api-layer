@@ -11,7 +11,7 @@
 package org.zowe.apiml.apicatalog.functional;
 
 import io.restassured.RestAssured;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
