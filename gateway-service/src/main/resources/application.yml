@@ -146,13 +146,13 @@ server:
         port: ${server.port}
         ssl:
             keyAlias: ${server.ssl.keyAlias:localhost}
-            keyPassword: ${server.ssl.keyPassword:password}
+            keyPassword: ${server.ssl.keyPassword}
             keyStoreType: ${server.ssl.keyStoreType:PKCS12}
             keyStore: ${server.ssl.keyStore:keystore}
             trustStoreType: ${server.ssl.trustStoreType:PKCS12}
             trustStore: ${server.ssl.trustStore:truststore}
-            keyStorePassword: ${server.ssl.keyStorePassword:password}
-            trustStorePassword: ${server.ssl.trustStorePassword:password}
+            keyStorePassword: ${server.ssl.keyStorePassword}
+            trustStorePassword: ${server.ssl.trustStorePassword}
             clientAuth: ${server.ssl.clientAuth}
     max-http-header-size: 48000
     address: ${apiml.service.ipAddress}
