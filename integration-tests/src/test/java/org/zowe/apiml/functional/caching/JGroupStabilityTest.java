@@ -35,7 +35,9 @@ import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -57,6 +59,7 @@ import java.util.stream.IntStream;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -74,9 +77,6 @@ import static org.junit.jupiter.api.Assertions.fail;
  *
  * Because there are two configuration of Infinispan (AT-TLS and regular one) the test is parametrized to verify all
  * combinations.
- *
- * Silent TCP probes also verify that incomplete handshakes time out and the listener keeps
- * accepting connections. The AT-TLS variant exercises its JGroups XML stack without z/OS network encryption.
  *
  * It is possible to test with more than 2 instances by simply adding another base port in {@link #BASE_PORTS}. But is should
  * be covered by integration test org.zowe.apiml.integration.ha.CachingServiceTests.
@@ -184,14 +184,12 @@ class JGroupStabilityTest {
     })
     void givenCluster_whenTcpClientsSendNoHandshake_thenConnectionsCloseAndClusterRemainsAvailable(
         boolean isModulith, boolean isAttls
-    ) throws IOException {
+    ) throws IOException, InterruptedException {
         var cachingServices = IntStream.range(0, BASE_PORTS.length)
             .mapToObj(index -> new CachingService(index, isModulith, isAttls))
             .toList();
 
         try {
-            // Exercise the production startup flags AND XML mapping. Setting JVM properties alone did not
-            // disable JGroups virtual threads before #4731. Low CPU counts can expose carrier starvation.
             cachingServices.forEach(service -> service.start("-XX:ActiveProcessorCount=2"));
             await()
                 .pollDelay(20, TimeUnit.SECONDS)
@@ -199,13 +197,14 @@ class JGroupStabilityTest {
                 .until(() -> isUp(cachingServices));
 
             for (var service : cachingServices) {
+                service.assertJGroupsAcceptorRunsOnPlatformThread();
                 service.assertSilentConnectionsClosed();
-                // Existing cluster connections can mask a stalled acceptor. A second batch must also be served.
                 service.assertSilentConnectionsClosed();
             }
 
             await()
-                .timeout(30, TimeUnit.SECONDS)
+                .during(20, TimeUnit.SECONDS)
+                .atMost(40, TimeUnit.SECONDS)
                 .until(() -> isUp(cachingServices));
         } finally {
             cachingServices.forEach(CachingService::kill);
@@ -342,12 +341,26 @@ class JGroupStabilityTest {
             }
         }
 
+        void assertJGroupsAcceptorRunsOnPlatformThread() throws IOException, InterruptedException {
+            int port = BASE_PORTS[index] + 600;
+            assertNotNull(pid, "PID of the service on port " + port + " is unknown");
+            String jcmd = Paths.get(System.getProperty("java.home"), "bin", "jcmd").toString();
+            Process process = new ProcessBuilder(jcmd, pid, "Thread.print").redirectErrorStream(true).start();
+            String threadDump;
+            try (InputStream inputStream = process.getInputStream()) {
+                threadDump = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            assertTrue(process.waitFor(30, TimeUnit.SECONDS), "jcmd Thread.print did not finish for PID " + pid);
+            assertEquals(0, process.exitValue(), "jcmd Thread.print failed for PID " + pid + ": " + threadDump);
+            assertTrue(threadDump.contains("TcpServer.Acceptor[" + port + "]"),
+                "JGroups acceptor on port " + port + " is missing from the platform thread dump, JGroups runs on virtual threads");
+        }
+
         void assertSilentConnectionsClosed() throws IOException {
             int port = BASE_PORTS[index] + 600;
             var sockets = new ArrayList<Socket>();
             long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(PROBE_TIMEOUT_SECONDS);
             try {
-                // Leave every socket open without sending the JGroups cookie, as a banner scanner would.
                 for (int i = 0; i < SILENT_CONNECTIONS; i++) {
                     var socket = new Socket();
                     sockets.add(socket);
@@ -361,6 +374,8 @@ class JGroupStabilityTest {
                             "JGroups must close silent connection " + (i + 1) + " on port " + port);
                     } catch (SocketTimeoutException e) {
                         fail("JGroups listener on port " + port + " stalled on silent connection " + (i + 1), e);
+                    } catch (SocketException e) {
+                        log.debug("Silent connection {} on port {} was reset by JGroups", i + 1, port, e);
                     }
                 }
             } finally {
