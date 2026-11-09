@@ -54,6 +54,7 @@ class KeyValueTest {
             withTtl.setTtlSeconds(1234L);
             byte[] withTtlBytes = javaSerialize(withTtl);
 
+            byte[] plain = javaSerialize(withTtl);
             assertArrayEquals(plain, withTtlBytes, "the Java-serialized form must not change shape");
             assertFalse(new String(plain, StandardCharsets.ISO_8859_1).contains("ttlSeconds"));
         }
