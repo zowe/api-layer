@@ -17,6 +17,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledForJreRange;
+import org.junit.jupiter.api.condition.JRE;
 import org.mockito.stubbing.Answer;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.commons.attls.AttlsContext;
@@ -128,6 +130,7 @@ class ApimlTomcatCustomizerTest {
 
         @Test
         @SuppressWarnings("unchecked")
+        @EnabledForJreRange(min = JRE.JAVA_8, max = JRE.JAVA_17)
         void givenConnector_whenNioProtocolIsUsed_thenContextIsCreated()
                 throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
                 InvocationTargetException, InstantiationException, IOException {

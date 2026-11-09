@@ -44,7 +44,7 @@ logging:
         org.eclipse.jetty: WARN
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
-        javax.net.ssl: ERROR # For running with java 17
+        javax.net.ssl: ERROR # For running with java 21+
 
 ##############################################################################################
 # APIML configuration section

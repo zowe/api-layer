@@ -22,7 +22,6 @@ possible to disable parallel processing by setting `org.gradle.parallel` to `fal
 
 - Enable _Annotations processing_ if you haven't done so already (Just go to settings and search for 'annotation')
 - Install Lombok plugin. Go to the plugins in the setting and look for the lombok plugin.
-- Make sure that the Gradle JVM is set to the JDK 1.8. To set it go to the Settings->Build,Execution,Deployment->Build Tools->Gradle
 
 ### Running of the services
 

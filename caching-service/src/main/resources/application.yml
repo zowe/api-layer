@@ -42,7 +42,7 @@ logging:
         org.apache.tomcat.util.net.SSLUtilBase: ERROR
         org.apache.http.conn.ssl.DefaultHostnameVerifier: DEBUG #logs only SSLException
         org.springframework.security.config.annotation.web.builders.WebSecurity: ERROR
-        javax.net.ssl: ERROR # For running with java 17
+        javax.net.ssl: ERROR # For running with java 21+
 eureka:
     client:
         enabled: false

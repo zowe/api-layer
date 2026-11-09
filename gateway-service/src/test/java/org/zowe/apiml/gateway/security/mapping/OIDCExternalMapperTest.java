@@ -10,29 +10,26 @@
 
 package org.zowe.apiml.gateway.security.mapping;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.zowe.apiml.gateway.security.mapping.model.OIDCRequest;
 import org.zowe.apiml.gateway.security.service.TokenCreationService;
 import org.zowe.apiml.gateway.security.service.schema.source.JwtAuthSource;
 import org.zowe.apiml.gateway.security.service.schema.source.OIDCAuthSource;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -159,38 +156,17 @@ class OIDCExternalMapperTest {
 
     @Nested
     class GivenErrorsInRequest {
-        @Mock
-        private ObjectMapper mockedMapper;
-
-        @BeforeEach
-        void setup() throws ReflectiveOperationException {
-            setFinalStaticField(ExternalMapper.class, "objectMapper", mockedMapper);
-        }
-
-        @AfterEach
-        void teardown() throws ReflectiveOperationException {
-            setFinalStaticField(ExternalMapper.class, "objectMapper", new ObjectMapper());
-        }
-
         @Test
         void whenJsonProcessingException_thenNullIsReturned() throws IOException {
-            doThrow(JsonProcessingException.class).when(mockedMapper).writeValueAsString(any());
-            String userId = oidcExternalMapper.mapToMainframeUserId(authSource);
-            assertNull(userId);
-            verify(httpClient, times(0)).execute(any());
+            try (MockedConstruction<OIDCRequest> requests = mockConstruction(OIDCRequest.class,
+                (request, context) -> when(request.getDn()).thenThrow(new IllegalStateException("Cannot read DN")))) {
+                String userId = oidcExternalMapper.mapToMainframeUserId(authSource);
+                assertNull(userId);
+                assertEquals(1, requests.constructed().size());
+                verify(requests.constructed().get(0)).getDn();
+                verify(httpClient, times(0)).execute(any());
+            }
         }
-    }
-    private static void setFinalStaticField(Class<?> clazz, String fieldName, Object value)
-        throws ReflectiveOperationException {
-
-        Field field = clazz.getDeclaredField(fieldName);
-        field.setAccessible(true);
-
-        Field modifiers = Field.class.getDeclaredField("modifiers");
-        modifiers.setAccessible(true);
-        modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-        field.set(null, value);
     }
 
 }

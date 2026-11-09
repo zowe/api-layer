@@ -108,6 +108,7 @@ dependencies {
     testCompileOnly libs.lombok
     testAnnotationProcessor libs.lombok
 
+    testImplementation libs.mockito.inline
     testImplementation libs.spring.boot.starter.test
     testImplementation libs.json.smart
     testImplementation libs.awaitility
