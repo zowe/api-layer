@@ -63,46 +63,24 @@ class KeyringUtilsTest {
 
         @ParameterizedTest
         @CsvSource({
-            "safkeyring://userId/keyRing, JCERACFKS, safkeyringjce://userId/keyRing",
-            "safkeyring:///userId/keyRing, JCECCARACFKS, safkeyringjcecca://userId/keyRing",
-            "safkeyring:////ZWESVUSR/ZWEHRING, JCEHYBRIDRACFKS, safkeyringjcehybrid://ZWESVUSR/ZWEHRING",
-            "safkeyring://userId/keyRing, jcehybridracfks, safkeyringjcehybrid://userId/keyRing",
-            "safkeyringjcehybrid://userId/keyRing, JCEHYBRIDRACFKS, safkeyringjcehybrid://userId/keyRing",
-            "safkeyringjcecca:////userId/keyRing, JCEHYBRIDRACFKS, safkeyringjcecca://userId/keyRing",
-            "safkeyring://userId/keyRing, PKCS12, safkeyring://userId/keyRing",
-            "safkeyring://userId/keyRing, , safkeyring://userId/keyRing",
-            "/path/to/truststore.p12, PKCS12, /path/to/truststore.p12",
-            "safkeyring:/invalid/ring, JCEHYBRIDRACFKS, safkeyring:/invalid/ring"
-        })
-        void givenStoreType_thenSelectsProtocolOnlyForGenericKeyringUri(String input, String type, String expected) {
-            assertEquals(expected, KeyringUtils.formatKeyringUrl(input, type));
-        }
-
-        @Test
-        void givenNullWithStoreType_thenReturnsNull() {
-            assertNull(KeyringUtils.formatKeyringUrl(null, "JCEHYBRIDRACFKS"));
-        }
-
-        @ParameterizedTest
-        @CsvSource({
             "safkeyring://userId/keyRing, safkeyring://userId/keyRing",
             "safkeyring:////userId/keyRing, safkeyring://userId/keyRing",
             "safkeyringjce://user/ring, safkeyringjce://user/ring",
             "safkeyringjcecca:///user1/ring2, safkeyringjcecca://user1/ring2"
         })
         void givenKeyringUri_thenNormalizesToTwoSlashes(String input, String expected) {
-            assertEquals(expected, KeyringUtils.formatKeyringUrl(input, "PKCS12"));
+            assertEquals(expected, KeyringUtils.formatKeyringUrl(input));
         }
 
         @Test
         void givenNonKeyringPath_thenReturnsUnchanged() {
             String path = "/path/to/keystore.p12";
-            assertEquals(path, KeyringUtils.formatKeyringUrl(path, "PKCS12"));
+            assertEquals(path, KeyringUtils.formatKeyringUrl(path));
         }
 
         @Test
         void givenNull_thenReturnsNull() {
-            assertNull(KeyringUtils.formatKeyringUrl(null, "PKCS12"));
+            assertNull(KeyringUtils.formatKeyringUrl(null));
         }
     }
 
@@ -112,13 +90,13 @@ class KeyringUtilsTest {
         @Test
         void givenInvalidKeyringFormat_thenThrowsStoresNotInitializeException() {
             assertThrows(StoresNotInitializeException.class,
-                () -> KeyringUtils.keyRingUrl("/some/file/path", "JCERACFKS"));
+                () -> KeyringUtils.keyRingUrl("/some/file/path"));
         }
 
         @Test
         void givenInvalidFormat_thenExceptionContainsHelpfulMessage() {
             StoresNotInitializeException ex = assertThrows(StoresNotInitializeException.class,
-                () -> KeyringUtils.keyRingUrl("notakeyring", "JCERACFKS"));
+                () -> KeyringUtils.keyRingUrl("notakeyring"));
             assertThat(ex.getMessage(), containsString("Incorrect key ring format"));
             assertThat(ex.getMessage(), containsString("safkeyring://userId/keyRing"));
         }
@@ -126,14 +104,14 @@ class KeyringUtilsTest {
         @Test
         void givenNullInput_thenThrowsStoresNotInitializeException() {
             assertThrows(StoresNotInitializeException.class,
-                () -> KeyringUtils.keyRingUrl(null, "JCERACFKS"));
+                () -> KeyringUtils.keyRingUrl(null));
         }
 
         @Test
         void givenValidKeyringFormat_thenThrowsMalformedURLExceptionWithoutHandler() {
             // Valid keyring format but no SAF protocol handler registered on this JVM
             java.net.MalformedURLException ex = assertThrows(java.net.MalformedURLException.class,
-                () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing", "JCERACFKS"));
+                () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing"));
             assertThat(ex.getMessage(), containsString("unknown protocol"));
         }
     }

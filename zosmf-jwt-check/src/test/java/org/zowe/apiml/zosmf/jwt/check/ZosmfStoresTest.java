@@ -12,8 +12,6 @@ package org.zowe.apiml.zosmf.jwt.check;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.zowe.apiml.common.KeyringUtils;
 import org.zowe.apiml.common.StoresNotInitializeException;
 
@@ -31,39 +29,6 @@ class ZosmfStoresTest {
     private static final String TRUSTSTORE_PATH = "../keystore/service/service.truststore.p12";
     private static final String KEYSTORE_PATH = "../keystore/service/service.keystore.p12";
     private static final String PASSWORD = "password";
-
-    @Nested
-    class GivenSafKeyring {
-
-        @ParameterizedTest
-        @CsvSource({
-            "JCERACFKS, safkeyringjce",
-            "JCECCARACFKS, safkeyringjcecca",
-            "JCEHYBRIDRACFKS, safkeyringjcehybrid"
-        })
-        void whenTruststoreTypeSpecified_thenUsesMatchingProtocol(String type, String protocol) {
-            ZosmfJwtCheckConfig conf = createConf(null, null, "safkeyring://ZWESVUSR/ZWEHRING", PASSWORD, type);
-            when(conf.getKeyStoreType()).thenReturn("PKCS12");
-
-            // No IBM handlers on the test JVM: the failure identifies the selected protocol.
-            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new ZosmfStores(conf));
-            assertEquals("unknown protocol: " + protocol, e.getMessage());
-        }
-
-        @ParameterizedTest
-        @CsvSource({
-            "JCERACFKS, safkeyringjce",
-            "JCECCARACFKS, safkeyringjcecca",
-            "JCEHYBRIDRACFKS, safkeyringjcehybrid"
-        })
-        void whenKeystoreTypeSpecified_thenUsesMatchingProtocol(String type, String protocol) {
-            ZosmfJwtCheckConfig conf = createConf("safkeyring://ZWESVUSR/ZWEHRING", PASSWORD, null, null, type);
-            when(conf.getTrustStoreType()).thenReturn("PKCS12");
-
-            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new ZosmfStores(conf));
-            assertEquals("unknown protocol: " + protocol, e.getMessage());
-        }
-    }
 
     @Nested
     class GivenValidFileBasedTruststore {
@@ -166,26 +131,26 @@ class ZosmfStoresTest {
         @Test
         void formatKeyringUrlNormalizesSlashes() {
             assertEquals("safkeyring://userId/keyRing",
-                KeyringUtils.formatKeyringUrl("safkeyring:////userId/keyRing", "PKCS12"));
+                KeyringUtils.formatKeyringUrl("safkeyring:////userId/keyRing"));
         }
 
         @Test
         void formatKeyringUrlReturnsInputForNonKeyring() {
-            assertEquals("/some/path.p12", KeyringUtils.formatKeyringUrl("/some/path.p12", "PKCS12"));
-            assertNull(KeyringUtils.formatKeyringUrl(null, "PKCS12"));
+            assertEquals("/some/path.p12", KeyringUtils.formatKeyringUrl("/some/path.p12"));
+            assertNull(KeyringUtils.formatKeyringUrl(null));
         }
 
         @Test
         void keyRingUrlThrowsForInvalidFormat() {
             assertThrows(StoresNotInitializeException.class,
-                () -> KeyringUtils.keyRingUrl("not://a/keyring/format/extra", "JCERACFKS"));
+                () -> KeyringUtils.keyRingUrl("not://a/keyring/format/extra"));
         }
 
         @Test
         void keyRingUrlThrowsMalformedURLExceptionForValidButUnresolvable() {
             // Valid keyring format but no protocol handler registered
             assertThrows(MalformedURLException.class,
-                () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing", "JCERACFKS"));
+                () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing"));
         }
 
         @Test

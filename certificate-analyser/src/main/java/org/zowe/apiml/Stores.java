@@ -65,7 +65,7 @@ public class Stores {
             return;
         }
         if (KeyringUtils.isKeyring(conf.getTrustStore())) {
-            try (InputStream trustStoreIStream = KeyringUtils.keyRingUrl(conf.getTrustStore(), conf.getTrustStoreType()).openStream()) {
+            try (InputStream trustStoreIStream = KeyringUtils.keyRingUrl(conf.getTrustStore()).openStream()) {
                 this.trustStore = KeyringUtils.readKeyStore(trustStoreIStream, conf.getTrustPasswd().toCharArray(), conf.getTrustStoreType());
             }
         } else {
@@ -87,7 +87,7 @@ public class Stores {
             return;
         }
         if (KeyringUtils.isKeyring(conf.getKeyStore())) {
-            try (InputStream keyringIStream = KeyringUtils.keyRingUrl(conf.getKeyStore(), conf.getKeyStoreType()).openStream()) {
+            try (InputStream keyringIStream = KeyringUtils.keyRingUrl(conf.getKeyStore()).openStream()) {
                 this.keyStore = KeyringUtils.readKeyStore(keyringIStream, conf.getKeyPasswd().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
             } catch (Exception e) {
