@@ -93,6 +93,11 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
 > crypto modules making the handler classes accessible. Both mechanisms work together
 > to enable `safkeyring://` URLs — no additional `-D` flags are needed.
 
+> **Note:** For hybrid keyrings (`JCEHYBRIDRACFKS`) the module providing the `IBMJCEHYBRID` provider
+> must be resolved as well. List the available modules with `java --list-modules | grep ibm.crypto`
+> and add it to `--add-modules`. If a provider listed in `jvm.security.override.properties`
+> is missing, the tool prints a `WARN` naming it.
+
 ### Possible issues
 
 Keystore/truststore is owned by different user - permission error. Temporarily Change read permission to all.

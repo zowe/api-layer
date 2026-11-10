@@ -10,6 +10,8 @@
 
 package org.zowe.apiml.common;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -18,10 +20,20 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.Provider;
+import java.security.Security;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.ServiceConfigurationError;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -251,11 +263,154 @@ class KeyringUtilsTest {
         }
     }
 
-    @org.junit.jupiter.api.Test
-    void configuredProviderNamesAreReadInOrderFromSharedFile() {
-        java.util.List<String> names = KeyringUtils.configuredProviderNames();
-        org.junit.jupiter.api.Assertions.assertEquals("IBMJCEHYBRID", names.get(0));
-        org.junit.jupiter.api.Assertions.assertEquals("IBMJCECCA", names.get(1));
-        org.junit.jupiter.api.Assertions.assertTrue(names.contains("SUN"));
+    @Nested
+    class SecurityProviders {
+
+        private static final String A = "ZoweTestProviderA";
+        private static final String B = "ZoweTestProviderB";
+
+        private PrintStream originalErr;
+        private ByteArrayOutputStream err;
+
+        @BeforeEach
+        void captureStdErr() {
+            originalErr = System.err;
+            err = new ByteArrayOutputStream();
+            System.setErr(new PrintStream(err, true));
+        }
+
+        @AfterEach
+        void cleanUp() {
+            System.setErr(originalErr);
+            Security.removeProvider(A);
+            Security.removeProvider(B);
+        }
+
+        private Iterator<Provider> candidates(Object... items) {
+            Deque<Object> queue = new ArrayDeque<>(List.of(items));
+            return new Iterator<>() {
+                @Override
+                public boolean hasNext() {
+                    return !queue.isEmpty();
+                }
+
+                @Override
+                public Provider next() {
+                    Object item = queue.poll();
+                    if (item instanceof ServiceConfigurationError e) throw e;
+                    if (item instanceof RuntimeException e) throw e;
+                    return (Provider) item;
+                }
+            };
+        }
+
+        private Provider provider(String name) {
+            return new Provider(name, "1.0", "test provider") {
+            };
+        }
+
+        private int indexOf(String name) {
+            Provider[] providers = Security.getProviders();
+            for (int i = 0; i < providers.length; i++) {
+                if (name.equals(providers[i].getName())) return i;
+            }
+            return -1;
+        }
+
+        @Test
+        void configuredProviderNamesAreReadInOrderFromSharedFile() {
+            List<String> names = KeyringUtils.configuredProviderNames();
+            assertEquals("IBMJCEHYBRID", names.get(0));
+            assertEquals("IBMJCECCA", names.get(1));
+            assertTrue(names.contains("SUN"));
+        }
+
+        @Test
+        void givenMissingProviders_thenRegisteredInConfiguredOrder() {
+            KeyringUtils.registerProviders(List.of(A, B), candidates(provider(B), provider(A)));
+
+            assertEquals(0, indexOf(A));
+            assertEquals(1, indexOf(B));
+        }
+
+        @Test
+        void givenAlreadyRegistered_thenNothingChangesWhenCalledAgain() {
+            Provider first = provider(A);
+            KeyringUtils.registerProviders(List.of(A), candidates(first));
+            int count = Security.getProviders().length;
+
+            KeyringUtils.registerProviders(List.of(A), candidates(provider(A)));
+
+            assertEquals(count, Security.getProviders().length);
+            assertSame(first, Security.getProvider(A));
+        }
+
+        @Test
+        void givenFailingProvider_thenFollowingProvidersAreStillRegistered() {
+            KeyringUtils.registerProviders(List.of(A), candidates(
+                new ServiceConfigurationError("cannot be instantiated"),
+                new IllegalStateException("broken"),
+                provider(A)));
+
+            assertNotNull(Security.getProvider(A));
+            assertThat(err.toString(), containsString("cannot be instantiated"));
+            assertThat(err.toString(), containsString("broken"));
+        }
+
+        @Test
+        void givenIteratorFailingForever_thenGivesUp() {
+            Iterator<Provider> broken = new Iterator<>() {
+                @Override
+                public boolean hasNext() {
+                    throw new ServiceConfigurationError("always");
+                }
+
+                @Override
+                public Provider next() {
+                    throw new NoSuchElementException();
+                }
+            };
+
+            assertDoesNotThrow(() -> KeyringUtils.registerProviders(List.of(A), broken));
+            assertNull(Security.getProvider(A));
+        }
+
+        @Test
+        void givenProviderNotAvailable_thenWarnsAndRegistersTheOthers() {
+            KeyringUtils.registerProviders(List.of(A, B), candidates(provider(B)));
+
+            assertNotNull(Security.getProvider(B));
+            assertNull(Security.getProvider(A));
+            assertThat(err.toString(), containsString("WARN"));
+            assertThat(err.toString(), containsString(A));
+            assertThat(err.toString(), not(containsString("[" + A + ", " + B + "]")));
+        }
+
+        @Test
+        void givenAllProvidersRegistered_thenDoesNotLoadCandidates() {
+            KeyringUtils.registerProviders(List.of("SUN"), candidates(new IllegalStateException("must not be touched")));
+
+            assertEquals("", err.toString());
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "JCERACFKS, true",
+            "JCECCARACFKS, true",
+            "JCEHYBRIDRACFKS, true",
+            "jcehybridracfks, true",
+            "JCECCAKS, true",
+            "PKCS12, false",
+            "JKS, false",
+            "JCEKS, false"
+        })
+        void givenStoreType_thenDecidesWhetherIbmProvidersAreNeeded(String type, boolean expected) {
+            assertEquals(expected, KeyringUtils.isIbmProviderStoreType(type));
+        }
+
+        @Test
+        void givenNullStoreType_thenIbmProvidersAreNotNeeded() {
+            assertFalse(KeyringUtils.isIbmProviderStoreType(null));
+        }
     }
 }

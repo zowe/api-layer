@@ -296,3 +296,8 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
 > making the safkeyring URL protocol handler classes accessible. The tool also sets
 > `java.protocol.handler.pkgs` internally to register the handler packages with
 > the `URL` class. Both mechanisms work together to enable `safkeyring://` URLs.
+
+> **Note:** For hybrid keyrings (`JCEHYBRIDRACFKS`) the module providing the `IBMJCEHYBRID` provider
+> must be resolved as well. List the available modules with `java --list-modules | grep ibm.crypto`
+> and add it to `--add-modules`. If a provider listed in `jvm.security.override.properties`
+> is missing, the tool prints a `WARN` naming it.

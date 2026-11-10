@@ -20,8 +20,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.Provider;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -61,18 +63,6 @@ public final class KeyringUtils {
     }
 
     /**
-     * Normalizes a keyring URI to the canonical {@code safkeyring://userId/keyRing} format.
-     *
-     * @param input raw keyring URI
-     * @return normalized URI, or the original input if not a keyring
-     * @deprecated does not select the protocol for the store type, use {@link #formatKeyringUrl(String, String)}
-     */
-    @Deprecated(forRemoval = true)
-    public static String formatKeyringUrl(String input) {
-        return formatKeyringUrl(input, null);
-    }
-
-    /**
      * Normalizes a keyring URI and selects the protocol for the configured store type.
      * Explicit provider-specific protocols are preserved.
      *
@@ -96,20 +86,6 @@ public final class KeyringUtils {
             return protocol + "://" + matcher.group(2) + "/" + matcher.group(3);
         }
         return input;
-    }
-
-    /**
-     * Converts a keyring URI string to a {@link URL} suitable for opening as a stream.
-     *
-     * @param uri the keyring URI
-     * @return URL object
-     * @throws MalformedURLException if the URI is invalid
-     * @throws StoresNotInitializeException if the URI does not match keyring format
-     * @deprecated does not select the protocol for the store type, use {@link #keyRingUrl(String, String)}
-     */
-    @Deprecated(forRemoval = true)
-    public static URL keyRingUrl(String uri) throws MalformedURLException {
-        return keyRingUrl(uri, null);
     }
 
     /**
@@ -146,36 +122,84 @@ public final class KeyringUtils {
      * @return loaded KeyStore instance
      */
     public static KeyStore readKeyStore(InputStream is, char[] pass, String type) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        ensureSecurityProviders();
+        if (isIbmProviderStoreType(type)) {
+            ensureSecurityProviders();
+        }
         KeyStore keyStore = KeyStore.getInstance(type);
         keyStore.load(is, pass);
         return keyStore;
     }
 
     /**
+     * @param type keystore type
+     * @return {@code true} for the IBM hardware/RACF keystore types, which need the IBM JCE providers
+     */
+    static boolean isIbmProviderStoreType(String type) {
+        if (type == null) return false;
+        String upper = type.toUpperCase(Locale.ROOT);
+        return upper.endsWith("RACFKS") || "JCECCAKS".equals(upper);
+    }
+
+    /**
      * Registers the security providers listed in {@code jvm.security.override.properties}, the same file
      * the services pass via {@code -Djava.security.properties}. It is needed when the JVM was started
      * without that override (e.g. the certificate analyser), otherwise keystore types such as
-     * {@code JCEHYBRIDRACFKS} are not found. Providers that are already registered or not available
-     * in this JVM are skipped. Safe to call repeatedly.
+     * {@code JCEHYBRIDRACFKS} are not found. Providers that are already registered are kept, providers
+     * not available in this JVM are reported with a warning. Safe to call repeatedly.
      */
-    public static synchronized void ensureSecurityProviders() {
-        List<String> names = configuredProviderNames();
+    public static void ensureSecurityProviders() {
+        registerProviders(configuredProviderNames(), ServiceLoader.load(Provider.class).iterator());
+    }
+
+    /**
+     * Registers the missing providers in the order given by {@code names}. A provider that cannot be
+     * loaded does not prevent the following ones from being loaded.
+     *
+     * @param names      provider names in the requested order
+     * @param candidates providers available in this JVM
+     */
+    static synchronized void registerProviders(List<String> names, Iterator<Provider> candidates) {
         if (names.stream().allMatch(n -> Security.getProvider(n) != null)) return;
+
         Map<String, Provider> available = new HashMap<>();
-        try {
-            for (Provider provider : ServiceLoader.load(Provider.class)) {
+        while (hasNext(candidates)) {
+            try {
+                Provider provider = candidates.next();
                 available.putIfAbsent(provider.getName(), provider);
+            } catch (ServiceConfigurationError | RuntimeException e) {
+                // ServiceLoader continues with the next provider after a failure
+                System.err.println("WARN: Unable to load a security provider: " + e.getMessage());
             }
-        } catch (ServiceConfigurationError | RuntimeException e) {
-            System.err.println("WARN: Unable to load security providers: " + e.getMessage());
         }
-        for (int i = 0; i < names.size(); i++) {
-            String name = names.get(i);
-            Provider provider = available.get(name);
-            if (provider != null && Security.getProvider(name) == null) {
-                Security.insertProviderAt(provider, i + 1);
+
+        List<String> missing = new ArrayList<>();
+        int position = 1;
+        for (String name : names) {
+            if (Security.getProvider(name) != null) {
+                position++;
+                continue;
             }
+            Provider provider = available.get(name);
+            if (provider == null) {
+                missing.add(name);
+            } else {
+                Security.insertProviderAt(provider, position++);
+            }
+        }
+        if (!missing.isEmpty()) {
+            System.err.println("WARN: Security providers " + missing + " listed in " + SECURITY_OVERRIDE_RESOURCE
+                + " are not available in this JVM. Make sure the module providing them is resolved"
+                + " (--add-modules, see: java --list-modules | grep ibm.crypto), otherwise keystore types"
+                + " like JCEHYBRIDRACFKS will not be found.");
+        }
+    }
+
+    private static boolean hasNext(Iterator<Provider> candidates) {
+        try {
+            return candidates.hasNext();
+        } catch (ServiceConfigurationError | RuntimeException e) {
+            System.err.println("WARN: Unable to look up security providers: " + e.getMessage());
+            return false;
         }
     }
 
