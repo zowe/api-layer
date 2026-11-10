@@ -32,6 +32,7 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
     private final PassTicketService passTickets;
     private final CloseableHttpClient httpClientWithoutCert;
     private final CloseableHttpClient httpClient;
+    private final boolean ownsClients;
 
     public ZaasClientImpl(ConfigProperties configProperties) throws ZaasConfigurationException {
         if (!configProperties.isHttpOnly() && (configProperties.getKeyStorePath() == null)) {
@@ -46,10 +47,56 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
             httpClientWithoutCert = new ZaasHttpsClientProvider(configProperties.withoutKeyStore()).getHttpClient();
         }
 
-        String baseUrl = String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
-            configProperties.getApimlBaseUrl());
+        String baseUrl = getBaseUrl(configProperties);
         tokens = new ZaasJwtService(httpClientWithoutCert, baseUrl, configProperties);
         passTickets = new PassTicketServiceImpl(httpClient, baseUrl, configProperties);
+        ownsClients = true;
+    }
+
+    /**
+     * Creates a client that sends every ZAAS request through the supplied HTTP client.
+     * <p>
+     * The supplied client is expected to carry its own TLS configuration, therefore no key store is required
+     * and no client is built from {@code configProperties}. The URLs are still built from the host, port, base URL
+     * and the {@code httpOnly} flag of {@code configProperties}.
+     * <p>
+     * The caller owns the supplied client: {@link #close()} does not close it.
+     *
+     * @param configProperties ZAAS location and token settings
+     * @param httpClient       client used for all operations (login, query, passTicket, logout, validateOidc)
+     */
+    public ZaasClientImpl(ConfigProperties configProperties, CloseableHttpClient httpClient) {
+        this(configProperties, httpClient, httpClient);
+    }
+
+    /**
+     * Creates a client that sends ZAAS requests through the supplied HTTP clients.
+     * <p>
+     * {@code httpClient} is used for pass ticket requests. {@code httpClientWithoutCert} is used for login, query,
+     * logout and OIDC validation, which the default constructor sends without a client certificate so that ZAAS
+     * authenticates the caller by credentials or token and not by certificate.
+     * <p>
+     * The supplied clients carry their own TLS configuration, therefore no key store is required. The URLs are still
+     * built from the host, port, base URL and the {@code httpOnly} flag of {@code configProperties}.
+     * <p>
+     * The caller owns the supplied clients: {@link #close()} does not close them.
+     *
+     * @param configProperties      ZAAS location and token settings
+     * @param httpClient            client used for pass ticket requests
+     * @param httpClientWithoutCert client used for login, query, logout and OIDC validation
+     */
+    public ZaasClientImpl(ConfigProperties configProperties, CloseableHttpClient httpClient, CloseableHttpClient httpClientWithoutCert) {
+        this.httpClient = Objects.requireNonNull(httpClient, "httpClient must not be null");
+        this.httpClientWithoutCert = Objects.requireNonNull(httpClientWithoutCert, "httpClientWithoutCert must not be null");
+        String baseUrl = getBaseUrl(configProperties);
+        tokens = new ZaasJwtService(httpClientWithoutCert, baseUrl, configProperties);
+        passTickets = new PassTicketServiceImpl(httpClient, baseUrl, configProperties);
+        ownsClients = false;
+    }
+
+    private String getBaseUrl(ConfigProperties configProperties) {
+        return String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
+            configProperties.getApimlBaseUrl());
     }
 
     private Object getScheme(boolean httpOnly) {
@@ -65,6 +112,7 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
         this.passTickets = passTickets;
         this.httpClientWithoutCert = null;
         this.httpClient = null;
+        this.ownsClients = false;
     }
 
     @Override
@@ -148,8 +196,10 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
 
     @Override
     public void close() throws IOException {
-        httpClient.close();
-        httpClientWithoutCert.close();
+        if (ownsClients) {
+            httpClient.close();
+            httpClientWithoutCert.close();
+        }
     }
 
     @Override
