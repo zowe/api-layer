@@ -36,7 +36,6 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.oidc.ZaasOidcValidationResult;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
-import org.zowe.apiml.zaasclient.service.ZaasToken;
 import org.zowe.apiml.zaasclient.util.SimpleHttpResponse;
 
 import java.io.IOException;
@@ -314,85 +313,6 @@ class ZaasClientTest {
 
         private SimpleHttpResponse passTicketResponse() {
             return new SimpleHttpResponse(200, "{\"ticket\":\"TICKET\"}");
-        }
-
-        @Nested
-        class SingleInjectedClient {
-
-            private ZaasClientImpl underTest;
-
-            @BeforeEach
-            void setUp() {
-                underTest = new ZaasClientImpl(config, certClient);
-            }
-
-            @Test
-            void givenInjectedClient_whenLogin_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
-                respond(certClient, loginResponse());
-
-                assertEquals("jwt", underTest.login("user", "password"));
-
-                assertEquals(BASE + "/login", executedRequest(certClient).getUri().toString());
-            }
-
-            @Test
-            void givenInjectedClient_whenQuery_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
-                respond(certClient, queryResponse());
-
-                ZaasToken token = underTest.query("jwt");
-
-                assertEquals("user", token.getUserId());
-                assertEquals(BASE + "/query", executedRequest(certClient).getUri().toString());
-            }
-
-            @Test
-            void givenInjectedClient_whenPassTicket_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
-                respond(certClient, passTicketResponse());
-
-                assertEquals("TICKET", underTest.passTicket("jwt", "APPL"));
-
-                assertEquals(BASE + "/ticket", executedRequest(certClient).getUri().toString());
-            }
-
-            @Test
-            void givenInjectedClient_whenLogout_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
-                respond(certClient, new SimpleHttpResponse(204));
-
-                underTest.logout("jwt");
-
-                assertEquals(BASE + "/logout", executedRequest(certClient).getUri().toString());
-            }
-
-            @Test
-            void givenInjectedClient_whenValidateOidc_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
-                respond(certClient, new SimpleHttpResponse(204));
-
-                ZaasOidcValidationResult result = underTest.validateOidc("oidc");
-
-                assertTrue(result.isValid());
-                assertEquals(BASE + "/oidc-token/validate", executedRequest(certClient).getUri().toString());
-            }
-
-            @Test
-            void givenInjectedClient_whenClose_thenInjectedClientIsNotClosed() throws IOException {
-                underTest.close();
-
-                verify(certClient, never()).close();
-            }
-
-            @Test
-            void givenInjectedClientAndHttpsWithoutKeyStore_whenCreated_thenNoConfigurationExceptionIsThrown() {
-                config.setKeyStorePath(null);
-
-                assertNotNull(new ZaasClientImpl(config, certClient));
-            }
-
-            @Test
-            void givenNullClient_whenCreated_thenNullPointerExceptionIsThrown() {
-                var exception = assertThrows(NullPointerException.class, () -> new ZaasClientImpl(config, null));
-
-                assertEquals("httpClient must not be null", exception.getMessage());
-            }
         }
 
         @Nested

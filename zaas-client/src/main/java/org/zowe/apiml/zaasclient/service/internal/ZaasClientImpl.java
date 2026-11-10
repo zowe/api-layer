@@ -54,36 +54,16 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
     }
 
     /**
-     * Creates a client that sends every ZAAS request through the supplied HTTP client.
-     * <p>
-     * The supplied client is expected to carry its own TLS configuration, therefore no key store is required
-     * and no client is built from {@code configProperties}. The URLs are still built from the host, port, base URL
-     * and the {@code httpOnly} flag of {@code configProperties}.
-     * <p>
-     * Cookie management remains as configured on the supplied client and is the caller's responsibility.
-     * The built-in clients disable automatic cookie management. With automatic cookie management enabled,
-     * a cached ZAAS authentication cookie can take precedence over an explicitly supplied bearer token during
-     * logout, causing a different session to be invalidated. For stateless behavior, build the supplied client
-     * with {@code HttpClientBuilder.disableCookieManagement()}.
-     * <p>
-     * The caller owns the supplied client: {@link #close()} does not close it.
-     *
-     * @param configProperties ZAAS location and token settings
-     * @param httpClient       client used for all operations (login, query, passTicket, logout, validateOidc)
-     */
-    public ZaasClientImpl(ConfigProperties configProperties, CloseableHttpClient httpClient) {
-        this(configProperties, httpClient, httpClient);
-    }
-
-    /**
      * Creates a client that sends ZAAS requests through the supplied HTTP clients.
      * <p>
      * {@code httpClient} is used for pass ticket requests. {@code httpClientWithoutCert} is used for login, query,
      * logout and OIDC validation, which the default constructor sends without a client certificate so that ZAAS
      * authenticates the caller by credentials or token and not by certificate.
      * <p>
-     * The supplied clients carry their own TLS configuration, therefore no key store is required. The URLs are still
-     * built from the host, port, base URL and the {@code httpOnly} flag of {@code configProperties}.
+     * The caller must configure {@code httpClient} with a client certificate for HTTPS pass ticket requests
+     * and configure {@code httpClientWithoutCert} without a client certificate. The supplied clients carry their own
+     * TLS configuration, therefore no key store is required in {@code configProperties}. The URLs are still built
+     * from the host, port, base URL and the {@code httpOnly} flag of {@code configProperties}.
      * <p>
      * Cookie management remains as configured on each supplied client and is the caller's responsibility.
      * The built-in clients disable automatic cookie management. With automatic cookie management enabled on
@@ -94,8 +74,8 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
      * The caller owns the supplied clients: {@link #close()} does not close them.
      *
      * @param configProperties      ZAAS location and token settings
-     * @param httpClient            client used for pass ticket requests
-     * @param httpClientWithoutCert client used for login, query, logout and OIDC validation
+     * @param httpClient            client configured with a client certificate for HTTPS pass ticket requests
+     * @param httpClientWithoutCert client without a client certificate, used for login, query, logout and OIDC validation
      */
     public ZaasClientImpl(ConfigProperties configProperties, CloseableHttpClient httpClient, CloseableHttpClient httpClientWithoutCert) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient must not be null");
