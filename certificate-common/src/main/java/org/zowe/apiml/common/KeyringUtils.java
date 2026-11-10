@@ -22,8 +22,8 @@ import java.security.Provider;
 import java.security.Security;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceConfigurationError;
@@ -65,12 +65,35 @@ public final class KeyringUtils {
      *
      * @param input raw keyring URI
      * @return normalized URI, or the original input if not a keyring
+     * @deprecated does not select the protocol for the store type, use {@link #formatKeyringUrl(String, String)}
      */
+    @Deprecated(forRemoval = true)
     public static String formatKeyringUrl(String input) {
+        return formatKeyringUrl(input, null);
+    }
+
+    /**
+     * Normalizes a keyring URI and selects the protocol for the configured store type.
+     * Explicit provider-specific protocols are preserved.
+     *
+     * @param input raw keyring URI
+     * @param type keystore or truststore type
+     * @return normalized URI, or the original input if not a keyring
+     */
+    public static String formatKeyringUrl(String input, String type) {
         if (input == null) return null;
         Matcher matcher = KEYRING_PATTERN.matcher(input);
         if (matcher.matches()) {
-            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
+            String protocol = matcher.group(1);
+            if ("safkeyring".equals(protocol) && type != null) {
+                protocol = switch (type.toUpperCase(Locale.ROOT)) {
+                    case "JCERACFKS" -> "safkeyringjce";
+                    case "JCECCARACFKS" -> "safkeyringjcecca";
+                    case "JCEHYBRIDRACFKS" -> "safkeyringjcehybrid";
+                    default -> protocol;
+                };
+            }
+            return protocol + "://" + matcher.group(2) + "/" + matcher.group(3);
         }
         return input;
     }
@@ -82,13 +105,28 @@ public final class KeyringUtils {
      * @return URL object
      * @throws MalformedURLException if the URI is invalid
      * @throws StoresNotInitializeException if the URI does not match keyring format
+     * @deprecated does not select the protocol for the store type, use {@link #keyRingUrl(String, String)}
      */
+    @Deprecated(forRemoval = true)
     public static URL keyRingUrl(String uri) throws MalformedURLException {
+        return keyRingUrl(uri, null);
+    }
+
+    /**
+     * Converts a keyring URI to a URL using the configured store type's protocol.
+     *
+     * @param uri the keyring URI
+     * @param type keystore or truststore type
+     * @return URL object
+     * @throws MalformedURLException if the protocol handler is unavailable
+     * @throws StoresNotInitializeException if the URI does not match keyring format
+     */
+    public static URL keyRingUrl(String uri, String type) throws MalformedURLException {
         if (!isKeyring(uri)) {
             throw new StoresNotInitializeException("Incorrect key ring format: " + uri
                 + ". Make sure you use format safkeyring://userId/keyRing");
         }
-        String formatted = formatKeyringUrl(uri);
+        String formatted = formatKeyringUrl(uri, type);
         try {
             return new URL(formatted);
         } catch (MalformedURLException e) {
@@ -125,16 +163,12 @@ public final class KeyringUtils {
         List<String> names = configuredProviderNames();
         if (names.stream().allMatch(n -> Security.getProvider(n) != null)) return;
         Map<String, Provider> available = new HashMap<>();
-        Iterator<Provider> it = ServiceLoader.load(Provider.class).iterator();
-        // a provider that fails to instantiate must not hide the following ones
-        while (true) {
-            try {
-                if (!it.hasNext()) break;
-                Provider provider = it.next();
+        try {
+            for (Provider provider : ServiceLoader.load(Provider.class)) {
                 available.putIfAbsent(provider.getName(), provider);
-            } catch (ServiceConfigurationError | RuntimeException e) {
-                System.err.println("WARN: Unable to load security provider: " + e.getMessage());
             }
+        } catch (ServiceConfigurationError | RuntimeException e) {
+            System.err.println("WARN: Unable to load security providers: " + e.getMessage());
         }
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);

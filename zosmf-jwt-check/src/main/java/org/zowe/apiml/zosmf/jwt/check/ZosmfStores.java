@@ -64,7 +64,7 @@ public class ZosmfStores {
             return;
         }
         if (KeyringUtils.isKeyring(conf.getTrustStore())) {
-            URL url = KeyringUtils.keyRingUrl(conf.getTrustStore());
+            URL url = KeyringUtils.keyRingUrl(conf.getTrustStore(), conf.getTrustStoreType());
             try (InputStream trustStoreIStream = url.openStream()) {
                 this.trustStore = KeyringUtils.readKeyStore(trustStoreIStream, conf.getTrustStorePassword().toCharArray(), conf.getTrustStoreType());
             }
@@ -80,7 +80,7 @@ public class ZosmfStores {
             return;
         }
         if (KeyringUtils.isKeyring(conf.getKeyStore())) {
-            try (InputStream keyringIStream = KeyringUtils.keyRingUrl(conf.getKeyStore()).openStream()) {
+            try (InputStream keyringIStream = KeyringUtils.keyRingUrl(conf.getKeyStore(), conf.getKeyStoreType()).openStream()) {
                 this.keyStore = KeyringUtils.readKeyStore(keyringIStream, conf.getKeyStorePassword().toCharArray(), conf.getKeyStoreType());
                 this.trustStore = this.keyStore;
             } catch (Exception e) {
