@@ -18,6 +18,16 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.security.Provider;
+import java.security.Security;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +37,10 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("squid:S106")
 public final class KeyringUtils {
+
+    private static final String SECURITY_OVERRIDE_RESOURCE = "jvm.security.override.properties";
+    private static final String PROVIDER_PREFIX = "security.provider.";
+    private static final Pattern PROVIDER_KEY = Pattern.compile("security\\.provider\\.\\d+");
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
@@ -51,12 +65,35 @@ public final class KeyringUtils {
      *
      * @param input raw keyring URI
      * @return normalized URI, or the original input if not a keyring
+     * @deprecated does not select the protocol for the store type, use {@link #formatKeyringUrl(String, String)}
      */
+    @Deprecated(forRemoval = true)
     public static String formatKeyringUrl(String input) {
+        return formatKeyringUrl(input, null);
+    }
+
+    /**
+     * Normalizes a keyring URI and selects the protocol for the configured store type.
+     * Explicit provider-specific protocols are preserved.
+     *
+     * @param input raw keyring URI
+     * @param type keystore or truststore type
+     * @return normalized URI, or the original input if not a keyring
+     */
+    public static String formatKeyringUrl(String input, String type) {
         if (input == null) return null;
         Matcher matcher = KEYRING_PATTERN.matcher(input);
         if (matcher.matches()) {
-            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
+            String protocol = matcher.group(1);
+            if ("safkeyring".equals(protocol) && type != null) {
+                protocol = switch (type.toUpperCase(Locale.ROOT)) {
+                    case "JCERACFKS" -> "safkeyringjce";
+                    case "JCECCARACFKS" -> "safkeyringjcecca";
+                    case "JCEHYBRIDRACFKS" -> "safkeyringjcehybrid";
+                    default -> protocol;
+                };
+            }
+            return protocol + "://" + matcher.group(2) + "/" + matcher.group(3);
         }
         return input;
     }
@@ -68,13 +105,28 @@ public final class KeyringUtils {
      * @return URL object
      * @throws MalformedURLException if the URI is invalid
      * @throws StoresNotInitializeException if the URI does not match keyring format
+     * @deprecated does not select the protocol for the store type, use {@link #keyRingUrl(String, String)}
      */
+    @Deprecated(forRemoval = true)
     public static URL keyRingUrl(String uri) throws MalformedURLException {
+        return keyRingUrl(uri, null);
+    }
+
+    /**
+     * Converts a keyring URI to a URL using the configured store type's protocol.
+     *
+     * @param uri the keyring URI
+     * @param type keystore or truststore type
+     * @return URL object
+     * @throws MalformedURLException if the protocol handler is unavailable
+     * @throws StoresNotInitializeException if the URI does not match keyring format
+     */
+    public static URL keyRingUrl(String uri, String type) throws MalformedURLException {
         if (!isKeyring(uri)) {
             throw new StoresNotInitializeException("Incorrect key ring format: " + uri
                 + ". Make sure you use format safkeyring://userId/keyRing");
         }
-        String formatted = formatKeyringUrl(uri);
+        String formatted = formatKeyringUrl(uri, type);
         try {
             return new URL(formatted);
         } catch (MalformedURLException e) {
@@ -94,9 +146,56 @@ public final class KeyringUtils {
      * @return loaded KeyStore instance
      */
     public static KeyStore readKeyStore(InputStream is, char[] pass, String type) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
+        ensureSecurityProviders();
         KeyStore keyStore = KeyStore.getInstance(type);
         keyStore.load(is, pass);
         return keyStore;
+    }
+
+    /**
+     * Registers the security providers listed in {@code jvm.security.override.properties}, the same file
+     * the services pass via {@code -Djava.security.properties}. It is needed when the JVM was started
+     * without that override (e.g. the certificate analyser), otherwise keystore types such as
+     * {@code JCEHYBRIDRACFKS} are not found. Providers that are already registered or not available
+     * in this JVM are skipped. Safe to call repeatedly.
+     */
+    public static synchronized void ensureSecurityProviders() {
+        List<String> names = configuredProviderNames();
+        if (names.stream().allMatch(n -> Security.getProvider(n) != null)) return;
+        Map<String, Provider> available = new HashMap<>();
+        try {
+            for (Provider provider : ServiceLoader.load(Provider.class)) {
+                available.putIfAbsent(provider.getName(), provider);
+            }
+        } catch (ServiceConfigurationError | RuntimeException e) {
+            System.err.println("WARN: Unable to load security providers: " + e.getMessage());
+        }
+        for (int i = 0; i < names.size(); i++) {
+            String name = names.get(i);
+            Provider provider = available.get(name);
+            if (provider != null && Security.getProvider(name) == null) {
+                Security.insertProviderAt(provider, i + 1);
+            }
+        }
+    }
+
+    /**
+     * @return provider names from {@code security.provider.N} entries, ordered by N
+     */
+    static List<String> configuredProviderNames() {
+        Properties props = new Properties();
+        try (InputStream is = KeyringUtils.class.getResourceAsStream("/" + SECURITY_OVERRIDE_RESOURCE)) {
+            if (is == null) return List.of();
+            props.load(is);
+        } catch (IOException e) {
+            System.err.println("WARN: Unable to read " + SECURITY_OVERRIDE_RESOURCE + ": " + e.getMessage());
+            return List.of();
+        }
+        return props.stringPropertyNames().stream()
+            .filter(k -> PROVIDER_KEY.matcher(k).matches())
+            .sorted(Comparator.comparingInt(k -> Integer.parseInt(k.substring(PROVIDER_PREFIX.length()))))
+            .map(k -> props.getProperty(k).trim())
+            .toList();
     }
 
     /**
