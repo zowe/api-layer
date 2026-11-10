@@ -60,6 +60,12 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
      * and no client is built from {@code configProperties}. The URLs are still built from the host, port, base URL
      * and the {@code httpOnly} flag of {@code configProperties}.
      * <p>
+     * Cookie management remains as configured on the supplied client and is the caller's responsibility.
+     * The built-in clients disable automatic cookie management. With automatic cookie management enabled,
+     * a cached ZAAS authentication cookie can take precedence over an explicitly supplied bearer token during
+     * logout, causing a different session to be invalidated. For stateless behavior, build the supplied client
+     * with {@code HttpClientBuilder.disableCookieManagement()}.
+     * <p>
      * The caller owns the supplied client: {@link #close()} does not close it.
      *
      * @param configProperties ZAAS location and token settings
@@ -78,6 +84,12 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
      * <p>
      * The supplied clients carry their own TLS configuration, therefore no key store is required. The URLs are still
      * built from the host, port, base URL and the {@code httpOnly} flag of {@code configProperties}.
+     * <p>
+     * Cookie management remains as configured on each supplied client and is the caller's responsibility.
+     * The built-in clients disable automatic cookie management. With automatic cookie management enabled on
+     * {@code httpClientWithoutCert}, a cached ZAAS authentication cookie can take precedence over an explicitly
+     * supplied bearer token during logout, causing a different session to be invalidated. For stateless behavior,
+     * build both supplied clients with {@code HttpClientBuilder.disableCookieManagement()}.
      * <p>
      * The caller owns the supplied clients: {@link #close()} does not close them.
      *

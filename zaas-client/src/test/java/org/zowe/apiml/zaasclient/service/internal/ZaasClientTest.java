@@ -10,6 +10,11 @@
 
 package org.zowe.apiml.zaasclient.service.internal;
 
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.core5.http.ClassicHttpRequest;
+import org.apache.hc.core5.http.HttpHeaders;
+import org.apache.hc.core5.http.io.HttpClientResponseHandler;
+import org.apache.hc.core5.http.message.BasicHeader;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -18,6 +23,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockserver.integration.ClientAndServer;
@@ -29,9 +36,12 @@ import org.zowe.apiml.zaasclient.exception.ZaasClientException;
 import org.zowe.apiml.zaasclient.exception.ZaasConfigurationException;
 import org.zowe.apiml.zaasclient.oidc.ZaasOidcValidationResult;
 import org.zowe.apiml.zaasclient.service.ZaasClient;
+import org.zowe.apiml.zaasclient.service.ZaasToken;
+import org.zowe.apiml.zaasclient.util.SimpleHttpResponse;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -260,6 +270,262 @@ class ZaasClientTest {
         assertEquals(TOKEN_NOT_PROVIDED, exception.getErrorCode());
         exception = assertThrowsExactly(ZaasClientException.class, () -> underTest.validateOidc(""));
         assertEquals(TOKEN_NOT_PROVIDED, exception.getErrorCode());
+    }
+
+    @Nested
+    class Constructors {
+
+        private static final String BASE = "https://apiml.host:10010/gateway/api/v1/auth";
+
+        private ConfigProperties config;
+        private CloseableHttpClient certClient;
+        private CloseableHttpClient noCertClient;
+
+        @BeforeEach
+        void setUp() {
+            config = new ConfigProperties();
+            config.setHttpOnly(false);
+            config.setApimlHost("apiml.host");
+            config.setApimlPort("10010");
+            config.setApimlBaseUrl("/gateway/api/v1/auth");
+            certClient = mock(CloseableHttpClient.class);
+            noCertClient = mock(CloseableHttpClient.class);
+        }
+
+        @SuppressWarnings("unchecked")
+        private ClassicHttpRequest executedRequest(CloseableHttpClient client) throws IOException {
+            ArgumentCaptor<ClassicHttpRequest> captor = ArgumentCaptor.forClass(ClassicHttpRequest.class);
+            verify(client).execute(captor.capture(), any(HttpClientResponseHandler.class));
+            return captor.getValue();
+        }
+
+        @SuppressWarnings("unchecked")
+        private void respond(CloseableHttpClient client, SimpleHttpResponse response) throws IOException {
+            doReturn(response).when(client).execute(any(ClassicHttpRequest.class), any(HttpClientResponseHandler.class));
+        }
+
+        private SimpleHttpResponse loginResponse() {
+            return new SimpleHttpResponse(204, Map.of("Set-Cookie", List.of(new BasicHeader("Set-Cookie", "apimlAuthenticationToken=jwt"))));
+        }
+
+        private SimpleHttpResponse queryResponse() {
+            return new SimpleHttpResponse(200, "{\"userId\":\"user\",\"domain\":\"d\",\"expired\":false}");
+        }
+
+        private SimpleHttpResponse passTicketResponse() {
+            return new SimpleHttpResponse(200, "{\"ticket\":\"TICKET\"}");
+        }
+
+        @Nested
+        class SingleInjectedClient {
+
+            private ZaasClientImpl underTest;
+
+            @BeforeEach
+            void setUp() {
+                underTest = new ZaasClientImpl(config, certClient);
+            }
+
+            @Test
+            void givenInjectedClient_whenLogin_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
+                respond(certClient, loginResponse());
+
+                assertEquals("jwt", underTest.login("user", "password"));
+
+                assertEquals(BASE + "/login", executedRequest(certClient).getUri().toString());
+            }
+
+            @Test
+            void givenInjectedClient_whenQuery_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
+                respond(certClient, queryResponse());
+
+                ZaasToken token = underTest.query("jwt");
+
+                assertEquals("user", token.getUserId());
+                assertEquals(BASE + "/query", executedRequest(certClient).getUri().toString());
+            }
+
+            @Test
+            void givenInjectedClient_whenPassTicket_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
+                respond(certClient, passTicketResponse());
+
+                assertEquals("TICKET", underTest.passTicket("jwt", "APPL"));
+
+                assertEquals(BASE + "/ticket", executedRequest(certClient).getUri().toString());
+            }
+
+            @Test
+            void givenInjectedClient_whenLogout_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
+                respond(certClient, new SimpleHttpResponse(204));
+
+                underTest.logout("jwt");
+
+                assertEquals(BASE + "/logout", executedRequest(certClient).getUri().toString());
+            }
+
+            @Test
+            void givenInjectedClient_whenValidateOidc_thenInjectedClientSendsRequestToHttpsUrl() throws Exception {
+                respond(certClient, new SimpleHttpResponse(204));
+
+                ZaasOidcValidationResult result = underTest.validateOidc("oidc");
+
+                assertTrue(result.isValid());
+                assertEquals(BASE + "/oidc-token/validate", executedRequest(certClient).getUri().toString());
+            }
+
+            @Test
+            void givenInjectedClient_whenClose_thenInjectedClientIsNotClosed() throws IOException {
+                underTest.close();
+
+                verify(certClient, never()).close();
+            }
+
+            @Test
+            void givenInjectedClientAndHttpsWithoutKeyStore_whenCreated_thenNoConfigurationExceptionIsThrown() {
+                config.setKeyStorePath(null);
+
+                assertNotNull(new ZaasClientImpl(config, certClient));
+            }
+
+            @Test
+            void givenNullClient_whenCreated_thenNullPointerExceptionIsThrown() {
+                var exception = assertThrows(NullPointerException.class, () -> new ZaasClientImpl(config, null));
+
+                assertEquals("httpClient must not be null", exception.getMessage());
+            }
+        }
+
+        @Nested
+        class TwoInjectedClients {
+
+            private ZaasClientImpl underTest;
+
+            @BeforeEach
+            void setUp() {
+                underTest = new ZaasClientImpl(config, certClient, noCertClient);
+            }
+
+            @Test
+            void givenTwoClients_whenPassTicket_thenOnlyClientWithCertificateIsUsed() throws Exception {
+                config.setTokenPrefix("customToken");
+                respond(certClient, passTicketResponse());
+
+                assertEquals("TICKET", underTest.passTicket("jwt", "APPL"));
+
+                var request = executedRequest(certClient);
+                assertEquals(BASE + "/ticket", request.getUri().toString());
+                assertEquals("customToken=jwt", request.getFirstHeader(HttpHeaders.COOKIE).getValue());
+                verifyNoInteractions(noCertClient);
+            }
+
+            @Test
+            void givenTwoClients_whenLogin_thenOnlyClientWithoutCertificateIsUsed() throws Exception {
+                respond(noCertClient, loginResponse());
+
+                assertEquals("jwt", underTest.login("user", "password"));
+
+                assertEquals(BASE + "/login", executedRequest(noCertClient).getUri().toString());
+                verifyNoInteractions(certClient);
+            }
+
+            @ParameterizedTest
+            @ValueSource(booleans = {false, true})
+            void givenTwoClientsAndCustomLocation_whenQuery_thenOnlyClientWithoutCertificateIsUsed(boolean httpOnly) throws Exception {
+                config.setHttpOnly(httpOnly);
+                config.setApimlBaseUrl("custom/auth");
+                config.setTokenPrefix("customToken");
+                underTest = new ZaasClientImpl(config, certClient, noCertClient);
+                respond(noCertClient, queryResponse());
+
+                assertEquals("user", underTest.query("jwt").getUserId());
+
+                var request = executedRequest(noCertClient);
+                String scheme = httpOnly ? "http" : "https";
+                assertEquals(scheme + "://apiml.host:10010/custom/auth/query", request.getUri().toString());
+                assertEquals("customToken=jwt", request.getFirstHeader(HttpHeaders.COOKIE).getValue());
+                verifyNoInteractions(certClient);
+            }
+
+            @Test
+            void givenTwoClients_whenLogout_thenOnlyClientWithoutCertificateIsUsed() throws Exception {
+                respond(noCertClient, new SimpleHttpResponse(204));
+
+                underTest.logout("Bearer jwt");
+
+                var request = executedRequest(noCertClient);
+                assertEquals(BASE + "/logout", request.getUri().toString());
+                assertEquals("Bearer jwt", request.getFirstHeader(HttpHeaders.AUTHORIZATION).getValue());
+                verifyNoInteractions(certClient);
+            }
+
+            @Test
+            void givenTwoClients_whenValidateOidc_thenOnlyClientWithoutCertificateIsUsed() throws Exception {
+                respond(noCertClient, new SimpleHttpResponse(204));
+
+                assertTrue(underTest.validateOidc("oidc").isValid());
+
+                assertEquals(BASE + "/oidc-token/validate", executedRequest(noCertClient).getUri().toString());
+                verifyNoInteractions(certClient);
+            }
+
+            @Test
+            void givenTwoClientsAndHttpsWithoutStores_whenCreated_thenNoConfigurationExceptionIsThrown() {
+                config.setKeyStorePath(null);
+                config.setTrustStorePath(null);
+
+                assertNotNull(new ZaasClientImpl(config, certClient, noCertClient));
+                verifyNoInteractions(certClient, noCertClient);
+            }
+
+            @Test
+            void givenTwoClients_whenClose_thenNeitherClientIsClosed() throws IOException {
+                underTest.close();
+
+                verifyNoInteractions(certClient, noCertClient);
+            }
+
+            @Test
+            void givenNullClientWithCertificate_whenCreated_thenNullPointerExceptionIsThrown() {
+                var exception = assertThrows(NullPointerException.class, () -> new ZaasClientImpl(config, null, noCertClient));
+
+                assertEquals("httpClient must not be null", exception.getMessage());
+                verifyNoInteractions(noCertClient);
+            }
+
+            @Test
+            void givenNullClientWithoutCertificate_whenCreated_thenNullPointerExceptionIsThrown() {
+                var exception = assertThrows(NullPointerException.class, () -> new ZaasClientImpl(config, certClient, null));
+
+                assertEquals("httpClientWithoutCert must not be null", exception.getMessage());
+                verifyNoInteractions(certClient);
+            }
+        }
+
+        @Nested
+        class ExistingConstructor {
+
+            @Test
+            void givenHttpWithoutInjectedClients_whenClose_thenBothOwnedClientsAreClosed() throws Exception {
+                config.setHttpOnly(true);
+
+                try (var providers = mockConstruction(ZaasHttpClientProvider.class, (provider, context) ->
+                    doReturn(context.getCount() == 1 ? certClient : noCertClient).when(provider).getHttpClient())) {
+                    var underTest = new ZaasClientImpl(config);
+
+                    underTest.close();
+
+                    verify(certClient).close();
+                    verify(noCertClient).close();
+                }
+            }
+
+            @Test
+            void givenHttpsWithoutKeyStore_whenCreatedWithoutClients_thenConfigurationExceptionIsStillThrown() {
+                config.setKeyStorePath(null);
+
+                assertThrows(ZaasConfigurationException.class, () -> new ZaasClientImpl(config));
+            }
+        }
     }
 
     @Nested
