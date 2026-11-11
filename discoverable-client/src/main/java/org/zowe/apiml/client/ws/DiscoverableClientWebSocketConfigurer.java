@@ -38,6 +38,10 @@ public class DiscoverableClientWebSocketConfigurer implements WebSocketConfigure
         log.debug("Registering WebSocket handler to {}", webSocketEndpoint);
 
         registry.addHandler(new HeaderSocketServerHandler(), webSocketEndpoint);
+
+        webSocketEndpoint = "/ws/partial-echo";
+        log.debug("Registering WebSocket handler to {}", webSocketEndpoint);
+        registry.addHandler(new PartialEchoWebSocketHandler(), webSocketEndpoint).setAllowedOrigins("*");
     }
 
     // Configure buffer sizes for inbound messages

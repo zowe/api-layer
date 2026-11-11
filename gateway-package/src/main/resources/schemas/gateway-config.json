@@ -696,23 +696,104 @@
                     "properties": {
                         "maxIdleTimeout": {
                             "type": "integer",
-                            "description": "The gateway acts as a server and client. This parameters customizes the default idle timeout for its client role.",
-                            "default": 3600000
+                            "description": "WebSocket idle timeout in milliseconds for both legs. Zero disables the idle timeout.",
+                            "default": 3600000,
+                            "minimum": 0
                         },
                         "connectTimeout": {
                             "type": "integer",
-                            "description": "The gateway acts as a server and client. This parameters customizes the default connect timeout for its client role.",
-                            "default": 45000
+                            "description": "Backend WebSocket connection timeout in milliseconds.",
+                            "default": 45000,
+                            "minimum": 1
                         },
                         "asyncWriteTimeout": {
                             "type": "integer",
-                            "description": "The gateway acts as a server and client. This parameters customizes the default async write timeout for its client role.",
-                            "default": 60000
+                            "description": "WebSocket send timeout in milliseconds, applied to both legs and both forwarding modes.",
+                            "default": 60000,
+                            "minimum": 1
                         },
                         "requestBufferSize": {
                             "type": "integer",
-                            "description": "Specifies the buffer size in bytes to load request headers.",
+                            "description": "Whole-message WebSocket buffer limit: bytes for binary messages, UTF-16 characters for text. Also the inherited total-message limit in partial mode.",
                             "default": 8192
+                        },
+                        "partial": {
+                            "type": "object",
+                            "description": "Bounded WebSocket partial forwarding, enabled by default. Client-leg compression is disabled in this mode.",
+                            "properties": {
+                                "enabled": {
+                                    "type": "boolean",
+                                    "default": true,
+                                    "description": "Use partial forwarding unless the service sets apiml.websocket.partialForwarding=false. Set false to use aggregation for all services."
+                                },
+                                "binaryBufferSize": {
+                                    "type": "integer",
+                                    "default": 65536,
+                                    "description": "Partial receive staging capacity in bytes.",
+                                    "minimum": 1
+                                },
+                                "textBufferSize": {
+                                    "type": "integer",
+                                    "default": 32768,
+                                    "description": "Partial receive staging capacity in UTF-16 characters.",
+                                    "minimum": 1
+                                },
+                                "pendingBytes": {
+                                    "type": "integer",
+                                    "default": 1048576,
+                                    "description": "Maximum accounted bytes queued or in flight per direction, including payload copies and overhead.",
+                                    "minimum": 1
+                                },
+                                "pendingParts": {
+                                    "type": "integer",
+                                    "default": 64,
+                                    "description": "Maximum queued and in-flight parts per direction, including empty parts.",
+                                    "minimum": 2
+                                },
+                                "globalPendingBytes": {
+                                    "type": "integer",
+                                    "default": 67108864,
+                                    "description": "Shared queued and in-flight byte budget across partial connections.",
+                                    "minimum": 1
+                                },
+                                "maxConnections": {
+                                    "type": "integer",
+                                    "default": 256,
+                                    "description": "Maximum concurrent partial relay connections, including connections being closed.",
+                                    "minimum": 1,
+                                    "maximum": 100000
+                                },
+                                "writerThreads": {
+                                    "type": "integer",
+                                    "default": 16,
+                                    "description": "Maximum workers for blocking partial sends.",
+                                    "minimum": 1
+                                },
+                                "connectThreads": {
+                                    "type": "integer",
+                                    "default": 4,
+                                    "description": "Maximum workers establishing backend partial connections.",
+                                    "minimum": 1
+                                },
+                                "maxBinaryMessageSize": {
+                                    "type": "integer",
+                                    "default": 0,
+                                    "description": "Total binary message limit in bytes. Zero inherits requestBufferSize.",
+                                    "minimum": 0
+                                },
+                                "maxTextMessageSize": {
+                                    "type": "integer",
+                                    "default": 0,
+                                    "description": "Total text message limit in UTF-16 characters. Zero inherits requestBufferSize.",
+                                    "minimum": 0
+                                },
+                                "messageTimeout": {
+                                    "type": "integer",
+                                    "default": 120000,
+                                    "description": "Maximum unfinished-message duration in milliseconds from the first partial callback.",
+                                    "minimum": 1
+                                }
+                            }
                         }
                     }
                 },
