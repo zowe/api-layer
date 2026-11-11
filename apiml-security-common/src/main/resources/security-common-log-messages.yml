@@ -19,6 +19,13 @@ messages:
       reason: "A message could not be written to the response."
       action: "Please submit an issue with this message."
 
+    - key: org.zowe.apiml.zaas.security.schema.missingAuthentication
+      number: ZWEAG160
+      type: ERROR
+      text: "No authentication provided in the request"
+      reason: "The JWT token or client certificate was not provided with the request"
+      action: "Configure your client to provide valid authentication."
+
     # HTTP,Protocol messages
     # 400-499
 
