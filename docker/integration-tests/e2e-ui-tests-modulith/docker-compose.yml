@@ -1,0 +1,86 @@
+services:
+
+    discoverable-client:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/discoverable-client:${APIML_TAG:-local}
+        hostname: discoverable-client
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
+        ports:
+            - "127.0.0.1:10012:10012"
+            - "127.0.0.1:5122:5122"
+
+    mock-services:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/mock-services:${APIML_TAG:-local}
+        hostname: mock-services
+        environment:
+            APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
+        ports:
+            - "127.0.0.1:10013:10013"
+            - "127.0.0.1:5123:5123"
+
+    gateway-service:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: gateway-service
+        volumes:
+            - ./api-defs:/api-defs
+        environment:
+            APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service:10011/eureka
+            APIML_SERVICE_HOSTNAME: gateway-service
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID: ${OIDC_CLIENT_ID:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET: ${OIDC_CLIENT_PASSWORD:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_ISSUER: ${OIDC_HOST:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_AUTHORIZATIONURI: ${OIDC_AUTH_URI:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_TOKENURI: ${OIDC_TOKEN_URI:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERINFOURI: ${OIDC_USER_INFO_URI:-}
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_USERNAMEATTRIBUTE: sub
+            SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AUTH0_JWKSETURI: ${OIDC_JWKSET_URI:-}
+            APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
+            APIML_HEALTH_PROTECTED: "false"
+            logbackService: ZWEAGW1
+            APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
+        ports:
+            - "127.0.0.1:10010:10010"
+            - "127.0.0.1:10011:10011"
+            - "127.0.0.1:5130:5130"
+            - "127.0.0.1:6310:6310"
+
+    gateway-service-2:
+        image: ${APIML_IMAGE_PREFIX:-ghcr.io/zowe}/apiml:${APIML_TAG:-local}
+        hostname: gateway-service-2
+        volumes:
+            - ./api-defs:/api-defs
+        environment:
+            APIML_SERVICE_PORT: "20010"
+            APIML_INTERNAL_DISCOVERY_PORT: "20011"
+            APIML_DISCOVERY_ALLPEERSURLS: https://gateway-service-2:20011/eureka
+            APIML_SERVICE_HOSTNAME: gateway-service-2
+            APIML_SERVICE_APIMLID: apiml2
+            APIML_HEALTH_PROTECTED: "false"
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_GATEWAYURL: /
+            ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
+            logbackService: ZWEAGW2
+            APIML_SECURITY_X509_ENABLED: "true"
+            APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: "true"
+            APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:20010/gateway/certificates
+            APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
+        ports:
+            - "127.0.0.1:20010:20010"
+            - "127.0.0.1:20011:20011"
+            - "127.0.0.1:25130:5130"
+            - "127.0.0.1:26310:6310"
+
+    # Pinned Cypress + Chrome/Firefox/Edge toolchain, invoked on demand via
+    # `docker compose run --rm cypress ...` - see docker/integration-tests/e2e-ui-tests/docker-compose.yml
+    # for why (GH Actions container jobs can't drive docker compose themselves).
+    cypress:
+        image: cypress/browsers:node-20.11.0-chrome-121.0.6167.85-1-ff-120.0-edge-121.0.2277.83-1
+        working_dir: /workspace
+        volumes:
+            - ../../..:/workspace
+            # The npm-install step (host-side) downloads the Cypress binary into $HOME/.cache/Cypress
+            # to be cached by actions/cache - bind-mount it in so this container (running as root)
+            # sees the same binary instead of trying to redownload it.
+            - ${HOME}/.cache/Cypress:/root/.cache/Cypress
+        profiles:
+            - cypress

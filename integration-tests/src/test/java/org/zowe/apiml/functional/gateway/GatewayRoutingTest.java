@@ -55,7 +55,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
         DISCOVERABLE_GREET,
     })
     void testRoutingWithBasePath(String basePath) throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), basePath);
         given()
             .get(new URI(scgUrl))
         .then()
@@ -68,7 +68,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
         "discoverableclient",
     })
     void testRoutingWithHeader(String forwardTo) throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), DISCOVERABLE_GREET);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(),  conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), DISCOVERABLE_GREET);
         given()
             .header(HEADER_X_FORWARD_TO, forwardTo)
             .get(new URI(scgUrl))
@@ -82,7 +82,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
         NON_EXISTING_SERVICE_ENDPOINT,
     })
     void testRoutingWithIncorrectServiceInBasePath(String basePath) throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(),  conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), basePath);
         given()
             .get(new URI(scgUrl))
         .then()
@@ -95,7 +95,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
         NON_EXISTING_SERVICE_ID,
     })
     void testRoutingWithIncorrectServiceInHeader(String forwardTo) throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), NON_EXISTING_SERVICE_ENDPOINT);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(),  conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), NON_EXISTING_SERVICE_ENDPOINT);
         given()
             .header(HEADER_X_FORWARD_TO, forwardTo)
             .get(new URI(scgUrl))
@@ -108,7 +108,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
         "apiml1/apiml1,/apiml1/apiml1" + DISCOVERABLE_GREET,
     })
     void testWrongRoutingWithHeader(String forwardTo, String endpoint) throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), endpoint);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(),  conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), endpoint);
         given()
             .header(HEADER_X_FORWARD_TO, forwardTo)
             .get(new URI(scgUrl))
@@ -122,7 +122,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
         WRONG_VERSION_ENPOINT,
     })
     void testWrongRoutingWithBasePath(String basePath) throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), basePath);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(),  conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), basePath);
         given()
             .get(new URI(scgUrl))
         .then()
@@ -131,7 +131,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
 
     @Test
     void givenEndpointDoesNotExistOnRegisteredService() throws URISyntaxException {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), "/dcpassticket/api/v1/unknown");
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(),  conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), "/dcpassticket/api/v1/unknown");
         given()
             .get(new URI(scgUrl))
         .then()
@@ -142,7 +142,7 @@ class GatewayRoutingTest implements TestWithStartedInstances {
     @MethodSource("namedUrlChars")
     void testRoutingWithSpecialCharacters(String characters) throws URISyntaxException {
         //
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(),
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(),  conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()),
             "/discoverableclient/api/v1/" + URLEncoder.encode(characters, StandardCharsets.UTF_8) + "/greeting");
         given()
             .urlEncodingEnabled(false)
