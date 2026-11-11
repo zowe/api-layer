@@ -82,6 +82,7 @@ On z/OS with IBM Java 17/21, if you are using SAF keyrings, add the IBM crypto m
 
 ```bash
 java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
+  -Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
   -jar certificate-analyser-<version>.jar \
   --keystore safkeyring://userId/keyRing \
   --keystoretype JCERACFKS \
@@ -91,12 +92,14 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
 > **Note:** The tool internally sets `java.protocol.handler.pkgs` to register the
 > `safkeyring://` URL protocol handler. The `--add-modules` flag resolves the IBM
 > crypto modules making the handler classes accessible. Both mechanisms work together
-> to enable `safkeyring://` URLs — no additional `-D` flags are needed.
+> to enable `safkeyring://` URLs.
 
-> **Note:** For hybrid keyrings (`JCEHYBRIDRACFKS`) the module providing the `IBMJCEHYBRID` provider
-> must be resolved as well. List the available modules with `java --list-modules | grep ibm.crypto`
-> and add it to `--add-modules`. If a provider listed in `jvm.security.override.properties`
-> is missing, the tool prints a `WARN` naming it.
+> **Note:** Configure security providers at JVM startup using the property file shipped in
+> `apiml-common-lib/bin/jvm.security.override.properties`. In a source checkout, the file is at
+> `apiml-common-lib-package/src/main/resources/jvm.security.override.properties`.
+> Use a single `=` in `-Djava.security.properties=...` to retain the other standard security settings.
+> For hybrid keyrings, set `--keystoretype JCEHYBRIDRACFKS` and add `ibm.crypto.ibmjcehybrid`
+> to `--add-modules`. Check available modules with `java --list-modules | grep ibm.crypto`.
 
 ### Possible issues
 
