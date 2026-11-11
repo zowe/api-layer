@@ -166,7 +166,7 @@ class AttlsConfigTest {
     @TestPropertySource(
         properties = {
             "apiml.health.protected=false",
-            "apiml.internal-discovery.port=40986",
+            "apiml.internal-discovery.port=18086",
             "server.ssl.keyStoreType=",
             "server.ssl.keyStorePassword=",
             "server.ssl.keyPassword=",

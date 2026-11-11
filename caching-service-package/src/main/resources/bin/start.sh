@@ -29,6 +29,7 @@
 # - ZWE_configs_heap_init
 # - ZWE_configs_storage_evictionStrategy
 # - ZWE_configs_storage_mode
+# - ZWE_configs_storage_infinispan_standalone
 # - ZWE_configs_storage_size
 # - ZWE_configs_storage_maxQueryKeys
 # - ZWE_configs_storage_infinispan_distributedSyncTimeoutSecs
@@ -161,6 +162,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${CACHING_CODE} ${JAVA_BIN_DIR}java \
   -Djgroups.tcp.diag.enabled=${ZWE_configs_storage_infinispan_jgroups_tcp_diag_enabled:-false} \
   -Djgroups.keyExchange.socketTimeout=${ZWE_configs_storage_infinispan_jgroups_keyExchange_socketTimeout:-5000} \
   -Dcaching.storage.infinispan.initialHosts=${ZWE_configs_storage_infinispan_initialHosts:-} \
+  -Dcaching.storage.infinispan.standalone=${ZWE_configs_storage_infinispan_standalone:-false} \
   -Dcaching.storage.infinispan.distributedSyncTimeoutSecs=${ZWE_configs_storage_infinispan_distributedSyncTimeoutSecs:-360} \
   -Dcaching.storage.infinispan.numSegments=${ZWE_configs_storage_infinispan_numSegments:-256} \
   -Dcaching.storage.infinispan.revocationStore.maxCount=${ZWE_configs_storage_infinispan_revocationStore_maxCount:-100000} \

@@ -121,6 +121,7 @@
 # - ZWE_zowe_verifyCertificates - if we accept only verified certificates
 # - ZWE_configs_storage_evictionStrategy
 # - ZWE_configs_storage_mode
+# - ZWE_configs_storage_infinispan_standalone
 # - ZWE_configs_storage_size
 # - ZWE_configs_storage_vsam_name
 # - ZWE_configs_jvm_* - Any environment variable with this prefix will be passed as a JVM parameter
@@ -410,6 +411,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.zoweManifest=${ZWE_zowe_runtimeDirectory}/manifest.json \
     -Dcaching.storage.evictionStrategy=${ZWE_components_caching_service_storage_evictionStrategy:-${ZWE_configs_storage_evictionStrategy:-reject}} \
     -Dcaching.storage.infinispan.initialHosts=${ZWE_components_caching_service_storage_infinispan_initialHosts:-${ZWE_configs_storage_infinispan_initialHosts:-}} \
+    -Dcaching.storage.infinispan.standalone=${ZWE_components_caching_service_storage_infinispan_standalone:-${ZWE_configs_storage_infinispan_standalone:-false}} \
     -Dcaching.storage.mode=${ZWE_components_caching_service_storage_mode:-${ZWE_configs_storage_mode:-infinispan}} \
     -Dcaching.storage.size=${ZWE_components_caching_service_storage_size:-${ZWE_configs_storage_size:-10000}} \
     -Dcaching.storage.vsam.name=${VSAM_FILE_NAME} \
