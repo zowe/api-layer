@@ -189,8 +189,17 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
     @Override
     public void close() throws IOException {
         if (ownsClients) {
-            httpClient.close();
-            httpClientWithoutCert.close();
+            IOException ioe = null;
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                ioe = e;
+            } finally {
+                httpClientWithoutCert.close();
+            }
+            if (ioe != null) {
+                throw ioe;
+            }
         }
     }
 
