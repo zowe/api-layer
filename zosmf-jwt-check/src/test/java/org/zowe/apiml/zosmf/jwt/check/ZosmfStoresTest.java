@@ -42,8 +42,7 @@ class ZosmfStoresTest {
             "JCEHYBRIDRACFKS, safkeyringjcehybrid"
         })
         void whenTruststoreTypeSpecified_thenUsesMatchingProtocol(String type, String protocol) {
-            ZosmfJwtCheckConfig conf = createConf(null, null, "safkeyring://ZWESVUSR/ZWEHRING", PASSWORD, type);
-            when(conf.getKeyStoreType()).thenReturn("PKCS12");
+            ZosmfJwtCheckConfig conf = createConf(null, null, null, "safkeyring://ZWESVUSR/ZWERING", PASSWORD, type);
 
             // No IBM handlers on the test JVM: the failure identifies the selected protocol.
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new ZosmfStores(conf));
@@ -57,8 +56,7 @@ class ZosmfStoresTest {
             "JCEHYBRIDRACFKS, safkeyringjcehybrid"
         })
         void whenKeystoreTypeSpecified_thenUsesMatchingProtocol(String type, String protocol) {
-            ZosmfJwtCheckConfig conf = createConf("safkeyring://ZWESVUSR/ZWEHRING", PASSWORD, null, null, type);
-            when(conf.getTrustStoreType()).thenReturn("PKCS12");
+            ZosmfJwtCheckConfig conf = createConf("safkeyring://ZWESVUSR/ZWERING", PASSWORD, type, null, null, null);
 
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new ZosmfStores(conf));
             assertEquals("unknown protocol: " + protocol, e.getMessage());
@@ -75,8 +73,7 @@ class ZosmfStoresTest {
             "JCEHYBRIDRACFKS, safkeyringjcehybrid"
         })
         void whenKeystoreIsFileAndTruststoreIsKeyring_thenTruststoreTypeSelectsProtocol(String truststoreType, String protocol) {
-            ZosmfJwtCheckConfig conf = createConf(KEYSTORE_PATH, PASSWORD, "safkeyring://ZWESVUSR/ZWEHRING", PASSWORD, "PKCS12");
-            when(conf.getTrustStoreType()).thenReturn(truststoreType);
+            ZosmfJwtCheckConfig conf = createConf(KEYSTORE_PATH, PASSWORD, "PKCS12", "safkeyring://ZWESVUSR/ZWERING", PASSWORD, truststoreType);
 
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new ZosmfStores(conf));
             assertEquals("unknown protocol: " + protocol, e.getMessage());
@@ -89,8 +86,7 @@ class ZosmfStoresTest {
             "JCEHYBRIDRACFKS, safkeyringjcehybrid"
         })
         void whenKeystoreIsKeyringAndTruststoreIsFile_thenKeystoreTypeSelectsProtocol(String keystoreType, String protocol) {
-            ZosmfJwtCheckConfig conf = createConf("safkeyring://ZWESVUSR/ZWEHRING", PASSWORD, TRUSTSTORE_PATH, PASSWORD, "PKCS12");
-            when(conf.getKeyStoreType()).thenReturn(keystoreType);
+            ZosmfJwtCheckConfig conf = createConf("safkeyring://ZWESVUSR/ZWERING", PASSWORD, keystoreType, TRUSTSTORE_PATH, PASSWORD, "PKCS12");
 
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new ZosmfStores(conf));
             assertEquals("unknown protocol: " + protocol, e.getMessage());
@@ -98,8 +94,7 @@ class ZosmfStoresTest {
 
         @Test
         void whenKeystoreAndTruststoreAreFiles_thenTruststoreIsLoadedWithItsOwnType() {
-            ZosmfJwtCheckConfig conf = createConf(KEYSTORE_PATH, PASSWORD, TRUSTSTORE_PATH, PASSWORD, "PKCS12");
-            when(conf.getTrustStoreType()).thenReturn("UNKNOWNTYPE");
+            ZosmfJwtCheckConfig conf = createConf(KEYSTORE_PATH, PASSWORD, "PKCS12", TRUSTSTORE_PATH, PASSWORD, "UNKNOWNTYPE");
 
             // the keystore is valid PKCS12, so the failure can only come from the truststore type
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new ZosmfStores(conf));
@@ -207,14 +202,16 @@ class ZosmfStoresTest {
 
         @Test
         void formatKeyringUrlNormalizesSlashes() {
-            assertEquals("safkeyring://userId/keyRing",
-                KeyringUtils.formatKeyringUrl("safkeyring:////userId/keyRing", "PKCS12"));
+            assertEquals("safkeyringjce://userId/keyRing",
+                KeyringUtils.formatKeyringUrl("safkeyring:////userId/keyRing", "JCERACFKS"));
+            assertEquals("safkeyringjce://userId/keyRing",
+                KeyringUtils.formatKeyringUrl("safkeyringjce:////userId/keyRing", "JCERACFKS"));
         }
 
         @Test
         void formatKeyringUrlReturnsInputForNonKeyring() {
             assertEquals("/some/path.p12", KeyringUtils.formatKeyringUrl("/some/path.p12", "PKCS12"));
-            assertNull(KeyringUtils.formatKeyringUrl(null, "PKCS12"));
+            assertNull(KeyringUtils.formatKeyringUrl(null, "JCERACFKS"));
         }
 
         @Test
@@ -248,13 +245,18 @@ class ZosmfStoresTest {
     private ZosmfJwtCheckConfig createConf(String keyStore, String keyStorePassword,
                                            String trustStore, String trustStorePassword,
                                            String storeType) {
+        return createConf(keyStore, keyStorePassword, storeType, trustStore, trustStorePassword, storeType);
+    }
+
+    private ZosmfJwtCheckConfig createConf(String keyStore, String keyStorePassword, String keyStoreType,
+                                           String trustStore, String trustStorePassword, String trustStoreType) {
         ZosmfJwtCheckConfig conf = mock(ZosmfJwtCheckConfig.class);
         when(conf.getKeyStore()).thenReturn(keyStore);
         when(conf.getKeyStorePassword()).thenReturn(keyStorePassword);
-        when(conf.getKeyStoreType()).thenReturn(storeType);
+        when(conf.getKeyStoreType()).thenReturn(keyStoreType);
         when(conf.getTrustStore()).thenReturn(trustStore);
         when(conf.getTrustStorePassword()).thenReturn(trustStorePassword);
-        when(conf.getTrustStoreType()).thenReturn(storeType);
+        when(conf.getTrustStoreType()).thenReturn(trustStoreType);
         return conf;
     }
 }

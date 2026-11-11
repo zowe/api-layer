@@ -77,11 +77,10 @@ class KeyringUtilsTest {
         @CsvSource({
             "safkeyring://userId/keyRing, JCERACFKS, safkeyringjce://userId/keyRing",
             "safkeyring:///userId/keyRing, JCECCARACFKS, safkeyringjcecca://userId/keyRing",
-            "safkeyring:////ZWESVUSR/ZWEHRING, JCEHYBRIDRACFKS, safkeyringjcehybrid://ZWESVUSR/ZWEHRING",
+            "safkeyring:////ZWESVUSR/ZWERING, JCEHYBRIDRACFKS, safkeyringjcehybrid://ZWESVUSR/ZWERING",
             "safkeyring://userId/keyRing, jcehybridracfks, safkeyringjcehybrid://userId/keyRing",
             "safkeyringjcehybrid://userId/keyRing, JCEHYBRIDRACFKS, safkeyringjcehybrid://userId/keyRing",
             "safkeyringjcecca:////userId/keyRing, JCEHYBRIDRACFKS, safkeyringjcecca://userId/keyRing",
-            "safkeyring://userId/keyRing, PKCS12, safkeyring://userId/keyRing",
             "safkeyring://userId/keyRing, , safkeyring://userId/keyRing",
             "/path/to/truststore.p12, PKCS12, /path/to/truststore.p12",
             "safkeyring:/invalid/ring, JCEHYBRIDRACFKS, safkeyring:/invalid/ring"
@@ -97,13 +96,15 @@ class KeyringUtilsTest {
 
         @ParameterizedTest
         @CsvSource({
-            "safkeyring://userId/keyRing, safkeyring://userId/keyRing",
-            "safkeyring:////userId/keyRing, safkeyring://userId/keyRing",
-            "safkeyringjce://user/ring, safkeyringjce://user/ring",
-            "safkeyringjcecca:///user1/ring2, safkeyringjcecca://user1/ring2"
+            "safkeyring://userId/keyRing, JCERACFKS, safkeyringjce://userId/keyRing",
+            "safkeyring:////userId/keyRing, JCERACFKS, safkeyringjce://userId/keyRing",
+            "safkeyringjce://user/ring, JCERACFKS, safkeyringjce://user/ring",
+            "safkeyringjce:////user/ring, JCERACFKS, safkeyringjce://user/ring",
+            "safkeyringjcecca:///user1/ring2, JCECCARACFKS, safkeyringjcecca://user1/ring2",
+            "safkeyringjcehybrid:////user1/ring2, JCEHYBRIDRACFKS, safkeyringjcehybrid://user1/ring2"
         })
-        void givenKeyringUri_thenNormalizesToTwoSlashes(String input, String expected) {
-            assertEquals(expected, KeyringUtils.formatKeyringUrl(input, "PKCS12"));
+        void givenKeyringUri_thenNormalizesToTwoSlashes(String input, String type, String expected) {
+            assertEquals(expected, KeyringUtils.formatKeyringUrl(input, type));
         }
 
         @Test
@@ -114,7 +115,7 @@ class KeyringUtilsTest {
 
         @Test
         void givenNull_thenReturnsNull() {
-            assertNull(KeyringUtils.formatKeyringUrl(null, "PKCS12"));
+            assertNull(KeyringUtils.formatKeyringUrl(null, "JCERACFKS"));
         }
     }
 

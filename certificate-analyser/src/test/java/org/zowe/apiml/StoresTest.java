@@ -40,9 +40,10 @@ class StoresTest {
             ApimlConf conf = new ApimlConf();
             new CommandLine(conf).parseArgs("--keystore", "../keystore/service/service.keystore.p12",
                 "--keystoretype", "PKCS12", "--keypasswd", "password",
-                "--truststore", "safkeyring://ZWESVUSR/ZWEHRING",
+                "--truststore", "safkeyring://ZWESVUSR/ZWERING",
                 "--truststoretype", truststoreType, "--trustpasswd", "password");
 
+            // off-platform unit tests can't resolve z/OS providers, but the selected protocol propagates to the error
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
             assertEquals("unknown protocol: " + protocol, e.getMessage());
         }
@@ -55,7 +56,7 @@ class StoresTest {
         })
         void whenKeystoreIsKeyringAndTruststoreIsFile_thenKeystoreTypeSelectsProtocol(String keystoreType, String protocol) {
             ApimlConf conf = new ApimlConf();
-            new CommandLine(conf).parseArgs("--keystore", "safkeyring://ZWESVUSR/ZWEHRING",
+            new CommandLine(conf).parseArgs("--keystore", "safkeyring://ZWESVUSR/ZWERING",
                 "--keystoretype", keystoreType, "--keypasswd", "password",
                 "--truststore", "../keystore/service/service.truststore.p12",
                 "--truststoretype", "PKCS12", "--trustpasswd", "password");
@@ -69,7 +70,7 @@ class StoresTest {
             ApimlConf conf = new ApimlConf();
             new CommandLine(conf).parseArgs("--keystore", "../keystore/service/service.keystore.p12",
                 "--keystoretype", "JCEHYBRIDRACFKS", "--keypasswd", "password",
-                "--truststore", "safkeyring://ZWESVUSR/ZWEHRING", "--trustpasswd", "password");
+                "--truststore", "safkeyring://ZWESVUSR/ZWERING", "--trustpasswd", "password");
 
             assertEquals("JCEHYBRIDRACFKS", conf.getTrustStoreType());
         }
@@ -118,7 +119,7 @@ class StoresTest {
         })
         void whenTruststoreTypeSpecified_thenUsesMatchingProtocol(String type, String protocol) {
             ApimlConf conf = new ApimlConf();
-            new CommandLine(conf).parseArgs("--truststore", "safkeyring://ZWESVUSR/ZWEHRING",
+            new CommandLine(conf).parseArgs("--truststore", "safkeyring://ZWESVUSR/ZWERING",
                 "--truststoretype", type, "--trustpasswd", "password");
 
             // No IBM handlers on the test JVM: the failure identifies the selected protocol.
@@ -134,7 +135,7 @@ class StoresTest {
         })
         void whenKeystoreTypeSpecified_thenUsesMatchingProtocol(String type, String protocol) {
             ApimlConf conf = new ApimlConf();
-            new CommandLine(conf).parseArgs("--keystore", "safkeyring://ZWESVUSR/ZWEHRING",
+            new CommandLine(conf).parseArgs("--keystore", "safkeyring://ZWESVUSR/ZWERING",
                 "--keystoretype", type, "--keypasswd", "password");
 
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
@@ -144,13 +145,14 @@ class StoresTest {
         @Test
         void whenNoPathFound_thenStoresNotInitializeExceptionIsThrown() {
             String[] args = {"--keystore", "safkeyring:////userId/keyRing",
+                "--keystoretype", "JCERACFKS",
                 "--truststore", "safkeyring:////userId/keyRing",
                 "--keypasswd", "password",
                 "--keyalias", "localhost"};
             ApimlConf conf = new ApimlConf();
             new CommandLine(conf).parseArgs(args);
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
-            assertEquals("unknown protocol: safkeyring",e.getMessage());
+            assertEquals("unknown protocol: safkeyringjce", e.getMessage());
         }
 
         @Test
@@ -172,12 +174,13 @@ class StoresTest {
         void whenTruststoreIsKeyring_thenKeyRingUrlIsUsed() {
             String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
                 "--truststore", "safkeyring://userId/keyRing",
+                "--truststoretype", "JCERACFKS",
                 "--keypasswd", "password",
                 "--keyalias", "localhost"};
             ApimlConf conf = new ApimlConf();
             new CommandLine(conf).parseArgs(args);
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
-            assertEquals("unknown protocol: safkeyring", e.getMessage());
+            assertEquals("unknown protocol: safkeyringjce", e.getMessage());
         }
 
         @Test
@@ -209,13 +212,14 @@ class StoresTest {
 
         @Test
         void givenFormatKeyringUrl_whenUriHasExtraSlashes_thenNormalized() {
-            assertEquals("safkeyring://userId/keyRing", KeyringUtils.formatKeyringUrl("safkeyring:////userId/keyRing", "PKCS12"));
-            assertEquals("safkeyring://userId/keyRing", KeyringUtils.formatKeyringUrl("safkeyring://userId/keyRing", "PKCS12"));
+            assertEquals("safkeyringjce://userId/keyRing", KeyringUtils.formatKeyringUrl("safkeyring:////userId/keyRing", "JCERACFKS"));
+            assertEquals("safkeyringjce://userId/keyRing", KeyringUtils.formatKeyringUrl("safkeyringjce:////userId/keyRing", "JCERACFKS"));
+            assertEquals("safkeyringjce://userId/keyRing", KeyringUtils.formatKeyringUrl("safkeyringjce://userId/keyRing", "JCERACFKS"));
         }
 
         @Test
         void givenFormatKeyringUrl_whenNull_thenReturnsNull() {
-            assertNull(KeyringUtils.formatKeyringUrl(null, "PKCS12"));
+            assertNull(KeyringUtils.formatKeyringUrl(null, "JCERACFKS"));
         }
     }
 

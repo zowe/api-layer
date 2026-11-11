@@ -76,6 +76,7 @@ public final class KeyringUtils {
         if (matcher.matches()) {
             String protocol = matcher.group(1);
             if ("safkeyring".equals(protocol) && type != null) {
+                // the transformation follows the same rule as in apiml startup scripts
                 protocol = switch (type.toUpperCase(Locale.ROOT)) {
                     case "JCERACFKS" -> "safkeyringjce";
                     case "JCECCARACFKS" -> "safkeyringjcecca";
