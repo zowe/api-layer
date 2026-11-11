@@ -1,7 +1,11 @@
 dependencies {
     api project(':apiml-utility')
 
-    implementation libs.eureka.jersey.client
+    implementation(libs.eureka.jersey.client) {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'org.apache.httpcomponents', module: 'httpcore'
+        exclude group: 'org.apache.httpcomponents', module: 'httpmime'
+    }
     implementation libs.archaius.core
     implementation libs.jackson.dataformat.yaml
     implementation libs.guava

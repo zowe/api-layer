@@ -305,7 +305,7 @@ dependencyResolutionManagement {
             library('io_grpc', 'io.grpc', 'grpc-stub').versionRef('ioGrpc')
 
             // Sample apps only
-            library('jersey_client4', 'com.sun.jersey.contribs', 'jersey-apache-client4').versionRef('jerseySun')
+            library('jersey_apache5_connector', 'org.glassfish.jersey.connectors', 'jersey-apache5-connector').versionRef('jersey3')
             library('jersey_client', 'com.sun.jersey', 'jersey-client').versionRef('jerseySun')
 
             library('spring_boot_gradle_plugin', 'org.springframework.boot', 'spring-boot-gradle-plugin').versionRef('springBoot')

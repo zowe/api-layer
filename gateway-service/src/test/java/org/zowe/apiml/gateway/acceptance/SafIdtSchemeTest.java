@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.zowe.apiml.constants.ApimlConstants.SAF_TOKEN_HEADER;
 
