@@ -40,10 +40,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -194,6 +197,21 @@ public class JGroupStabilityTest {
 
             env.put("ZWE_ALLOWED_DOMAINS", "localhost,localhost2,www.zowe.org,zowe.github.io,www.ibm.com");
 
+            // start.sh only adds --add-opens itself on z/OS (JAVA_VERSION from javap); on Java 17+
+            // elsewhere the spawned JVM needs them explicitly or Infinispan/JGroups hang during startup
+            if (isJava17OrLater()) {
+                env.put("JAVA_TOOL_OPTIONS", String.join(" ",
+                    "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                    "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+                    "--add-opens=java.base/java.nio.channels.spi=ALL-UNNAMED",
+                    "--add-opens=java.base/java.util=ALL-UNNAMED",
+                    "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+                    "--add-opens=java.base/javax.net.ssl=ALL-UNNAMED",
+                    "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+                    "--add-opens=java.base/java.io=ALL-UNNAMED"
+                ));
+            }
+
             ProcessBuilder builder = new ProcessBuilder("caching-service-package/src/main/resources/bin/start.sh");
             builder.environment().putAll(env);
 
@@ -283,6 +301,37 @@ public class JGroupStabilityTest {
 
         public boolean isDown() {
             return !isUp();
+        }
+
+        /**
+         * Mirrors RunningService.isJava17OrLater: the JVM running this test is the same one
+         * start.sh will use (JAVA_HOME or PATH), so its version decides whether the spawned
+         * caching-service JVM needs the --add-opens flags.
+         */
+        private static boolean isJava17OrLater() {
+            String javaBin = Optional.ofNullable(System.getenv("JAVA_HOME"))
+                .map(javaHome -> javaHome + "/bin/java")
+                .orElse("java");
+            try {
+                Process versionProcess = new ProcessBuilder(javaBin, "-version")
+                    .redirectErrorStream(true)
+                    .start();
+                Pattern versionPattern = Pattern.compile("\\bversion\\s+\"(?:1\\.)?(\\d+)");
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(versionProcess.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        Matcher matcher = versionPattern.matcher(line);
+                        if (matcher.find()) {
+                            return Integer.parseInt(matcher.group(1)) >= 17;
+                        }
+                    }
+                } finally {
+                    versionProcess.destroy();
+                }
+            } catch (IOException e) {
+                log.warn("Unable to determine java version, assuming pre Java 17 mode", e);
+            }
+            return false;
         }
 
     }
