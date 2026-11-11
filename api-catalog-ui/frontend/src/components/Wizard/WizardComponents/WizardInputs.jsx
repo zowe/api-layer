@@ -13,11 +13,11 @@ import {
     Checkbox,
     FormControl,
     FormControlLabel,
-    FormHelperText,
+    Input,              // still needed — used as base component for Select in MUI v4
     InputLabel,
     MenuItem,
     Select,
-    Input,
+    TextField,
     Tooltip,
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
@@ -422,16 +422,20 @@ class WizardInputs extends Component {
             );
         }
         if (Array.isArray(options)) {
+            const labelId = `${itemKey}-label`;
             return (
-                <FormControl className="formField" disabled={disabled}>
-                    <InputLabel shrink>{question}</InputLabel>
+                <FormControl variant="outlined" fullWidth className="wizardFormFields" disabled={disabled}>
+                    <InputLabel id={labelId} shrink>{question}</InputLabel>
                     <Select
                         id={itemKey}
+                        labelId={labelId}
+                        label={question}
+                        notched
                         value={value}
                         onChange={(event) => this.handleSelect(event, { index, itemKey })}
                     >
                         {options.map((entry) => (
-                            <MenuItem value={entry}>{entry}</MenuItem>
+                            <MenuItem key={entry} value={entry}>{entry}</MenuItem>
                         ))}
                     </Select>
                 </FormControl>
@@ -441,20 +445,21 @@ class WizardInputs extends Component {
         if (tooltip === undefined) {
             finalTooltip = 'filler';
         }
-        const captionId = `my-helper${itemKey}`;
         return (
             <Tooltip className="wizardTooltip" title={finalTooltip}>
-                <FormControl className="wizardFormFields" disabled={disabled}>
-                    <InputLabel shrink>{question}</InputLabel>
-                    <Input
-                        id={itemKey}
-                        name={itemKey}
-                        value={value}
-                        onChange={(event) => this.handleInputChange(event, index)}
-                        aria-describedby={captionId}
-                    />
-                    <FormHelperText id={captionId}>{caption}</FormHelperText>
-                </FormControl>
+                <TextField
+                    id={itemKey}
+                    name={itemKey}
+                    label={question}
+                    value={value}
+                    onChange={(event) => this.handleInputChange(event, index)}
+                    disabled={disabled}
+                    variant="outlined"
+                    fullWidth
+                    className="wizardFormFields"
+                    helperText={caption}
+                    InputLabelProps={{ shrink: true }}
+                />
             </Tooltip>
         );
     }
