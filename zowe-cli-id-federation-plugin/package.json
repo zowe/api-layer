@@ -73,6 +73,7 @@
     "jest-junit": "16.0.0",
     "jest-stare": "2.5.3",
     "madge": "8.0.0",
+    "rimraf": "^6.1.4",
     "ts-jest": "29.4.15",
     "ts-node": "10.9.2",
     "typedoc": "0.28.20",
