@@ -11,14 +11,19 @@
 package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.util.SecurityUtils;
 import org.zowe.apiml.util.categories.GeneralAuthenticationTest;
 import org.zowe.apiml.util.categories.TestsNotMeantForZowe;
+import org.zowe.apiml.util.categories.X509Test;
 import org.zowe.apiml.util.config.ConfigReader;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
@@ -35,6 +40,12 @@ class GatewayAuthenticationTest {
     private final static String USERNAME = ConfigReader.environmentConfiguration().getCredentials().getUser();
     private static final String ACTUATOR_ENDPOINT = "/application";
     private static final String HEALTH_ENDPOINT = ACTUATOR_ENDPOINT + "/health";
+    private static final String INFO_ENDPOINT = ACTUATOR_ENDPOINT + "/info";
+
+    @BeforeAll
+    static void prepareSsl() throws Exception {
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+    }
 
     @BeforeEach
     void setUp() {
@@ -49,7 +60,7 @@ class GatewayAuthenticationTest {
         class WhenAccessingProtectedEndpoint {
 
             @ParameterizedTest
-            @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
+            @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT, INFO_ENDPOINT})
             void thenAuthenticate(String endpoint) {
                 String token = SecurityUtils.gatewayToken(USERNAME, PASSWORD);
                 // Gateway request to url
@@ -73,7 +84,7 @@ class GatewayAuthenticationTest {
 
             @ParameterizedTest
             @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
-            @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT})
+            @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT, INFO_ENDPOINT})
             void thenReturnUnauthorized(String endpoint) {
                 String expectedMessage = "The request has not been applied because it lacks valid authentication credentials.";
                 // Gateway request to url
@@ -88,6 +99,55 @@ class GatewayAuthenticationTest {
                     );
             }
 
+        }
+
+    }
+
+    @Nested
+    class GivenNoAuthentication {
+
+        @ParameterizedTest
+        @TestsNotMeantForZowe("Automation needs unprotected health endpoint")
+        @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT, INFO_ENDPOINT})
+        void thenReturnUnauthorized(String endpoint) {
+            given()
+                .config(SslContext.tlsWithoutCert)
+                .auth().none()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(endpoint))
+            .then()
+                .statusCode(SC_UNAUTHORIZED);
+        }
+
+    }
+
+    @Nested
+    @X509Test
+    class GivenClientCertificate {
+
+        @ParameterizedTest
+        @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT, INFO_ENDPOINT})
+        void thenAuthenticate(String endpoint) {
+            given()
+                .config(SslContext.clientCertValid)
+                .auth().none()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(endpoint))
+            .then()
+                .statusCode(SC_OK);
+        }
+
+        @ParameterizedTest
+        @EnabledIfSystemProperty(named = "environment.modulith", matches = "true")
+        @ValueSource(strings = {ACTUATOR_ENDPOINT, HEALTH_ENDPOINT, INFO_ENDPOINT})
+        void givenServiceCertificate_thenAuthenticate(String endpoint) {
+            given()
+                .config(SslContext.clientCertApiml)
+                .auth().none()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(endpoint))
+            .then()
+                .statusCode(SC_OK);
         }
 
     }
