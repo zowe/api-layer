@@ -28,7 +28,6 @@ import java.io.IOException;
  * a static definition file from the Wizard interface
  */
 @RequiredArgsConstructor
-@PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
 public class StaticDefinitionController {
 
     private final StaticDefinitionGenerator staticDefinitionGenerator;
@@ -39,6 +38,7 @@ public class StaticDefinitionController {
      * @param payload the request payload
      * @return the response entity
      */
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE', #root)")
     @PostMapping(value = "/generate", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Mono<ResponseEntity<String>> generateStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
@@ -54,6 +54,7 @@ public class StaticDefinitionController {
      * @param payload the request payload
      * @return the response entity
      */
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE', #root)")
     @PostMapping(value = "/override", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Mono<ResponseEntity<String>> overrideStaticDef(@RequestBody String payload, @RequestHeader(value = "Service-Id") String serviceId) throws IOException {
@@ -63,6 +64,7 @@ public class StaticDefinitionController {
             .body(staticAPIResponse.getBody()));
     }
 
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE', #root)")
     @DeleteMapping(value = "/delete", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public Mono<ResponseEntity<String>> deleteStaticDef(@RequestHeader(value = "Service-Id") String serviceId) throws IOException {

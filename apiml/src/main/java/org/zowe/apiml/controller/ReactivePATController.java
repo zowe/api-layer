@@ -167,7 +167,7 @@ public class ReactivePATController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Successfully evicted")
     })
-    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE',#root)")
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE', #root)")
     public Mono<ResponseEntity<Void>> evictNonRelevantTokensAndRules() {
         return Mono.fromCallable(() -> {
             tokenProvider.evictNonRelevantTokensAndRules();
@@ -385,7 +385,7 @@ public class ReactivePATController {
      * @throws JsonProcessingException if the input cannot be parsed
      */
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/user")
-    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE', #root)")
     @Operation(summary = "Invalidate personal access tokens by user ID.",
         tags = {"Access token"},
         operationId = "accessTokensInvalidateAdminDELETE",
@@ -458,7 +458,7 @@ public class ReactivePATController {
      * @throws JsonProcessingException if input parsing fails
      */
     @DeleteMapping(path = ACCESS_TOKEN_REVOKE_MULTIPLE + "/scope")
-    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'READ',#root)")
+    @PreAuthorize("@safMethodSecurityExpressionRoot.hasSafServiceResourceAccess('SERVICES', 'UPDATE', #root)")
     @Operation(summary = "Invalidate multiple personal access tokens by service ID.",
         tags = {"Access token"},
         operationId = "accessTokensInvalidateAdminScopeDELETE",
