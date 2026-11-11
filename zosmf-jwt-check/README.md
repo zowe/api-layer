@@ -304,3 +304,17 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
 > Use a single `=` in `-Djava.security.properties=...` to retain the other standard security settings.
 > For hybrid keyrings, set `--truststore-type JCEHYBRIDRACFKS` and add `ibm.crypto.ibmjcehybrid`
 > to `--add-modules`. Check available modules with `java --list-modules | grep ibm.crypto`.
+
+For a hybrid keyring, use the same command with `--truststore-type JCEHYBRIDRACFKS` and add the module that
+provides `IBMJCEHYBRID` to `--add-modules`:
+
+```bash
+java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca,<module providing IBMJCEHYBRID> \
+  -Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
+  -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
+  --zosmf-host myzosmf.example.com \
+  --zosmf-port 11443 \
+  --truststore-file safkeyring://IZUSVR/ZoweKeyring \
+  --truststore-password password \
+  --truststore-type JCEHYBRIDRACFKS
+```

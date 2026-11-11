@@ -29,6 +29,10 @@ import java.util.regex.Pattern;
 @SuppressWarnings("squid:S106")
 public final class KeyringUtils {
 
+    private static final String PROVIDER_HINT = "For JCECCARACFKS and JCEHYBRIDRACFKS keyrings the matching IBM security provider must be registered:"
+        + " start the JVM with -Djava.security.properties=<apiml-common-lib>/bin/jvm.security.override.properties"
+        + " and add the module providing the provider to --add-modules (list them with: java --list-modules | grep ibm.crypto).";
+
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
     private KeyringUtils() {
@@ -94,7 +98,7 @@ public final class KeyringUtils {
         } catch (MalformedURLException e) {
             System.err.println("ERROR: Unknown protocol in '" + formatted + "': " + e.getMessage());
             System.err.println("Ensure the JVM is started with: --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca");
-            System.err.println("And that ensureSafkeyringHandler() has been called to set java.protocol.handler.pkgs");
+            System.err.println(PROVIDER_HINT);
             throw e;
         }
     }
@@ -108,7 +112,15 @@ public final class KeyringUtils {
      * @return loaded KeyStore instance
      */
     public static KeyStore readKeyStore(InputStream is, char[] pass, String type) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        KeyStore keyStore = KeyStore.getInstance(type);
+        KeyStore keyStore;
+        try {
+            keyStore = KeyStore.getInstance(type);
+        } catch (KeyStoreException e) {
+            if (type.toUpperCase(Locale.ROOT).endsWith("RACFKS")) {
+                throw new KeyStoreException(e.getMessage() + ". " + PROVIDER_HINT, e);
+            }
+            throw e;
+        }
         keyStore.load(is, pass);
         return keyStore;
     }

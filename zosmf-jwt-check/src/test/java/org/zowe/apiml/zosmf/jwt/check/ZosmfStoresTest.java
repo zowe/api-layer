@@ -14,10 +14,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.zowe.apiml.common.KeyringUtils;
 import org.zowe.apiml.common.StoresNotInitializeException;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.security.KeyStore;
@@ -99,6 +103,54 @@ class ZosmfStoresTest {
             // the keystore is valid PKCS12, so the failure can only come from the truststore type
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new ZosmfStores(conf));
             assertEquals("UNKNOWNTYPE not found", e.getMessage());
+        }
+    }
+
+    @Nested
+    class GivenKeyringWithAvailableHandler {
+
+        /** Replaces the IBM keyring access: the keyring URL points to a PKCS12 file, which is loaded as the store. */
+        private MockedStatic<KeyringUtils> mockKeyring(String ringFile) throws Exception {
+            MockedStatic<KeyringUtils> utils = Mockito.mockStatic(KeyringUtils.class);
+            utils.when(() -> KeyringUtils.isKeyring(ArgumentMatchers.anyString()))
+                .thenAnswer(i -> ((String) i.getArgument(0)).startsWith("safkeyring"));
+            utils.when(() -> KeyringUtils.keyRingUrl(ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
+                .thenReturn(new File(ringFile).toURI().toURL());
+            utils.when(() -> KeyringUtils.readKeyStore(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.anyString()))
+                .thenAnswer(i -> {
+                    KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                    keyStore.load(i.getArgument(0), (char[]) i.getArgument(1));
+                    return keyStore;
+                });
+            return utils;
+        }
+
+        @Test
+        void whenKeystoreIsKeyring_thenItIsAlsoUsedAsTruststore() throws Exception {
+            ZosmfJwtCheckConfig conf = createConf("safkeyring://ZWESVUSR/ZWERING", PASSWORD, "JCERACFKS", null, null, null);
+
+            try (MockedStatic<KeyringUtils> utils = mockKeyring(KEYSTORE_PATH)) {
+                ZosmfStores stores = new ZosmfStores(conf);
+
+                assertNotNull(stores.getKeyStore());
+                assertSame(stores.getKeyStore(), stores.getTrustStore());
+                utils.verify(() -> KeyringUtils.keyRingUrl("safkeyring://ZWESVUSR/ZWERING", "JCERACFKS"));
+            }
+        }
+
+        @Test
+        void whenTruststoreIsKeyring_thenItIsLoadedWithItsOwnType() throws Exception {
+            ZosmfJwtCheckConfig conf = createConf(KEYSTORE_PATH, PASSWORD, "PKCS12",
+                "safkeyring://ZWESVUSR/ZWERING", PASSWORD, "JCEHYBRIDRACFKS");
+
+            try (MockedStatic<KeyringUtils> utils = mockKeyring(TRUSTSTORE_PATH)) {
+                ZosmfStores stores = new ZosmfStores(conf);
+
+                assertNotNull(stores.getKeyStore());
+                assertNotNull(stores.getTrustStore());
+                assertNotSame(stores.getKeyStore(), stores.getTrustStore());
+                utils.verify(() -> KeyringUtils.keyRingUrl("safkeyring://ZWESVUSR/ZWERING", "JCEHYBRIDRACFKS"));
+            }
         }
     }
 

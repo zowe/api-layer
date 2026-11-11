@@ -70,6 +70,8 @@ class KeyringUtilsTest {
             "safkeyringjcehybrid://userId/keyRing, JCEHYBRIDRACFKS, safkeyringjcehybrid://userId/keyRing",
             "safkeyringjcecca:////userId/keyRing, JCEHYBRIDRACFKS, safkeyringjcecca://userId/keyRing",
             "safkeyring://userId/keyRing, , safkeyring://userId/keyRing",
+            "safkeyringjce://userId/keyRing, , safkeyringjce://userId/keyRing",
+            "safkeyring://userId/keyRing, UNKNOWNTYPE, safkeyring://userId/keyRing",
             "/path/to/truststore.p12, PKCS12, /path/to/truststore.p12",
             "safkeyring:/invalid/ring, JCEHYBRIDRACFKS, safkeyring:/invalid/ring"
         })
@@ -109,6 +111,41 @@ class KeyringUtilsTest {
 
     @Nested
     class KeyRingUrl {
+
+        @Test
+        void givenUnknownProtocol_thenHintMentionsProvidersAndModules() {
+            java.io.PrintStream original = System.err;
+            java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream();
+            System.setErr(new java.io.PrintStream(err, true));
+            try {
+                assertThrows(java.net.MalformedURLException.class,
+                    () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing", "JCEHYBRIDRACFKS"));
+            } finally {
+                System.setErr(original);
+            }
+            assertThat(err.toString(), containsString("safkeyringjcehybrid"));
+            assertThat(err.toString(), containsString("-Djava.security.properties"));
+            assertThat(err.toString(), containsString("--add-modules"));
+        }
+
+        @Test
+        void givenHandlerAvailable_thenReturnsUrlWithProtocolOfStoreType() throws Exception {
+            String previous = System.getProperty("java.protocol.handler.pkgs");
+            System.setProperty("java.protocol.handler.pkgs", "org.zowe.apiml.common.testprotocols");
+            try {
+                java.net.URL url = KeyringUtils.keyRingUrl("safkeyring:////ZWESVUSR/ZWEHRING", "JCEHYBRIDRACFKS");
+
+                assertEquals("safkeyringjcehybrid", url.getProtocol());
+                assertEquals("ZWESVUSR", url.getHost());
+                assertEquals("/ZWEHRING", url.getPath());
+            } finally {
+                if (previous == null) {
+                    System.clearProperty("java.protocol.handler.pkgs");
+                } else {
+                    System.setProperty("java.protocol.handler.pkgs", previous);
+                }
+            }
+        }
 
         @Test
         void givenInvalidKeyringFormat_thenThrowsStoresNotInitializeException() {
@@ -232,6 +269,43 @@ class KeyringUtilsTest {
                 assertEquals(firstRun, secondRun);
             } finally {
                 System.setProperty("java.protocol.handler.pkgs", original);
+            }
+        }
+    }
+
+    @Nested
+    class ReadKeyStoreWithMissingProvider {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"JCERACFKS", "JCECCARACFKS", "JCEHYBRIDRACFKS", "jcehybridracfks"})
+        void givenRacfKeystoreTypeWithoutProvider_thenMessageExplainsHowToRegisterIt(String type) {
+            org.junit.jupiter.api.Assumptions.assumeTrue(KeyStoreProbe.isMissing(type), type + " is available on this JVM");
+
+            KeyStoreException e = assertThrows(KeyStoreException.class,
+                () -> KeyringUtils.readKeyStore(new ByteArrayInputStream(new byte[0]), "password".toCharArray(), type));
+
+            assertThat(e.getMessage(), containsString(type + " not found"));
+            assertThat(e.getMessage(), containsString("-Djava.security.properties"));
+            assertThat(e.getMessage(), containsString("--add-modules"));
+            assertNotNull(e.getCause());
+        }
+
+        @Test
+        void givenOtherUnknownType_thenOriginalExceptionIsRethrownWithoutHint() {
+            KeyStoreException e = assertThrows(KeyStoreException.class,
+                () -> KeyringUtils.readKeyStore(new ByteArrayInputStream(new byte[0]), "password".toCharArray(), "UNKNOWNTYPE"));
+
+            assertEquals("UNKNOWNTYPE not found", e.getMessage());
+        }
+
+        private static final class KeyStoreProbe {
+            static boolean isMissing(String type) {
+                try {
+                    KeyStore.getInstance(type);
+                    return false;
+                } catch (KeyStoreException e) {
+                    return true;
+                }
             }
         }
     }

@@ -101,6 +101,18 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
 > For hybrid keyrings, set `--keystoretype JCEHYBRIDRACFKS` and add `ibm.crypto.ibmjcehybrid`
 > to `--add-modules`. Check available modules with `java --list-modules | grep ibm.crypto`.
 
+For a hybrid keyring, use the same command with `--keystoretype JCEHYBRIDRACFKS` and add the module that
+provides `IBMJCEHYBRID` to `--add-modules`:
+
+```bash
+java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
+  -Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
+  -jar certificate-analyser-<version>.jar \
+  --keystore safkeyring://userId/keyRing \
+  --keystoretype JCEHYBRIDRACFKS \
+  --keypasswd password
+```
+
 ### Possible issues
 
 Keystore/truststore is owned by different user - permission error. Temporarily Change read permission to all.
