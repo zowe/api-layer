@@ -174,32 +174,39 @@ public class LocalVerifier implements Verifier {
     }
 
     /**
-     * The JWT is signed with the private key of the certificate, so what matters is the type of its key,
-     * not the algorithm the issuing CA used to sign the certificate. The API ML can currently issue tokens
-     * only with RSA keys (RS256). EC keys are not supported yet, as the service is not able to create the JWK
-     * that identifies the signing key. The service does not check the RSA key size; the minimum of 2048 bits is
-     * the requirement of RFC 7518, Section 3.3, applied here as advice.
+     * Checks that the public key of the certificate can be used to sign the JWT. The API ML signs the JWT with
+     * RS256 (RSASSA-PKCS1-v1_5 using SHA-256), which requires an RSA key that is not restricted to RSASSA-PSS
+     * parameters. The size of the key is not checked.
+     *
+     * @return the reason why the key cannot be used, empty if it can
      */
-    static boolean isJwtSupportedKey(PublicKey key) {
-        return key instanceof RSAPublicKey rsaKey && rsaKey.getModulus().bitLength() >= 2048;
+    static Optional<String> whyKeyCannotSignJwt(PublicKey key) {
+        if (!(key instanceof RSAPublicKey rsaKey)) {
+            return Optional.of("The key is " + (key == null ? "missing" : "of type " + key.getAlgorithm())
+                + ", only RSA keys are supported.");
+        }
+        if (rsaKey.getParams() != null) {
+            // RSASSA-PSS keys restricted to PSS parameters cannot be used with RS256
+            return Optional.of("The RSA key is restricted to RSASSA-PSS parameters, but RS256 is used.");
+        }
+        return Optional.empty();
     }
 
     boolean verifyJwt(X509Certificate serverCert) {
-        boolean supportedAlgorithm = isJwtSupportedKey(serverCert.getPublicKey());
+        Optional<String> reason = whyKeyCannotSignJwt(serverCert.getPublicKey());
 
         System.out.println("++++++++");
-        if (supportedAlgorithm) {
-            System.out.println("Certificate can be used for generating JWT token.");
-        } else {
+        if (reason.isPresent()) {
             System.out.println("Certificate can't be used for generating JWT token. " +
-                "Provide certificate with an RSA key of at least 2048 bits " +
-                "(RSASSA-PKCS1-v1_5 using SHA-256 as defined by RFC 7518, Section 3.3). " +
-                "Other key types, including EC keys, are not supported. " +
-                "The signature algorithm of the certificate itself is not relevant.");
+                "Provide certificate with supported algorithm: " +
+                "RSASSA-PKCS1-v1_5 using SHA-256 signature algorithm as defined by RFC 7518, Section 3.3. " +
+                reason.get());
+        } else {
+            System.out.println("Certificate can be used for generating JWT token.");
         }
         System.out.println("++++++++");
 
-        return supportedAlgorithm;
+        return reason.isEmpty();
     }
 
     boolean verifyCertificate(String keyAlias) throws KeyStoreException {

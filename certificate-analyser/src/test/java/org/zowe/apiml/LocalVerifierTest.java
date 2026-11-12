@@ -15,11 +15,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.security.KeyPairGenerator;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
+import java.security.spec.RSAKeyGenParameterSpec;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -35,6 +40,9 @@ class LocalVerifierTest {
     @Nested
     class JwtKey {
 
+        private record Result(boolean valid, String output) {
+        }
+
         private PublicKey rsa(int bits) throws Exception {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
             generator.initialize(bits);
@@ -47,11 +55,43 @@ class LocalVerifierTest {
             return generator.generateKeyPair().getPublic();
         }
 
-        private X509Certificate certificateWith(PublicKey key, String signatureAlgorithmOid) {
+        private PublicKey pss(boolean restricted) throws Exception {
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSASSA-PSS");
+            if (restricted) {
+                generator.initialize(new RSAKeyGenParameterSpec(2048, RSAKeyGenParameterSpec.F4,
+                    new PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 32, 1)));
+            } else {
+                generator.initialize(2048);
+            }
+            return generator.generateKeyPair().getPublic();
+        }
+
+        private Result verify(PublicKey key, String caSignatureAlgorithmOid) {
             X509Certificate certificate = mock(X509Certificate.class);
             doReturn(key).when(certificate).getPublicKey();
-            lenient().doReturn(signatureAlgorithmOid).when(certificate).getSigAlgOID();
-            return certificate;
+            lenient().doReturn(caSignatureAlgorithmOid).when(certificate).getSigAlgOID();
+
+            PrintStream original = System.out;
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            System.setOut(new PrintStream(out, true));
+            try {
+                boolean valid = new LocalVerifier(null, null).verifyJwt(certificate);
+                return new Result(valid, out.toString());
+            } finally {
+                System.setOut(original);
+            }
+        }
+
+        private Result verify(PublicKey key) {
+            return verify(key, "1.2.840.113549.1.1.11");
+        }
+
+        @Test
+        void givenRsaKey_thenCanBeUsed() throws Exception {
+            Result result = verify(rsa(2048));
+
+            assertTrue(result.valid());
+            assertTrue(result.output().contains("Certificate can be used for generating JWT token."));
         }
 
         @ParameterizedTest
@@ -62,26 +102,48 @@ class LocalVerifierTest {
             "1.2.840.10045.4.3.3",   // sha384WithECDSA
             "1.2.840.113549.1.1.10"  // RSASSA-PSS
         })
-        void givenRsaKey_whenSignedByCaWithAnyAlgorithm_thenCanBeUsed(String signatureAlgorithmOid) throws Exception {
-            assertTrue(new LocalVerifier(null, null).verifyJwt(certificateWith(rsa(2048), signatureAlgorithmOid)));
+        void givenRsaKey_whenCertificateSignedByCaWithAnyAlgorithm_thenCanBeUsed(String caSignatureAlgorithmOid) throws Exception {
+            assertTrue(verify(rsa(2048), caSignatureAlgorithmOid).valid());
         }
 
+        /** The size of the RSA key is not checked. */
+        @ParameterizedTest
+        @CsvSource({"1024", "4096"})
+        void givenRsaKeyOfAnySize_thenCanBeUsed(int bits) throws Exception {
+            assertTrue(verify(rsa(bits)).valid());
+        }
+
+        /** An RSASSA-PSS key without parameter restrictions can be used with RS256. */
         @Test
-        void givenRsaKeyShorterThan2048_thenCannotBeUsed() throws Exception {
-            assertFalse(new LocalVerifier(null, null).verifyJwt(certificateWith(rsa(1024), "1.2.840.113549.1.1.11")));
+        void givenRsaPssKeyWithoutRestrictions_thenCanBeUsed() throws Exception {
+            assertTrue(verify(pss(false)).valid());
         }
 
-        /** The API ML cannot issue tokens with EC keys yet, even though ES256 is possible with P-256. */
+        /** An RSASSA-PSS key restricted to PSS parameters cannot be used with RS256. */
+        @Test
+        void givenRsaPssKeyRestrictedToPssParameters_thenCannotBeUsed() throws Exception {
+            Result result = verify(pss(true));
+
+            assertFalse(result.valid());
+            assertTrue(result.output().contains("restricted to RSASSA-PSS parameters"));
+        }
+
+        /** Only RSA keys are supported. */
         @ParameterizedTest
         @CsvSource({"secp256r1", "secp384r1"})
         void givenEcKey_thenCannotBeUsed(String curve) throws Exception {
-            assertFalse(new LocalVerifier(null, null).verifyJwt(certificateWith(ec(curve), "1.2.840.10045.4.3.2")));
+            Result result = verify(ec(curve));
+
+            assertFalse(result.valid());
+            assertTrue(result.output().contains("of type EC, only RSA keys are supported"));
         }
 
         @Test
-        void givenOtherKeyType_thenCannotBeUsed() {
-            assertFalse(LocalVerifier.isJwtSupportedKey(null));
-            assertFalse(LocalVerifier.isJwtSupportedKey(mock(PublicKey.class)));
+        void givenNoKey_thenCannotBeUsed() {
+            Result result = verify(null);
+
+            assertFalse(result.valid());
+            assertTrue(result.output().contains("The key is missing"));
         }
     }
 
