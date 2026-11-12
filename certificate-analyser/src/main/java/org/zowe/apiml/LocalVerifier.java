@@ -176,7 +176,11 @@ public class LocalVerifier implements Verifier {
     /**
      * Checks that the public key of the certificate can be used to sign the JWT. The API ML signs the JWT with
      * RS256 (RSASSA-PKCS1-v1_5 using SHA-256), which requires an RSA key that is not restricted to RSASSA-PSS
-     * parameters. The size of the key is not checked.
+     * parameters.
+     * <p>
+     * The size of the RSA key is not checked, because the API ML does not limit it: it signs and verifies the JWT
+     * with keys of any size. The only size limit is the one the JVM applies to TLS
+     * ({@code jdk.certpath.disabledAlgorithms}), which is verified by the handshake checks.
      *
      * @return the reason why the key cannot be used, empty if it can
      */
