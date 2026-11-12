@@ -10,14 +10,9 @@
 
 package org.zowe.apiml;
 
-import java.security.AlgorithmParameters;
-import java.security.GeneralSecurityException;
 import java.security.KeyStoreException;
 import java.security.PublicKey;
-import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.security.spec.ECGenParameterSpec;
-import java.security.spec.ECParameterSpec;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -32,8 +27,6 @@ public class LocalVerifier implements Verifier {
     private static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss. SSSZ");
     private static final String OID_SERVER_AUTH = "1.3.6.1.5.5.7.3.1";
     private static final String OID_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2";
-
-    private static final ECParameterSpec P256 = loadP256();
 
     private final Stores stores;
     private final String[] requiredHostnames;
@@ -182,42 +175,13 @@ public class LocalVerifier implements Verifier {
 
     /**
      * The JWT is signed with the private key of the certificate, so what matters is the type of its key,
-     * not the algorithm the issuing CA used to sign the certificate. The API ML signs with RS256 for RSA keys
-     * and with ES256 for EC keys, which is possible only on the P-256 curve. The service does not check the
-     * RSA key size; the minimum of 2048 bits is the requirement of RFC 7518, Section 3.3, applied here as advice.
-     * Other key types, such as Ed25519, are not supported by the service.
+     * not the algorithm the issuing CA used to sign the certificate. The API ML can currently issue tokens
+     * only with RSA keys (RS256). EC keys are not supported yet, as the service is not able to create the JWK
+     * that identifies the signing key. The service does not check the RSA key size; the minimum of 2048 bits is
+     * the requirement of RFC 7518, Section 3.3, applied here as advice.
      */
     static boolean isJwtSupportedKey(PublicKey key) {
-        if (key instanceof RSAPublicKey rsaKey) {
-            return rsaKey.getModulus().bitLength() >= 2048;
-        }
-        if (key instanceof ECPublicKey ecKey) {
-            return isP256(ecKey.getParams());
-        }
-        return false;
-    }
-
-    /**
-     * Compares the complete domain parameters, the field size is not enough: secp256k1 and the brainpoolP256
-     * curves are 256 bits as well, but they cannot be used for ES256.
-     */
-    private static boolean isP256(ECParameterSpec params) {
-        return P256 != null && params != null
-            && P256.getCurve().equals(params.getCurve())
-            && P256.getGenerator().equals(params.getGenerator())
-            && P256.getOrder().equals(params.getOrder())
-            && P256.getCofactor() == params.getCofactor();
-    }
-
-    private static ECParameterSpec loadP256() {
-        try {
-            AlgorithmParameters parameters = AlgorithmParameters.getInstance("EC");
-            parameters.init(new ECGenParameterSpec("secp256r1"));
-            return parameters.getParameterSpec(ECParameterSpec.class);
-        } catch (GeneralSecurityException e) {
-            System.err.println("Unable to load the P-256 curve parameters: " + e.getMessage());
-            return null;
-        }
+        return key instanceof RSAPublicKey rsaKey && rsaKey.getModulus().bitLength() >= 2048;
     }
 
     boolean verifyJwt(X509Certificate serverCert) {
@@ -228,9 +192,9 @@ public class LocalVerifier implements Verifier {
             System.out.println("Certificate can be used for generating JWT token.");
         } else {
             System.out.println("Certificate can't be used for generating JWT token. " +
-                "Provide certificate with a supported key: " +
-                "an RSA key of at least 2048 bits (RSASSA-PKCS1-v1_5 using SHA-256 as defined by RFC 7518, Section 3.3) " +
-                "or an EC key on the P-256 curve (ECDSA using P-256 and SHA-256, RFC 7518, Section 3.4). " +
+                "Provide certificate with an RSA key of at least 2048 bits " +
+                "(RSASSA-PKCS1-v1_5 using SHA-256 as defined by RFC 7518, Section 3.3). " +
+                "Other key types, including EC keys, are not supported. " +
                 "The signature algorithm of the certificate itself is not relevant.");
         }
         System.out.println("++++++++");
