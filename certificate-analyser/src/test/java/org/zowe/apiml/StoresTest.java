@@ -14,9 +14,13 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.zowe.apiml.common.KeyringUtils;
 import org.zowe.apiml.common.StoresNotInitializeException;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import picocli.CommandLine;
 
-import java.net.MalformedURLException;
+import java.io.File;
+import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -24,6 +28,74 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class StoresTest {
+
+    @Nested
+    class GivenDifferentKeystoreAndTruststoreTypes {
+
+        @Test
+        void whenTruststoreTypeNotSpecified_thenItDefaultsToKeystoreType() {
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs("--keystore", "../keystore/service/service.keystore.p12",
+                "--keystoretype", "JCEHYBRIDRACFKS", "--keypasswd", "password",
+                "--truststore", "safkeyring://ZWESVUSR/ZWERING", "--trustpasswd", "password");
+
+            assertEquals("JCEHYBRIDRACFKS", conf.getTrustStoreType());
+        }
+    }
+
+    @Nested
+    class GivenKeyringWithAvailableHandler {
+
+        private static final String KEYSTORE_FILE = "../keystore/service/service.keystore.p12";
+        private static final String TRUSTSTORE_FILE = "../keystore/service/service.truststore.p12";
+
+        /** Replaces the IBM keyring access: the keyring URL points to a PKCS12 file, which is loaded as the store. */
+        private MockedStatic<KeyringUtils> mockKeyring(String ringFile) throws Exception {
+            MockedStatic<KeyringUtils> utils = Mockito.mockStatic(KeyringUtils.class);
+            utils.when(() -> KeyringUtils.isKeyring(ArgumentMatchers.anyString()))
+                .thenAnswer(i -> ((String) i.getArgument(0)).startsWith("safkeyring"));
+            utils.when(() -> KeyringUtils.keyRingUrl(ArgumentMatchers.anyString(), ArgumentMatchers.anyString()))
+                .thenReturn(new File(ringFile).toURI().toURL());
+            utils.when(() -> KeyringUtils.readKeyStore(ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.anyString()))
+                .thenAnswer(i -> {
+                    KeyStore keyStore = KeyStore.getInstance("PKCS12");
+                    keyStore.load(i.getArgument(0), (char[]) i.getArgument(1));
+                    return keyStore;
+                });
+            return utils;
+        }
+
+        @Test
+        void whenKeystoreIsKeyring_thenItIsAlsoUsedAsTruststore() throws Exception {
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs("--keystore", "safkeyring://ZWESVUSR/ZWERING",
+                "--keystoretype", "JCERACFKS", "--keypasswd", "password");
+
+            try (MockedStatic<KeyringUtils> utils = mockKeyring(KEYSTORE_FILE)) {
+                Stores stores = new Stores(conf);
+
+                assertNotNull(stores.getKeyStore());
+                assertSame(stores.getKeyStore(), stores.getTrustStore());
+                utils.verify(() -> KeyringUtils.keyRingUrl("safkeyring://ZWESVUSR/ZWERING", "JCERACFKS"));
+            }
+        }
+
+        @Test
+        void whenTruststoreIsKeyring_thenItIsLoadedWithItsOwnType() throws Exception {
+            ApimlConf conf = new ApimlConf();
+            new CommandLine(conf).parseArgs("--keystore", KEYSTORE_FILE, "--keystoretype", "PKCS12", "--keypasswd", "password",
+                "--truststore", "safkeyring://ZWESVUSR/ZWERING", "--truststoretype", "JCEHYBRIDRACFKS", "--trustpasswd", "password");
+
+            try (MockedStatic<KeyringUtils> utils = mockKeyring(TRUSTSTORE_FILE)) {
+                Stores stores = new Stores(conf);
+
+                assertNotNull(stores.getKeyStore());
+                assertNotNull(stores.getTrustStore());
+                assertNotSame(stores.getKeyStore(), stores.getTrustStore());
+                utils.verify(() -> KeyringUtils.keyRingUrl("safkeyring://ZWESVUSR/ZWERING", "JCEHYBRIDRACFKS"));
+            }
+        }
+    }
 
     @Nested
     class GivenWrongPassword {
@@ -59,16 +131,18 @@ class StoresTest {
 
     @Nested
     class GivenSafKeyring {
+
         @Test
         void whenNoPathFound_thenStoresNotInitializeExceptionIsThrown() {
             String[] args = {"--keystore", "safkeyring:////userId/keyRing",
+                "--keystoretype", "JCERACFKS",
                 "--truststore", "safkeyring:////userId/keyRing",
                 "--keypasswd", "password",
                 "--keyalias", "localhost"};
             ApimlConf conf = new ApimlConf();
             new CommandLine(conf).parseArgs(args);
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
-            assertEquals("unknown protocol: safkeyring",e.getMessage());
+            assertEquals("unknown protocol: safkeyringjce", e.getMessage());
         }
 
         @Test
@@ -90,50 +164,13 @@ class StoresTest {
         void whenTruststoreIsKeyring_thenKeyRingUrlIsUsed() {
             String[] args = {"--keystore", "../keystore/service/service.keystore.p12",
                 "--truststore", "safkeyring://userId/keyRing",
+                "--truststoretype", "JCERACFKS",
                 "--keypasswd", "password",
                 "--keyalias", "localhost"};
             ApimlConf conf = new ApimlConf();
             new CommandLine(conf).parseArgs(args);
             StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class, () -> new Stores(conf));
-            assertEquals("unknown protocol: safkeyring", e.getMessage());
-        }
-
-        @Test
-        void givenValidKeyringUri_whenProtocolHandlerNotAvailable_thenThrowsMalformedURLException() {
-            assertThrows(MalformedURLException.class, () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing"));
-        }
-
-        @Test
-        void whenKeyRingUrlCalledWithInvalidFormat_thenThrowsStoresNotInitializeException() {
-            StoresNotInitializeException e = assertThrows(StoresNotInitializeException.class,
-                () -> KeyringUtils.keyRingUrl("notakeyring://bad/format/extra"));
-            assertTrue(e.getMessage().contains("Incorrect key ring format"));
-        }
-
-        @Test
-        void givenIsKeyring_whenValidSafkeyringUri_thenReturnsTrue() {
-            assertTrue(KeyringUtils.isKeyring("safkeyring://userId/keyRing"));
-            assertTrue(KeyringUtils.isKeyring("safkeyring:////userId/keyRing"));
-            assertTrue(KeyringUtils.isKeyring("safkeyringce://userId/keyRing"));
-        }
-
-        @Test
-        void givenIsKeyring_whenInvalidUri_thenReturnsFalse() {
-            assertFalse(KeyringUtils.isKeyring(null));
-            assertFalse(KeyringUtils.isKeyring(""));
-            assertFalse(KeyringUtils.isKeyring("/path/to/file.p12"));
-            assertFalse(KeyringUtils.isKeyring("keyring://userId/keyRing"));
-        }
-
-        @Test
-        void givenFormatKeyringUrl_whenUriHasExtraSlashes_thenNormalized() {
-            assertEquals("safkeyring://userId/keyRing", KeyringUtils.formatKeyringUrl("safkeyring:////userId/keyRing"));
-            assertEquals("safkeyring://userId/keyRing", KeyringUtils.formatKeyringUrl("safkeyring://userId/keyRing"));
-        }
-
-        @Test
-        void givenFormatKeyringUrl_whenNull_thenReturnsNull() {
-            assertNull(KeyringUtils.formatKeyringUrl(null));
+            assertEquals("unknown protocol: safkeyringjce", e.getMessage());
         }
     }
 

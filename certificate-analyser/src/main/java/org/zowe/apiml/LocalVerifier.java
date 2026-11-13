@@ -11,6 +11,8 @@
 package org.zowe.apiml;
 
 import java.security.KeyStoreException;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -25,7 +27,6 @@ public class LocalVerifier implements Verifier {
     private static final SimpleDateFormat DATE_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss. SSSZ");
     private static final String OID_SERVER_AUTH = "1.3.6.1.5.5.7.3.1";
     private static final String OID_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2";
-    private static final String OID_SHA256_RSA = "1.2.840.113549.1.1.11";
 
     private final Stores stores;
     private final String[] requiredHostnames;
@@ -172,21 +173,44 @@ public class LocalVerifier implements Verifier {
         return clientAuth;
     }
 
+    /**
+     * Checks that the public key of the certificate can be used to sign the JWT. The API ML signs the JWT with
+     * RS256 (RSASSA-PKCS1-v1_5 using SHA-256), which requires an RSA key that is not restricted to RSASSA-PSS
+     * parameters.
+     * <p>
+     * The size of the RSA key is not checked, because the API ML does not limit it: it signs and verifies the JWT
+     * with keys of any size. The only size limit is the one the JVM applies to TLS
+     * ({@code jdk.certpath.disabledAlgorithms}), which is verified by the handshake checks.
+     *
+     * @return the reason why the key cannot be used, empty if it can
+     */
+    static Optional<String> whyKeyCannotSignJwt(PublicKey key) {
+        if (!(key instanceof RSAPublicKey rsaKey)) {
+            return Optional.of("The key is " + (key == null ? "missing" : "of type " + key.getAlgorithm())
+                + ", only RSA keys are supported.");
+        }
+        if (rsaKey.getParams() != null) {
+            // RSASSA-PSS keys restricted to PSS parameters cannot be used with RS256
+            return Optional.of("The RSA key is restricted to RSASSA-PSS parameters, but RS256 is used.");
+        }
+        return Optional.empty();
+    }
+
     boolean verifyJwt(X509Certificate serverCert) {
-        boolean supportedAlgorithm = serverCert.getSigAlgOID() != null && serverCert.getSigAlgOID().contains(OID_SHA256_RSA);
+        Optional<String> reason = whyKeyCannotSignJwt(serverCert.getPublicKey());
 
         System.out.println("++++++++");
-        if (supportedAlgorithm) {
-            System.out.println("Certificate can be used for generating JWT token.");
-        } else {
+        if (reason.isPresent()) {
             System.out.println("Certificate can't be used for generating JWT token. " +
                 "Provide certificate with supported algorithm: " +
-                "RSASSA-PKCS1-v1_5 using SHA-256 signature algorithm as defined by RFC 7518, Section 3.3." +
-                " This algorithm requires a 2048-bit key");
+                "RSASSA-PKCS1-v1_5 using SHA-256 signature algorithm as defined by RFC 7518, Section 3.3. " +
+                reason.get());
+        } else {
+            System.out.println("Certificate can be used for generating JWT token.");
         }
         System.out.println("++++++++");
 
-        return supportedAlgorithm;
+        return reason.isEmpty();
     }
 
     boolean verifyCertificate(String keyAlias) throws KeyStoreException {
