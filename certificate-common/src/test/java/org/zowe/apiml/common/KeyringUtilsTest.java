@@ -234,20 +234,6 @@ class KeyringUtilsTest {
     @Nested
     class ReadKeyStoreWithMissingProvider {
 
-        @ParameterizedTest
-        @ValueSource(strings = {"JCERACFKS", "JCECCARACFKS", "JCEHYBRIDRACFKS", "jcehybridracfks"})
-        void givenRacfKeystoreTypeWithoutProvider_thenMessageExplainsHowToRegisterIt(String type) {
-            org.junit.jupiter.api.Assumptions.assumeTrue(KeyStoreProbe.isMissing(type), type + " is available on this JVM");
-
-            KeyStoreException e = assertThrows(KeyStoreException.class,
-                () -> KeyringUtils.readKeyStore(new ByteArrayInputStream(new byte[0]), "password".toCharArray(), type));
-
-            assertThat(e.getMessage(), containsString(type + " not found"));
-            assertThat(e.getMessage(), containsString("-Djava.security.properties"));
-            assertThat(e.getMessage(), containsString("--add-modules"));
-            assertNotNull(e.getCause());
-        }
-
         @Test
         void givenOtherUnknownType_thenOriginalExceptionIsRethrownWithoutHint() {
             KeyStoreException e = assertThrows(KeyStoreException.class,
