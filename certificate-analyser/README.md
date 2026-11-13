@@ -78,38 +78,14 @@ java -jar -Djavax.net.debug=ssl:handshake:verbose certificate-analyser-<version>
 
 ### SAF Keyrings
 
-On z/OS with IBM Java 17/21, if you are using SAF keyrings, add the IBM crypto modules to the JVM module graph:
+On z/OS with IBM Java 17/21, if you are using SAF keyrings, provide apiml's security properties:
 
 ```bash
-java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
-  -Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
+java -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \ 
+-Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
   -jar certificate-analyser-<version>.jar \
   --keystore safkeyring://userId/keyRing \
   --keystoretype JCERACFKS \
-  --keypasswd password
-```
-
-> **Note:** The tool internally sets `java.protocol.handler.pkgs` to register the
-> `safkeyring://` URL protocol handler. The `--add-modules` flag resolves the IBM
-> crypto modules making the handler classes accessible. Both mechanisms work together
-> to enable `safkeyring://` URLs.
-
-> **Note:** Configure security providers at JVM startup using the property file shipped in
-> `apiml-common-lib/bin/jvm.security.override.properties`. In a source checkout, the file is at
-> `apiml-common-lib-package/src/main/resources/jvm.security.override.properties`.
-> Use a single `=` in `-Djava.security.properties=...` to retain the other standard security settings.
-> For hybrid keyrings, set `--keystoretype JCEHYBRIDRACFKS` and add `ibm.crypto.ibmjcehybrid`
-> to `--add-modules`. Check available modules with `java --list-modules | grep ibm.crypto`.
-
-For a hybrid keyring, use the same command with `--keystoretype JCEHYBRIDRACFKS` and add the module that
-provides `IBMJCEHYBRID` to `--add-modules`:
-
-```bash
-java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
-  -Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
-  -jar certificate-analyser-<version>.jar \
-  --keystore safkeyring://userId/keyRing \
-  --keystoretype JCEHYBRIDRACFKS \
   --keypasswd password
 ```
 
@@ -223,6 +199,7 @@ On z/OS, if you are using SAF keyrings, provide the keyring path in `safkeyring:
 
 ```bash
 java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
+  -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -jar certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
@@ -232,6 +209,6 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
 ```
 
 > **Note:** On IBM Java 17/21, the `--add-modules` flag resolves the IBM crypto modules,
-> making the safkeyring URL protocol handler classes accessible. The tool also sets
-> `java.protocol.handler.pkgs` internally to register the handler packages with
-> the `URL` class. Both mechanisms work together to enable `safkeyring://` URLs.
+> making the safkeyring URL protocol handler classes accessible. `-Djava.protocol.handler.pkgs`
+> tells the `URL` class which packages contain the handlers. Both are JVM options and must
+> be passed on the command line.

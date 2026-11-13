@@ -284,6 +284,7 @@ On z/OS, if you are using SAF keyrings instead of file-based keystores/truststor
 
 ```bash
 java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
+  -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
   -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
@@ -294,9 +295,9 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
 ```
 
 > **Note:** On IBM Java 17/21, the `--add-modules` flag resolves the IBM crypto modules,
-> making the safkeyring URL protocol handler classes accessible. The tool also sets
-> `java.protocol.handler.pkgs` internally to register the handler packages with
-> the `URL` class. Both mechanisms work together to enable `safkeyring://` URLs.
+> making the safkeyring URL protocol handler classes accessible. `-Djava.protocol.handler.pkgs`
+> tells the `URL` class which packages contain the handlers. Both are JVM options and must
+> be passed on the command line.
 
 > **Note:** Configure security providers at JVM startup using the property file shipped in
 > `apiml-common-lib/bin/jvm.security.override.properties`. In a source checkout, the file is at

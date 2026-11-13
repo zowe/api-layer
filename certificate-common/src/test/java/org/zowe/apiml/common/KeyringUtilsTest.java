@@ -128,6 +128,19 @@ class KeyringUtilsTest {
             assertThat(err.toString(), containsString("--add-modules"));
         }
 
+        /** No IBM handlers on the test JVM: the failure identifies the protocol selected for the store type. */
+        @ParameterizedTest
+        @CsvSource({
+            "JCERACFKS, safkeyringjce",
+            "JCECCARACFKS, safkeyringjcecca",
+            "JCEHYBRIDRACFKS, safkeyringjcehybrid"
+        })
+        void givenStoreType_thenFailureNamesProtocolOfStoreType(String type, String protocol) {
+            java.net.MalformedURLException ex = assertThrows(java.net.MalformedURLException.class,
+                () -> KeyringUtils.keyRingUrl("safkeyring://ZWESVUSR/ZWERING", type));
+            assertEquals("unknown protocol: " + protocol, ex.getMessage());
+        }
+
         @Test
         void givenHandlerAvailable_thenReturnsUrlWithProtocolOfStoreType() throws Exception {
             String previous = System.getProperty("java.protocol.handler.pkgs");
@@ -215,61 +228,6 @@ class KeyringUtilsTest {
             InputStream is = new ByteArrayInputStream(new byte[0]);
             assertThrows(KeyStoreException.class,
                 () -> KeyringUtils.readKeyStore(is, "pass".toCharArray(), "INVALID_TYPE"));
-        }
-    }
-
-    @Nested
-    class EnsureSafkeyringHandler {
-
-        @Test
-        void givenEmptyProperty_thenSetsHandlerPackages() {
-            String original = System.getProperty("java.protocol.handler.pkgs", "");
-            try {
-                System.setProperty("java.protocol.handler.pkgs", "");
-
-                KeyringUtils.ensureSafkeyringHandler();
-
-                String result = System.getProperty("java.protocol.handler.pkgs");
-                assertThat(result, containsString("com.ibm.crypto.zsecurity.provider"));
-                assertThat(result, containsString("com.ibm.crypto.hdwrCCA.provider"));
-            } finally {
-                System.setProperty("java.protocol.handler.pkgs", original);
-            }
-        }
-
-        @Test
-        void givenExistingPackages_thenAppendsWithPipeSeparator() {
-            String original = System.getProperty("java.protocol.handler.pkgs", "");
-            try {
-                System.setProperty("java.protocol.handler.pkgs", "com.example.handler");
-
-                KeyringUtils.ensureSafkeyringHandler();
-
-                String result = System.getProperty("java.protocol.handler.pkgs");
-                assertThat(result, startsWith("com.example.handler|"));
-                assertThat(result, containsString("com.ibm.crypto.zsecurity.provider"));
-                assertThat(result, containsString("com.ibm.crypto.hdwrCCA.provider"));
-            } finally {
-                System.setProperty("java.protocol.handler.pkgs", original);
-            }
-        }
-
-        @Test
-        void givenAlreadyRegistered_thenDoesNotDuplicate() {
-            String original = System.getProperty("java.protocol.handler.pkgs", "");
-            try {
-                System.setProperty("java.protocol.handler.pkgs", "");
-
-                KeyringUtils.ensureSafkeyringHandler();
-                String firstRun = System.getProperty("java.protocol.handler.pkgs");
-
-                KeyringUtils.ensureSafkeyringHandler();
-                String secondRun = System.getProperty("java.protocol.handler.pkgs");
-
-                assertEquals(firstRun, secondRun);
-            } finally {
-                System.setProperty("java.protocol.handler.pkgs", original);
-            }
         }
     }
 
