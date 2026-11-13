@@ -34,6 +34,21 @@ import py_eureka_client.http_client as http_client
 config_loader = ConfigLoader("config/service-configuration.yml")
 
 
+def create_ssl_context(ssl_config):
+    """Build a context for authenticated outbound TLS connections."""
+    ca_file = ssl_config.get("caFile")
+    cert_file = ssl_config.get("certificate")
+    key_file = ssl_config.get("keystore")
+    if not (ca_file and cert_file and key_file):
+        raise ValueError("SSL configuration is incomplete. Certificate, key, and CA files must be provided.")
+
+    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile=ca_file)
+    context.load_cert_chain(
+        certfile=cert_file, keyfile=key_file, password=ssl_config.get("keyPassword")
+    )
+    return context
+
+
 class HttpResponse(http_client.HttpResponse):
     """
     Custom HTTP response wrapper that caches body text of an aiohttp response.
@@ -67,26 +82,18 @@ class HttpClient(http_client.HttpClient):
             Sends an HTTPS request using aiohttp. Supports GET and POST. Automatically applies configured SSL context.
     """
 
+    def __init__(self, ssl_context=None):
+        self.ssl_context = ssl_context
+
     async def urlopen(self, request: Union[str, http_client.HttpRequest] = None,
                       data: bytes = None, timeout: float = None) -> http_client.HttpResponse:
-        # Load SSL configuration from ConfigLoader
-        ssl_config = config_loader.config.get("ssl", {})
-
-        ca_cert = ssl_config.get("caFile")
-        certfile = ssl_config.get("certificate")
-        keyfile = ssl_config.get("keystore")
-        password = ssl_config.get("keyPassword", None)
-
-        if not (ca_cert and certfile and keyfile):
-            raise ValueError("SSL certificate configuration is missing in service-configuration.yml")
-
-        # Create SSL context
-        ssl_context = ssl.create_default_context(cafile=ca_cert)
-        ssl_context.load_cert_chain(certfile=certfile, keyfile=keyfile, password=password)
-
         # Determine the URL and method (POST or GET)
         url = request if isinstance(request, str) else request.url
         method = "POST" if data else "GET"
+
+        ssl_context = self.ssl_context
+        if url.lower().startswith("https://") and ssl_context is None:
+            ssl_context = create_ssl_context(config_loader.config.get("ssl", {}))
 
         headers = {
             'Content-Type': 'application/json' if method == "POST" else 'application/xml'

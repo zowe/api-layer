@@ -28,6 +28,7 @@ from unittest.mock import patch, MagicMock, AsyncMock
 import ssl
 import yaml
 from src.zowe_apiml_onboarding_enabler_python.custom_http_client import HttpResponse, HttpClient
+from src.zowe_apiml_onboarding_enabler_python.registration import PythonEnabler
 
 mock_yaml_content = """
 eureka:
@@ -99,6 +100,67 @@ async def test_http_client_ssl_setup(mock_config_loader, mock_ssl_context, mock_
     assert isinstance(response, HttpResponse)
     assert response.raw_response.status == 200
     assert response.body_text == "success"
+
+    mock_aiohttp_session.request.assert_called_once_with(
+        method="GET", url="https://example.com", data=None,
+        ssl=mock_ssl_context, headers={"Content-Type": "application/xml"}
+    )
+
+
+@pytest.mark.asyncio
+async def test_enabler_uses_custom_config_context_for_requests(
+    tmp_path, mock_ssl_context, mock_aiohttp_session
+):
+    config_file = tmp_path / "custom-config.yml"
+    config_file.write_text(mock_yaml_content)
+    with patch(
+        "src.zowe_apiml_onboarding_enabler_python.registration.http_client.set_http_client"
+    ) as set_client, patch(
+        "src.zowe_apiml_onboarding_enabler_python.custom_http_client.config_loader.config", {}
+    ), patch(
+        "src.zowe_apiml_onboarding_enabler_python.custom_http_client.ssl.create_default_context",
+        return_value=mock_ssl_context,
+    ) as create_context:
+        enabler = PythonEnabler(config_file=str(config_file))
+        client = set_client.call_args.args[0]
+
+        await client.urlopen(enabler.discovery_service)
+        await client.urlopen(enabler.discovery_service)
+
+    create_context.assert_called_once_with(
+        ssl.Purpose.SERVER_AUTH, cafile="../keystore/service/service.pem"
+    )
+    mock_ssl_context.load_cert_chain.assert_called_once_with(
+        certfile="../keystore/service/service.cer",
+        keyfile="../keystore/service/service.key",
+        password="password",
+    )
+    assert enabler.ssl_context is mock_ssl_context
+    assert all(
+        call.kwargs["ssl"] is mock_ssl_context
+        for call in mock_aiohttp_session.request.call_args_list
+    )
+
+
+@pytest.mark.asyncio
+async def test_http_request_does_not_require_certificates(mock_aiohttp_session):
+    with patch(
+        "src.zowe_apiml_onboarding_enabler_python.custom_http_client.config_loader.config", {}
+    ):
+        response = await HttpClient().urlopen("http://example.com")
+
+    assert response.body_text == "success"
+    assert mock_aiohttp_session.request.call_args.kwargs["ssl"] is None
+
+
+@pytest.mark.asyncio
+async def test_https_request_rejects_missing_certificates(mock_aiohttp_session):
+    with patch(
+        "src.zowe_apiml_onboarding_enabler_python.custom_http_client.config_loader.config", {}
+    ), pytest.raises(ValueError, match="SSL configuration is incomplete"):
+        await HttpClient().urlopen("https://example.com")
+
+    mock_aiohttp_session.request.assert_not_called()
 
 def test_http_response():
     raw_response_mock = MagicMock()
