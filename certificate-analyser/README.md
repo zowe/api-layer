@@ -37,7 +37,7 @@ This is achieved through the following Gradle configuration:
 
 ### Usage
 
-java -jar certificate-analyser-<version>.jar --help
+`java -jar certificate-analyser-<version>.jar --help`
 
 ```
 Usage: <main class> [-hl] [-kp[=<keyPasswd>]] [-tp[=<trustPasswd>]]
@@ -65,9 +65,9 @@ Usage: <main class> [-hl] [-kp[=<keyPasswd>]] [-tp[=<trustPasswd>]]
 
 *NOTE*
 
-keypasswd - if you specify this parameter without a value(e.g. java -jar <file.jar> --keypasswd), you will be asked to enter the password
+keypasswd - if you specify this parameter without a value (e.g. java -jar <file.jar> --keypasswd), you will be asked to enter the password
 
-trustpasswd - if you specify this parameter without a value(e.g. java -jar <file.jar> --trustpasswd), you will be asked to enter the password
+trustpasswd - if you specify this parameter without a value (e.g. java -jar <file.jar> --trustpasswd), you will be asked to enter the password
             -  if this parameter is omitted completely, value from keypasswd will be used
 
 truststoretype - if this parameter is omitted completely, value from keystoretype will be used
