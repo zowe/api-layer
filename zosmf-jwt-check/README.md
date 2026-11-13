@@ -283,8 +283,7 @@ java -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --z
 On z/OS, if you are using SAF keyrings instead of file-based keystores/truststores, provide the keyring path in the `safkeyring://` format and add the IBM crypto modules to the JVM module graph:
 
 ```bash
-java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
-  -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
+java -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
   -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
@@ -292,30 +291,4 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
   --truststore-file safkeyring://IZUSVR/ZoweKeyring \
   --truststore-password password \
   --truststore-type JCERACFKS
-```
-
-> **Note:** On IBM Java 17/21, the `--add-modules` flag resolves the IBM crypto modules,
-> making the safkeyring URL protocol handler classes accessible. `-Djava.protocol.handler.pkgs`
-> tells the `URL` class which packages contain the handlers. Both are JVM options and must
-> be passed on the command line.
-
-> **Note:** Configure security providers at JVM startup using the property file shipped in
-> `apiml-common-lib/bin/jvm.security.override.properties`. In a source checkout, the file is at
-> `apiml-common-lib-package/src/main/resources/jvm.security.override.properties`.
-> Use a single `=` in `-Djava.security.properties=...` to retain the other standard security settings.
-> For hybrid keyrings, set `--truststore-type JCEHYBRIDRACFKS` and add `ibm.crypto.ibmjcehybrid`
-> to `--add-modules`. Check available modules with `java --list-modules | grep ibm.crypto`.
-
-For a hybrid keyring, use the same command with `--truststore-type JCEHYBRIDRACFKS` and add the module that
-provides `IBMJCEHYBRID` to `--add-modules`:
-
-```bash
-java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca,<module providing IBMJCEHYBRID> \
-  -Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
-  -jar certificate-analyser/build/libs/certificate-analyser-<version>.jar --zosmf-jwt-check \
-  --zosmf-host myzosmf.example.com \
-  --zosmf-port 11443 \
-  --truststore-file safkeyring://IZUSVR/ZoweKeyring \
-  --truststore-password password \
-  --truststore-type JCEHYBRIDRACFKS
 ```

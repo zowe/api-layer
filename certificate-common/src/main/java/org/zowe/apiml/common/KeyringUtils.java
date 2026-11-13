@@ -31,7 +31,7 @@ public final class KeyringUtils {
 
     private static final String PROVIDER_HINT = "For JCECCARACFKS and JCEHYBRIDRACFKS keyrings the matching IBM security provider must be registered:"
         + " start the JVM with -Djava.security.properties=<apiml-common-lib>/bin/jvm.security.override.properties"
-        + " and add the module providing the provider to --add-modules (list them with: java --list-modules | grep ibm.crypto).";
+        + " and -Djava.protocol.handler.pkgs=com.ibm.crypto.provider.";
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
