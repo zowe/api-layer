@@ -37,7 +37,7 @@ This is achieved through the following Gradle configuration:
 
 ### Usage
 
-java -jar certificate-analyser-<version>.jar --help
+`java -jar certificate-analyser-<version>.jar --help`
 
 ```
 Usage: <main class> [-hl] [-kp[=<keyPasswd>]] [-tp[=<trustPasswd>]]
@@ -65,9 +65,9 @@ Usage: <main class> [-hl] [-kp[=<keyPasswd>]] [-tp[=<trustPasswd>]]
 
 *NOTE*
 
-keypasswd - if you specify this parameter without a value(e.g. java -jar <file.jar> --keypasswd), you will be asked to enter the password
+keypasswd - if you specify this parameter without a value (e.g. java -jar <file.jar> --keypasswd), you will be asked to enter the password
 
-trustpasswd - if you specify this parameter without a value(e.g. java -jar <file.jar> --trustpasswd), you will be asked to enter the password
+trustpasswd - if you specify this parameter without a value (e.g. java -jar <file.jar> --trustpasswd), you will be asked to enter the password
             -  if this parameter is omitted completely, value from keypasswd will be used
 
 truststoretype - if this parameter is omitted completely, value from keystoretype will be used
@@ -78,20 +78,16 @@ java -jar -Djavax.net.debug=ssl:handshake:verbose certificate-analyser-<version>
 
 ### SAF Keyrings
 
-On z/OS with IBM Java 17/21, if you are using SAF keyrings, add the IBM crypto modules to the JVM module graph:
+On z/OS with IBM Java 17/21, if you are using SAF keyrings, provide apiml's security properties:
 
 ```bash
-java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
+java -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \ 
+-Djava.security.properties=/path/to/apiml-common-lib/bin/jvm.security.override.properties \
   -jar certificate-analyser-<version>.jar \
   --keystore safkeyring://userId/keyRing \
   --keystoretype JCERACFKS \
   --keypasswd password
 ```
-
-> **Note:** The tool internally sets `java.protocol.handler.pkgs` to register the
-> `safkeyring://` URL protocol handler. The `--add-modules` flag resolves the IBM
-> crypto modules making the handler classes accessible. Both mechanisms work together
-> to enable `safkeyring://` URLs — no additional `-D` flags are needed.
 
 ### Possible issues
 
@@ -203,6 +199,7 @@ On z/OS, if you are using SAF keyrings, provide the keyring path in `safkeyring:
 
 ```bash
 java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
+  -Djava.protocol.handler.pkgs=com.ibm.crypto.provider \
   -jar certificate-analyser-<version>.jar --zosmf-jwt-check \
   --zosmf-host myzosmf.example.com \
   --zosmf-port 11443 \
@@ -212,6 +209,6 @@ java --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca \
 ```
 
 > **Note:** On IBM Java 17/21, the `--add-modules` flag resolves the IBM crypto modules,
-> making the safkeyring URL protocol handler classes accessible. The tool also sets
-> `java.protocol.handler.pkgs` internally to register the handler packages with
-> the `URL` class. Both mechanisms work together to enable `safkeyring://` URLs.
+> making the safkeyring URL protocol handler classes accessible. `-Djava.protocol.handler.pkgs`
+> tells the `URL` class which packages contain the handlers. Both are JVM options and must
+> be passed on the command line.
