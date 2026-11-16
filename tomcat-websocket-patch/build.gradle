@@ -1,0 +1,75 @@
+// Rebuild the pinned upstream dependency with the buffered-read fix. A complete replacement
+// avoids duplicate Tomcat classes and classpath-order dependencies in tests and distributions.
+configurations {
+    upstreamSources {
+        transitive = false
+    }
+    upstreamBinary {
+        transitive = false
+    }
+}
+
+dependencies {
+    api libs.tomcat.embed.core
+    compileOnly 'biz.aQute.bnd:biz.aQute.bnd.annotation:7.1.0'
+    upstreamSources "org.apache.tomcat.embed:tomcat-embed-websocket:${libs.versions.tomcat.get()}:sources"
+    upstreamBinary libs.tomcat.embed.websocket
+    testImplementation libs.spring.boot.starter.test
+}
+
+def patchedSources = layout.buildDirectory.dir('generated/sources/tomcat')
+def patchFile = layout.projectDirectory.file('patches/buffered-websocket-resume.patch')
+
+tasks.register('patchTomcat', Exec) {
+    inputs.files(configurations.upstreamSources)
+    inputs.file(patchFile)
+    outputs.dir(patchedSources)
+    workingDir rootDir
+    commandLine 'git', 'apply', '--whitespace=error',
+        "--directory=${rootProject.relativePath(patchedSources.get().asFile)}", patchFile.asFile.absolutePath
+    doFirst {
+        project.sync { spec ->
+            spec.from(zipTree(configurations.upstreamSources.singleFile))
+            spec.include('**/*.java')
+            spec.into(patchedSources)
+            spec.filter(org.apache.tools.ant.filters.FixCrLfFilter, eol: org.apache.tools.ant.filters.FixCrLfFilter.CrLf.newInstance('lf'))
+        }
+    }
+}
+
+sourceSets.main.java.setSrcDirs([tasks.named('patchTomcat')])
+
+processResources {
+    // Keep the upstream service providers, native-image metadata, translations and notices.
+    from({ zipTree(configurations.upstreamBinary.singleFile) }) {
+        exclude '**/*.class', 'META-INF/MANIFEST.MF'
+    }
+    from({ zipTree(configurations.upstreamBinary.singleFile) }) {
+        include 'module-info.class', '**/package-info.class'
+    }
+}
+
+jar {
+    inputs.files(configurations.upstreamBinary)
+    doFirst {
+        def upstreamManifest = zipTree(configurations.upstreamBinary.singleFile)
+            .matching { include 'META-INF/MANIFEST.MF' }.singleFile
+        def upstreamAttributes = upstreamManifest.withInputStream {
+            new java.util.jar.Manifest(it).mainAttributes.collectEntries { key, value ->
+                [(key.toString()): value.toString()]
+            }
+        }
+        manifest.attributes(upstreamAttributes + [
+            'Implementation-Version': "${libs.versions.tomcat.get()}-apiml-buffered-resume",
+            'Bundle-License': 'https://www.apache.org/licenses/LICENSE-2.0.txt'])
+    }
+}
+
+// Generated upstream sources retain their Apache license and formatting.
+checkLicenseMain.enabled = false
+updateLicenseMain.enabled = false
+checkstyleMain.enabled = false
+sonar {
+    // The production sources belong to the upstream dependency and are generated under build/.
+    skipProject = true
+}

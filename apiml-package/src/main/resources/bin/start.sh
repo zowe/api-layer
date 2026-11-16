@@ -263,8 +263,10 @@ VIRTUAL_THREADS_OPTS="${VIRTUAL_THREADS_OPTS:--Dorg.infinispan.threads.virtual=$
 # Start OpenTelemetry
 if [ "$ZWE_configs_telemetry_enabled" = "true" ]; then
     DISABLE_OTEL=false
+    ENABLE_MICROMETER=true
 else
     DISABLE_OTEL=true
+    ENABLE_MICROMETER=false
 fi
 
 if [ -n "${ZWE_configs_telemetry_attributes_deployment_environment_name}" ]; then
@@ -437,6 +439,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dotel.logs.exporter="${ZWE_configs_telemetry_logs_exporter:-otlp}" \
     -Dotel.metrics.exporter="${ZWE_configs_telemetry_metrics_exporter:-otlp}" \
     -Dotel.sdk.disabled=${DISABLE_OTEL} \
+    -Dotel.instrumentation.micrometer.enabled=${ENABLE_MICROMETER} \
     -Dotel.traces.exporter="${ZWE_configs_telemetry_traces_exporter:-otlp}" \
     -Dserver.address=${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}} \
     -Dserver.maxConnectionsPerRoute=${ZWE_components_gateway_server_maxConnectionsPerRoute:-${ZWE_configs_server_maxConnectionsPerRoute:-100}} \
@@ -456,6 +459,18 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dserver.webSocket.asyncWriteTimeout=${ZWE_components_gateway_server_webSocket_asyncWriteTimeout:-${ZWE_configs_server_webSocket_asyncWriteTimeout:-60000}} \
     -Dserver.webSocket.connectTimeout=${ZWE_components_gateway_server_webSocket_connectTimeout:-${ZWE_configs_server_webSocket_connectTimeout:-45000}} \
     -Dserver.webSocket.maxIdleTimeout=${ZWE_components_gateway_server_webSocket_maxIdleTimeout:-${ZWE_configs_server_webSocket_maxIdleTimeout:-3600000}} \
+    -Dserver.webSocket.partial.enabled=${ZWE_components_gateway_server_webSocket_partial_enabled:-${ZWE_configs_server_webSocket_partial_enabled:-true}} \
+    -Dserver.webSocket.partial.binaryBufferSize=${ZWE_components_gateway_server_webSocket_partial_binaryBufferSize:-${ZWE_configs_server_webSocket_partial_binaryBufferSize:-65536}} \
+    -Dserver.webSocket.partial.textBufferSize=${ZWE_components_gateway_server_webSocket_partial_textBufferSize:-${ZWE_configs_server_webSocket_partial_textBufferSize:-32768}} \
+    -Dserver.webSocket.partial.pendingBytes=${ZWE_components_gateway_server_webSocket_partial_pendingBytes:-${ZWE_configs_server_webSocket_partial_pendingBytes:-1048576}} \
+    -Dserver.webSocket.partial.pendingParts=${ZWE_components_gateway_server_webSocket_partial_pendingParts:-${ZWE_configs_server_webSocket_partial_pendingParts:-64}} \
+    -Dserver.webSocket.partial.globalPendingBytes=${ZWE_components_gateway_server_webSocket_partial_globalPendingBytes:-${ZWE_configs_server_webSocket_partial_globalPendingBytes:-67108864}} \
+    -Dserver.webSocket.partial.maxConnections=${ZWE_components_gateway_server_webSocket_partial_maxConnections:-${ZWE_configs_server_webSocket_partial_maxConnections:-256}} \
+    -Dserver.webSocket.partial.writerThreads=${ZWE_components_gateway_server_webSocket_partial_writerThreads:-${ZWE_configs_server_webSocket_partial_writerThreads:-16}} \
+    -Dserver.webSocket.partial.connectThreads=${ZWE_components_gateway_server_webSocket_partial_connectThreads:-${ZWE_configs_server_webSocket_partial_connectThreads:-4}} \
+    -Dserver.webSocket.partial.maxBinaryMessageSize=${ZWE_components_gateway_server_webSocket_partial_maxBinaryMessageSize:-${ZWE_configs_server_webSocket_partial_maxBinaryMessageSize:-0}} \
+    -Dserver.webSocket.partial.maxTextMessageSize=${ZWE_components_gateway_server_webSocket_partial_maxTextMessageSize:-${ZWE_configs_server_webSocket_partial_maxTextMessageSize:-0}} \
+    -Dserver.webSocket.partial.messageTimeout=${ZWE_components_gateway_server_webSocket_partial_messageTimeout:-${ZWE_configs_server_webSocket_partial_messageTimeout:-120000}} \
     -Dspring.cloud.gateway.server.webflux.httpclient.websocket.max-frame-payload-length=${ZWE_components_gateway_server_webSocket_requestBufferSize:-${ZWE_configs_server_webSocket_requestBufferSize:-8192}} \
     -Dspring.profiles.active=${ZWE_configs_spring_profiles_active:-} \
     -jar "${JAR_FILE}" &
