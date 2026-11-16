@@ -11,12 +11,16 @@
 package org.zowe.apiml.functional.gateway;
 
 import io.restassured.RestAssured;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.zowe.apiml.util.categories.X509Test;
 import org.zowe.apiml.util.config.ConfigReader;
 import org.zowe.apiml.util.config.Credentials;
+import org.zowe.apiml.util.config.ItSslConfigFactory;
+import org.zowe.apiml.util.config.SslContext;
 import org.zowe.apiml.util.http.HttpRequestUtils;
 
 import static io.restassured.RestAssured.given;
@@ -27,6 +31,11 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 
 class VersionTest {
+
+    @BeforeAll
+    static void prepareSsl() throws Exception {
+        SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
+    }
 
     @SuppressWarnings("unused")
     private static String[] versionUrls() {
@@ -52,6 +61,8 @@ class VersionTest {
             void returnValidVersion(String endpoint) {
                 // Gateway request to url
                 given()
+                    .config(SslContext.tlsWithoutCert)
+                    .auth().none()
                 .when()
                     .get(HttpRequestUtils.getUriFromGateway(endpoint))
                 .then()
@@ -85,6 +96,27 @@ class VersionTest {
                     .body("apiml.commitHash", is(not(nullValue())));
             }
 
+        }
+
+    }
+
+    @Nested
+    @X509Test
+    class GivenClientCertificate {
+
+        @ParameterizedTest
+        @MethodSource("org.zowe.apiml.functional.gateway.VersionTest#versionUrls")
+        void returnValidVersion(String endpoint) {
+            given()
+                .config(SslContext.clientCertValid)
+                .auth().none()
+            .when()
+                .get(HttpRequestUtils.getUriFromGateway(endpoint))
+            .then()
+                .statusCode(SC_OK)
+                .body("apiml.version", is(not(nullValue())))
+                .body("apiml.buildNumber", is(not(nullValue())))
+                .body("apiml.commitHash", is(not(nullValue())));
         }
 
     }
