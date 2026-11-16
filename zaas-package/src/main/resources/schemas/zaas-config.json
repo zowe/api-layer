@@ -201,6 +201,10 @@
                             "type": "object",
                             "description": "OIDC configuration.",
                             "properties": {
+                                "aud": {
+                                    "type": "string",
+                                    "description": "Required audience for accepted OIDC."
+                                },
                                 "enabled": {
                                     "type": "boolean",
                                     "description": "Enable authentication with OIDC token.",
