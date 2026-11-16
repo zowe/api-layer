@@ -12,6 +12,10 @@ package org.zowe.apiml.caching.service.infinispan.exception;
 
 public class InfinispanConfigException extends RuntimeException {
 
+    public InfinispanConfigException(String message) {
+        super(message);
+    }
+
     public InfinispanConfigException(String message, Throwable cause) {
         super(message, cause);
     }
