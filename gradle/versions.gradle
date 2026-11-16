@@ -40,7 +40,7 @@ dependencyResolutionManagement {
             version('netflixServo', '0.13.2')
             // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
             version('archaius', '0.7.12')
-            version('googleErrorprone', '2.51.0')
+            version('googleErrorprone', '2.52.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
             version('googleGson', '2.15.0')
             version('guava', '33.7.2-jre')
@@ -49,11 +49,11 @@ dependencyResolutionManagement {
             version('httpClient5', '5.6.5')
             version('hibernate_validator', '9.1.6.Final')
             version('infinispan', '16.3.1')
-            version('jacksonAnnotations', '2.22')  // Jackson 2 shim track: review when SB 4.3 lands
-            version('jacksonCore', '2.22.4')
-            version('jacksonDatabind', '2.22.4')
-            version('jacksonDataformatYaml', '2.22.4')
-            version('jackson3Databind', '3.2.4')
+            version('jacksonAnnotations', '2.23')  // Jackson 2 shim track: review when SB 4.3 lands
+            version('jacksonCore', '2.23.0')
+            version('jacksonDatabind', '2.23.0')
+            version('jacksonDataformatYaml', '2.23.0')
+            version('jackson3Databind', '3.3.0')
             version('janino', '3.1.12')
             version('jakartaValidation', '3.1.1')
             version('jakartaInject', '2.0.1')
@@ -62,7 +62,7 @@ dependencyResolutionManagement {
             version('openTelemetry-starter', '2.33.1')
             // Keep the SDK aligned with the Spring Boot starter's OpenTelemetry API dependency.
             // Starter 2.32.0 uses internal API classes removed in SDK 1.67.0.
-            version('openTelemetry-core', '1.67.0')
+            version('openTelemetry-core', '1.68.0')
             version('ow2Asm', '9.11.1')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
@@ -82,7 +82,7 @@ dependencyResolutionManagement {
             version('jose4j', '0.9.7')
             version('jodaTime', '2.15.1')
             version('jsonPath', '2.10.0')
-            version('jsonSmart', '2.6.0')
+            version('jsonSmart', '2.6.1')
             version('junitJupiter', '5.14.4')
             version('junitPlatform', '1.14.4')
             version('jsr305', '3.0.2')
@@ -92,7 +92,7 @@ dependencyResolutionManagement {
             version('log4j', '2.26.1')
             version('lombok', '1.18.48')
             version('mailapi', '1.6.8')
-            version('netty', '4.2.19.Final')
+            version('netty', '4.2.20.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
             version('nettyReactor', '1.3.8')
             version('nimbusJoseJwt', '10.10')
@@ -113,11 +113,11 @@ dependencyResolutionManagement {
             version('swaggerInflector', '2.0.17')
             version('swagger2Parser', '1.0.76')
             version('swagger3Parser', '2.1.48')
-            version('thymeleaf', '3.1.5.RELEASE')
+            version('thymeleaf', '3.1.6.RELEASE')
             version('tomcat', '11.0.27')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.3.0')
-            version('jgit', '7.8.0.202609011348-r')
+            version('jgit', '7.8.1.202611041320-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.5.0.8588')
             version('gradleRelease', '3.2.0')
@@ -129,7 +129,7 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
-            version('micronaut', '4.10.35')
+            version('micronaut', '4.10.36')
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
@@ -138,7 +138,7 @@ dependencyResolutionManagement {
             // this, so a stale value downgrades the committed wrapper on the next :gateway-service:wrapper.
             version('gradle', '9.7.1')
             version('commonsCompress', '1.28.0')
-            version('bucket4j', '8.21.0')
+            version('bucket4j', '8.22.0')
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
