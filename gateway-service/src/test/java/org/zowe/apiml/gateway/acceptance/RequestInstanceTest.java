@@ -22,7 +22,7 @@ import org.zowe.apiml.gateway.acceptance.common.AcceptanceTestWithMockServices;
 import java.io.IOException;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 

@@ -57,7 +57,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.apache.http.HttpHeaders.AUTHORIZATION;
-import static org.apache.http.HttpStatus.*;
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.params.provider.Arguments.arguments;

@@ -24,7 +24,7 @@ import org.zowe.apiml.gateway.filters.proxyheaders.X509AndGwAwareXForwardedHeade
 import java.util.Collections;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

@@ -16,7 +16,7 @@ import org.zowe.apiml.security.common.login.LoginRequest;
 
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
-import static org.apache.http.HttpStatus.SC_NO_CONTENT;
+import static org.apache.hc.core5.http.HttpStatus.SC_NO_CONTENT;
 import static org.hamcrest.core.Is.is;
 import static org.zowe.apiml.security.SecurityUtils.COOKIE_AUTH_NAME;
 

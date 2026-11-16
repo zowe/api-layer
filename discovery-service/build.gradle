@@ -64,6 +64,7 @@ dependencies {
     implementation libs.spring.cloud.starter.eureka.server
     // Spring Cloud Netflix 5.0.x excludes archaius-core; eureka-core still needs it.
     implementation libs.archaius.core
+    implementation libs.jersey.apache5.connector
 
     implementation libs.apache.commons.lang3
     implementation libs.jackson.dataformat.yaml

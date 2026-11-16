@@ -67,7 +67,11 @@ dependencies {
     implementation libs.spring.boot.starter.cache
     implementation libs.spring.doc.webflux.ui
     implementation libs.spring.retry
-    implementation libs.eureka.jersey.client
+    implementation(libs.eureka.jersey.client) {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'org.apache.httpcomponents', module: 'httpcore'
+        exclude group: 'org.apache.httpcomponents', module: 'httpmime'
+    }
 
     implementation libs.bundles.infinispan
 

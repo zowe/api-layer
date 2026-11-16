@@ -28,19 +28,21 @@ import com.netflix.eureka.transport.Jersey3DynamicGZIPContentEncodingFilter;
 import com.netflix.eureka.transport.Jersey3ReplicationClient;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientRequestFilter;
+import jakarta.ws.rs.core.HttpHeaders;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.DefaultHostnameVerifier;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.params.CoreProtocolPNames;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultSchemePortResolver;
+import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
+import org.apache.hc.client5.http.impl.routing.DefaultRoutePlanner;
+import org.apache.hc.client5.http.socket.ConnectionSocketFactory;
+import org.apache.hc.client5.http.socket.PlainConnectionSocketFactory;
+import org.apache.hc.client5.http.ssl.DefaultHostnameVerifier;
+import org.apache.hc.client5.http.ssl.NoopHostnameVerifier;
+import org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory;
+import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
+import org.glassfish.jersey.apache5.connector.Apache5HttpClientBuilderConfigurator;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -259,7 +261,7 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
         @Override
         public EurekaJersey3Client build() {
             try {
-                return new EurekaJersey3ClientImpl(
+                return new Apache5EurekaJersey3Client(
                     config.getPeerNodeConnectTimeoutMs(),
                     config.getPeerNodeReadTimeoutMs(),
                     config.getPeerNodeConnectionIdleTimeoutSeconds(),
@@ -296,24 +298,47 @@ public class RefreshablePeerEurekaNodes extends PeerEurekaNodes
                 property(ApacheClientProperties.CONNECTION_MANAGER, cm);
 
                 String fullUserAgentName = USER_AGENT + "/v" + buildVersion();
-                property(CoreProtocolPNames.USER_AGENT, fullUserAgentName);
+                // HttpClient 5 has no CoreProtocolPNames; the User-Agent is sent as a regular request header
+                register((ClientRequestFilter) requestContext ->
+                    requestContext.getHeaders().putSingle(HttpHeaders.USER_AGENT, fullUserAgentName));
 
+                // bind outgoing connections to the configured local address (not possible via RequestConfig in HttpClient 5)
                 try {
-                    property(ApacheClientProperties.REQUEST_CONFIG, RequestConfig.custom()
-                        .setLocalAddress(InetAddress.getByName(address))
-                        .build());
+                    InetAddress localAddress = InetAddress.getByName(address);
+                    register((Apache5HttpClientBuilderConfigurator) builder -> builder.setRoutePlanner(
+                        new LocalAddressRoutePlanner(localAddress)));
                 } catch (UnknownHostException e) {
                     log.warn("Failed to resolve host {}. Using default 0.0.0.0", address, e);
                 }
 
                 // To pin a client to specific server in case redirect happens, we handle redirects directly
                 // (see DiscoveryClient.makeRemoteCall methods).
+                property(ApacheClientProperties.REQUEST_CONFIG, RequestConfig.custom()
+                    .setRedirectsEnabled(false)
+                    .build());
                 property(ClientProperties.FOLLOW_REDIRECTS, Boolean.FALSE);
-                property(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
             }
 
         }
 
+    }
+
+    /**
+     * Route planner adding the local address to each planned route, so the pooled connections are bound to it.
+     */
+    static class LocalAddressRoutePlanner extends DefaultRoutePlanner {
+        private final InetAddress localAddress;
+
+        LocalAddressRoutePlanner(InetAddress localAddress) {
+            super(DefaultSchemePortResolver.INSTANCE);
+            this.localAddress = localAddress;
+        }
+
+        @Override
+        protected InetAddress determineLocalAddress(org.apache.hc.core5.http.HttpHost firstHop,
+                                                    org.apache.hc.core5.http.protocol.HttpContext context) {
+            return localAddress;
+        }
     }
 
 }

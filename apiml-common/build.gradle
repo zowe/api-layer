@@ -16,7 +16,11 @@ dependencies {
     implementation libs.guava
 
     compileOnly libs.netty.reactor.http
-    implementation libs.eureka.core
+    implementation(libs.eureka.core) {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'org.apache.httpcomponents', module: 'httpcore'
+        exclude group: 'org.apache.httpcomponents', module: 'httpmime'
+    }
 
     implementation libs.archaius.core // Spring Cloud Netflix 5.0.x excludes archaius-core; eureka-core still needs it.
 
