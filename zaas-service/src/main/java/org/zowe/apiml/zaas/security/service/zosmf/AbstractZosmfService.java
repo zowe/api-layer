@@ -166,17 +166,15 @@ public abstract class AbstractZosmfService {
         }
 
         if (re instanceof HttpClientErrorException.Unauthorized) {
-            log.debug("Request to z/OSMF requires authentication {}", re.getMessage());
-            return new BadCredentialsException("Invalid Credentials", re);
+            log.debug("Request to z/OSMF requires authentication");
+            return new BadCredentialsException("Invalid Credentials");
         }
 
         if (re instanceof RestClientResponseException) {
             RestClientResponseException responseException = (RestClientResponseException) re;
-            if (log.isTraceEnabled()) {
-                log.trace("z/OSMF request {} failed with status code {}, server response: {}", url, responseException.getStatusCode().value(), responseException.getResponseBodyAsString());
-            } else {
-                log.debug("z/OSMF request {} failed with status code {}", url, responseException.getStatusCode().value());
-            }
+            // HTTP exception messages and causes can contain the raw response body.
+            log.debug("z/OSMF request {} failed with status code {}", url, responseException.getStatusCode().value());
+            return new AuthenticationServiceException("A failure occurred when authenticating.");
         }
 
         if (re.getCause() instanceof ConnectException) {

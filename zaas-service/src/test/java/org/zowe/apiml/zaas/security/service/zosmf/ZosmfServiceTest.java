@@ -15,6 +15,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.collection.IsMapContaining;
 import org.jose4j.jwk.JsonWebKeySet;
@@ -48,6 +49,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.security.common.config.AuthConfigurationProperties;
@@ -66,6 +68,8 @@ import javax.management.ServiceNotFoundException;
 import javax.net.ssl.SSLHandshakeException;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.ConnectException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -171,6 +175,109 @@ class ZosmfServiceTest {
     private HttpHeaders addCSRFHeader(HttpHeaders headers) {
         headers.add("X-CSRF-ZOSMF-HEADER", "");
         return headers;
+    }
+
+    @Nested
+    class SanitizedAuthenticationLogging {
+        private static final String SECRET = "sensitive-response-marker";
+        private final ListAppender<ILoggingEvent> logs = new ListAppender<>();
+        private final Logger logger = (Logger) LoggerFactory.getLogger(ZosmfService.class);
+        private final Logger abstractLogger = (Logger) LoggerFactory.getLogger(AbstractZosmfService.class);
+        private Level originalLevel;
+        private Level originalAbstractLevel;
+
+        @BeforeEach
+        void captureLogs() {
+            originalLevel = logger.getLevel();
+            originalAbstractLevel = abstractLogger.getLevel();
+            logger.setLevel(Level.TRACE);
+            abstractLogger.setLevel(Level.TRACE);
+            logs.start();
+            logger.addAppender(logs);
+            abstractLogger.addAppender(logs);
+        }
+
+        @AfterEach
+        void restoreLogs() {
+            logger.detachAppender(logs);
+            abstractLogger.detachAppender(logs);
+            logger.setLevel(originalLevel);
+            abstractLogger.setLevel(originalAbstractLevel);
+            logs.stop();
+        }
+
+        private void assertSanitized(RuntimeException exception) {
+            StringWriter stackTrace = new StringWriter();
+            exception.printStackTrace(new PrintWriter(stackTrace));
+            assertFalse(stackTrace.toString().contains(SECRET), stackTrace.toString());
+            assertNull(exception.getCause());
+            assertFalse(logs.list.isEmpty());
+            for (ILoggingEvent event : logs.list) {
+                assertFalse(event.getFormattedMessage().contains(SECRET), event.getFormattedMessage());
+                assertNull(event.getThrowableProxy());
+            }
+        }
+
+        @Test
+        void passwordChangeErrorsDoNotExposeBodiesOrCauses() {
+            ZosmfService service = new ZosmfService(authConfigurationProperties, restTemplate,
+                securityObjectMapper, applicationContext, authenticationService, Collections.emptyList(), null);
+            LoginRequest credentials = new LoginRequest("user", "old".toCharArray(), "new".toCharArray());
+            Authentication authentication = new UsernamePasswordAuthenticationToken("user", credentials);
+            ApimlLogger apimlLogger = mock(ApimlLogger.class);
+            ReflectionTestUtils.setField(service, "apimlLog", apimlLogger);
+            List<RestClientResponseException> errors = List.of(
+                HttpClientErrorException.create(HttpStatus.BAD_REQUEST, SECRET, null, SECRET.getBytes(), Charset.defaultCharset()),
+                HttpClientErrorException.create(HttpStatus.NOT_FOUND, SECRET, null, SECRET.getBytes(), Charset.defaultCharset()),
+                HttpClientErrorException.create(HttpStatus.METHOD_NOT_ALLOWED, SECRET, null, SECRET.getBytes(), Charset.defaultCharset()),
+                new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, SECRET,
+                    ("{\"returnCode\":4,\"reasonCode\":8,\"message\":\"" + SECRET + "\"}").getBytes(), Charset.defaultCharset()),
+                new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, SECRET,
+                    ("{\"returnCode\":8,\"message\":\"" + SECRET + "\"}").getBytes(), Charset.defaultCharset()),
+                new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, SECRET,
+                    ("{\"returnCode\":\"" + SECRET + "\"}").getBytes(), Charset.defaultCharset())
+            );
+            List<Class<? extends RuntimeException>> types = List.of(BadCredentialsException.class,
+                ServiceNotAccessibleException.class, ServiceNotAccessibleException.class,
+                AuthenticationServiceException.class, BadCredentialsException.class, AuthenticationServiceException.class);
+            for (int i = 0; i < errors.size(); i++) {
+                doThrow(errors.get(i)).when(restTemplate).exchange(
+                    eq("http://zosmf/change-password"), eq(HttpMethod.PUT), any(HttpEntity.class), eq(String.class));
+                RuntimeException error = assertThrows(types.get(i), () ->
+                    service.issueChangePasswordRequest(authentication, "http://zosmf/change-password", HttpMethod.PUT));
+                assertSanitized(error);
+            }
+            verify(apimlLogger).log("org.zowe.apiml.security.auth.zosmf.changePwd.internalError", 4, 8);
+        }
+
+        @Test
+        void sharedHttpErrorHandlingDoesNotExposeBodiesAtTrace() {
+            ZosmfService service = new ZosmfService(authConfigurationProperties, restTemplate,
+                securityObjectMapper, applicationContext, authenticationService, Collections.emptyList(), null);
+            for (HttpStatus status : List.of(HttpStatus.UNAUTHORIZED, HttpStatus.FORBIDDEN, HttpStatus.INTERNAL_SERVER_ERROR)) {
+                RestClientResponseException original = status.is4xxClientError()
+                    ? HttpClientErrorException.create(status, SECRET, null, SECRET.getBytes(), Charset.defaultCharset())
+                    : HttpServerErrorException.create(status, SECRET, null, SECRET.getBytes(), Charset.defaultCharset());
+                RuntimeException error = service.handleExceptionOnCall("http://zosmf/authenticate", original);
+                assertTrue(status == HttpStatus.UNAUTHORIZED ? error instanceof BadCredentialsException
+                    : error instanceof AuthenticationServiceException);
+                assertSanitized(error);
+            }
+        }
+
+        @Test
+        void validationDoesNotLogTokenOrItsTail() {
+            ZosmfService service = spy(new ZosmfService(authConfigurationProperties, restTemplate,
+                securityObjectMapper, applicationContext, authenticationService, Collections.emptyList(), null));
+            doReturn("http://zosmf").when(service).getURI(any());
+            doReturn(Collections.emptyMap()).when(service).getEndpointMap();
+            for (String token : List.of("short-secret", "long-token-with-secret-tail")) {
+                assertThrows(ServiceNotAccessibleException.class, () -> service.validate(token));
+                String tail = token.substring(Math.max(0, token.length() - 15));
+                assertFalse(logs.list.isEmpty());
+                assertTrue(logs.list.stream().noneMatch(event -> event.getFormattedMessage().contains(tail)));
+            }
+        }
     }
 
     @Nested
@@ -917,13 +1024,8 @@ class ZosmfServiceTest {
                 verify(apimlLogger, times(1)).log("org.zowe.apiml.security.auth.zosmf.connectError", "resource access exception");
             }
 
-            /**
-             * With trace enabled the z/OSMF failure has to report both the status code and the server
-             * response body. Spring Framework 7 removed {@code getRawStatusCode()} in favour of
-             * {@code getStatusCode().value()}; this pins the code that ends up in the log.
-             */
             @Test
-            void givenZosmfServerErrorAndTraceEnabled_thenStatusCodeAndResponseAreLogged() {
+            void givenZosmfServerErrorAndTraceEnabled_thenOnlyStatusCodeIsLogged() {
                 prepareZosmfServerError();
 
                 assertThat(underTest.isAccessible(), is(false));
@@ -931,13 +1033,9 @@ class ZosmfServiceTest {
                 verify(mockedAppender, atLeast(1)).doAppend(loggingCaptor.capture());
                 String values = loggedValues();
                 assertTrue(values.contains("failed with status code 500"), values);
-                assertTrue(values.contains("returnCode"), values);
+                assertFalse(values.contains("returnCode"), values);
             }
 
-            /**
-             * Below trace the same failure still has to report the status code, but not the response
-             * body; this is the other half of the same conditional.
-             */
             @Test
             void givenZosmfServerErrorAndTraceDisabled_thenStatusCodeIsLogged() {
                 logger.setLevel(Level.DEBUG);

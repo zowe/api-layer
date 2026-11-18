@@ -10,6 +10,12 @@
 
 package org.zowe.apiml.passticket;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.slf4j.LoggerFactory;
 import org.zowe.apiml.passticket.PassTicketService.DefaultPassTicketImpl;
 import org.zowe.apiml.util.ClassOrDefaultProxyUtils;
 
@@ -19,6 +25,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,6 +47,33 @@ class PassTicketServiceTest {
     @BeforeEach
     void setUp() {
         passTicketService = new PassTicketService();
+    }
+
+    @Test
+    void generatedPassTicketAndHashAreNotLogged() throws PassTicketException {
+        Logger logger = (Logger) LoggerFactory.getLogger(PassTicketService.class);
+        Level originalLevel = logger.getLevel();
+        ListAppender<ILoggingEvent> logs = new ListAppender<>();
+        logs.start();
+        logger.addAppender(logs);
+        logger.setLevel(Level.DEBUG);
+        try {
+            IRRPassTicket provider = mock(IRRPassTicket.class);
+            ReflectionTestUtils.setField(passTicketService, "irrPassTicket", provider);
+            String ticket = "secret-pass-ticket";
+            String hash = DigestUtils.sha256Hex(ticket.substring(4));
+            String tail = hash.substring(hash.length() - 15);
+            when(provider.generate("USERID", "APPLID")).thenReturn(ticket, "PT");
+            assertEquals(ticket, passTicketService.generate("userId", "applId"));
+            assertEquals("PT", passTicketService.generate("userId", "applId"));
+            assertFalse(logs.list.isEmpty());
+            assertTrue(logs.list.stream().noneMatch(event -> event.getFormattedMessage().contains(ticket)
+                || event.getFormattedMessage().contains(tail)));
+        } finally {
+            logger.detachAppender(logs);
+            logger.setLevel(originalLevel);
+            logs.stop();
+        }
     }
 
     @Test

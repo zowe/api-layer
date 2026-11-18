@@ -297,7 +297,7 @@ messages:
     - key: org.zowe.apiml.security.auth.zosmf.changePwd.internalError
       number: ZWEAG186
       type: ERROR
-      text: "z/OSMF internal error attempting password change: %s"
+      text: "z/OSMF internal error attempting password change: return code %s, reason code %s"
       reason: z/OSMF informed of an internal error.
       action: Verify z/OSMF error log.
 

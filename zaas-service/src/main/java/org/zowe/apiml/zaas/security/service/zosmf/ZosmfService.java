@@ -351,11 +351,11 @@ public class ZosmfService extends AbstractZosmfService {
             throw handleServerErrorOnChangePasswordCall(e);
         } catch (HttpClientErrorException.NotFound | HttpClientErrorException.MethodNotAllowed e) {
             apimlLog.log("org.zowe.apiml.security.auth.zosmf.changePwd.notAvailable", e.getStatusCode());
-            throw new ServiceNotAccessibleException("Change password endpoint is not available in z/OSMF", e);
+            throw new ServiceNotAccessibleException("Change password endpoint is not available in z/OSMF");
         } catch (HttpClientErrorException e) {
             // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
-            log.debug("Request to {} failed with status {}: {}", url, e.getStatusCode(), e.getMessage());
-            throw new BadCredentialsException("Client error in change password: " + e.getResponseBodyAsString(), e);
+            log.debug("Request to {} failed with status {}", url, e.getStatusCode().value());
+            throw new BadCredentialsException("Client error in change password");
         } catch (RuntimeException re) {
             throw handleExceptionOnCall(url, re);
         }
@@ -365,16 +365,16 @@ public class ZosmfService extends AbstractZosmfService {
         try {
             ZosmfAuthResponse response = securityObjectMapper.readValue(e.getResponseBodyAsByteArray(), ZosmfAuthResponse.class);
             if (response.getReturnCode() == 4) {
-                apimlLog.log("org.zowe.apiml.security.auth.zosmf.changePwd.internalError", e.getResponseBodyAsString());
-                return new AuthenticationServiceException("z/OSMF internal error: " + e.getResponseBodyAsString());
+                apimlLog.log("org.zowe.apiml.security.auth.zosmf.changePwd.internalError", response.getReturnCode(), response.getReasonCode());
+                return new AuthenticationServiceException("z/OSMF internal error attempting password change");
             } else {
                 // TODO https://github.com/zowe/api-layer/issues/2995 - API ML will return 401 in these cases now, the message is still not accurate
-                log.debug("Failed to change password, z/OSMF response: {}", e.getResponseBodyAsString());
-                return new BadCredentialsException("Failed to change password, z/OSMF response: " + e.getResponseBodyAsString());
+                log.debug("Failed to change password, z/OSMF return code: {}, reason code: {}", response.getReturnCode(), response.getReasonCode());
+                return new BadCredentialsException("Failed to change password");
             }
         } catch (IOException ioe) {
-            log.error("Error processing change password response body: {}", ioe.getMessage());
-            return new AuthenticationServiceException("Error processing change password response", ioe);
+            log.error("Error processing change password response body");
+            return new AuthenticationServiceException("Error processing change password response");
         }
     }
 
@@ -437,11 +437,11 @@ public class ZosmfService extends AbstractZosmfService {
                 return false;
             } else {
                 // other 400 family code
-                apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, hce.getStatusCode().value() + ": " + hce.getMessage());
+                apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, hce.getStatusCode().value());
                 return false;
             }
         } catch (HttpServerErrorException serverError) {
-            apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, serverError.getStatusCode().value() + ": " + serverError.getMessage());
+            apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, serverError.getStatusCode().value());
             return false;
         } catch (Exception e) {
             apimlLog.log(JWT_ENDPOINT_ERROR_MSGID, url, e.getMessage());
@@ -492,7 +492,7 @@ public class ZosmfService extends AbstractZosmfService {
      * @throws TokenNotValidException if all token validation strategies evaluate token as invalid
      */
     public boolean validate(String token) {
-        log.debug("ZosmfService validating token: ...{}", StringUtils.right(token, 15));
+        log.debug("ZosmfService validating token");
         TokenValidationRequest request = new TokenValidationRequest(TokenType.JWT, token, getURI(getZosmfServiceId()), getEndpointMap());
 
         var isTokenValid = Optional.<Boolean>empty();
