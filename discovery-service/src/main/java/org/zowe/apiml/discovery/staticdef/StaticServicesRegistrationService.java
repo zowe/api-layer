@@ -128,6 +128,8 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
         try {
             var registry = getRegistry();
             registry.registerStatically(instanceInfo, false, false);
+            result.getRegisteredServices().add(instanceInfo.getInstanceId());
+            staticInstances.add(instanceInfo);
         } catch (Exception e) {
             final Message msg = apimlLog.log("org.zowe.apiml.discovery.staticDefinitionRegistration", staticApiDefinitionsDirectories, getAllMessages(e));
             result.getErrors().add(msg);
@@ -149,8 +151,6 @@ public class StaticServicesRegistrationService implements StaticServicesRegistra
 
             // register static services
             for (InstanceInfo instanceInfo : result.getInstances()) {
-                result.getRegisteredServices().add(instanceInfo.getInstanceId());
-                staticInstances.add(instanceInfo);
                 register(result, instanceInfo);
             }
         } catch (Exception e) {

@@ -75,11 +75,6 @@ class OIDCAuthSourceServiceTest {
         assertTrue(service.getMapper().apply(DUMMY_TOKEN) instanceof OIDCAuthSource);
     }
 
-    @Test
-    void returnLogger() {
-        assertNotNull(service.getLogger());
-    }
-
     @Nested
     class GivenValidTokenTest {
         @Test

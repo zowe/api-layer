@@ -10,6 +10,10 @@
 
 package org.zowe.apiml.zaas.security.service;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.netflix.appinfo.ApplicationInfoManager;
 import com.netflix.appinfo.InstanceInfo;
 import com.netflix.discovery.EurekaClient;
@@ -18,6 +22,7 @@ import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.BadJWTException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -25,6 +30,7 @@ import jakarta.servlet.http.Cookie;
 import org.apache.commons.lang3.time.DateUtils;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +39,7 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -159,23 +166,105 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
     @Nested
     class GivenCorrectInputsTest {
 
+        private Runnable logCleanup = () -> { };
+
         @BeforeEach
         void setup() {
             stubJWTSecurityForSign();
 
         }
 
+        @AfterEach
+        void restoreLogger() {
+            logCleanup.run();
+        }
+
         @Test
         void thenCreatePersonalAccessToken() {
-            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
             QueryResponse parsedPAT = authService.parseJwtWithSignature(pat);
             assertEquals(QueryResponse.Source.ZOWE_PAT, parsedPAT.getSource());
         }
 
         @Test
+        void thenVerifierIsSelectedByKeyIdOfToken() {
+            when(jwtSecurityInitializer.getJwtVerifier("kid")).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+
+            authService.validateJwtToken(new TokenAuthentication(jwtToken));
+
+            verify(jwtSecurityInitializer, times(1)).getJwtVerifier("kid");
+        }
+
+        @Test
+        void givenNoVerifierForKeyIdOfToken_thenThrowTokenNotValidException() {
+            when(jwtSecurityInitializer.getJwtVerifier("kid")).thenReturn(null);
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+            TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
+
+            assertThrows(
+                TokenNotValidException.class,
+                () -> authService.validateJwtToken(tokenAuthentication)
+            );
+            verify(validatedJwtTokensCache, never()).put(any(), any());
+        }
+
+        @Test
+        void givenNoVerifierForKeyIdOfToken_thenMissingPublicKeyIsLoggedWithActiveKid() {
+            when(jwtSecurityInitializer.getJwtVerifier("kid")).thenReturn(null);
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+            TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
+
+            var logs = captureDebugLogs();
+            assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(tokenAuthentication));
+
+            assertTrue(logs.list.stream().anyMatch(event -> event.getLevel() == Level.DEBUG
+                && event.getFormattedMessage().equals("No public key to verify token [%s], currently active signing key kid=kid. This instance does not hold the key that signed the token."
+                    .formatted(JwtUtils.describeJwtForLogging(parseJwt(jwtToken))))));
+        }
+
+        @Test
+        void givenVerifierThrowsException_thenExceptionIsLoggedAndTokenIsNotValid() throws JOSEException {
+            var verifier = mock(RSASSAVerifier.class);
+            when(verifier.verify(any(), any(), any())).thenThrow(new JOSEException("verification error"));
+            when(jwtSecurityInitializer.getJwtVerifier("kid")).thenReturn(verifier);
+            String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
+            TokenAuthentication tokenAuthentication = new TokenAuthentication(jwtToken);
+
+            var logs = captureDebugLogs();
+            assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(tokenAuthentication));
+
+            assertTrue(logs.list.stream().anyMatch(event -> event.getLevel() == Level.DEBUG
+                && event.getFormattedMessage().equals("JWT signature verification threw an exception for token [%s], currently active signing key kid=kid: verification error"
+                    .formatted(JwtUtils.describeJwtForLogging(parseJwt(jwtToken))))));
+        }
+
+        private SignedJWT parseJwt(String jwtToken) {
+            try {
+                return SignedJWT.parse(jwtToken);
+            } catch (ParseException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        private ListAppender<ILoggingEvent> captureDebugLogs() {
+            var logger = (Logger) LoggerFactory.getLogger(AuthenticationService.class);
+            var appender = new ListAppender<ILoggingEvent>();
+            appender.start();
+            var originalLevel = logger.getLevel();
+            logger.setLevel(Level.DEBUG);
+            logger.addAppender(appender);
+            logCleanup = () -> {
+                logger.detachAppender(appender);
+                logger.setLevel(originalLevel);
+            };
+            return appender;
+        }
+
+        @Test
         void thenCreateValidJwtToken() {
-            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
 
             TokenAuthentication token = new TokenAuthentication(jwtToken);
@@ -248,7 +337,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
 
         @Test
         void givenExpiredToken_thenThrowsTokenExpireException() {
-            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             var jwtToken = createExpiredJwtToken(privateKey);
             assertThrows(
                 TokenExpireException.class,
@@ -256,6 +345,17 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             );
 
             verify(validatedJwtTokensCache, times(1)).get(jwtToken);
+        }
+
+        @Test
+        void givenTokenWithoutKeyId_thenVerifierIsRequestedWithoutKeyId() {
+            when(jwtSecurityInitializer.getJwtVerifier(null)).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            var jwtToken = createJwtTokenWithExpiry(privateKey, System.currentTimeMillis() + 60_000);
+
+            var result = authService.validateJwtToken(jwtToken);
+
+            assertTrue(result.isAuthenticated());
+            verify(jwtSecurityInitializer, times(1)).getJwtVerifier(null);
         }
 
         @Test
@@ -269,7 +369,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             );
 
             verify(validatedJwtTokensCache, times(1)).get(jwtToken);
-            verify(jwtSecurityInitializer, never()).getJwtVerifier();
+            verify(jwtSecurityInitializer, never()).getJwtVerifier(any());
             verify(zosmfService, never()).validate(any());
         }
 
@@ -287,7 +387,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             var verifier = mock(RSASSAVerifier.class);
             lenient().when(verifier.getPublicKey()).thenReturn((RSAPublicKey) publicKey);
             lenient().when(verifier.verify(any(), any(), any())).thenReturn(false);
-            lenient().when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(verifier);
+            lenient().when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(verifier);
 
             String pat = authService.createLongLivedJwtToken(USER, 60, scopes);
             var exception = assertThrows(TokenNotValidException.class,
@@ -413,7 +513,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void givenLTPAExists_thenReadLtpaTokenFromJwtToken() {
             stubJWTSecurityForSign();
-            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String jwtToken = authService.createJwtToken(USER, DOMAIN, LTPA);
             assertEquals(LTPA, authService.getLtpaToken(jwtToken));
         }
@@ -432,7 +532,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void givenExpiredJWT_thenThrowTokenExpireException() {
             var expiredJwtToken = createExpiredJwtToken(privateKey);
-            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             assertThrows(
                 TokenExpireException.class,
                 () -> authService.getLtpaToken(expiredJwtToken)
@@ -546,7 +646,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void invalidateZosmfLtpaToken() {
             stubJWTSecurityForSign();
-            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             String token = authService.createJwtToken("user", DOMAIN, LTPA_TOKEN);
 
             assertTrue(authService.invalidateJwtToken(token, false));
@@ -638,7 +738,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
         @Test
         void whenTokenAlreadyInvalidated_thenUseCache() {
             stubJWTSecurityForSign();
-            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
 
             String jwtToken01 = authService.createJwtToken("user01", "domain01", "ltpa01");
             when(invalidatedJwtTokensCache.get(jwtToken01)).thenReturn(null);
@@ -689,7 +789,7 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             when(jwtSecurityInitializer.getJwtAlgorithm()).thenReturn(AlgorithmIdentifiers.RSA_USING_SHA256);
             when(jwtSecurityInitializer.getJwtSecret()).thenReturn(privateKey);
             when(jwtSecurityInitializer.getJwtPublicKey()).thenReturn(publicKey);
-            when(jwtSecurityInitializer.getJwtVerifier()).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
+            when(jwtSecurityInitializer.getJwtVerifier(any())).thenReturn(new RSASSAVerifier((RSAPublicKey) publicKey));
             var jwk = mock(JsonWebKey.class);
             when(jwk.getKeyId()).thenReturn("kid");
             when(jwtSecurityInitializer.getJwkPublicKey()).thenReturn(Optional.of(jwk));
@@ -702,18 +802,18 @@ public class AuthenticationServiceTest { //NOSONAR, needs to be public
             verify(jwtSecurityInitializer, never()).getJwtPublicKey();
 
             assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
-            verify(jwtSecurityInitializer, times(1)).getJwtVerifier();
+            verify(jwtSecurityInitializer, times(1)).getJwtVerifier(any());
             assertTrue(authService.validateJwtToken(jwtToken01).isAuthenticated());
-            verify(jwtSecurityInitializer, times(1)).getJwtVerifier();
+            verify(jwtSecurityInitializer, times(1)).getJwtVerifier(any());
 
             assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
-            verify(jwtSecurityInitializer, times(2)).getJwtVerifier();
+            verify(jwtSecurityInitializer, times(2)).getJwtVerifier(any());
 
             authService.invalidateJwtToken(jwtToken01, false);
             assertTrue(authService.validateJwtToken(jwtToken02).isAuthenticated());
-            verify(jwtSecurityInitializer, times(3)).getJwtVerifier();
+            verify(jwtSecurityInitializer, times(3)).getJwtVerifier(any());
             assertThrows(TokenNotValidException.class, () -> authService.validateJwtToken(jwtToken01));
-            verify(jwtSecurityInitializer, times(3)).getJwtVerifier();
+            verify(jwtSecurityInitializer, times(3)).getJwtVerifier(any());
         }
     }
 

@@ -19,9 +19,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
-import org.zowe.apiml.message.core.MessageType;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.token.*;
 import org.zowe.apiml.zaas.security.mapping.AuthenticationMapper;
@@ -40,8 +37,6 @@ import static org.zowe.apiml.security.common.util.JwtUtils.getFieldValuesFromTok
 @RequiredArgsConstructor
 @ConditionalOnProperty(value = "apiml.security.oidc.enabled", havingValue = "true")
 public class OIDCAuthSourceService extends TokenAuthSourceService implements InitializingBean {
-    @InjectApimlLogger
-    protected final ApimlLogger logger = ApimlLogger.empty();
 
     @Qualifier("oidcMapper")
     private final AuthenticationMapper mapper;
@@ -66,11 +61,6 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
     }
 
     @Override
-    protected ApimlLogger getLogger() {
-        return logger;
-    }
-
-    @Override
     public Function<String, AuthSource> getMapper() {
         return OIDCAuthSource::new;
     }
@@ -92,27 +82,27 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
         if (authSource instanceof OIDCAuthSource oidcAuthSource) {
             String token = oidcAuthSource.getRawSource();
             if (StringUtils.isNotBlank(token)) {
-                logger.log(MessageType.DEBUG, "Validating OIDC token.");
+                log.debug("Validating OIDC token.");
                 if (oidcProvider.isValid(token)) {
-                    logger.log(MessageType.DEBUG, "OIDC token is valid, set the distributed id to the auth source.");
+                    log.debug("OIDC token is valid, set the distributed id to the auth source.");
                     return extractUserId(oidcAuthSource);
                 }
-                logger.log(MessageType.DEBUG, "OIDC token is not valid or the validation failed.");
+                log.debug("OIDC token is not valid or the validation failed.");
             }
-            logger.log(MessageType.DEBUG, "Invalid auth source type provided.");
+            log.debug("Invalid auth source type provided.");
         }
-        logger.log(MessageType.DEBUG, "Authentication source is invalid.");
+        log.debug("Authentication source is invalid.");
         return false;
     }
 
     private boolean extractUserId(OIDCAuthSource authSource) {
         try {
             var userIds = getFieldValuesFromToken(authSource.getRawSource(), userIdFieldPath);
-            logger.log(MessageType.DEBUG, "UserId values {} extracted from OIDC token field {}.", userIds, String.join(".", userIdFieldPath));
+            log.debug( "UserId values {} extracted from OIDC token field {}.", userIds, String.join(".", userIdFieldPath));
             authSource.setDistributedId(userIds);
             return true;
         } catch (TokenFormatNotValidException e) {
-            logger.log(MessageType.DEBUG, "Cannot extract distributed id from OIDC token. Reason: {}", e.getMessage());
+            log.debug( "Cannot extract distributed id from OIDC token. Reason: {}", e.getMessage());
             return false;
         }
     }
@@ -138,10 +128,10 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
     private AuthSource.Parsed parseOIDCToken(OIDCAuthSource oidcAuthSource, AuthenticationMapper mapper) {
         String token = oidcAuthSource.getRawSource();
 
-        logger.log(MessageType.DEBUG, "Calling identity mapper to retrieve mainframe user id.");
+        log.debug("Calling identity mapper to retrieve mainframe user id.");
         String mappedUser = mapper.mapToMainframeUserId(oidcAuthSource);
         if (StringUtils.isEmpty(mappedUser)) {
-            logger.log(MessageType.DEBUG, "No mainframe user id retrieved. Cancel parsing of OIDC token.");
+            log.debug("No mainframe user id retrieved. Cancel parsing of OIDC token.");
             throw new NoMainframeIdentityException("No mainframe identity found.", token, true);
         } else {
             if (rauditxOnOidcUserIsMapped) {
@@ -160,7 +150,7 @@ public class OIDCAuthSourceService extends TokenAuthSourceService implements Ini
                 rauditx.issue();
             }
         }
-        logger.log(MessageType.DEBUG, "Parsing OIDC token.");
+        log.debug("Parsing OIDC token.");
         QueryResponse response = authenticationService.parseJwtToken(token).getQueryResponse();
 
         AuthSource.Origin origin = AuthSource.Origin.valueByTokenSource(response.getSource());

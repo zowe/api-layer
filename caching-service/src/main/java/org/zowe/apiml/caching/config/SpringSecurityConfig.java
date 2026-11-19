@@ -30,7 +30,6 @@ import org.springframework.security.web.server.util.matcher.AndServerWebExchange
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 import org.zowe.apiml.product.web.HttpConfig;
 import org.zowe.apiml.security.common.auth.BasicAuthenticationManager;
-import org.zowe.apiml.security.common.config.CustomHstsServerHttpHeadersWriter;
 import org.zowe.apiml.security.common.filter.CategorizeCertsWebFilter;
 import org.zowe.apiml.security.common.util.X509Util;
 import org.zowe.apiml.security.common.verify.CertificateValidator;
@@ -75,7 +74,6 @@ public class SpringSecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .headers(headers -> headers
                 .hsts(ServerHttpSecurity.HeaderSpec.HstsSpec::disable)
-                .writer(new CustomHstsServerHttpHeadersWriter())
             )
             .securityMatcher(new AndServerWebExchangeMatcher(
                 ServerWebExchangeMatchers.pathMatchers("/cachingservice/**")

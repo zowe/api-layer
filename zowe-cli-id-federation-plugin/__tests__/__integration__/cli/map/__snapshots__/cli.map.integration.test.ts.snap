@@ -73,13 +73,13 @@ exports[`id-federation map command integration tests should print the successful
 //SYSTSIN     DD DATA,SYMBOLS=JCLONLY
  ACF
  SET PROFILE(USER) DIVISION(IDMAP)
- INSERT mf_jir.ZWEDNMAP IDMAPDN(dist_jirka) -
+ INSERT MFJIR.ZWEDNMAP IDMAPDN(dist_jirka) -
   IDMAPRN(ldap://12.34.56.78:910) IDLABEL(Jirka)
- INSERT mf_lena.ZWEDNMAP IDMAPDN(dist_lena) -
+ INSERT MFLENA.ZWEDNMAP IDMAPDN(dist_lena) -
   IDMAPRN(ldap://12.34.56.78:910) IDLABEL(Lena)
- INSERT mf_pab.ZWEDNMAP IDMAPDN(dist_pablo) -
+ INSERT MFPAB.ZWEDNMAP IDMAPDN(dist_pablo) -
   IDMAPRN(ldap://12.34.56.78:910) IDLABEL(Pablo)
- INSERT mf_name.ZWEDNMAP IDMAPDN(Dist -
+ INSERT MFNAME.ZWEDNMAP IDMAPDN(Dist -
   naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame ok) -
@@ -120,13 +120,13 @@ exports[`id-federation map command integration tests should print the successful
 //RUN      EXEC PGM=IKJEFT01,REGION=0M
 //SYSTSPRT DD SYSOUT=*
 //SYSTSIN     DD DATA,SYMBOLS=JCLONLY
- RACMAP ID(mf_jir) MAP USERDIDFILTER(NAME('dist_jirka')) -
+ RACMAP ID(MFJIR) MAP USERDIDFILTER(NAME('dist_jirka')) -
   REGISTRY(NAME('ldap://12.34.56.78:910')) WITHLABEL('Jirka')
- RACMAP ID(mf_lena) MAP USERDIDFILTER(NAME('dist_lena')) -
+ RACMAP ID(MFLENA) MAP USERDIDFILTER(NAME('dist_lena')) -
   REGISTRY(NAME('ldap://12.34.56.78:910')) WITHLABEL('Lena')
- RACMAP ID(mf_pab) MAP USERDIDFILTER(NAME('dist_pablo')) -
+ RACMAP ID(MFPAB) MAP USERDIDFILTER(NAME('dist_pablo')) -
   REGISTRY(NAME('ldap://12.34.56.78:910')) WITHLABEL('Pablo')
- RACMAP ID(mf_name) MAP -
+ RACMAP ID(MFNAME) MAP -
   USERDIDFILTER(NAME('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
@@ -167,13 +167,13 @@ exports[`id-federation map command integration tests should print the successful
 //RUN      EXEC PGM=IKJEFT01,REGION=0M
 //SYSTSPRT DD SYSOUT=*
 //SYSTSIN     DD DATA,SYMBOLS=JCLONLY
- TSS ADD(mf_jir) IDMAP(ZWEDNMAP) IDMAPDN('dist_jirka') -
+ TSS ADD(MFJIR) IDMAP(ZWEDNMAP) IDMAPDN('dist_jirka') -
   IDMAPRN('ldap://12.34.56.78:910') IDLABEL('Jirka')
- TSS ADD(mf_lena) IDMAP(ZWEDNMAP) IDMAPDN('dist_lena') -
+ TSS ADD(MFLENA) IDMAP(ZWEDNMAP) IDMAPDN('dist_lena') -
   IDMAPRN('ldap://12.34.56.78:910') IDLABEL('Lena')
- TSS ADD(mf_pab) IDMAP(ZWEDNMAP) IDMAPDN('dist_pablo') -
+ TSS ADD(MFPAB) IDMAP(ZWEDNMAP) IDMAPDN('dist_pablo') -
   IDMAPRN('ldap://12.34.56.78:910') IDLABEL('Pablo')
- TSS ADD(mf_name) IDMAP(ZWEDNMAP) -
+ TSS ADD(MFNAME) IDMAP(ZWEDNMAP) -
   IDMAPDN('Dist naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-
 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaame o-

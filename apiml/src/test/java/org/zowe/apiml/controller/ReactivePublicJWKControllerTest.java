@@ -41,7 +41,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -80,7 +79,7 @@ class ReactivePublicJWKControllerTest {
         new JsonWebKeySet();
 
         when(zosmfService.getPublicKeys()).thenReturn(zosmfKeySet);
-        when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
+        when(jwtSecurity.getAllSigningJwks()).thenReturn(List.of(apimlJwk));
         var testControllerWithOidc = new ReactivePublicJWKController(mockOidcProviderJwk, jwtSecurity, zosmfService, messageService);
 
         when(mockOidcProviderJwk.getJwkSet()).thenReturn(oidcKeySet);
@@ -106,6 +105,36 @@ class ReactivePublicJWKControllerTest {
     }
 
     @Test
+    void getAllPublicKeys_apimlProducerWithMultipleSigningKeys_returnsAllSigningKeys() throws Exception {
+        var apimlJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
+        apimlJwk.setKeyId("apimlKey");
+        var rotatedJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
+        rotatedJwk.setKeyId("rotatedKey");
+
+        var testControllerNoOidc = new ReactivePublicJWKController(null, jwtSecurity, zosmfService, messageService);
+
+        when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
+        when(jwtSecurity.getAllSigningJwks()).thenReturn(List.of(apimlJwk, rotatedJwk));
+
+        var result = testControllerNoOidc.getAllPublicKeys();
+
+        StepVerifier.create(result)
+            .expectNextMatches(responseEntity -> {
+                HashMap<String, Object> jsonObject;
+                try {
+                    jsonObject = mapper.readValue(responseEntity.getBody(), new TypeReference<HashMap<String,Object>>() {});
+                } catch (JsonProcessingException e) {
+                    fail(e);
+                    return false;
+                }
+                List<Map<String, Object>> keys = (List<Map<String, Object>>) jsonObject.get("keys");
+                assertEquals(2, keys.size());
+                return "apimlKey".equals(keys.get(0).get("kid")) && "rotatedKey".equals(keys.get(1).get("kid"));
+            })
+            .verifyComplete();
+    }
+
+    @Test
     void getAllPublicKeys_apimlProducer_noOidc() throws Exception {
         var apimlJwk = JsonWebKey.Factory.newJwk(generateKeyPair().getPublic());
         apimlJwk.setKeyId("apimlKey");
@@ -113,7 +142,7 @@ class ReactivePublicJWKControllerTest {
         var testControllerNoOidc = new ReactivePublicJWKController(null, jwtSecurity, zosmfService, messageService);
 
         when(jwtSecurity.actualJwtProducer()).thenReturn(JwtSecurity.JwtProducer.APIML);
-        when(jwtSecurity.getJwkPublicKey()).thenReturn(Optional.of(apimlJwk));
+        when(jwtSecurity.getAllSigningJwks()).thenReturn(List.of(apimlJwk));
 
         var result = testControllerNoOidc.getAllPublicKeys();
 

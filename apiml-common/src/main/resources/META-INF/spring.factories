@@ -1,4 +1,4 @@
-org.springframework.boot.env.EnvironmentPostProcessor=\
+org.springframework.boot.EnvironmentPostProcessor=\
 org.zowe.apiml.product.web.EurekaBasicAuthEnvironmentPostProcessor
 
 # Pins the class loader used to resolve the application's own resources so that template resolution

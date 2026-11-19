@@ -14,3 +14,11 @@ dependencies {
     compileOnly libs.lombok
     annotationProcessor libs.lombok
 }
+
+tasks.named('processTestResources') {
+    dependsOn rootProject.tasks.named('generateCertificates')
+    from(rootProject.file('keystore/service')) {
+        include 'service.keystore.p12', 'service.truststore.p12'
+        into 'https-redirect'
+    }
+}

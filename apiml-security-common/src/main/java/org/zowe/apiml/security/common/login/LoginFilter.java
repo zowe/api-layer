@@ -29,8 +29,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.zowe.apiml.constants.ApimlConstants;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AuthMethodNotSupportedException;
 import org.zowe.apiml.security.common.error.ResourceAccessExceptionHandler;
 import org.zowe.apiml.security.common.handler.ServletErrorUtils;
@@ -51,8 +49,6 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
     private final AuthenticationFailureHandler failureHandler;
     private final ResourceAccessExceptionHandler resourceAccessExceptionHandler;
     private final ObjectMapper mapper;
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
 
     public LoginFilter(
         String authEndpoint,
@@ -110,7 +106,7 @@ public class LoginFilter extends NonCompulsoryAuthenticationProcessingFilter {
             try {
                 auth = this.getAuthenticationManager().authenticate(authentication);
             } catch (RuntimeException ex) {
-                var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+                var consumer = ServletErrorUtils.createApiErrorWriter(response);
                 var addHeader = (BiConsumer<String, String>) response::addHeader;
                 resourceAccessExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, ex);
             }

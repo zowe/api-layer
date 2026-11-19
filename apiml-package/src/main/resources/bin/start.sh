@@ -57,6 +57,7 @@
 # - ZWE_configs_apiml_security_domains_onlyWarn
 # - ZWE_configs_apiml_security_domains_portValidationDisabled
 # - ZWE_configs_apiml_security_enableStrictUrlValidation
+# - ZWE_configs_apiml_security_jwtVerificationKeyAliases
 # - ZWE_configs_apiml_security_x509_acceptForwardedCert
 # - ZWE_configs_apiml_security_x509_certificatesUrl
 # - ZWE_configs_apiml_security_x509_enabled
@@ -83,7 +84,16 @@
 # - ZWE_configs_certificate_truststore_type
 # - ZWE_configs_certificate_truststore_type / ZWE_zowe_certificate_truststore_type
 # - ZWE_configs_debug
+# - ZWE_configs_logging_loggerLevels - comma separated list of logger=level entries (e.g. org.zowe.apiml=DEBUG,org.apache.http=TRACE) to fine tune the log levels per class or package
 # - ZWE_configs_logging_level - logging level to activate (default: info)
+# - ZWE_configs_logging_debug_gateway - enable debug log for the gateway feature only (default: false)
+# - ZWE_configs_logging_debug_authentication - enable debug log for the authentication feature only (default: false)
+# - ZWE_configs_logging_debug_discovery - enable debug log for the discovery feature only (default: false)
+# - ZWE_configs_logging_debug_caching - enable debug log for the caching feature only (default: false)
+# - ZWE_configs_logging_debug_catalog - enable debug log for the catalog feature only (default: false)
+# - ZWE_configs_logging_debug_wiretap - enable wiretap http logging (default: false)
+# - ZWE_configs_logging_toFile_enabled - write logs to a file, always on when debug or feature debug is enabled (default: false)
+# - ZWE_configs_logging_toFile_debugOnly - keep debug level logs out of stdout and write them to the log file only (default: false)
 # - ZWE_configs_heap_init
 # - ZWE_configs_heap_max
 # - ZWE_configs_port - the port the api discovery service will use
@@ -117,7 +127,6 @@
 #                       Example: ZWE_configs_jvm_Xss=512k becomes -Xss512k
 #                                ZWE_configs_jvm_Dmy_custom_property=value becomes -Dmy.custom.property=value
 #                       Note: Underscores in the property name (after 'D') are converted to dots
-
 # Source common APIML scripts (sets up common variables and functions)
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -148,16 +157,62 @@ if [ -n "${ZWE_DISCOVERY_SHARED_LIBS}" ]; then
 fi
 echo "Setting loader path: ${APIML_LOADER_PATH}"
 
+# Setup spring profiles
+if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active}}" ]; then
+        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active}}"
+    fi
+
+# Log debug only to file
+DEBUG_ONLY_TO_FILE="false"
+if [ "${ZWE_configs_logging_toFile_debugOnly:-false}" = "true" ]; then
+    DEBUG_ONLY_TO_FILE="true"
+fi
+
+# Log to file
+LOG_TO_FILE="false"
+if [ "${ZWE_configs_logging_toFile_enabled:-false}" = "true" ]; then
+    LOG_TO_FILE="true"
+fi
+
 # Logging level
 add_profile "${ZWE_configs_logging_level:-${ZWE_components_gateway_logging_level:-info}}"
 
-# Debug profile
-if [ "${ZWE_components_apiml_debug:-${ZWE_components_gateway_debug:-${ZWE_configs_debug:-false}}}" = "true" ]; then
-    if [ -n "${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}" ]; then
-        ZWE_configs_spring_profiles_active="${ZWE_configs_spring_profiles_active:-${ZWE_components_apiml_spring_profiles_active:-${ZWE_components_gateway_spring_profiles_active:-${ZWE_components_discovery_spring_profiles_active}}}}"
-    fi
+DEBUG_FEATURES="gateway discovery authentication caching catalog wiretap"
+
+if [ "${ZWE_configs_debug:-${ZWE_components_gateway_debug:-false}}" = "true" ]; then
     add_profile "debug"
+    LOG_TO_FILE="true"
+else
+    ENABLED_DEBUG_FEATURES=""
+    for feature in ${DEBUG_FEATURES}; do
+        eval "feature_enabled=\${ZWE_configs_logging_debug_${feature}:-false}"
+        if [ "${feature_enabled}" = "true" ]; then
+            ENABLED_DEBUG_FEATURES="${ENABLED_DEBUG_FEATURES} ${feature}"
+        fi
+    done
+
+    if [ -n "${ENABLED_DEBUG_FEATURES}" ]; then
+        add_profile "debug-common"
+        LOG_TO_FILE="true"
+        for feature in ${ENABLED_DEBUG_FEATURES}; do
+            add_profile "debug-${feature}"
+        done
+    fi
 fi
+
+if [ "${DEBUG_ONLY_TO_FILE}" = "true" ] && [ "${LOG_TO_FILE}" = "false" ]; then
+    DEBUG_ONLY_TO_FILE="false"
+    echo "APIML logging debug only to file was enabled, but logging to file disabled. The option is ignored."
+fi
+
+# Per-logger log levels, entries in the logger=level format are passed as -Dlogging.level.<logger>=<level>
+LOGGING_LEVEL_OPTS=""
+for entry in $(echo "${ZWE_configs_logging_loggerLevels:-}" | tr ',' ' '); do
+    case "${entry}" in
+        ?*=?*) LOGGING_LEVEL_OPTS="${LOGGING_LEVEL_OPTS} -Dlogging.level.${entry}" ;;
+        *) echo "Ignoring invalid logger level entry '${entry}', expected format is <logger>=<level>" ;;
+    esac
+done
 
 # Cookie name for unique cookie support
 if [ "${ZWE_configs_apiml_security_auth_uniqueCookie:-${ZWE_components_gateway_apiml_security_auth_uniqueCookie:-false}}" = "true" ]; then
@@ -242,20 +297,21 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     ${ADD_OPENS} \
     ${VIRTUAL_THREADS_OPTS} \
     ${LOGBACK} \
+    ${LOGGING_LEVEL_OPTS} \
     ${JVM_SECURITY_PROPERTIES} \
     ${EXTERNAL_URL} \
     ${EUREKA_IP_ADDRESS} \
     ${OTEL_ATTRIBUTES} \
     ${CUSTOM_JVM_OPTS} \
     -Dapiml.cache.storage.location=${ZWE_zowe_workspaceDirectory}/api-mediation/${ZWE_haInstance_id:-localhost} \
-    -Dapiml.catalog.customStyle.backgroundColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_backgroundColor:-${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-}} \
-    -Dapiml.catalog.customStyle.docLink=${ZWE_components_apicatalog_apiml_catalog_customStyle_docLink:-${ZWE_configs_apiml_catalog_customStyle_docLink:-}} \
-    -Dapiml.catalog.customStyle.fontFamily=${ZWE_components_apicatalog_apiml_catalog_customStyle_fontFamily:-${ZWE_configs_apiml_catalog_customStyle_fontFamily:-}} \
-    -Dapiml.catalog.customStyle.headerColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_headerColor:-${ZWE_configs_apiml_catalog_customStyle_headerColor:-}} \
-    -Dapiml.catalog.customStyle.logo=${ZWE_components_apicatalog_apiml_catalog_customStyle_logo:-${ZWE_configs_apiml_catalog_customStyle_logo:-}} \
-    -Dapiml.catalog.customStyle.textColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_textColor:-${ZWE_configs_apiml_catalog_customStyle_textColor:-}} \
-    -Dapiml.catalog.customStyle.titlesColor=${ZWE_components_apicatalog_apiml_catalog_customStyle_titlesColor:-${ZWE_configs_apiml_catalog_customStyle_titlesColor:-}} \
-    -Dapiml.catalog.hide.serviceInfo=${ZWE_components_apicatalog_apiml_catalog_hide_serviceInfo:-${ZWE_configs_apiml_catalog_hide_serviceInfo:-false}} \
+    -Dapiml.catalog.customStyle.backgroundColor=${ZWE_components_api_catalog_apiml_catalog_customStyle_backgroundColor:-${ZWE_configs_apiml_catalog_customStyle_backgroundColor:-}} \
+    -Dapiml.catalog.customStyle.docLink=${ZWE_components_api_catalog_apiml_catalog_customStyle_docLink:-${ZWE_configs_apiml_catalog_customStyle_docLink:-}} \
+    -Dapiml.catalog.customStyle.fontFamily=${ZWE_components_api_catalog_apiml_catalog_customStyle_fontFamily:-${ZWE_configs_apiml_catalog_customStyle_fontFamily:-}} \
+    -Dapiml.catalog.customStyle.headerColor=${ZWE_components_api_catalog_apiml_catalog_customStyle_headerColor:-${ZWE_configs_apiml_catalog_customStyle_headerColor:-}} \
+    -Dapiml.catalog.customStyle.logo=${ZWE_components_api_catalog_apiml_catalog_customStyle_logo:-${ZWE_configs_apiml_catalog_customStyle_logo:-}} \
+    -Dapiml.catalog.customStyle.textColor=${ZWE_components_api_catalog_apiml_catalog_customStyle_textColor:-${ZWE_configs_apiml_catalog_customStyle_textColor:-}} \
+    -Dapiml.catalog.customStyle.titlesColor=${ZWE_components_api_catalog_apiml_catalog_customStyle_titlesColor:-${ZWE_configs_apiml_catalog_customStyle_titlesColor:-}} \
+    -Dapiml.catalog.hide.serviceInfo=${ZWE_components_api_catalog_apiml_catalog_hide_serviceInfo:-${ZWE_configs_apiml_catalog_hide_serviceInfo:-false}} \
     -Dapiml.connection.idleConnectionTimeoutSeconds=${ZWE_components_gateway_apiml_connection_idleConnectionTimeoutSeconds:-${ZWE_configs_apiml_connection_idleConnectionTimeoutSeconds:-5}} \
     -Dapiml.connection.timeout=${ZWE_components_gateway_apiml_connection_timeout:-${ZWE_configs_apiml_connection_timeout:-60000}} \
     -Dapiml.connection.timeToLive=${ZWE_components_gateway_apiml_connection_timeToLive:-${ZWE_configs_apiml_connection_timeToLive:-10000}} \
@@ -266,19 +322,21 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.discovery.userid=${discoveryUserid} \
     -Dapiml.gateway.cachePeriodSec=${ZWE_components_gateway_apiml_gateway_registry_cachePeriodSec:-${ZWE_configs_apiml_gateway_registry_cachePeriodSec:-120}} \
     -Dapiml.gateway.cookieNameForRateLimit=${cookieName:-apimlAuthenticationToken} \
-    -Dapiml.gateway.maxSimultaneousRequests=${ZWE_components_gateway_gateway_registry_maxSimultaneousRequests:-${ZWE_configs_gateway_registry_maxSimultaneousRequests:-20}} \
+    -Dapiml.gateway.maxSimultaneousRequests=${ZWE_components_gateway_apiml_gateway_registry_maxSimultaneousRequests:-${ZWE_configs_apiml_gateway_registry_maxSimultaneousRequests:-20}} \
     -Dapiml.gateway.rateLimiterCapacity=${ZWE_components_gateway_apiml_gateway_rateLimiterCapacity:-${ZWE_configs_apiml_gateway_rateLimiterCapacity:-20}} \
     -Dapiml.gateway.rateLimiterRefillDuration=${ZWE_components_gateway_apiml_gateway_rateLimiterRefillDuration:-${ZWE_configs_apiml_gateway_rateLimiterRefillDuration:-1}} \
     -Dapiml.gateway.rateLimiterTokens=${ZWE_components_gateway_apiml_gateway_rateLimiterTokens:-${ZWE_configs_apiml_gateway_rateLimiterTokens:-20}} \
-    -Dapiml.gateway.refresh-interval-ms=${ZWE_components_gateway_gateway_registry_refreshIntervalMs:-${ZWE_configs_gateway_registry_refreshIntervalMs:-30000}} \
+    -Dapiml.gateway.refresh-interval-ms=${ZWE_components_gateway_apiml_gateway_registry_refreshIntervalMs:-${ZWE_configs_apiml_gateway_registry_refreshIntervalMs:-30000}} \
     -Dapiml.gateway.registry.enabled=${ZWE_components_gateway_apiml_gateway_registry_enabled:-${ZWE_configs_apiml_gateway_registry_enabled:-false}} \
-    -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_components_gateway_gateway_registry_metadataKeyAllowList:-${ZWE_configs_gateway_registry_metadataKeyAllowList:-}} \
+    -Dapiml.gateway.registry.metadata-key-allow-list=${ZWE_components_gateway_apiml_gateway_registry_metadataKeyAllowList:-${ZWE_configs_apiml_gateway_registry_metadataKeyAllowList:-}} \
     -Dapiml.gateway.servicesToDisableRetry=${ZWE_components_gateway_apiml_gateway_servicesToDisableRetry:-${ZWE_configs_apiml_gateway_servicesToDisableRetry:-}} \
     -Dapiml.gateway.servicesToLimitRequestRate=${ZWE_components_gateway_apiml_gateway_servicesToLimitRequestRate:-${ZWE_configs_apiml_gateway_servicesToLimitRequestRate:-}} \
     -Dapiml.health.protected=${ZWE_components_gateway_apiml_health_protected:-${ZWE_configs_apiml_health_protected:-true}} \
     -Dapiml.internal-discovery.address=${ZWE_configs_internal_discovery_address:-${ZWE_configs_zowe_network_server_listenAddresses:-${ZWE_zowe_network_server_listenAddresses:-"0.0.0.0"}}} \
     -Dapiml.internal-discovery.port=${ZWE_components_discovery_port:-${ZWE_configs_internal_discovery_port:-7553}} \
     -Dapiml.logs.location=${ZWE_zowe_logDirectory} \
+    -Dapiml.logging.toFile.enabled=${LOG_TO_FILE:-false} \
+    -Dapiml.logging.toFile.debugOnly=${DEBUG_ONLY_TO_FILE:-false} \
     -Dapiml.security.allowedDomains=${ZWE_ALLOWED_DOMAINS} \
     -Dapiml.security.allowTokenRefresh=${ZWE_components_gateway_apiml_security_allowtokenrefresh:-${ZWE_configs_apiml_security_allowtokenrefresh:-false}} \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
@@ -298,6 +356,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.domains.portValidationDisabled=${ZWE_components_discovery_apiml_security_domains_portValidationDisabled:-${ZWE_configs_apiml_security_domains_portValidationDisabled:-false}} \
     -Dapiml.security.enableStrictUrlValidation=${ZWE_components_gateway_apiml_security_enableStrictUrlValidation:-${ZWE_configs_apiml_security_enableStrictUrlValidation:-true}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-${ZWE_configs_apiml_security_jwtInitializerTimeout:-5}} \
+    -Dapiml.security.jwtVerificationKeyAliases="${ZWE_components_gateway_apiml_security_jwtVerificationKeyAliases:-${ZWE_configs_apiml_security_jwtVerificationKeyAliases:-}}" \
     -Dapiml.security.oidc.enabled=${ZWE_components_gateway_apiml_security_oidc_enabled:-${ZWE_configs_apiml_security_oidc_enabled:-false}} \
     -Dapiml.security.oidc.identityMapperUrl=${ZWE_components_gateway_apiml_security_oidc_identityMapperUrl:-${ZWE_configs_apiml_security_oidc_identityMapperUrl:-"${internalProtocol:-https}://${ZWE_haInstance_hostname:-localhost}:${ZWE_components_gateway_port:-7554}/zss/api/v1/certificate/dn"}} \
     -Dapiml.security.oidc.identityMapperUser=${ZWE_components_gateway_apiml_security_oidc_identityMapperUser:-${ZWE_configs_apiml_security_oidc_identityMapperUser:-${ZWE_zowe_setup_security_users_zowe:-ZWESVUSR}}} \

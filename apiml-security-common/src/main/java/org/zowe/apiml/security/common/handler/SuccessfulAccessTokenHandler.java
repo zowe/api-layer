@@ -18,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.zowe.apiml.message.log.ApimlLogger;
-import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.audit.RauditxService;
 import org.zowe.apiml.security.common.error.AuthExceptionHandler;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
@@ -42,9 +40,6 @@ public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandle
     private final RauditxService rauditxService;
     private final AuthExceptionHandler authExceptionHandler;
 
-    @InjectApimlLogger
-    private final ApimlLogger apimlLog = ApimlLogger.empty();
-
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         String username = authentication.getName();
@@ -66,7 +61,7 @@ public class SuccessfulAccessTokenHandler implements AuthenticationSuccessHandle
             rauditBuilder.success();
         } catch (AuthenticationException e) {
             rauditBuilder.failure();
-            var consumer = ServletErrorUtils.createApiErrorWriter(response, apimlLog);
+            var consumer = ServletErrorUtils.createApiErrorWriter(response);
             var addHeader = (BiConsumer<String, String>) response::addHeader;
             authExceptionHandler.handleException(request.getRequestURI(), consumer, addHeader, e);
         } catch (RuntimeException | IOException e) {

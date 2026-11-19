@@ -20,11 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.zowe.apiml.message.log.ApimlLogger;
 
-import java.net.IDN;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
@@ -49,7 +45,7 @@ public class MetadataValidator {
 
     private final boolean disablePortValidation;
 
-    boolean isAllowedDomain(String input, boolean validatePort) {
+    public boolean isAllowedDomain(String input, boolean validatePort) {
         if (StringUtils.isBlank(input)) {
             return true;
         }
@@ -191,7 +187,7 @@ public class MetadataValidator {
         if ("*".equals(allowedDomainPort) || Objects.equal(port, allowedDomainPort)) {
             return true;
         }
-        log.debug("Port {} in input value {} from service {} does not match port {}", port, input, instanceInfo.getInstanceId(), allowedDomainPort);
+        log.debug("Port {} from instance {} in input value {} does not match port {}", port, instanceInfo != null ? instanceInfo.getInstanceId() : "", input, allowedDomainPort);
         return false;
     }
 
@@ -199,7 +195,7 @@ public class MetadataValidator {
      * Validate an input assumed to be an IP address (the method checks it as well)
      * against an entry in the allow list
      *
-     * @param input IP address, yet to be validated input
+     * @param input         IP address, yet to be validated input
      * @param allowedDomain An entry in the allowed domains list
      * @return whether the IP address is allowed against the allowed domain entry
      */
@@ -218,7 +214,7 @@ public class MetadataValidator {
         if (allowedDomainIps != null && allowedDomainIps.length > 0) {
             allowedDomainIpsString = Arrays.stream(allowedDomainIps).map(InetAddress::getHostAddress).toList().toArray(new String[0]);
         } else {
-            allowedDomainIpsString = new String[]{ allowedDomain };
+            allowedDomainIpsString = new String[]{allowedDomain};
         }
 
         try {

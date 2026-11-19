@@ -13,18 +13,23 @@ package org.zowe.apiml.security;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.Base64;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -83,6 +88,68 @@ class SecurityUtilsTest {
     void testLoadPublicKeyWithBadKeyStore() {
         HttpsConfig httpsConfig = httpsConfigBuilder.keyStore("/localhost.truststore.p12").build();
         assertThrows(HttpsConfigError.class, () -> SecurityUtils.loadPublicKey(httpsConfig));
+    }
+
+    @Nested
+    class WhenLoadingSigningKeys {
+        private static final String CA_ALIAS = "service-ca";
+
+        @TempDir
+        Path tempDir;
+
+        @Test
+        void givenNoAliases_thenPublicKeysOfPrivateKeyEntriesAreLoaded() {
+            HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
+
+            List<PublicKey> keys = SecurityUtils.loadSigningKeys(httpsConfig, List.of());
+
+            assertEquals(List.of(SecurityUtils.loadPublicKey(httpsConfig)), keys);
+        }
+
+        @Test
+        void givenAliasOfTrustedCertificate_thenItsPublicKeyIsLoaded() throws Exception {
+            HttpsConfig httpsConfig = httpsConfigBuilder.build();
+            Certificate caCertificate = SecurityUtils.loadKeyStore(httpsConfig).getCertificate(CA_ALIAS);
+
+            List<PublicKey> keys = SecurityUtils.loadSigningKeys(httpsConfig, List.of(CA_ALIAS));
+
+            assertEquals(List.of(caCertificate.getPublicKey()), keys);
+        }
+
+        @Test
+        void givenUnknownAlias_thenItIsSkipped() {
+            HttpsConfig httpsConfig = httpsConfigBuilder.keyAlias(KEY_ALIAS).build();
+
+            List<PublicKey> keys = SecurityUtils.loadSigningKeys(httpsConfig, List.of(KEY_ALIAS, WRONG_PARAMETER));
+
+            assertEquals(List.of(SecurityUtils.loadPublicKey(httpsConfig)), keys);
+        }
+
+        @Test
+        void givenSecretKeyEntryWithoutCertificate_thenItIsSkipped() throws Exception {
+            char[] password = "password".toCharArray();
+            KeyStore keyStore = KeyStore.getInstance("PKCS12");
+            keyStore.load(null, password);
+            keyStore.setEntry("secret", new KeyStore.SecretKeyEntry(new SecretKeySpec(new byte[16], "AES")), new KeyStore.PasswordProtection(password));
+            Path keyStoreFile = tempDir.resolve("secret.p12");
+            try (OutputStream out = Files.newOutputStream(keyStoreFile)) {
+                keyStore.store(out, password);
+            }
+            HttpsConfig httpsConfig = HttpsConfig.builder()
+                .keyStore(keyStoreFile.toString())
+                .keyStoreType("PKCS12")
+                .keyStorePassword(password)
+                .build();
+
+            assertTrue(SecurityUtils.loadSigningKeys(httpsConfig, List.of()).isEmpty());
+        }
+
+        @Test
+        void givenNoKeystore_thenNoKeysAreLoaded() {
+            HttpsConfig httpsConfig = httpsConfigBuilder.keyStore(null).build();
+
+            assertTrue(SecurityUtils.loadSigningKeys(httpsConfig, List.of()).isEmpty());
+        }
     }
 
     @Test
