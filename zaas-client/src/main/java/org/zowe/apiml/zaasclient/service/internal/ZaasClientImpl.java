@@ -32,6 +32,7 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
     private final PassTicketService passTickets;
     private final CloseableHttpClient httpClientWithoutCert;
     private final CloseableHttpClient httpClient;
+    private final boolean ownsClients;
 
     public ZaasClientImpl(ConfigProperties configProperties) throws ZaasConfigurationException {
         if (!configProperties.isHttpOnly() && (configProperties.getKeyStorePath() == null)) {
@@ -46,10 +47,48 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
             httpClientWithoutCert = new ZaasHttpsClientProvider(configProperties.withoutKeyStore()).getHttpClient();
         }
 
-        String baseUrl = String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
-            configProperties.getApimlBaseUrl());
+        String baseUrl = getBaseUrl(configProperties);
         tokens = new ZaasJwtService(httpClientWithoutCert, baseUrl, configProperties);
         passTickets = new PassTicketServiceImpl(httpClient, baseUrl, configProperties);
+        ownsClients = true;
+    }
+
+    /**
+     * Creates a client that sends ZAAS requests through the supplied HTTP clients.
+     * <p>
+     * {@code httpClient} is used for pass ticket requests. {@code httpClientWithoutCert} is used for login, query,
+     * logout and OIDC validation, which the default constructor sends without a client certificate so that ZAAS
+     * authenticates the caller by credentials or token and not by certificate.
+     * <p>
+     * The caller must configure {@code httpClient} with a client certificate for HTTPS pass ticket requests
+     * and configure {@code httpClientWithoutCert} without a client certificate. The supplied clients carry their own
+     * TLS configuration, therefore no key store is required in {@code configProperties}. The URLs are still built
+     * from the host, port, base URL and the {@code httpOnly} flag of {@code configProperties}.
+     * <p>
+     * Cookie management remains as configured on each supplied client and is the caller's responsibility.
+     * The built-in clients disable automatic cookie management. With automatic cookie management enabled on
+     * {@code httpClientWithoutCert}, a cached ZAAS authentication cookie can take precedence over an explicitly
+     * supplied bearer token during logout, causing a different session to be invalidated. For stateless behavior,
+     * build both supplied clients with {@code HttpClientBuilder.disableCookieManagement()}.
+     * <p>
+     * The caller owns the supplied clients: {@link #close()} does not close them.
+     *
+     * @param configProperties      ZAAS location and token settings
+     * @param httpClient            client configured with a client certificate for HTTPS pass ticket requests
+     * @param httpClientWithoutCert client without a client certificate, used for login, query, logout and OIDC validation
+     */
+    public ZaasClientImpl(ConfigProperties configProperties, CloseableHttpClient httpClient, CloseableHttpClient httpClientWithoutCert) {
+        this.httpClient = Objects.requireNonNull(httpClient, "httpClient must not be null");
+        this.httpClientWithoutCert = Objects.requireNonNull(httpClientWithoutCert, "httpClientWithoutCert must not be null");
+        String baseUrl = getBaseUrl(configProperties);
+        tokens = new ZaasJwtService(httpClientWithoutCert, baseUrl, configProperties);
+        passTickets = new PassTicketServiceImpl(httpClient, baseUrl, configProperties);
+        ownsClients = false;
+    }
+
+    private String getBaseUrl(ConfigProperties configProperties) {
+        return String.format("%s://%s:%s%s", getScheme(configProperties.isHttpOnly()), configProperties.getApimlHost(), configProperties.getApimlPort(),
+            configProperties.getApimlBaseUrl());
     }
 
     private Object getScheme(boolean httpOnly) {
@@ -65,6 +104,7 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
         this.passTickets = passTickets;
         this.httpClientWithoutCert = null;
         this.httpClient = null;
+        this.ownsClients = false;
     }
 
     @Override
@@ -148,8 +188,19 @@ public class ZaasClientImpl implements ZaasClient, Closeable {
 
     @Override
     public void close() throws IOException {
-        httpClient.close();
-        httpClientWithoutCert.close();
+        if (ownsClients) {
+            IOException ioe = null;
+            try {
+                httpClient.close();
+            } catch (IOException e) {
+                ioe = e;
+            } finally {
+                httpClientWithoutCert.close();
+            }
+            if (ioe != null) {
+                throw ioe;
+            }
+        }
     }
 
     @Override
