@@ -42,7 +42,7 @@ def create_ssl_context(ssl_config):
     if not (ca_file and cert_file and key_file):
         raise ValueError("SSL configuration is incomplete. Certificate, key, and CA files must be provided.")
 
-    context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH, cafile=ca_file)
+    context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=ca_file)
     context.load_cert_chain(
         certfile=cert_file, keyfile=key_file, password=ssl_config.get("keyPassword")
     )
