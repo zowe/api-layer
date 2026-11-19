@@ -26,6 +26,12 @@ limitations under the License.
 import pytest
 from src.zowe_apiml_onboarding_enabler_python.registration import PythonEnabler
 
+
+@pytest.fixture(autouse=True)
+def mock_http_client_registration(mocker):
+    return mocker.patch("src.zowe_apiml_onboarding_enabler_python.registration.http_client.set_http_client")
+
+
 @pytest.fixture
 def mock_config_loader(mocker):
     """Fixture to mock ConfigLoader globally for all tests."""
@@ -94,3 +100,56 @@ def test_python_enabler_unregister(mocker):
 
     mock_eureka_stop.assert_called_once()
     mock_logger_info.assert_called_with("Service unregistered successfully.")
+
+
+@pytest.mark.parametrize("missing_field", ["certificate", "keystore", "caFile"])
+@pytest.mark.parametrize("missing_value", [None, ""])
+def test_https_discovery_rejects_incomplete_ssl(
+    mock_config_loader, mock_http_client_registration, missing_field, missing_value
+):
+    config = mock_config_loader.return_value.config
+    config["eureka"]["ssl"] = True
+    config["ssl"] = {"certificate": "client.crt", "keystore": "client.key", "caFile": "ca.pem"}
+    config["ssl"][missing_field] = missing_value
+
+    with pytest.raises(ValueError, match="SSL configuration is incomplete"):
+        PythonEnabler()
+
+    mock_http_client_registration.assert_not_called()
+
+
+@pytest.mark.parametrize("instance_scheme", ["http", "https"])
+@pytest.mark.parametrize("discovery_ssl", [False, True])
+def test_ssl_follows_discovery_scheme(
+    mocker, mock_config_loader, mock_http_client_registration, instance_scheme, discovery_ssl
+):
+    config = mock_config_loader.return_value.config
+    config["instance"]["scheme"] = instance_scheme
+    config["eureka"]["ssl"] = discovery_ssl
+    context_factory = mocker.patch(
+        "src.zowe_apiml_onboarding_enabler_python.registration.create_ssl_context"
+    )
+
+    enabler = PythonEnabler()
+
+    client = mock_http_client_registration.call_args.args[0]
+    if discovery_ssl:
+        assert client.ssl_context is enabler.ssl_context is context_factory.return_value
+    else:
+        context_factory.assert_not_called()
+        assert client.ssl_context is None
+
+
+@pytest.mark.parametrize("discovery_ssl, discovery_url", [
+    (False, "https://discovery.example/eureka"),
+    (True, "http://discovery.example/eureka"),
+])
+def test_explicit_discovery_url_controls_ssl(mocker, mock_config_loader, discovery_ssl, discovery_url):
+    mock_config_loader.return_value.config["eureka"]["ssl"] = discovery_ssl
+    context_factory = mocker.patch(
+        "src.zowe_apiml_onboarding_enabler_python.registration.create_ssl_context"
+    )
+
+    PythonEnabler(discovery_service=discovery_url)
+
+    assert context_factory.called == discovery_url.startswith("https://")
