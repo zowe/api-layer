@@ -37,7 +37,6 @@ export function getDiff(serviceId, oldVersion, newVersion) {
         dispatch(request(serviceId, oldVersion, newVersion));
 
         return fetch(`${getBaseUrl()}${import.meta.env.VITE_APIDOC_UPDATE}/${serviceId}/${oldVersion}/${newVersion}`)
-            .then((response) => response.text())
             .then((response) => {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
