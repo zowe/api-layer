@@ -219,7 +219,7 @@ dependencyResolutionManagement {
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
             library('archaius_core', 'com.netflix.archaius', 'archaius-core').versionRef('archaius')
 
-            library('infinispan_spring_boot3_starter_embedded', 'org.infinispan', 'infinispan-spring-boot3-starter-embedded').versionRef('infinispan')
+            library('infinispan_spring_boot4_starter_embedded', 'org.infinispan', 'infinispan-spring-boot4-starter-embedded').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')
             library('infinispan_jboss_marshalling', 'org.infinispan', 'infinispan-jboss-marshalling').versionRef('infinispan')
             library('infinispan_annotations', 'org.infinispan', 'infinispan-component-annotations').versionRef('infinispan')
@@ -341,7 +341,7 @@ dependencyResolutionManagement {
             library('mock_server','org.mock-server','mockserver-netty').versionRef('mockServer')
 
 
-            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling', 'infinispan_annotations' ])
+            bundle('infinispan', [ 'infinispan_spring_boot4_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling', 'infinispan_annotations' ])
             bundle('jaxb', ['jaxbApi', 'jaxbImpl'])
             bundle('modulith', ['modulith', 'modulith_core', 'jmolecules'])
         }
