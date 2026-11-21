@@ -10,19 +10,17 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.zowe.apiml.product.constants.CoreService;
 
 @Data
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class CentralGatewayServiceConfiguration implements ServiceConfiguration {
+public class CentralGatewayServiceConfiguration extends ServiceConfiguration {
 
-    private String scheme;
-    private String host;
-    private int port;
+    CentralGatewayServiceConfiguration(String scheme, String host, String port) {
+        super(scheme, null, host, port, 1);
+    }
 
     @Override
     public String getServiceId() {

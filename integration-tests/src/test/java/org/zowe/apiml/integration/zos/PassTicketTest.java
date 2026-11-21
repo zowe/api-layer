@@ -58,7 +58,7 @@ class PassTicketTest implements TestWithStartedInstances {
 
     private static final String COOKIE = "apimlAuthenticationToken";
     private URI url = HttpRequestUtils.getUriFromGateway(ROUTED_PASSTICKET);
-    private static final boolean IS_MODULITH_ENABLED = Boolean.parseBoolean(System.getProperty("environment.modulith"));
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
 
     @BeforeEach
     void setUp() {

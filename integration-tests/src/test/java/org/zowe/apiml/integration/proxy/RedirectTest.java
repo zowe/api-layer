@@ -36,8 +36,8 @@ class RedirectTest {
     static void init() throws Exception {
         RestAssured.useRelaxedHTTPSValidation();
         SslContext.prepareSslAuthentication(ItSslConfigFactory.integrationTests());
-        gatewayUrl = String.format("%s:%d", gwConf.getHost(), gwConf.getPort());
-        dcUrl = String.format("%s:%d", dcConf.getHost(), dcConf.getPort());
+        gatewayUrl = String.format("%s:%d", gwConf.getFirstHost(), gwConf.getPortForHost(gwConf.getFirstHost()));
+        dcUrl = String.format("%s:%d", dcConf.getFirstHost(), dcConf.getPortForHost(dcConf.getFirstHost()));
     }
 
     static Stream<Arguments> headerValues() {
@@ -98,7 +98,7 @@ class RedirectTest {
     @ParameterizedTest(name = "given {0} then Location header value {1} was transform to {2}")
     @MethodSource("headerValues")
     void giveLocationHeaderFromService(String msg, String original, String translated) {
-        var baseUrl = String.format("%s://%s:%d", gwConf.getScheme(), gwConf.getHost(), gwConf.getPort());
+        var baseUrl = String.format("%s://%s:%d", gwConf.getScheme(), gwConf.getFirstHost(), gwConf.getPortForHost(gwConf.getFirstHost()));
         var targetUrl = baseUrl + "/discoverableclient/api/v1/redirect";
         given()
             .body(new LocationReq(original))
@@ -121,7 +121,7 @@ class RedirectTest {
     @ParameterizedTest(name = "given {0} then Location header value {1} was transform to {2}")
     @MethodSource("urlsWithoutContextPath")
     void giveLocationHeaderFromServiceWithoutContextPath(String msg, String original, String translated) {
-        var baseUrl = String.format("%s://%s:%d", gwConf.getScheme(), gwConf.getHost(), gwConf.getPort());
+        var baseUrl = String.format("%s://%s:%d", gwConf.getScheme(), gwConf.getFirstHost(), gwConf.getPortForHost(gwConf.getFirstHost()));
         var targetUrl = baseUrl + "/redirectclient/ui/api/v1/redirect";
         given()
             .body(new LocationReq(original))

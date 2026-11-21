@@ -50,7 +50,7 @@ import static org.zowe.apiml.util.http.HttpRequestUtils.getUriFromGateway;
 @Slf4j
 class ApiCatalogAuthenticationTest {
 
-    private static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+    private static final boolean IS_MODULITH_ENABLED = ConfigReader.IS_MODULITH_ENABLED;
 
     private static final String UNAUTHENTICATED_ERROR_NUMBER = IS_MODULITH_ENABLED ? "ZWEAG120E" : "ZWEAS120E";
 
@@ -115,7 +115,7 @@ class ApiCatalogAuthenticationTest {
         var apiCatalogInstances = DiscoveryUtils.getInstances(CATALOG_SERVICE_ID);
         if (StringUtils.isEmpty(apiCatalogServiceUrl)) {
             apiCatalogServiceUrl = apiCatalogInstances.stream()
-                .filter(catalogInstance -> catalogInstance.getPort() == catalogConfig.getPort())
+                .filter(catalogInstance -> catalogInstance.getPort() == catalogConfig.getPortForHost(catalogInstance.getHostName()))
                 .findFirst()
                 .map(i -> String.format("%s", i.getUrl()).replace("https://", "http://").replace("http://", ConfigReader.environmentConfiguration().getApiCatalogServiceConfiguration().getScheme() + "://"))
                 .orElseThrow(() -> new RuntimeException("Cannot determine API Catalog service from Discovery"));

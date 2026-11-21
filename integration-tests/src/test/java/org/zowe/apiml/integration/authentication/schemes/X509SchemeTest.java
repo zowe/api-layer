@@ -56,7 +56,7 @@ class X509SchemeTest implements TestWithStartedInstances {
     @Test
     @Tag("GatewayServiceRouting")
     void givenValidClientCert_thenForwardDetailsInHeader() {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getFirstHost(), conf.getPort(), X509_ENDPOINT);
         given()
             .config(SslContext.clientCertValid)
             .when()
@@ -69,7 +69,7 @@ class X509SchemeTest implements TestWithStartedInstances {
     @Test
     @Tag("GatewayServiceRouting")
     void givenNoCert_thenForwardErrorMessageInHeader() {
-        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getHost(), conf.getPort(), X509_ENDPOINT);
+        String scgUrl = String.format("%s://%s:%s%s", conf.getScheme(), conf.getFirstHost(), conf.getPort(), X509_ENDPOINT);
         given()
             .config(SslContext.tlsWithoutCert)
             .when()

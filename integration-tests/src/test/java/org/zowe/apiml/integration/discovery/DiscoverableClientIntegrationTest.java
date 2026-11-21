@@ -111,7 +111,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                         .statusCode(is(SC_OK));
                     isRegistered(true, MEDIATION_CLIENT_URI);
 
-                    var instanceId = discoverableClientConfig.getHost() + ":registrationtest:10013";
+                    var instanceId = discoverableClientConfig.getFirstHost() + ":registrationtest:10013";
 
                     // Not public API, 500 is fine
                     given()
@@ -138,7 +138,7 @@ class DiscoverableClientIntegrationTest implements TestWithStartedInstances {
                         .config(SslContext.clientCertValid)
                         .contentType(ContentType.JSON)
                     .when()
-                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.externalUrl=https://www.zowe.org", discoverableClientConfig.getHost() + ":registrationtest:10013" ))
+                        .put(DiscoveryUtils.getDiscoveryUrl() + String.format("/eureka/apps/REGISTRATIONTEST/%s/metadata?apiml.externalUrl=https://www.zowe.org", discoverableClientConfig.getFirstHost() + ":registrationtest:10013" ))
                     .then()
                         .statusCode(is(SC_OK));
 
