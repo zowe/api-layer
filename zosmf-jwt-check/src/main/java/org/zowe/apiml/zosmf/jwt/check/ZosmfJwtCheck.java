@@ -30,8 +30,6 @@ public class ZosmfJwtCheck {
     static final String VERIFY_DISABLED = "DISABLED";
 
     public static int mainWithExitCode(String[] args) {
-        org.zowe.apiml.common.KeyringUtils.ensureSafkeyringHandler();
-
         try {
             ZosmfJwtCheckConf conf = new ZosmfJwtCheckConf();
             CommandLine cmd = new CommandLine(conf);
