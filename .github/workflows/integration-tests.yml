@@ -74,8 +74,8 @@ jobs:
                     cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
                     docker build -t nodesampleapp .
                     docker tag nodesampleapp ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:${{ env.JOB_ID }}
-                    if [ "${{ env.CI_IMAGE_PUSH_ENABLED }}" = "true" ]; then
-                        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+                    if [ "${{ env.CI_IMAGE_PUSH_ENABLED }}" = "true" ] && [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
+                        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin || { echo "docker login to ghcr.io failed (empty token?)"; exit 1; }
                         docker push ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:${{ env.JOB_ID }}
                     else
                         echo "Fork PR: skipping image push (read-only GITHUB_TOKEN); test jobs will use last branch images"
@@ -89,8 +89,8 @@ jobs:
                     cp -r ../onboarding-enabler-python ./onboarding-enabler-python
                     docker build -t pythonsampleapp .
                     docker tag pythonsampleapp ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:python${{ env.JOB_ID }}
-                    if [ "${{ env.CI_IMAGE_PUSH_ENABLED }}" = "true" ]; then
-                        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+                    if [ "${{ env.CI_IMAGE_PUSH_ENABLED }}" = "true" ] && [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
+                        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin || { echo "docker login to ghcr.io failed (empty token?)"; exit 1; }
                         docker push ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:python${{ env.JOB_ID }}
                     else
                         echo "Fork PR: skipping image push (read-only GITHUB_TOKEN); test jobs will use last branch images"
@@ -100,7 +100,7 @@ jobs:
             -   name: Build with Gradle
                 if: env.CI_IMAGE_PUSH_ENABLED == 'true'
                 run: >
-                    ./gradlew clean jib -Djib.serialize=true -Pzowe.docker.password=${{ secrets.GITHUB_TOKEN }} -Pzowe.docker.username=${{ github.actor }} -Pzowe.docker.container=${{ env.CI_IMAGE_PREFIX }}/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+                    ./gradlew clean jib -Djib.serialize=true -Pzowe.docker.password="${{ secrets.GITHUB_TOKEN }}" -Pzowe.docker.username=${{ github.actor }} -Pzowe.docker.container=${{ env.CI_IMAGE_PREFIX }}/ -Pzowe.docker.tag=${{ env.JOB_ID }}
             -   name: Standalone Catalog
                 if: env.CI_IMAGE_PUSH_ENABLED == 'true'
                 run: >
