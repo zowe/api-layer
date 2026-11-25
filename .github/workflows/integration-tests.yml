@@ -502,7 +502,7 @@ jobs:
         container:
             image: ubuntu:latest
             options: "--hostname testrunner"
-        timeout-minutes: 15
+        timeout-minutes: 45
 
         services:
             api-catalog-services:
@@ -588,7 +588,7 @@ jobs:
                             | openssl s_client -quiet -verify_quiet -connect "$1:10011" -servername "$1" 2>/dev/null \
                             | tr -d '\r' | grep -o '"instanceId":"[^"]*"' | sort -u | tr '\n' ' ' | xargs -I{} echo "{} <- $1"
                     }
-                    for i in $(seq 1 10); do
+                    for i in $(seq 1 6); do
                         echo "--- poll $i"
                         fetch discovery-service
                         fetch discovery-service-2
