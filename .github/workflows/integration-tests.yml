@@ -584,11 +584,11 @@ jobs:
                 timeout-minutes: 10
                 run: |
                     fetch() {
-                        resp=$(printf 'GET /eureka/apps HTTP/1.1\r\nHost: %s:10011\r\nAccept: application/json\r\nConnection: close\r\n\r\n' "$1" | openssl s_client -quiet -verify_quiet -connect "$1:10011" -servername "$1" 2>&1 | tr -d '\r')
-                        echo "[$1] response length: ${#resp}"
+                        resp=$(printf 'GET /eureka/apps HTTP/1.1\r\nHost: %s:10011\r\nAccept: application/json\r\nAuthorization: Basic dXNlcjp1c2Vy\r\nConnection: close\r\n\r\n' "$1" | openssl s_client -quiet -verify_quiet -connect "$1:10011" -servername "$1" 2>/dev/null | tr -d '\r')
+                        echo "[$1] status: $(echo "$resp" | grep -m1 '^HTTP' || echo none)"
                         echo "$resp" | grep -o '"instanceId":"[^"]*"' | sort -u | tr '\n' ' '
-                        echo " <- $1"
-                        echo "$resp" | head -c 200; echo
+                        echo " <- $1 (body bytes: $(echo "$resp" | awk 'p{print} /^\{/{p=1}' | head -c 400 | wc -c))"
+                        echo "$resp" | awk 'p{print} /^\{/{p=1}' | head -c 400; echo
                     }
                     for i in $(seq 1 6); do
                         echo "--- poll $i"
