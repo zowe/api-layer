@@ -26,6 +26,12 @@ env:
     # Push ephemeral images only where the token can write (branch pushes / same-repo PRs).
     # Fork PR runs in this repo get a read-only GITHUB_TOKEN and publish nothing.
     CI_IMAGE_PUSH_ENABLED: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+    # Fork PRs test images published by the fork's own run. Those images carry
+    # the fork run's generated CA, so every job here must restore THE FORK'S
+    # certificate set (extracted from the images by PublishJibContainers),
+    # otherwise mutual TLS to the discovery service fails with a certificate
+    # alert and no instance ever onboards.
+    CERT_ARTIFACT: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && 'fork-certificates' || 'development-certificates' }}
     # Image tag: fork-published images carry the head commit SHA, base-repo
     # builds keep the per-run tag.
     CI_IMAGE_TAG: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && github.event.pull_request.head.sha || ((github.repository != 'zowe/api-layer' && github.event_name == 'push') && github.sha || format('{0}-{1}', github.run_id, github.run_number)) }}
@@ -48,8 +54,9 @@ jobs:
                 run: ./gradlew generateCertificates
 
             -   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+                if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
                 with:
-                    name: development-certificates
+                    name: ${{ env.CERT_ARTIFACT }}
                     retention-days: 1
                     if-no-files-found: error
                     path: |
@@ -72,6 +79,8 @@ jobs:
                     ref: ${{ github.event.pull_request.head.sha || github.ref }}
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Build Nodejs Sample App
                 if: env.CI_IMAGE_PUSH_ENABLED == 'true'
@@ -128,6 +137,36 @@ jobs:
                     echo "##[error]Make sure Actions are enabled on the fork (so its push run publishes the images) and the ghcr packages are public."
                     exit 1
 
+            -   name: Restore the fork run's certificates from the image
+                if: env.CI_IMAGE_PUSH_ENABLED != 'true'
+                run: |
+                    OWNER='${{ github.event.pull_request.head.repo.owner.login }}'
+                    TAG='${{ github.event.pull_request.head.sha }}'
+                    # The images carry the fork run's generated keystore tree at /keystore.
+                    # The base run's own certificate set is signed by a different CA, so
+                    # mutual TLS to the discovery service would fail. Use the fork's.
+                    docker create --name certsrc "ghcr.io/$OWNER/apiml:$TAG"
+                    docker cp certsrc:/keystore ./fork-keystore
+                    docker rm -f certsrc
+                    rm -rf keystore
+                    mv fork-keystore keystore
+                    # Module-local copies, mirroring keystore/generate-certificates.sh
+                    mkdir -p common-service-core/src/test/resources zaas-client/src/test/resources
+                    openssl x509 -in keystore/service/service.cer -noout -pubkey | grep -v -- '-----' > common-service-core/src/test/resources/jwt-public-key.pub
+                    cp keystore/service/service.keystore.p12 zaas-client/src/test/resources/localhost.keystore.p12
+
+            -   name: Upload fork certificate set for this run
+                if: env.CI_IMAGE_PUSH_ENABLED != 'true'
+                uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+                with:
+                    name: ${{ env.CERT_ARTIFACT }}
+                    retention-days: 1
+                    if-no-files-found: error
+                    path: |
+                        keystore/**
+                        common-service-core/src/test/resources/jwt-public-key.pub
+                        zaas-client/src/test/resources/localhost.keystore.p12
+
             -   uses: ./.github/actions/teardown
 
     CITestsModulithUnknownHostnames:
@@ -161,6 +200,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -236,6 +277,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -322,6 +365,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -444,6 +489,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -578,6 +625,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: DEBUG eureka registry poll (fork PRs)
                 if: env.CI_IMAGE_PUSH_ENABLED != 'true'
@@ -706,6 +755,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -790,6 +841,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -901,6 +954,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -989,6 +1044,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1049,6 +1106,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1120,6 +1179,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1206,6 +1267,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1259,6 +1322,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1344,6 +1409,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1418,6 +1485,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1474,6 +1543,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -1510,6 +1581,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -1587,6 +1660,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run APIML and Redis Containers
                 run: |
@@ -1727,6 +1802,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1817,6 +1894,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -1935,6 +2014,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -2022,6 +2103,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Setup Docker
                 if: ${{ false }} # Debug of containers
@@ -2183,6 +2266,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -2319,6 +2404,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -2431,6 +2518,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -2514,6 +2603,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -2621,6 +2712,8 @@ jobs:
                     ref: ${{ github.event.pull_request.head.sha || github.ref }}
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
                 with:
@@ -2743,6 +2836,8 @@ jobs:
                     ref: ${{ github.event.pull_request.head.sha || github.ref }}
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
             -   name: Install npm dependencies API Catalog
                 uses: bahmutov/npm-install@20216767ca67f0f7b4d095dc5859c5700a6581cb # v1
                 with:
@@ -2836,6 +2931,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -2887,6 +2984,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   name: Run Startup Check
                 if: always()
@@ -2927,6 +3026,8 @@ jobs:
 
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                with:
+                    artifactName: ${{ env.CERT_ARTIFACT }}
 
             -   uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
