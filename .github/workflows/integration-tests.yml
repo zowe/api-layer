@@ -127,20 +127,20 @@ jobs:
 
         services:
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /docker/api-defs-unknown-host
             discoverable-client-unknown:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-unknown
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
                     SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
                     SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             mock-services-unknown:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -187,7 +187,7 @@ jobs:
 
         services:
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -207,13 +207,13 @@ jobs:
                 #If the container runs oom, it is hard killed without printing any reasonable message in the log
                 options: --memory 640m --memory-swap 640m
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
                     SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
                     SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
         steps:
@@ -260,7 +260,7 @@ jobs:
 
         services:
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -279,7 +279,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -298,7 +298,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
         steps:
@@ -348,7 +348,7 @@ jobs:
                 type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic"]
         services:
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -369,7 +369,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -390,7 +390,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-3:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -411,17 +411,17 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml-3
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client-2:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
                     logbackService: ZWEADC2
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -490,20 +490,20 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
                     SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
@@ -522,23 +522,23 @@ jobs:
                     APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 options: --memory 640m --memory-swap 640m
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
             # needs to run in isolation from another DS for multi-tenancy setup
             discovery-service-2:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
                     logbackService: ZWEADS2
             gateway-service-2:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
@@ -547,7 +547,7 @@ jobs:
                     APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 options: --memory 640m --memory-swap 640m
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
@@ -598,7 +598,7 @@ jobs:
 
         services:
             api-catalog-services-2:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -607,44 +607,44 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAAC2
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             discovery-service-2:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
                     logbackService: ZWEADS2
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW1
             gateway-service-2:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAGW2
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -652,7 +652,7 @@ jobs:
                     APIML_SECURITY_AUTH_PROVIDER: saf
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -702,9 +702,9 @@ jobs:
 
         services:
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_APIMLID: apiml1
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -713,26 +713,26 @@ jobs:
                     APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
                     logbackService: ZWEAGW1
             gateway-service-2:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_APIMLID: apiml2
                     logbackService: ZWEAGW2
                     APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     logbackService: ZWEAZS2
             central-gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_APIMLID: centralapiml
                     APIML_CONNECTION_TIMEOUT: 2000
@@ -740,9 +740,9 @@ jobs:
                     APIML_SERVICE_HOSTNAME: central-gateway-service
                     APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -787,15 +787,15 @@ jobs:
         services:
             # Domain apiml instance which registers it's gateway in central's discovery service
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -803,7 +803,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/
                     logbackService: ZWEAAZ2
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_APIMLID: domain-apiml
                     APIML_SERVICE_EXTERNALURL: https://gateway-service:10010
@@ -815,11 +815,11 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
                     logbackService: ZWEAGW2
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
             # Central apiml instance with central gateway registry
             central-gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: central-gateway-service
@@ -829,7 +829,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW1
             api-catalog-services-2:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -837,13 +837,13 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAAC2
             discovery-service-2:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     logbackService: ZWEADS2
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
@@ -852,7 +852,7 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
                     logbackService: ZWEAZS2
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -899,7 +899,7 @@ jobs:
         services:
             # Domain apiml instance which registers it's gateway in central's discovery service
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: apiml
                     APIML_SERVICE_APIMLID: domain-apiml
@@ -920,7 +920,7 @@ jobs:
 
             # Central apiml instance with central gateway registry
             central-gateway-service:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: central-gateway-service
@@ -936,10 +936,10 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
 
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -982,23 +982,23 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1038,37 +1038,37 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1110,7 +1110,7 @@ jobs:
 
         services:
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -1128,7 +1128,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -1146,14 +1146,14 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1195,15 +1195,15 @@ jobs:
 
         services:
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
 
@@ -1246,31 +1246,31 @@ jobs:
 
         services:
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service"
                     JGROUPS_BIND_PORT: "7600"
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]"
             central-gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: central-gateway-service
                     APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
                     logbackService: ZWEAGW2
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OIDC_CLIENT_ID }}
@@ -1284,12 +1284,12 @@ jobs:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1337,32 +1337,32 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SECURITY_AUTH_ZOSMF_JWTAUTOCONFIGURATION: ltpa
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1401,11 +1401,11 @@ jobs:
 
         services:
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -1415,7 +1415,7 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
 
@@ -1615,35 +1615,35 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             api-catalog-services-2:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
                     logbackService: ZWEAAC2
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discoverable-client-2:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
                     logbackService: ZWEADC2
             discovery-service-2:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -1651,19 +1651,19 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
                     logbackService: ZWEADS2
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     logbackService: ZWEAZS2
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
             gateway-service-2:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
@@ -1729,21 +1729,21 @@ jobs:
 
         services:
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client-2:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     logbackService: ZWEADC2
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
@@ -1751,7 +1751,7 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     logbackService: ZWEAGW1
             apiml-2:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
@@ -1816,37 +1816,37 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client-2:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEADC2
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             discovery-service-2:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -1854,22 +1854,22 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
                     logbackService: ZWEADS2
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAZS2
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
             gateway-service-2:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
@@ -1934,28 +1934,28 @@ jobs:
 
         services:
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client-2:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
                     logbackService: ZWEADC2
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
                     APIML_SERVICE_HOSTNAME: apiml
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW1
             apiml-2:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: apiml-2
@@ -2017,13 +2017,13 @@ jobs:
         timeout-minutes: 15
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             api-catalog-services-2:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2032,7 +2032,7 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
                     logbackService: ZWEAAC2
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
@@ -2045,7 +2045,7 @@ jobs:
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service-2:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
@@ -2059,7 +2059,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEACS2
             caching-service-3:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
@@ -2073,27 +2073,27 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEACS3
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client-2:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEADC2
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2101,22 +2101,22 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
                     logbackService: ZWEADS2
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAZS2
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
@@ -2166,13 +2166,13 @@ jobs:
                 type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             api-catalog-services-2:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2181,7 +2181,7 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
                     logbackService: ZWEAAC2
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
@@ -2194,7 +2194,7 @@ jobs:
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service-2:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
@@ -2208,27 +2208,27 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEACS2
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client-2:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEADC2
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2236,22 +2236,22 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
                     logbackService: ZWEADS2
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAZS2
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
@@ -2327,11 +2327,11 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
@@ -2341,7 +2341,7 @@ jobs:
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
             caching-service-2:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
@@ -2352,21 +2352,21 @@ jobs:
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
                     logbackService: ZWEACS2
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -2410,7 +2410,7 @@ jobs:
 
         services:
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
@@ -2422,7 +2422,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "apiml"
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
@@ -2437,18 +2437,18 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "apiml-2"
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
 
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -2494,17 +2494,17 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID: ${{ secrets.OIDC_CLIENT_ID }}
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET: ${{ secrets.OIDC_CLIENT_PASSWORD }}
@@ -2517,17 +2517,17 @@ jobs:
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
                     APIML_HEALTH_PROTECTED: false
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_HEALTH_PROTECTED: false
             caching-service:
-                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/caching-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
             discovery-service-2:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2535,7 +2535,7 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
                     logbackService: ZWEADS2
             gateway-service-2:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_APIMLID: apiml2
                     APIML_SERVICE_HOSTNAME: gateway-service-2
@@ -2546,7 +2546,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
                     logbackService: ZWEAGW2
             zaas-service-2:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -2632,16 +2632,16 @@ jobs:
 
         services:
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
 
             gateway-service: # To avoid updating Oauth provider admin settings
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2660,7 +2660,7 @@ jobs:
                     logbackService: ZWEAGW1
                     APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             gateway-service-2:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2751,23 +2751,23 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/api-catalog-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             discoverable-client:
-                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discoverable-client:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             discovery-service:
-                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/discovery-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable*,sample"
             gateway-service:
-                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/gateway-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             zaas-service:
-                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/zaas-service:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -2807,15 +2807,15 @@ jobs:
 
         services:
             apiml:
-                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/apiml:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
                 volumes:
                     - /api-defs:/api-defs
             mock-services:
-                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/mock-services:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             nodejs-sample-app:
-                image: ghcr.io/zowe/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/nodejs-sample-app:${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
             python-sample-app:
-                image: ghcr.io/zowe/nodejs-sample-app:python${{ github.run_id }}-${{ github.run_number }}
+                image: ghcr.io/zowe/nodejs-sample-app:python${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
 
 
         steps:
