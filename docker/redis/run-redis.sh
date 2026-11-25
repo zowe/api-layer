@@ -92,7 +92,7 @@ SENTINEL="false"
 TLS="false"
 LINUX="false"
 WHAT_IF="false"
-while getopts slta:W arg
+while getopts slta:i:W arg
 do
     case "${arg}" in
         s) SENTINEL="true";;
