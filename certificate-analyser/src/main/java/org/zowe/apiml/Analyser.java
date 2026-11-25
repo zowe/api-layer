@@ -23,8 +23,6 @@ public class Analyser {
     private static final String ZOSMF_JWT_CHECK_FLAG = "--zosmf-jwt-check";
 
     public static int mainWithExitCode(String[] args) {
-        org.zowe.apiml.common.KeyringUtils.ensureSafkeyringHandler();
-
         if (args.length > 0 && ZOSMF_JWT_CHECK_FLAG.equals(args[0])) {
             String[] remainingArgs = Arrays.copyOfRange(args, 1, args.length);
             return ZosmfJwtCheck.mainWithExitCode(remainingArgs);
