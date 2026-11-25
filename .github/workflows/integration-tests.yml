@@ -19,8 +19,6 @@ on:
 # integration suite only runs where a write token is available: branch pushes
 # and same-repo PRs.
 
-jobs:
-
 env:
     JOB_ID: ${{ github.run_id }}-${{ github.run_number }}
     CI_IMAGE_PREFIX: ghcr.io/zowe
