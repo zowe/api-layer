@@ -20,7 +20,7 @@ env:
     CI_IMAGE_PREFIX: ghcr.io/zowe
     # Push ephemeral images only where the token can write (branch pushes / same-repo PRs).
     # Fork PRs get a read-only GITHUB_TOKEN and reuse the latest branch build's images.
-    CI_IMAGE_PUSH_ENABLED: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository_owner + '/' + github.event.repository.name }}
+    CI_IMAGE_PUSH_ENABLED: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     # Fork PRs can't push; they fall back to the stable tag updated by branch builds
     CI_IMAGE_TAG_BRANCH: branch-latest
     # Image tag: per-run on push-enabled runs, else the latest branch build tag
