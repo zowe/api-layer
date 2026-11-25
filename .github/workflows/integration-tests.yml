@@ -79,6 +79,7 @@ jobs:
                     ref: ${{ github.event.pull_request.head.sha || github.ref }}
             -   uses: ./.github/actions/setup
             -   uses: ./.github/actions/restore-certificates
+                if: env.CI_IMAGE_PUSH_ENABLED != 'false'
                 with:
                     artifactName: ${{ env.CERT_ARTIFACT }}
 
