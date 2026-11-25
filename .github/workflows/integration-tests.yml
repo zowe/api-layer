@@ -76,11 +76,11 @@ jobs:
                     cp -r ../keystore ./keystore
                     cp -r ../onboarding-enabler-nodejs ./onboarding-enabler-nodejs
                     docker build -t nodesampleapp .
-                    docker tag nodesampleapp ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:${{ env.JOB_ID }}
+                    docker tag nodesampleapp ghcr.io/zowe/nodejs-sample-app:${{ env.JOB_ID }}
                     if [ "${{ env.CI_IMAGE_PUSH_ENABLED }}" = "true" ]; then
                         if [ -z "${{ secrets.GITHUB_TOKEN }}" ]; then echo "##[error]GITHUB_TOKEN empty"; exit 1; fi
                         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-                        docker push ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:${{ env.JOB_ID }}
+                        docker push ghcr.io/zowe/nodejs-sample-app:${{ env.JOB_ID }}
                     else
                         echo "Fork PR: skipping image push (read-only token); tests will use latest branch images"
                     fi
@@ -92,28 +92,28 @@ jobs:
                     cp -r ../keystore ./keystore
                     cp -r ../onboarding-enabler-python ./onboarding-enabler-python
                     docker build -t pythonsampleapp .
-                    docker tag pythonsampleapp ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:python${{ env.JOB_ID }}
+                    docker tag pythonsampleapp ghcr.io/zowe/nodejs-sample-app:python${{ env.JOB_ID }}
                     if [ "${{ env.CI_IMAGE_PUSH_ENABLED }}" = "true" ]; then
                         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-                        docker push ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:python${{ env.JOB_ID }}
+                        docker push ghcr.io/zowe/nodejs-sample-app:python${{ env.JOB_ID }}
                     fi
 
 
             -   name: Build with Gradle
                 run: >
-                    ./gradlew clean jib -Djib.serialize=true -Pzowe.docker.password=${{ secrets.GITHUB_TOKEN }} -Pzowe.docker.username=${{ github.actor }} -Pzowe.docker.container=${{ env.CI_IMAGE_PREFIX }}/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+                    ./gradlew clean jib -Djib.serialize=true -Pzowe.docker.password=${{ secrets.GITHUB_TOKEN }} -Pzowe.docker.username=${{ github.actor }} -Pzowe.docker.container=ghcr.io/zowe/ -Pzowe.docker.tag=${{ env.JOB_ID }}
             -   name: Retag latest branch build
-                if: ${{ env.CI_IMAGE_PUSH_ENABLED == 'true' }}
+                if: env.CI_IMAGE_PUSH_ENABLED == 'true'
                 run: |
                     echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
                     for svc in apiml discovery-service gateway-service api-catalog-services caching-service zaas-service mock-services discoverable-client; do
-                        docker pull ${{ env.CI_IMAGE_PREFIX }}/$svc:${{ env.JOB_ID }}
-                        docker tag ${{ env.CI_IMAGE_PREFIX }}/$svc:${{ env.JOB_ID }} ${{ env.CI_IMAGE_PREFIX }}/$svc:${{ env.CI_IMAGE_TAG_BRANCH }}
-                        docker push ${{ env.CI_IMAGE_PREFIX }}/$svc:${{ env.CI_IMAGE_TAG_BRANCH }}
+                        docker pull ghcr.io/zowe/$svc:${{ env.JOB_ID }}
+                        docker tag ghcr.io/zowe/$svc:${{ env.JOB_ID }} ghcr.io/zowe/$svc:${{ env.CI_IMAGE_TAG_BRANCH }}
+                        docker push ghcr.io/zowe/$svc:${{ env.CI_IMAGE_TAG_BRANCH }}
                     done
             -   name: Standalone Catalog
                 run: >
-                    ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Pzowe.docker.password=${{ secrets.GITHUB_TOKEN }} -Pzowe.docker.username=${{ github.actor }} -Pzowe.docker.container=${{ env.CI_IMAGE_PREFIX }}/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+                    ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Pzowe.docker.password=${{ secrets.GITHUB_TOKEN }} -Pzowe.docker.username=${{ github.actor }} -Pzowe.docker.container=ghcr.io/zowe/ -Pzowe.docker.tag=${{ env.JOB_ID }}
 
             -   uses: ./.github/actions/teardown
 
@@ -125,20 +125,20 @@ jobs:
 
         services:
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
                     APIML_DISCOVERY_STATICAPIDEFINITIONSDIRECTORIES: /docker/api-defs-unknown-host
             discoverable-client-unknown:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-unknown
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
                     SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
                     SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             mock-services-unknown:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -185,7 +185,7 @@ jobs:
 
         services:
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -205,13 +205,13 @@ jobs:
                 #If the container runs oom, it is hard killed without printing any reasonable message in the log
                 options: --memory 640m --memory-swap 640m
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
                     SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
                     SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
         steps:
@@ -258,7 +258,7 @@ jobs:
 
         services:
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -277,7 +277,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -296,7 +296,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
         steps:
@@ -346,7 +346,7 @@ jobs:
                 type: ["normal", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic", "caching-chaotic"]
         services:
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -367,7 +367,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -388,7 +388,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-3:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
@@ -409,17 +409,17 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml-3
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
                     logbackService: ZWEADC2
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -488,20 +488,20 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     SPRING_SERVLET_MULTIPART_MAXFILESIZE: 1024MB
                     SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 1024MB
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
@@ -520,23 +520,23 @@ jobs:
                     APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 options: --memory 640m --memory-swap 640m
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
             # needs to run in isolation from another DS for multi-tenancy setup
             discovery-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
                     logbackService: ZWEADS2
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
@@ -545,7 +545,7 @@ jobs:
                     APIML_SERVICE_CORSDEFAULTALLOWEDORIGINS: https://localhost:10010,https://localhost2:10010
                 options: --memory 640m --memory-swap 640m
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
@@ -596,7 +596,7 @@ jobs:
 
         services:
             api-catalog-services-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -605,44 +605,44 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAAC2
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             discovery-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
                     logbackService: ZWEADS2
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW1
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAGW2
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -650,7 +650,7 @@ jobs:
                     APIML_SECURITY_AUTH_PROVIDER: saf
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -700,9 +700,9 @@ jobs:
 
         services:
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: apiml1
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -711,26 +711,26 @@ jobs:
                     APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
                     logbackService: ZWEAGW1
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_APIMLID: apiml2
                     logbackService: ZWEAGW2
                     APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service-2:10010/gateway/certificates
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     logbackService: ZWEAZS2
             central-gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: centralapiml
                     APIML_CONNECTION_TIMEOUT: 2000
@@ -738,9 +738,9 @@ jobs:
                     APIML_SERVICE_HOSTNAME: central-gateway-service
                     APIML_SECURITY_ENABLESTRICTURLVALIDATION: false
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -785,15 +785,15 @@ jobs:
         services:
             # Domain apiml instance which registers it's gateway in central's discovery service
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -801,7 +801,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/
                     logbackService: ZWEAAZ2
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: domain-apiml
                     APIML_SERVICE_EXTERNALURL: https://gateway-service:10010
@@ -813,11 +813,11 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
                     logbackService: ZWEAGW2
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
 
             # Central apiml instance with central gateway registry
             central-gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: central-gateway-service
@@ -827,7 +827,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAGW1
             api-catalog-services-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -835,13 +835,13 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
                     logbackService: ZWEAAC2
             discovery-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: discovery-service-2
                     logbackService: ZWEADS2
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/
@@ -850,7 +850,7 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
                     logbackService: ZWEAZS2
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -897,7 +897,7 @@ jobs:
         services:
             # Domain apiml instance which registers it's gateway in central's discovery service
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: apiml
                     APIML_SERVICE_APIMLID: domain-apiml
@@ -918,7 +918,7 @@ jobs:
 
             # Central apiml instance with central gateway registry
             central-gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: central-gateway-service
@@ -934,10 +934,10 @@ jobs:
                     APIML_SECURITY_X509_CERTIFICATESURL: https://central-gateway-service:10010/gateway/certificates
 
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
 
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -980,23 +980,23 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1036,37 +1036,37 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1108,7 +1108,7 @@ jobs:
 
         services:
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -1126,7 +1126,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -1144,14 +1144,14 @@ jobs:
                     JGROUPS_BIND_ADDRESS: apiml-2
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_SSL_VERIFYSSLCERTIFICATESOFSERVICES: false
                     APIML_DISCOVERY_USERID: eureka
                     APIML_DISCOVERY_PASSWORD: password
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1193,15 +1193,15 @@ jobs:
 
         services:
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
 
@@ -1244,31 +1244,31 @@ jobs:
 
         services:
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     CACHING_STORAGE_MODE: "infinispan"
                     JGROUPS_BIND_ADDRESS: "caching-service"
                     JGROUPS_BIND_PORT: "7600"
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600]"
             central-gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: central-apiml
                     APIML_SERVICE_HOSTNAME: central-gateway-service
                     APIML_SERVICE_EXTERNALURL: https://central-gateway-service:10010
                     logbackService: ZWEAGW2
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_PERSONALACCESSTOKEN_ENABLED: true
                     APIML_SECURITY_OIDC_CLIENTID: ${{ secrets.OIDC_CLIENT_ID }}
@@ -1282,12 +1282,12 @@ jobs:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1335,32 +1335,32 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
                     APIML_SECURITY_AUTH_ZOSMF_JWTAUTOCONFIGURATION: ltpa
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_AUTH_JWT_CUSTOMAUTHHEADER: customJwtHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -1399,11 +1399,11 @@ jobs:
 
         services:
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -1413,7 +1413,7 @@ jobs:
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMUSERHEADER: customUserHeader
                     APIML_SECURITY_AUTH_PASSTICKET_CUSTOMAUTHHEADER: customPassticketHeader
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka
 
@@ -1613,35 +1613,35 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             api-catalog-services-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_HOSTNAME: api-catalog-services-2
                     logbackService: ZWEAAC2
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discoverable-client-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
                     logbackService: ZWEADC2
             discovery-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -1649,19 +1649,19 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
                     logbackService: ZWEADS2
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     logbackService: ZWEAZS2
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_ROUTING_INSTANCEIDHEADER: true
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
@@ -1727,21 +1727,21 @@ jobs:
 
         services:
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     logbackService: ZWEADC2
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
@@ -1749,7 +1749,7 @@ jobs:
                     APIML_ROUTING_INSTANCEIDHEADER: true
                     logbackService: ZWEAGW1
             apiml-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
@@ -1814,37 +1814,37 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEADC2
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
             discovery-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -1852,22 +1852,22 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
                     logbackService: ZWEADS2
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAZS2
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
@@ -1932,28 +1932,28 @@ jobs:
 
         services:
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             discoverable-client-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
                     logbackService: ZWEADC2
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml-2:10011/eureka,https://apiml:10011/eureka
                     APIML_SERVICE_HOSTNAME: apiml
                     APIML_SERVICE_CUSTOMMETADATA_APIML_LB_TYPE: authentication
                     logbackService: ZWEAGW1
             apiml-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
                     APIML_SERVICE_HOSTNAME: apiml-2
@@ -2015,13 +2015,13 @@ jobs:
         timeout-minutes: 15
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             api-catalog-services-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2030,7 +2030,7 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
                     logbackService: ZWEAAC2
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
@@ -2043,7 +2043,7 @@ jobs:
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
@@ -2057,7 +2057,7 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEACS2
             caching-service-3:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600],caching-service-3[7600]"
@@ -2071,27 +2071,27 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
                     logbackService: ZWEACS3
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEADC2
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2099,22 +2099,22 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
                     logbackService: ZWEADS2
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAZS2
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
@@ -2164,13 +2164,13 @@ jobs:
                 type: ["normal", "discovery-chaotic", "gateway-chaotic", "discoverableclient-chaotic", "websocket-chaotic"]
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             api-catalog-services-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2179,7 +2179,7 @@ jobs:
                     APIML_HEALTH_PROTECTED: false
                     logbackService: ZWEAAC2
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
@@ -2192,7 +2192,7 @@ jobs:
                     MANAGEMENT_ENDPOINT_SHUTDOWN_ACCESS: unrestricted
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             caching-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     CACHING_STORAGE_MODE: infinispan
                     CACHING_STORAGE_INFINISPAN_INITIALHOSTS: "caching-service[7600],caching-service-2[7600]"
@@ -2206,27 +2206,27 @@ jobs:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEACS2
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discoverable-client-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: discoverable-client-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEADC2
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             discovery-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2234,22 +2234,22 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka,https://discovery-service:10011/eureka
                     logbackService: ZWEADS2
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka,https://discovery-service-2:10011/eureka
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: zaas-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service-2:10011/eureka/,https://discovery-service:10011/eureka/
                     logbackService: ZWEAZS2
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_HOSTNAME: gateway-service-2
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://discovery-service:10011/eureka/,https://discovery-service-2:10011/eureka/
@@ -2325,11 +2325,11 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
@@ -2339,7 +2339,7 @@ jobs:
                     APIML_SERVICE_PORT: "10022"
                     JGROUPS_BIND_ADDRESS: "caching-service"
             caching-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     JGROUPS_BIND_PORT: "7600"
                     SERVER_SSL_KEYSTORETYPE: "PKCS12"
@@ -2350,21 +2350,21 @@ jobs:
                     APIML_SERVICE_HOSTNAME: "caching-service-2"
                     logbackService: ZWEACS2
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
                     APIML_SECURITY_X509_CERTIFICATESURL: https://gateway-service:10010/gateway/certificates
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -2408,7 +2408,7 @@ jobs:
 
         services:
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_SSL_NONSTRICTVERIFYSSLCERTIFICATESOFSERVICES: true
@@ -2420,7 +2420,7 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "apiml"
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             apiml-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_GATEWAY_SERVICESTOLIMITREQUESTRATE: discoverableclient
@@ -2435,18 +2435,18 @@ jobs:
                     JGROUPS_BIND_ADDRESS: "apiml-2"
                     JGROUPS_KEYEXCHANGE_PORT: 7601
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka/
 
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://apiml:10011/eureka,https://apiml-2:10011/eureka
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -2492,17 +2492,17 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTID: ${{ secrets.OIDC_CLIENT_ID }}
                     SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENTSECRET: ${{ secrets.OIDC_CLIENT_PASSWORD }}
@@ -2515,17 +2515,17 @@ jobs:
                     APIML_SECURITY_OIDC_COOKIE_SAMESITE: None
                     APIML_HEALTH_PROTECTED: false
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_HEALTH_PROTECTED: false
             caching-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/caching-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/caching-service:${{ github.run_id }}-${{ github.run_number }}
 
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
 
             discovery-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2533,7 +2533,7 @@ jobs:
                     APIML_DISCOVERY_ALLPEERSURLS: https://discovery-service-2:10011/eureka
                     logbackService: ZWEADS2
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_APIMLID: apiml2
                     APIML_SERVICE_HOSTNAME: gateway-service-2
@@ -2544,7 +2544,7 @@ jobs:
                     ZWE_CONFIGS_APIML_SERVICE_ADDITIONALREGISTRATION_0_ROUTES_0_SERVICEURL: /
                     logbackService: ZWEAGW2
             zaas-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SECURITY_X509_ENABLED: true
                     APIML_SECURITY_X509_ACCEPTFORWARDEDCERT: true
@@ -2630,16 +2630,16 @@ jobs:
 
         services:
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
                 env:
                     APIML_SERVICE_DISCOVERYSERVICEURLS: https://gateway-service:10011/eureka
 
             gateway-service: # To avoid updating Oauth provider admin settings
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2658,7 +2658,7 @@ jobs:
                     logbackService: ZWEAGW1
                     APIML_SERVICE_GATEWAYHOSTNAME: https://apiml:10010
             gateway-service-2:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
@@ -2749,23 +2749,23 @@ jobs:
 
         services:
             api-catalog-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/api-catalog-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/api-catalog-services:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             discoverable-client:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discoverable-client:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discoverable-client:${{ github.run_id }}-${{ github.run_number }}
             discovery-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/discovery-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/discovery-service:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
                 env:
                     APIML_DISCOVERY_SERVICEIDPREFIXREPLACER: "discoverable*,sample"
             gateway-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/gateway-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/gateway-service:${{ github.run_id }}-${{ github.run_number }}
             zaas-service:
-                image: ${{ env.CI_IMAGE_PREFIX }}/zaas-service:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/zaas-service:${{ github.run_id }}-${{ github.run_number }}
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
         steps:
             -   uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
                 with:
@@ -2805,15 +2805,15 @@ jobs:
 
         services:
             apiml:
-                image: ${{ env.CI_IMAGE_PREFIX }}/apiml:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/apiml:${{ github.run_id }}-${{ github.run_number }}
                 volumes:
                     - /api-defs:/api-defs
             mock-services:
-                image: ${{ env.CI_IMAGE_PREFIX }}/mock-services:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/mock-services:${{ github.run_id }}-${{ github.run_number }}
             nodejs-sample-app:
-                image: ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/nodejs-sample-app:${{ github.run_id }}-${{ github.run_number }}
             python-sample-app:
-                image: ${{ env.CI_IMAGE_PREFIX }}/nodejs-sample-app:python${{ env.CI_IMAGE_TAG }}
+                image: ghcr.io/zowe/nodejs-sample-app:python${{ github.run_id }}-${{ github.run_number }}
 
 
         steps:
