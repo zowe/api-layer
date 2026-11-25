@@ -100,8 +100,13 @@ jobs:
 
 
             -   name: Build with Gradle
+                if: env.CI_IMAGE_PUSH_ENABLED == 'true'
                 run: >
                     ./gradlew clean jib -Djib.serialize=true -Pzowe.docker.password=${{ secrets.GITHUB_TOKEN }} -Pzowe.docker.username=${{ github.actor }} -Pzowe.docker.container=ghcr.io/zowe/ -Pzowe.docker.tag=${{ env.JOB_ID }}
+            -   name: Build with Gradle (no push, fork PR)
+                if: env.CI_IMAGE_PUSH_ENABLED != 'true'
+                run: >
+                    ./gradlew clean jibDockerBuild -Djib.serialize=true -Pzowe.docker.container=ghcr.io/zowe/ -Pzowe.docker.tag=${{ env.JOB_ID }}
             -   name: Retag latest branch build
                 if: env.CI_IMAGE_PUSH_ENABLED == 'true'
                 run: |
@@ -112,6 +117,7 @@ jobs:
                         docker push ghcr.io/zowe/$svc:${{ env.CI_IMAGE_TAG_BRANCH }}
                     done
             -   name: Standalone Catalog
+                if: env.CI_IMAGE_PUSH_ENABLED == 'true'
                 run: >
                     ./gradlew :api-catalog-services:jib -Djib.serialize=true -Pzowe.jib.image.suffix=standalone -Pzowe.jib.image.javaAgentPort=6304 -Pzowe.jib.image.debugPort=5125 -Pzowe.docker.password=${{ secrets.GITHUB_TOKEN }} -Pzowe.docker.username=${{ github.actor }} -Pzowe.docker.container=ghcr.io/zowe/ -Pzowe.docker.tag=${{ env.JOB_ID }}
 
