@@ -583,12 +583,15 @@ jobs:
                 if: env.CI_IMAGE_PUSH_ENABLED != 'true'
                 timeout-minutes: 10
                 run: |
-                    NET=$(docker network ls --format '{{.Name}}' | grep github_network | head -1)
-                    poll() { docker run --rm --network "$NET" curlimages/curl -sk "https://$1:10011/eureka/apps" -H "Accept: application/json" | grep -o '"instanceId":"[^"]*"' | sort -u | tr '\n' ' '; echo " <- $1"; }
+                    fetch() {
+                        printf 'GET /eureka/apps HTTP/1.1\r\nHost: %s:10011\r\nAccept: application/json\r\nConnection: close\r\n\r\n' "$1" \
+                            | openssl s_client -quiet -verify_quiet -connect "$1:10011" -servername "$1" 2>/dev/null \
+                            | tr -d '\r' | grep -o '"instanceId":"[^"]*"' | sort -u | tr '\n' ' ' | xargs -I{} echo "{} <- $1"
+                    }
                     for i in $(seq 1 10); do
                         echo "--- poll $i"
-                        poll discovery-service
-                        poll discovery-service-2
+                        fetch discovery-service
+                        fetch discovery-service-2
                         sleep 30
                     done
 
