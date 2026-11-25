@@ -37,7 +37,12 @@ export function getDiff(serviceId, oldVersion, newVersion) {
         dispatch(request(serviceId, oldVersion, newVersion));
 
         return fetch(`${getBaseUrl()}${import.meta.env.VITE_APIDOC_UPDATE}/${serviceId}/${oldVersion}/${newVersion}`)
-            .then((response) => response.text())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.text();
+            })
             .then((text) => dispatch(receive(text)))
             .catch((e) => {
                 dispatch(notifyError(`Error while trying to get the difference between API versions: ${e}`));
