@@ -146,8 +146,12 @@ jobs:
                     # The images carry the fork run's generated keystore tree at /keystore.
                     # The base run's own certificate set is signed by a different CA, so
                     # mutual TLS to the discovery service would fail. Use the fork's.
+                    # jib.extraDirectories copies the keystore dir CONTENTS to the image root
                     docker create --name certsrc "ghcr.io/$OWNER/apiml:$TAG"
-                    docker cp certsrc:/keystore ./fork-keystore
+                    mkdir -p fork-keystore
+                    for d in ca service client negative public_ca; do
+                        docker cp certsrc:/$d ./fork-keystore/
+                    done
                     docker rm -f certsrc
                     rm -rf keystore
                     mv fork-keystore keystore
