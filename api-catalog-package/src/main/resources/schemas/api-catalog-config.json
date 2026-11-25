@@ -127,7 +127,7 @@
                                 },
                                 "onlyWarn": {
                                     "type": "boolean",
-                                    "description": "When a URL is not in the allowed domains, only log a warning instead of rejecting it.",
+                                    "description": "With an explicitly active Spring dev profile, log a warning instead of rejecting a URL outside the allowed domains.",
                                     "default": false
                                 },
                                 "portValidationDisabled": {

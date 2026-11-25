@@ -1,0 +1,71 @@
+credentials:
+    # Mainframe credentials are required - see /integration-tests/README.md for instructions
+    user: TEST001
+    password: leprmini
+    clientUser: TEST004
+gatewayServiceConfiguration:
+    scheme: https
+    host: mvsde66.lvn.broadcom.net,mvsde69.lvn.broadcom.net
+    dvipaHost: de66-apiml1.lvn.broadcom.net
+    port: 10010
+    internalPorts: 10010
+    externalPort: 10010
+    instances: 2
+    servicesEndpoint: gateway/api/v1/services
+discoveryServiceConfiguration:
+    scheme: https
+    user: TEST001
+    password: leprmini
+    host: mvsde66.lvn.broadcom.net
+    additionalHost: mvsde69.lvn.broadcom.net
+    additionalPort: 10011
+    port: 10011
+    instances: 2
+discoverableClientConfiguration:
+    applId: TESTAPPL
+    scheme: https
+    port: 10019
+    host: mvsde66.lvn.broadcom.net,mvsde69.lvn.broadcom.net
+    instances: 2
+apiCatalogServiceConfiguration:
+    scheme: https
+    url:
+    host: mvsde66.lvn.broadcom.net,mvsde69.lvn.broadcom.net
+    port: 10012
+    instances: 2
+cachingServiceConfiguration:
+    url: "https://mvsde69.lvn.broadcom.net:10013"
+cloudGatewayConfiguration:
+    scheme: https
+    host: mvsde66.lvn.broadcom.net
+    port: 10018
+tlsConfiguration:
+    keyAlias: server
+    keyPassword: password
+    keyStoreType: PKCS12
+    keyStore: /Users/ek890792/Projects/ca-brightside-services-packaging/miniplex/deployment/keystore/mp.keystore.p12
+    clientKeystore: /Users/ek890792/Projects/ca-brightside-services-packaging/certs/client_cert/miniplex.p12
+    clientCN: APIMTST
+    keyStorePassword: password
+    trustStoreType: PKCS12
+    trustStore: /Users/ek890792/Projects/ca-brightside-services-packaging/miniplex/deployment/keystore/mp.truststore.p12
+    trustStorePassword: password
+zosmfServiceConfiguration:
+    scheme: https
+    host: de66-apiml1.lvn.broadcom.net
+    port: 449
+    serviceId: ibmzosmf
+auxiliaryUserList:
+    value: 'servicesinfo-authorized,test001,leprmini;servicesinfo-unauthorized,test004,TEST004'
+oidcConfiguration:
+    providerName: keycloak
+    host: http://10.252.121.190:8080 # keycloak
+    user: zoweson@zowe.com
+    password: hKE6tisHdujbmSg
+    alternateUser: winniethepooh@zowe.com
+    alternatePassword: 123Heslo!
+    clientId: 0oalf0sc35aNKevXs5d7
+    clientSecret: wi77G_oKFc-8D1Qmvcf70YBAxnaDqy1_X63OlDfjXn2TKq1qZ0zR27thfWKejacr
+safIdtConfiguration:
+    enabled: false
+

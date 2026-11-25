@@ -11,11 +11,13 @@
 package org.zowe.apiml.product.eureka.web;
 
 import com.netflix.appinfo.InstanceInfo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Strings;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Service;
 import org.zowe.apiml.constants.EurekaMetadataDefinition;
 import org.zowe.apiml.exception.MetadataValidationException;
@@ -36,6 +38,7 @@ import static org.zowe.apiml.constants.ApimlConstants.DEFAULT_ALLOWED_DOMAINS;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class MetadataFilterService implements InitializingBean {
 
     private static final String INSTANCE_HOSTNAME = "Instance Hostname";
@@ -52,6 +55,8 @@ public class MetadataFilterService implements InitializingBean {
         "documentationUrl", false,
         "externalUrl", true
     );
+
+    private final ConfigurableEnvironment environment;
 
     @Value("${apiml.security.allowedDomains:${apiml.service.hostname:localhost}}")
     private String allowedDomains;
@@ -76,7 +81,8 @@ public class MetadataFilterService implements InitializingBean {
     @Override
     public void afterPropertiesSet() {
         allowedDomainsSet = sanitizeAllowedDomains();
-        onlyWarn = Optional.ofNullable(System.getenv(ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED)).map(Boolean::parseBoolean).orElse(false) || onlyWarnProp;
+        onlyWarn = Arrays.asList(environment.getActiveProfiles()).contains("dev")
+            && (onlyWarnProp || Boolean.parseBoolean((String) environment.getSystemEnvironment().get(ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED)));
         disablePortValidation = Optional.ofNullable(System.getenv(ZWE_DISABLE_PORT_VALIDATION)).map(Boolean::parseBoolean).orElse(false) || disablePortValidationProp;
 
         log.info("Allowed domains: {}", allowedDomains);

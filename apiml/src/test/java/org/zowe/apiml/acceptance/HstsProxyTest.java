@@ -13,6 +13,7 @@ package org.zowe.apiml.acceptance;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import static io.restassured.RestAssured.given;
@@ -20,6 +21,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 
 @AcceptanceTest
+@ActiveProfiles({"ApimlModulithAcceptanceTest", "test", "dev"})
 @TestPropertySource(properties = {
     "server.ssl.enabled=false",
     "server.attlsServer.enabled=false",

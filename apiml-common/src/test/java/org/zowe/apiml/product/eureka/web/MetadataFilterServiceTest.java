@@ -23,6 +23,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.cloud.netflix.eureka.EurekaServiceInstance;
+import org.springframework.mock.env.MockEnvironment;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.exception.MetadataValidationException;
 import org.zowe.apiml.message.log.ApimlLogger;
@@ -59,7 +60,7 @@ class MetadataFilterServiceTest {
 
     @BeforeEach
     void setUp() {
-        metadataFilterService = new MetadataFilterService();
+        metadataFilterService = new MetadataFilterService(new MockEnvironment());
         ReflectionTestUtils.setField(metadataFilterService, "apimlLogger", apimlLogger);
         lenient().when(instanceInfo.getHostName()).thenReturn("localhost");
         lenient().when(instanceInfo.getSecurePort()).thenReturn(8080);
@@ -92,6 +93,43 @@ class MetadataFilterServiceTest {
                 } else {
                     assertThrows(DomainAllowListMetadataException.class,
                         () -> filter.verifyAllowedDomains(new EurekaServiceInstance(info)));
+                }
+            });
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        ", default, true, false, false",
+        ", dev, true, true, false",
+        "prod, default, false, true, false",
+        "dev, default, true, false, true",
+        "dev, default, false, true, true",
+        "dev, default, false, false, false"
+    })
+    void warningOnlyRequiresExplicitDevProfile(String activeProfile, String defaultProfile, boolean onlyWarnProperty,
+                                               boolean onlyWarnEnvVar, boolean allowed) {
+        var environment = new MockEnvironment() {
+            @Override
+            public Map<String, Object> getSystemEnvironment() {
+                return Map.of("ZWE_ONLY_WARN_ON_URL_NOT_ALLOWED", Boolean.toString(onlyWarnEnvVar));
+            }
+        };
+        environment.setProperty("apiml.security.allowedDomains", "localhost:10010");
+        environment.setProperty("apiml.security.domains.onlyWarn", Boolean.toString(onlyWarnProperty));
+        environment.setDefaultProfiles(defaultProfile);
+        if (activeProfile != null) {
+            environment.setActiveProfiles(activeProfile);
+        }
+        var instance = new EurekaServiceInstance(localInstance("localhost", 10011));
+        new ApplicationContextRunner()
+            .withInitializer(context -> context.setEnvironment(environment))
+            .withBean(MetadataFilterService.class)
+            .run(context -> {
+                var filter = context.getBean(MetadataFilterService.class);
+                if (allowed) {
+                    assertDoesNotThrow(() -> filter.verifyAllowedDomains(instance));
+                } else {
+                    assertThrows(DomainAllowListMetadataException.class, () -> filter.verifyAllowedDomains(instance));
                 }
             });
     }
