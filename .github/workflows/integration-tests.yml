@@ -583,22 +583,15 @@ jobs:
                 if: env.CI_IMAGE_PUSH_ENABLED != 'true'
                 timeout-minutes: 10
                 run: |
-                    poll() { curl -sk "https://$1:10011/eureka/apps" -H "Accept: application/json" | python3 -c "
-                        import json,sys
-                        try:
-                            d=json.load(sys.stdin)
-                            apps=d.get('applications',{}).get('application',[])
-                            if isinstance(apps, dict): apps=[apps]
-                            ids=sorted(i['instanceId'] for a in apps for i in (a['instance'] if isinstance(a['instance'],list) else [a['instance']]))
-                            print('$1 registered:', len(ids), ids)
-                        except Exception as e:
-                            print('$1 unavailable:', e)"; }
-                    for i in $(seq 1 12); do
+                    NET=$(docker network ls --format '{{.Name}}' | grep github_network | head -1)
+                    poll() { docker run --rm --network "$NET" curlimages/curl -sk "https://$1:10011/eureka/apps" -H "Accept: application/json" | grep -o '"instanceId":"[^"]*"' | sort -u | tr '\n' ' '; echo " <- $1"; }
+                    for i in $(seq 1 10); do
                         echo "--- poll $i"
                         poll discovery-service
                         poll discovery-service-2
                         sleep 30
                     done
+
             -   name: Run Startup Check
                 if: always()
                 run: >
