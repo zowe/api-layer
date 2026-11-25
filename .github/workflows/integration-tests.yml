@@ -1494,7 +1494,7 @@ jobs:
                 run: |
                     cd docker/redis
                     chmod +x run-redis.sh
-                    ./run-redis.sh -l -t -a ${{ env.CI_IMAGE_TAG }}
+                    ./run-redis.sh -l -t -a ${{ env.CI_IMAGE_TAG }} -i ghcr.io/${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && github.event.pull_request.head.repo.owner.login || github.repository_owner }}
 
             -   name: Run Startup Check
                 run: >
@@ -1571,7 +1571,7 @@ jobs:
                 run: |
                     cd docker/redis
                     chmod +x run-redis.sh
-                    ./run-redis.sh -l -s -t -a ${{ env.CI_IMAGE_TAG }}
+                    ./run-redis.sh -l -s -t -a ${{ env.CI_IMAGE_TAG }} -i ghcr.io/${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository) && github.event.pull_request.head.repo.owner.login || github.repository_owner }}
 
             -   name: Run Startup Check
                 run: >
