@@ -24,7 +24,7 @@ env:
     # Fork PRs can't push; they fall back to the stable tag updated by branch builds
     CI_IMAGE_TAG_BRANCH: branch-latest
     # Image tag: per-run on push-enabled runs, else the latest branch build tag
-    CI_IMAGE_TAG: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && format('{0}-{1}', github.run_id, github.run_number) || 'branch-latest' }}
+    CI_IMAGE_TAG: ${{ github.run_id }}-${{ github.run_number }}
 
 jobs:
     # Certificates are generated rather than committed, and each run produces a fresh
