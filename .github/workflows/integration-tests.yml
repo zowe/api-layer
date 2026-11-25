@@ -583,15 +583,16 @@ jobs:
                 if: env.CI_IMAGE_PUSH_ENABLED != 'true'
                 timeout-minutes: 10
                 run: |
-                    openssl pkcs12 -in keystore/client/client-certs.p12 -passin pass:password -nodes -out /tmp/client.pem 2>/dev/null
+                    openssl pkcs12 -in keystore/client/client-certs.p12 -passin pass:password -nodes -out /tmp/client.pem 2>/tmp/p12err || echo "p12 extract failed: $(head -2 /tmp/p12err)"
+                    echo "pem: $(grep -c 'BEGIN CERTIFICATE' /tmp/client.pem 2>/dev/null) certs, $(grep -c 'BEGIN PRIVATE KEY' /tmp/client.pem 2>/dev/null) keys"
                     fetch() {
-                        resp=$(printf 'GET /eureka/apps HTTP/1.1\r\nHost: %s:10011\r\nAccept: application/json\r\nConnection: close\r\n\r\n' "$1" | openssl s_client -quiet -verify_quiet -cert /tmp/client.pem -key /tmp/client.pem -connect "$1:10011" -servername "$1" 2>/dev/null | tr -d '\r')
+                        resp=$(printf 'GET /eureka/apps HTTP/1.1\r\nHost: %s:10011\r\nAccept: application/json\r\nConnection: close\r\n\r\n' "$1" | openssl s_client -quiet -verify_quiet -cert /tmp/client.pem -key /tmp/client.pem -connect "$1:10011" -servername "$1" 2>&1 | tr -d '\r')
                         echo "[$1] status: $(echo "$resp" | grep -m1 '^HTTP' || echo none)"
                         echo "$resp" | grep -o '"instanceId":"[^"]*"' | sort -u | tr '\n' ' '
                         echo " <- $1"
-                        echo "$resp" | awk 'p{print} /^\{/{p=1}' | head -c 500; echo
+                        echo "$resp" | head -c 300; echo
                     }
-                    for i in $(seq 1 6); do
+                    for i in $(seq 1 5); do
                         echo "--- poll $i"
                         fetch discovery-service
                         fetch discovery-service-2
