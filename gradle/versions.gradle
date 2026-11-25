@@ -5,19 +5,19 @@ dependencyResolutionManagement {
             version('projectNode', '24.10.0')
             version('projectNpm', '10.9.0')
 
-            version('springBoot', '4.1.1')
+            version('springBoot', '4.1.2')
             // Jersey 3.1.x is Java 17-loadable (major 55). Only jersey-common:4.0.1 is Java 21 (major 65).
             // Pinned via resolutionStrategy.force in build.gradle -- see the comment there.
             version('jersey3', '3.1.12')
-            version('springCloudNetflix', '5.0.2')
-            version('springCloudCommons', '5.0.3')
+            version('springCloudNetflix', '5.0.3')
+            version('springCloudCommons', '5.0.4')
             version('springCloudCB', '5.0.3')
-            version('springCloudGateway', '5.0.3')
-            version('springCloud', '2025.1.3')
+            version('springCloudGateway', '5.0.4')
+            version('springCloud', '2025.1.4')
             version('springFramework', '7.0.10')
             version('springRetry', '2.0.13')
 
-            version('modulith', '2.1.1')
+            version('modulith', '2.1.2')
             version('jmolecules', '2023.3.4')
 
             version('glassfishHk2', '3.1.1')
@@ -40,28 +40,26 @@ dependencyResolutionManagement {
             version('netflixServo', '0.13.2')
             // eureka-core's DefaultEurekaServerConfig statically initialises Archaius's
             version('archaius', '0.7.12')
-            version('googleErrorprone', '2.51.0')
+            version('googleErrorprone', '2.52.0')
             version('gradleGitProperties', '2.5.7') // Used in classpath dependencies
-            version('googleGson', '2.14.0')
+            version('googleGson', '2.15.0')
             version('guava', '33.7.2-jre')
             version('hamcrest', '3.0')
             version('httpClient4', '4.5.14')
             version('httpClient5', '5.6.5')
+            version('hibernate_validator', '9.1.6.Final')
             version('infinispan', '16.3.1')
-            version('jacksonAnnotations', '2.22')  // Jackson 2 shim track: review when SB 4.3 lands
-            version('jacksonCore', '2.22.4')
-            version('jacksonDatabind', '2.22.4')
-            version('jacksonDataformatYaml', '2.22.4')
-            version('jackson3Databind', '3.2.4')
+            version('jacksonAnnotations', '2.23')  // Jackson 2 shim track: review when SB 4.3 lands
+            version('jacksonCore', '2.23.0')
+            version('jacksonDatabind', '2.23.0')
+            version('jacksonDataformatYaml', '2.23.0')
+            version('jackson3Databind', '3.3.0')
             version('janino', '3.1.12')
             version('jakartaValidation', '3.1.1')
             version('jakartaInject', '2.0.1')
             version('jakartaServlet', '6.1.0')
             version('javaxAnnotation', '1.3.2')
-            version('openTelemetry-starter', '2.32.0')
-            // Keep the SDK aligned with the Spring Boot starter's OpenTelemetry API dependency.
-            // Starter 2.32.0 uses internal API classes removed in SDK 1.67.0.
-            version('openTelemetry-core', '1.66.0')
+            version('openTelemetry', '2.33.1')
             version('ow2Asm', '9.11.1')
 
             // Eureka requires this specific version of Jakarta JAXB bindings
@@ -79,9 +77,9 @@ dependencyResolutionManagement {
             //0.12.x version contains breaking changes
             version('jjwt', '0.13.0')
             version('jose4j', '0.9.7')
-            version('jodaTime', '2.15.0')
+            version('jodaTime', '2.15.1')
             version('jsonPath', '2.10.0')
-            version('jsonSmart', '2.6.0')
+            version('jsonSmart', '2.6.1')
             version('junitJupiter', '5.14.4')
             version('junitPlatform', '1.14.4')
             version('jsr305', '3.0.2')
@@ -91,7 +89,7 @@ dependencyResolutionManagement {
             version('log4j', '2.26.1')
             version('lombok', '1.18.48')
             version('mailapi', '1.6.8')
-            version('netty', '4.2.19.Final')
+            version('netty', '4.2.20.Final')
             // netty reactor contains a bug: https://github.com/reactor/reactor-netty/issues/3559 > https://github.com/reactor/reactor-netty/pull/3581
             version('nettyReactor', '1.3.8')
             version('nimbusJoseJwt', '10.10')
@@ -102,21 +100,21 @@ dependencyResolutionManagement {
             // REST Assured 6.x is the Spring Framework 7 line (its spring-web-test-client declares
             // spring 7.0.1) and requires Groovy 5, which is what the SB 4.1 BOM already manages.
             // 5.5.7 is compiled against Spring 6 and Groovy 4 and fails on both.
-            version('restAssured', '6.2.0')
-            version('rhino', '1.9.1')
+            version('restAssured', '6.3.0')
+            version('rhino', '1.9.2')
             // springdoc 3.x is the Spring Boot 4 line. 2.9.1 references the SB3-only
             // org.springframework.boot.autoconfigure.web.reactive.WebFluxProperties from
             // org.springdoc.webflux.ui.SwaggerConfig, which breaks ApplicationContext startup on SB4.
-            version('springDoc', '3.1.1')
+            version('springDoc', '3.2.0')
             version('swaggerCore', '2.2.55')
             version('swaggerInflector', '2.0.17')
             version('swagger2Parser', '1.0.76')
             version('swagger3Parser', '2.1.48')
-            version('thymeleaf', '3.1.5.RELEASE')
+            version('thymeleaf', '3.1.6.RELEASE')
             version('tomcat', '11.0.27')
             version('velocity', '2.4.1')
             version('woodstoxCore', '7.3.0')
-            version('jgit', '7.8.0.202609011348-r')
+            version('jgit', '7.8.1.202611041320-r')
             version('gradleNode', '7.1.0')
             version('sonarGradlePlugin', '7.5.0.8588')
             version('gradleRelease', '3.2.0')
@@ -128,7 +126,7 @@ dependencyResolutionManagement {
             version('gradleTestLogger', '4.0.0')
             version('testLogger', '4.0.0')
             version('micronautPlatform', '4.9.0')
-            version('micronaut', '4.10.33')
+            version('micronaut', '4.10.36')
             version('micronautPlugin', '4.6.2')
             version('shadow', '9.6.1')
             version('checkstyle', '10.17.0')
@@ -137,7 +135,7 @@ dependencyResolutionManagement {
             // this, so a stale value downgrades the committed wrapper on the next :gateway-service:wrapper.
             version('gradle', '9.7.1')
             version('commonsCompress', '1.28.0')
-            version('bucket4j', '8.21.0')
+            version('bucket4j', '8.22.0')
             version('xstream', '1.4.21')
             version('javaWebSocket', '1.6.0') // for testing
             version('glassfishTyrus', '2.2.2') // for testing (WebSocket Java reference implementation)
@@ -213,11 +211,12 @@ dependencyResolutionManagement {
             library('hamcrest', 'org.hamcrest', 'hamcrest').versionRef('hamcrest')
             library('http_client4', 'org.apache.httpcomponents', 'httpclient').versionRef('httpClient4') // to define minimum version and avoid duplicity libraries in the classpath
             library('http_client5', 'org.apache.httpcomponents.client5', 'httpclient5').versionRef('httpClient5')
+            library('hibernate_validator', 'org.hibernate.validator', 'hibernate-validator').versionRef('hibernate_validator')
             library('javax_annotation', 'javax.annotation', 'javax.annotation-api').versionRef('javaxAnnotation') // to define minimum version and avoid duplicity libraries in the classpath
             library('netflix_servo', 'com.netflix.servo', 'servo-core').versionRef('netflixServo')
             library('archaius_core', 'com.netflix.archaius', 'archaius-core').versionRef('archaius')
 
-            library('infinispan_spring_boot3_starter_embedded', 'org.infinispan', 'infinispan-spring-boot3-starter-embedded').versionRef('infinispan')
+            library('infinispan_spring_boot4_starter_embedded', 'org.infinispan', 'infinispan-spring-boot4-starter-embedded').versionRef('infinispan')
             library('infinispan_lock', 'org.infinispan', 'infinispan-clustered-lock').versionRef('infinispan')
             library('infinispan_jboss_marshalling', 'org.infinispan', 'infinispan-jboss-marshalling').versionRef('infinispan')
             library('infinispan_annotations', 'org.infinispan', 'infinispan-component-annotations').versionRef('infinispan')
@@ -290,13 +289,11 @@ dependencyResolutionManagement {
             library('spring_boot_starter_graphql', 'org.springframework.boot', 'spring-boot-starter-graphql').withoutVersion()
             library('bucket4j_core', 'com.bucket4j', 'bucket4j_jdk17-core').versionRef('bucket4j')
             library('xstren', 'com.thoughtworks.xstream', 'xstream').versionRef('xstream') // to avoid security vulnerability CVE-2024-47072
-            library('opentelemetry_bom', 'io.opentelemetry', 'opentelemetry-bom').versionRef('openTelemetry-core')
-            library('opentelemetry_spring_boot_starter', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-starter').versionRef('openTelemetry-starter')
-            library('opentelemetry_spring_boot_autoconfigure', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-autoconfigure').versionRef('openTelemetry-starter')
-            library('opentelemetry_sdk_testing', 'io.opentelemetry','opentelemetry-sdk-testing').versionRef('openTelemetry-core')
-            library('opentelemetry_sdk_extension_autoconfigure_spi', 'io.opentelemetry','opentelemetry-sdk-extension-autoconfigure-spi').versionRef('openTelemetry-core')
-            library('opentelemetry_exporter_common', 'io.opentelemetry', 'opentelemetry-exporter-common').versionRef('openTelemetry-core')
-            library('opentelemetry_exporter_sender_okhttp', 'io.opentelemetry', 'opentelemetry-exporter-sender-okhttp').versionRef('openTelemetry-core')
+            library('opentelemetry_instrumentation_bom', 'io.opentelemetry.instrumentation', 'opentelemetry-instrumentation-bom').versionRef('openTelemetry')
+            library('opentelemetry_spring_boot_starter', 'io.opentelemetry.instrumentation','opentelemetry-spring-boot-starter').withoutVersion()
+            library('opentelemetry_sdk_testing', 'io.opentelemetry','opentelemetry-sdk-testing').withoutVersion()
+            library('opentelemetry_sdk_extension_autoconfigure_spi', 'io.opentelemetry','opentelemetry-sdk-extension-autoconfigure-spi').withoutVersion()
+            library('opentelemetry_exporter_sender_okhttp', 'io.opentelemetry', 'opentelemetry-exporter-sender-okhttp').withoutVersion()
             library('java_websocket', 'org.java-websocket', 'Java-WebSocket').versionRef('javaWebSocket')
             library('tyrus_server', 'org.glassfish.tyrus', 'tyrus-server').versionRef('glassfishTyrus')
             library('tyrus_grizzly_server', 'org.glassfish.tyrus', 'tyrus-container-grizzly-server').versionRef('glassfishTyrus')
@@ -329,7 +326,7 @@ dependencyResolutionManagement {
             plugin('micronaut_library', 'io.micronaut.library').versionRef('micronautPlugin')
 
             // Pure Java dependencies - do not use in Spring unless really necessary
-            version('logback', '1.6.5')
+            version('logback', '1.6.6')
             version('mockitoCore', '5.24.0')
             version('mockServer','5.15.0')
 
@@ -339,7 +336,7 @@ dependencyResolutionManagement {
             library('mock_server','org.mock-server','mockserver-netty').versionRef('mockServer')
 
 
-            bundle('infinispan', [ 'infinispan_spring_boot3_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling', 'infinispan_annotations' ])
+            bundle('infinispan', [ 'infinispan_spring_boot4_starter_embedded', 'infinispan_lock', 'infinispan_jboss_marshalling', 'infinispan_annotations' ])
             bundle('jaxb', ['jaxbApi', 'jaxbImpl'])
             bundle('modulith', ['modulith', 'modulith_core', 'jmolecules'])
         }

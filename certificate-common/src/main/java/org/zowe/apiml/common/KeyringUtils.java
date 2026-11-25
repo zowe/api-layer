@@ -18,6 +18,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,6 +28,10 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("squid:S106")
 public final class KeyringUtils {
+
+    private static final String PROVIDER_HINT = "For JCECCARACFKS and JCEHYBRIDRACFKS keyrings the matching IBM security provider must be registered:"
+        + " start the JVM with -Djava.security.properties=<apiml-common-lib>/bin/jvm.security.override.properties"
+        + " and -Djava.protocol.handler.pkgs=com.ibm.crypto.provider.";
 
     private static final Pattern KEYRING_PATTERN = Pattern.compile("^(safkeyring[^:]*):/{2,4}([^/]+)/([^/]+)$");
 
@@ -47,40 +52,54 @@ public final class KeyringUtils {
     }
 
     /**
-     * Normalizes a keyring URI to the canonical {@code safkeyring://userId/keyRing} format.
+     * Normalizes a keyring URI and selects the protocol for the configured store type.
+     * Explicit provider-specific protocols are preserved.
      *
      * @param input raw keyring URI
+     * @param type keystore or truststore type
      * @return normalized URI, or the original input if not a keyring
      */
-    public static String formatKeyringUrl(String input) {
+    public static String formatKeyringUrl(String input, String type) {
         if (input == null) return null;
         Matcher matcher = KEYRING_PATTERN.matcher(input);
         if (matcher.matches()) {
-            return matcher.group(1) + "://" + matcher.group(2) + "/" + matcher.group(3);
+            String protocol = matcher.group(1);
+            if ("safkeyring".equals(protocol) && type != null) {
+                // the protocol handler of the security provider that implements the store type
+                protocol = switch (type.toUpperCase(Locale.ROOT)) {
+                    case "JCERACFKS" -> "safkeyringjce";
+                    case "JCECCARACFKS" -> "safkeyringjcecca";
+                    case "JCEHYBRIDRACFKS" -> "safkeyringjcehybrid";
+                    default -> protocol;
+                };
+            }
+            return protocol + "://" + matcher.group(2) + "/" + matcher.group(3);
         }
         return input;
     }
 
     /**
-     * Converts a keyring URI string to a {@link URL} suitable for opening as a stream.
+     * Converts a keyring URI to a URL using the configured store type's protocol.
      *
      * @param uri the keyring URI
+     * @param type keystore or truststore type
      * @return URL object
-     * @throws MalformedURLException if the URI is invalid
+     * @throws MalformedURLException if the protocol handler is unavailable
      * @throws StoresNotInitializeException if the URI does not match keyring format
      */
-    public static URL keyRingUrl(String uri) throws MalformedURLException {
+    public static URL keyRingUrl(String uri, String type) throws MalformedURLException {
         if (!isKeyring(uri)) {
             throw new StoresNotInitializeException("Incorrect key ring format: " + uri
                 + ". Make sure you use format safkeyring://userId/keyRing");
         }
-        String formatted = formatKeyringUrl(uri);
+        String formatted = formatKeyringUrl(uri, type);
         try {
             return new URL(formatted);
         } catch (MalformedURLException e) {
             System.err.println("ERROR: Unknown protocol in '" + formatted + "': " + e.getMessage());
-            System.err.println("Ensure the JVM is started with: --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca");
-            System.err.println("And that ensureSafkeyringHandler() has been called to set java.protocol.handler.pkgs");
+            System.err.println("Ensure the JVM is started with: -Djava.protocol.handler.pkgs=com.ibm.crypto.provider"
+                + " --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca");
+            System.err.println(PROVIDER_HINT);
             throw e;
         }
     }
@@ -94,36 +113,16 @@ public final class KeyringUtils {
      * @return loaded KeyStore instance
      */
     public static KeyStore readKeyStore(InputStream is, char[] pass, String type) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
-        KeyStore keyStore = KeyStore.getInstance(type);
+        KeyStore keyStore;
+        try {
+            keyStore = KeyStore.getInstance(type);
+        } catch (KeyStoreException e) {
+            if (type.toUpperCase(Locale.ROOT).endsWith("RACFKS")) {
+                throw new KeyStoreException(e.getMessage() + ". " + PROVIDER_HINT, e);
+            }
+            throw e;
+        }
         keyStore.load(is, pass);
         return keyStore;
-    }
-
-    /**
-     * Registers IBM SAF keyring URL protocol handler packages via the
-     * {@code java.protocol.handler.pkgs} system property.
-     *
-     * <p>On IBM Java 17/21 (z/OS), this property works in conjunction with
-     * {@code --add-modules ibm.crypto.zsecurity,ibm.crypto.hdwrcca} to enable
-     * the {@code safkeyring://} URL protocol. The {@code --add-modules} flag
-     * resolves the module (making classes accessible), while this property tells
-     * the {@link java.net.URL} class which packages to search for the handler.</p>
-     */
-    public static void ensureSafkeyringHandler() {
-        String[] packagePrefixes = {
-            "com.ibm.crypto.zsecurity.provider",
-            "com.ibm.crypto.hdwrCCA.provider"
-        };
-        String existing = System.getProperty("java.protocol.handler.pkgs", "");
-        StringBuilder sb = new StringBuilder(existing);
-        for (String prefix : packagePrefixes) {
-            if (!existing.contains(prefix)) {
-                if (!sb.isEmpty()) {
-                    sb.append('|');
-                }
-                sb.append(prefix);
-            }
-        }
-        System.setProperty("java.protocol.handler.pkgs", sb.toString());
     }
 }

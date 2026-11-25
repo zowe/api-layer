@@ -27,7 +27,11 @@ import logging
 
 import py_eureka_client.logger as eurekalogger
 from py_eureka_client import eureka_client as ec
-from .custom_http_client import *
+from py_eureka_client import http_client
+
+from .config import ConfigLoader
+from .custom_http_client import HttpClient, create_ssl_context
+
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 eurekalogger.set_level("DEBUG")
@@ -49,7 +53,7 @@ class PythonEnabler:
             Constructs the Discovery Service URL.
 
         setup_ssl_environment():
-            Initializes the SSL context using provided certificate files.
+            Initializes the outbound SSL context using provided certificate files.
 
         register():
             Registers the current service instance with Discovery Service.
@@ -66,9 +70,11 @@ class PythonEnabler:
         self.discovery_service = discovery_service or self.get_discovery_service()
         self.ssl_config = self.config_data.get('ssl', {})
 
-        # Set up SSL environment if SSL is enabled
-        if self.config_data.get('instance', {}).get('scheme') == 'https':
+        # Outbound TLS depends on Discovery, independently of the service's scheme.
+        if self.discovery_service.lower().startswith('https://'):
             self.setup_ssl_environment()
+
+        http_client.set_http_client(HttpClient(ssl_context=self.ssl_context))
 
     def get_discovery_service(self):
         """Construct the discovery service URL based on the configuration."""
@@ -80,19 +86,9 @@ class PythonEnabler:
         return f"{protocol}://{host}:{port}{service_path}"
 
     def setup_ssl_environment(self):
-        """Set up SSL environment variables if SSL is enabled."""
-        ca_file = self.ssl_config.get('caFile')
-        cert_file = self.ssl_config.get('certificate')
-        key_file = self.ssl_config.get('keystore')
-
-        if cert_file and key_file and ca_file:
-            ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-            ssl_context.load_cert_chain(certfile=cert_file, keyfile=key_file)
-            ssl_context.load_verify_locations(cafile=ca_file)
-            self.ssl_context = ssl_context
-            logger.info("SSL environment configured.")
-        else:
-            ValueError("SSL configuration is incomplete. Certificate, key, and CA files must be provided.")
+        """Configure the SSL context used by the outbound HTTP client."""
+        self.ssl_context = create_ssl_context(self.ssl_config)
+        logger.info("SSL environment configured.")
 
     def register(self):
         """Register the service with the Discovery Service, using SSL if configured."""

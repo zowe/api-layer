@@ -63,24 +63,49 @@ class KeyringUtilsTest {
 
         @ParameterizedTest
         @CsvSource({
-            "safkeyring://userId/keyRing, safkeyring://userId/keyRing",
-            "safkeyring:////userId/keyRing, safkeyring://userId/keyRing",
-            "safkeyringjce://user/ring, safkeyringjce://user/ring",
-            "safkeyringjcecca:///user1/ring2, safkeyringjcecca://user1/ring2"
+            "safkeyring://userId/keyRing, JCERACFKS, safkeyringjce://userId/keyRing",
+            "safkeyring:///userId/keyRing, JCECCARACFKS, safkeyringjcecca://userId/keyRing",
+            "safkeyring:////ZWESVUSR/ZWERING, JCEHYBRIDRACFKS, safkeyringjcehybrid://ZWESVUSR/ZWERING",
+            "safkeyring://userId/keyRing, jcehybridracfks, safkeyringjcehybrid://userId/keyRing",
+            "safkeyringjcehybrid://userId/keyRing, JCEHYBRIDRACFKS, safkeyringjcehybrid://userId/keyRing",
+            "safkeyringjcecca:////userId/keyRing, JCEHYBRIDRACFKS, safkeyringjcecca://userId/keyRing",
+            "safkeyring://userId/keyRing, , safkeyring://userId/keyRing",
+            "safkeyringjce://userId/keyRing, , safkeyringjce://userId/keyRing",
+            "safkeyring://userId/keyRing, UNKNOWNTYPE, safkeyring://userId/keyRing",
+            "/path/to/truststore.p12, PKCS12, /path/to/truststore.p12",
+            "safkeyring:/invalid/ring, JCEHYBRIDRACFKS, safkeyring:/invalid/ring"
         })
-        void givenKeyringUri_thenNormalizesToTwoSlashes(String input, String expected) {
-            assertEquals(expected, KeyringUtils.formatKeyringUrl(input));
+        void givenStoreType_thenSelectsProtocolOnlyForGenericKeyringUri(String input, String type, String expected) {
+            assertEquals(expected, KeyringUtils.formatKeyringUrl(input, type));
+        }
+
+        @Test
+        void givenNullWithStoreType_thenReturnsNull() {
+            assertNull(KeyringUtils.formatKeyringUrl(null, "JCEHYBRIDRACFKS"));
+        }
+
+        @ParameterizedTest
+        @CsvSource({
+            "safkeyring://userId/keyRing, JCERACFKS, safkeyringjce://userId/keyRing",
+            "safkeyring:////userId/keyRing, JCERACFKS, safkeyringjce://userId/keyRing",
+            "safkeyringjce://user/ring, JCERACFKS, safkeyringjce://user/ring",
+            "safkeyringjce:////user/ring, JCERACFKS, safkeyringjce://user/ring",
+            "safkeyringjcecca:///user1/ring2, JCECCARACFKS, safkeyringjcecca://user1/ring2",
+            "safkeyringjcehybrid:////user1/ring2, JCEHYBRIDRACFKS, safkeyringjcehybrid://user1/ring2"
+        })
+        void givenKeyringUri_thenNormalizesToTwoSlashes(String input, String type, String expected) {
+            assertEquals(expected, KeyringUtils.formatKeyringUrl(input, type));
         }
 
         @Test
         void givenNonKeyringPath_thenReturnsUnchanged() {
             String path = "/path/to/keystore.p12";
-            assertEquals(path, KeyringUtils.formatKeyringUrl(path));
+            assertEquals(path, KeyringUtils.formatKeyringUrl(path, "PKCS12"));
         }
 
         @Test
         void givenNull_thenReturnsNull() {
-            assertNull(KeyringUtils.formatKeyringUrl(null));
+            assertNull(KeyringUtils.formatKeyringUrl(null, "JCERACFKS"));
         }
     }
 
@@ -88,15 +113,63 @@ class KeyringUtilsTest {
     class KeyRingUrl {
 
         @Test
+        void givenUnknownProtocol_thenHintMentionsProvidersAndModules() {
+            java.io.PrintStream original = System.err;
+            java.io.ByteArrayOutputStream err = new java.io.ByteArrayOutputStream();
+            System.setErr(new java.io.PrintStream(err, true));
+            try {
+                assertThrows(java.net.MalformedURLException.class,
+                    () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing", "JCEHYBRIDRACFKS"));
+            } finally {
+                System.setErr(original);
+            }
+            assertThat(err.toString(), containsString("safkeyringjcehybrid"));
+            assertThat(err.toString(), containsString("-Djava.security.properties"));
+            assertThat(err.toString(), containsString("--add-modules"));
+        }
+
+        /** No IBM handlers on the test JVM: the failure identifies the protocol selected for the store type. */
+        @ParameterizedTest
+        @CsvSource({
+            "JCERACFKS, safkeyringjce",
+            "JCECCARACFKS, safkeyringjcecca",
+            "JCEHYBRIDRACFKS, safkeyringjcehybrid"
+        })
+        void givenStoreType_thenFailureNamesProtocolOfStoreType(String type, String protocol) {
+            java.net.MalformedURLException ex = assertThrows(java.net.MalformedURLException.class,
+                () -> KeyringUtils.keyRingUrl("safkeyring://ZWESVUSR/ZWERING", type));
+            assertEquals("unknown protocol: " + protocol, ex.getMessage());
+        }
+
+        @Test
+        void givenHandlerAvailable_thenReturnsUrlWithProtocolOfStoreType() throws Exception {
+            String previous = System.getProperty("java.protocol.handler.pkgs");
+            System.setProperty("java.protocol.handler.pkgs", "org.zowe.apiml.common.testprotocols");
+            try {
+                java.net.URL url = KeyringUtils.keyRingUrl("safkeyring:////ZWESVUSR/ZWEHRING", "JCEHYBRIDRACFKS");
+
+                assertEquals("safkeyringjcehybrid", url.getProtocol());
+                assertEquals("ZWESVUSR", url.getHost());
+                assertEquals("/ZWEHRING", url.getPath());
+            } finally {
+                if (previous == null) {
+                    System.clearProperty("java.protocol.handler.pkgs");
+                } else {
+                    System.setProperty("java.protocol.handler.pkgs", previous);
+                }
+            }
+        }
+
+        @Test
         void givenInvalidKeyringFormat_thenThrowsStoresNotInitializeException() {
             assertThrows(StoresNotInitializeException.class,
-                () -> KeyringUtils.keyRingUrl("/some/file/path"));
+                () -> KeyringUtils.keyRingUrl("/some/file/path", "JCERACFKS"));
         }
 
         @Test
         void givenInvalidFormat_thenExceptionContainsHelpfulMessage() {
             StoresNotInitializeException ex = assertThrows(StoresNotInitializeException.class,
-                () -> KeyringUtils.keyRingUrl("notakeyring"));
+                () -> KeyringUtils.keyRingUrl("notakeyring", "JCERACFKS"));
             assertThat(ex.getMessage(), containsString("Incorrect key ring format"));
             assertThat(ex.getMessage(), containsString("safkeyring://userId/keyRing"));
         }
@@ -104,14 +177,14 @@ class KeyringUtilsTest {
         @Test
         void givenNullInput_thenThrowsStoresNotInitializeException() {
             assertThrows(StoresNotInitializeException.class,
-                () -> KeyringUtils.keyRingUrl(null));
+                () -> KeyringUtils.keyRingUrl(null, "JCERACFKS"));
         }
 
         @Test
         void givenValidKeyringFormat_thenThrowsMalformedURLExceptionWithoutHandler() {
             // Valid keyring format but no SAF protocol handler registered on this JVM
             java.net.MalformedURLException ex = assertThrows(java.net.MalformedURLException.class,
-                () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing"));
+                () -> KeyringUtils.keyRingUrl("safkeyring://userId/keyRing", "JCERACFKS"));
             assertThat(ex.getMessage(), containsString("unknown protocol"));
         }
     }
@@ -159,56 +232,24 @@ class KeyringUtilsTest {
     }
 
     @Nested
-    class EnsureSafkeyringHandler {
+    class ReadKeyStoreWithMissingProvider {
 
         @Test
-        void givenEmptyProperty_thenSetsHandlerPackages() {
-            String original = System.getProperty("java.protocol.handler.pkgs", "");
-            try {
-                System.setProperty("java.protocol.handler.pkgs", "");
+        void givenOtherUnknownType_thenOriginalExceptionIsRethrownWithoutHint() {
+            KeyStoreException e = assertThrows(KeyStoreException.class,
+                () -> KeyringUtils.readKeyStore(new ByteArrayInputStream(new byte[0]), "password".toCharArray(), "UNKNOWNTYPE"));
 
-                KeyringUtils.ensureSafkeyringHandler();
-
-                String result = System.getProperty("java.protocol.handler.pkgs");
-                assertThat(result, containsString("com.ibm.crypto.zsecurity.provider"));
-                assertThat(result, containsString("com.ibm.crypto.hdwrCCA.provider"));
-            } finally {
-                System.setProperty("java.protocol.handler.pkgs", original);
-            }
+            assertEquals("UNKNOWNTYPE not found", e.getMessage());
         }
 
-        @Test
-        void givenExistingPackages_thenAppendsWithPipeSeparator() {
-            String original = System.getProperty("java.protocol.handler.pkgs", "");
-            try {
-                System.setProperty("java.protocol.handler.pkgs", "com.example.handler");
-
-                KeyringUtils.ensureSafkeyringHandler();
-
-                String result = System.getProperty("java.protocol.handler.pkgs");
-                assertThat(result, startsWith("com.example.handler|"));
-                assertThat(result, containsString("com.ibm.crypto.zsecurity.provider"));
-                assertThat(result, containsString("com.ibm.crypto.hdwrCCA.provider"));
-            } finally {
-                System.setProperty("java.protocol.handler.pkgs", original);
-            }
-        }
-
-        @Test
-        void givenAlreadyRegistered_thenDoesNotDuplicate() {
-            String original = System.getProperty("java.protocol.handler.pkgs", "");
-            try {
-                System.setProperty("java.protocol.handler.pkgs", "");
-
-                KeyringUtils.ensureSafkeyringHandler();
-                String firstRun = System.getProperty("java.protocol.handler.pkgs");
-
-                KeyringUtils.ensureSafkeyringHandler();
-                String secondRun = System.getProperty("java.protocol.handler.pkgs");
-
-                assertEquals(firstRun, secondRun);
-            } finally {
-                System.setProperty("java.protocol.handler.pkgs", original);
+        private static final class KeyStoreProbe {
+            static boolean isMissing(String type) {
+                try {
+                    KeyStore.getInstance(type);
+                    return false;
+                } catch (KeyStoreException e) {
+                    return true;
+                }
             }
         }
     }
