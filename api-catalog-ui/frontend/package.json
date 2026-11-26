@@ -46,7 +46,7 @@
         "rxjs": "7.8.2",
         "sass": "1.108.2",
         "stream": "0.0.3",
-        "swagger-ui-react": "5.36.0",
+        "swagger-ui-react": "5.34.1",
         "url": "0.11.4",
         "util": "0.12.5"
     },
