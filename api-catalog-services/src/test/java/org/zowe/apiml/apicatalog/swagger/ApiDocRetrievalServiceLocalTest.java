@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import tools.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.netflix.appinfo.InstanceInfo;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.PathItem;
@@ -64,21 +64,21 @@ class ApiDocRetrievalServiceLocalTest {
     }
 
     @Test
-    void givenInvalidApiDoc_whenGetApiDoc_thenThrowException() throws JacksonException {
+    void givenInvalidApiDoc_whenGetApiDoc_thenThrowException() throws JsonProcessingException {
         var apiDocResource = mockApiDocResource();
-        doThrow(new JacksonException("an error") {}).when(apiDocResource).openapiJson(any(), eq("/"), any());
+        doThrow(new JsonProcessingException("an error") {}).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
         var instance = new EurekaServiceInstance(InstanceInfo.Builder.newBuilder().setAppName("service").build());
         var apiInfo = ApiInfo.builder().build();
 
         var exception = assertThrows(ApiDocNotFoundException.class, () -> service.retrieveApiDoc(instance, apiInfo));
         assertEquals("Cannot obtain API doc for service", exception.getMessage());
-        assertInstanceOf(JacksonException.class, exception.getCause());
+        assertInstanceOf(JsonProcessingException.class, exception.getCause());
         assertEquals("an error", exception.getCause().getMessage());
     }
 
     @Test
-    void givenValidApiDoc_whenGetApiDoc_thenReturnApiDoc() throws JacksonException {
+    void givenValidApiDoc_whenGetApiDoc_thenReturnApiDoc() throws JsonProcessingException {
         var apiDocResource = mockApiDocResource();
         doReturn(Mono.just("Api doc".getBytes(StandardCharsets.UTF_8))).when(apiDocResource).openapiJson(any(), eq("/"), any());
 
