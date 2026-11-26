@@ -3011,6 +3011,9 @@ jobs:
             CITests,CITestsWithInfinispan,CITestsZaas,GatewayProxy,CITestsHA,
             CITestsModulith,CITestsModulithHA
         ]
+        # Sonar requires org credentials (SONAR_TOKEN/SONAR_HOST_URL), which
+        # fork PRs do not receive - skip rather than run with empty values.
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         runs-on: ubuntu-latest
         timeout-minutes: 20
 
