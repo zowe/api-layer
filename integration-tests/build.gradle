@@ -76,6 +76,8 @@ task startUpCheck(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        includeTags 'StartupCheck'
+    }
     outputs.upToDateWhen { false }
 }
 
@@ -85,6 +87,8 @@ task environmentCheck(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        includeTags 'EnvironmentCheck'
+    }
     outputs.upToDateWhen { false }
 }
 
@@ -94,6 +98,9 @@ task runStartUpCheck(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        includeTags 'StartupCheck'
+        excludeTags 'OpenTelemetryTest'
+    }
     outputs.upToDateWhen { false }
 }
 
@@ -103,6 +110,8 @@ task runStartUpCheckWithOpenTelemetry(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        includeTags 'StartupCheck'
+    }
     outputs.upToDateWhen { false }
 }
 
@@ -112,6 +121,8 @@ task runUnknownHostnamesTests(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        includeTags 'UnknownHostnamesTest'
+    }
     outputs.upToDateWhen { false }
 }
 task runLocalIntegrationTests(type: Test) {
@@ -121,11 +132,24 @@ task runLocalIntegrationTests(type: Test) {
     dependsOn startUpCheck
     systemProperties System.getProperties()
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'MainframeDependentTests',
+            'AdditionalLocalTest',
+            'HATest',
+            'ChaoticHATest',
+            'OidcOauth2Test',
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
     outputs.upToDateWhen { false }
 }
 
@@ -134,11 +158,26 @@ task runAllIntegrationTestsNormal(type: Test) {
     description "Run all integration tests normal"
     systemProperties System.properties
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'NotForMainframeTest',
+            'zOSMFAuthTest',
+            'SAFAuthTest',
+            'HATest',
+            'ChaoticHATest',
+            'OidcOauth2Test',
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
+        )
+
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 }
 
 task runAllIntegrationTests(type: Test) {
@@ -151,6 +190,10 @@ task runAllIntegrationTests(type: Test) {
         System.getProperty("includeTags") : 'zOSMFAuthTest'
     systemProperties System.properties
     useJUnitPlatform {
+        includeTags(
+            itags
+        )
+    }
     outputs.upToDateWhen { false }
 }
 
@@ -170,11 +213,34 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
     systemProperties.remove('java.endorsed.dirs')
 
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'HATest',
+            'ChaoticHATest',
+            'OidcOauth2Test',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'GatewayCentralRegistry',
+            'SafIdTokenTest',
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 
     debugOptions {
         port = 5005
@@ -201,11 +267,35 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
     systemProperties.remove('java.endorsed.dirs')
 
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'OidcOauth2Test',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'GatewayCentralRegistry',
+            'SafIdTokenTest',
+            'ChaoticHATest',
+            'RateLimitTest',
+            'GraphQLTest',
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 
     debugOptions {
         port = 5005
@@ -234,11 +324,36 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
     systemProperties.remove('java.endorsed.dirs')
 
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'HATest',
+            'ChaoticHATest',
+            'OidcOauth2Test',
+            'MultipleRegistrationsTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'GatewayCentralRegistry',
+            'SafIdTokenTest',
+            'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'NonModulithTest',
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 
     debugOptions {
         port = 5005
@@ -266,11 +381,38 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
     systemProperties.remove('java.endorsed.dirs')
 
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'DiscoverableClientDependentTest',
+            'OidcOauth2Test',
+            'MultipleRegistrationsTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'NotForMainframeTest',
+            'ApiCatalogStandaloneTest',
+            'SAFProviderTest',
+            'GatewayProxyTest',
+            'GatewayCentralRegistry',
+            'SafIdTokenTest',
+            'ChaoticHATest',
+            'GraphQLTest',
+            'GraphQLTest',
+            'ZaasTest', // These tests require ZAAS as a separate service with its own port and specific paths that are not part of the public API
+            'NonModulithTest',
+            'InfinispanJGroupStabilityTest',
+            'RateLimitTest',
+            'DiscoveryBasicAuthTest',
+            'zOSMFEncodingTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 
     debugOptions {
         port = 5005
@@ -289,11 +431,27 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
     systemProperties System.properties
 
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'AdditionalLocalTest',
+            'TestsNotMeantForZowe',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'DiscoverableClientDependentTest',
+            'HATest',
+            'ChaoticHATest',
+            'OidcOauth2Test',
+            'MultipleRegistrationsTest',
+            'NotForMainframeTest',
+            'InfinispanJGroupStabilityTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
     outputs.upToDateWhen { false }
 }
 
@@ -305,11 +463,32 @@ task runCITests(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests',
+            'SAFAuthTest',
+            'AttlsTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'RegistrationTest',
+            'ServiceIdPrefixReplacerTest',
+            'HATest',
+            'DeterministicLbHaTest',
+            'StickySessionLbHaTest',
+            'ChaoticHATest',
+            'OidcOauth2Test',
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 }
 
 task runContainerModulithTests(type: Test) {
@@ -323,11 +502,37 @@ task runContainerModulithTests(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests',
+            'SAFAuthTest',
+            'AttlsTest',
+            'RegistrationTest',
+            'ServiceIdPrefixReplacerTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'HATest',
+            'ChaoticHATest',
+            'InfinispanStorageTest',
+            'OidcOauth2Test',
+            'GatewayProxyTest',
+            'GatewayServiceRouting',
+            'GatewayCentralRegistry',
+            'ZaasTest',
+            'ApiCatalogStandaloneTest',
+            'NonModulithTest',
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 }
 
 task runContainerTests(type: Test) {
@@ -340,11 +545,35 @@ task runContainerTests(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        excludeTags(
+            'StartupCheck',
+            'EnvironmentCheck',
+            'SlowTests',
+            'AdditionalLocalTest',
+            'MainframeDependentTests',
+            'SAFAuthTest',
+            'AttlsTest',
+            'RegistrationTest',
+            'ServiceIdPrefixReplacerTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'HATest',
+            'ChaoticHATest',
+            'InfinispanStorageTest',
+            'OidcOauth2Test',
+            'GatewayProxyTest',
+            'GatewayServiceRouting',
+            'GatewayCentralRegistry',
+            'ZaasTest',
+            'InfinispanJGroupStabilityTest',
+            'DiscoveryBasicAuthTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 }
 
 task runContainerSAFProviderTests(type: Test) {
@@ -357,6 +586,10 @@ task runContainerSAFProviderTests(type: Test) {
 
     systemProperties System.properties
     useJUnitPlatform {
+        includeTags(
+            'SAFProviderTest'
+        )
+    }
 }
 
 task runBaseTests(type: Test) {
@@ -367,11 +600,37 @@ task runBaseTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'CatalogTest',
+            'GatewayTest',
+            'DiscoveryServiceTest',
+            'WebsocketTest',
+            'GeneralAuthenticationTest',
+            'DiscoverableClientDependentTest',
+            'CachingServiceTest'
+        )
+        excludeTags(
+            'MainframeDependentTests',
+            'RegistrationTest',
+            'ServiceIdPrefixReplacerTest',
+            'NodeEnablerTest',
+            'PythonEnablerTest',
+            'HATest',
+            'ChaoticHATest',
+            'InfinispanStorageTest',
+            'OidcOauth2Test',
+            'GatewayProxyTest',
+            'GatewayServiceRouting',
+            'GatewayCentralRegistry',
+            'MultipleRegistrationsTest',
+            'InfinispanJGroupStabilityTest'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 }
 
 task runRegistrationTests(type: Test) {
@@ -382,6 +641,10 @@ task runRegistrationTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'RegistrationTest'
+        )
+    }
 }
 
 task runDiscoveryBasicAuthTests(type: Test) {
@@ -392,6 +655,10 @@ task runDiscoveryBasicAuthTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'DiscoveryBasicAuthTest'
+        )
+    }
 }
 
 task runGatewayProxyTest(type: Test) {
@@ -402,6 +669,11 @@ task runGatewayProxyTest(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'GatewayProxyTest',
+            'GatewayServiceRouting'
+        )
+    }
 }
 
 
@@ -413,6 +685,10 @@ task runGatewayCentralRegistryTest(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'GatewayCentralRegistry'
+        )
+    }
 }
 
 task runIdPrefixReplacerTests(type: Test) {
@@ -423,6 +699,10 @@ task runIdPrefixReplacerTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'ServiceIdPrefixReplacerTest'
+        )
+    }
 }
 
 task runZosmfAuthTest(type: Test) {
@@ -434,6 +714,14 @@ task runZosmfAuthTest(type: Test) {
     systemProperties System.getProperties()
 
     useJUnitPlatform {
+        includeTags(
+            'zOSMFAuthTest'
+        )
+        excludeTags(
+            'InfinispanStorageTest',
+            'InfinispanJGroupStabilityTest'
+        )
+    }
 }
 
 task runZaasTest(type: Test) {
@@ -444,11 +732,16 @@ task runZaasTest(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'ZaasTest',
+            'OidcOauth2Test'
+        )
         if (!System.getProperty('oidc.client.id', '')) {
             // Fork PRs do not receive OIDC provider secrets - the
             // OIDC tests cannot reach the external provider there.
             excludeTags 'OidcOauth2Test'
         }
+    }
 }
 
 task runCachingServiceTests(type: Test) {
@@ -459,6 +752,14 @@ task runCachingServiceTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest'
+        )
+        excludeTags(
+            'InfinispanStorageTest',
+            'InfinispanJGroupStabilityTest'
+        )
+    }
 }
 
 task runInfinispanServiceTests(type: Test) {
@@ -469,6 +770,11 @@ task runInfinispanServiceTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest',
+            'InfinispanStorageTest'
+        )
+    }
 }
 
 task runInfinispanJGroupStabilityTest(type: Test) {
@@ -479,6 +785,10 @@ task runInfinispanJGroupStabilityTest(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'InfinispanJGroupStabilityTest'
+        )
+    }
 }
 
 task runModulithInfinispanServiceTests(type: Test) {
@@ -490,6 +800,15 @@ task runModulithInfinispanServiceTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'CachingServiceTest',
+            'InfinispanStorageTest'
+        )
+        excludeTags(
+            'NonModulithTest',
+            'InfinispanJGroupStabilityTest'
+        )
+    }
 }
 
 task runHATests(type: Test) {
@@ -501,6 +820,10 @@ task runHATests(type: Test) {
     systemProperty "environment.ha", true
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'HATest'
+        )
+    }
 
 }
 
@@ -513,6 +836,10 @@ task runDeterministicLbHaTests(type: Test) {
     systemProperty "environment.ha", true
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'DeterministicLbHaTest'
+        )
+    }
 
 }
 
@@ -525,6 +852,10 @@ task runStickySessionLbHaTests(type: Test) {
     systemProperty "environment.ha", true
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'StickySessionLbHaTest'
+        )
+    }
 
 }
 
@@ -541,6 +872,10 @@ task runChaoticHATests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'ChaoticHATest'
+        )
+    }
 
 }
 
@@ -552,4 +887,9 @@ task runNodeAndPythonSampleServiceTests(type: Test) {
 
     systemProperties System.getProperties()
     useJUnitPlatform {
+        includeTags(
+            'NodeEnablerTest',
+            'PythonEnablerTest'
+        )
+    }
 }
