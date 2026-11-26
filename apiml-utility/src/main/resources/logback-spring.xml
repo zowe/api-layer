@@ -51,6 +51,7 @@
                     <level>INFO</level>
                 </filter>
                 <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                    <charset>${CONSOLE_LOG_CHARSET:-${logging.charset.console:-${file.encoding:-UTF-8}}}</charset>
                     <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
                         <pattern>${APIML_LOG_PATTERN}</pattern>
                     </layout>
@@ -60,6 +61,7 @@
         <else>
             <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
                 <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+                    <charset>${CONSOLE_LOG_CHARSET:-${logging.charset.console:-${file.encoding:-UTF-8}}}</charset>
                     <layout class="org.zowe.apiml.product.logging.MaskingLogPatternLayout">
                         <pattern>${APIML_LOG_PATTERN}</pattern>
                     </layout>
