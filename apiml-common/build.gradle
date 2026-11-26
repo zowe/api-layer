@@ -10,7 +10,6 @@ dependencies {
     implementation libs.spring.cloud.starter.eureka.client
     implementation libs.spring.boot.jackson2
     implementation libs.opentelemetry.spring.boot.starter
-    implementation libs.opentelemetry.exporter.common
     implementation libs.opentelemetry.exporter.sender.okhttp
     implementation libs.caffeine
     implementation libs.guava

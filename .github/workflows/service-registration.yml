@@ -60,6 +60,14 @@ jobs:
     Register:
         runs-on: ubuntu-latest
         timeout-minutes: 20
+        strategy:
+            fail-fast: false
+            matrix:
+                otel:
+                    -   protocol: http/protobuf
+                        endpoint: https://localhost:4318
+                    -   protocol: grpc
+                        endpoint: https://localhost:4317
         env:
             EUREKA_INSTANCE_IPADDRESS: 127.0.0.1
         steps:
@@ -82,7 +90,10 @@ jobs:
                     cd otel
                     sh/start_containers.sh
 
-            -   name: Run startup check for modulith
+            -   name: Run startup check for modulith (OpenTelemetry ${{ matrix.otel.protocol }})
+                env:
+                    ZWE_configs_telemetry_exporter_protocol: ${{ matrix.otel.protocol }}
+                    ZWE_configs_telemetry_exporter_endpoint: ${{ matrix.otel.endpoint }}
                 run: >
                     ./gradlew runStartUpCheckWithOpenTelemetry --info --scan -Denvironment.startServices=true -Denvironment.modulith=true -Denvironment.config=-modulith
 
@@ -96,7 +107,7 @@ jobs:
                 uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
                 if: always()
                 with:
-                    name: Register-${{ env.JOB_ID }}
+                    name: Register-${{ env.JOB_ID }}-${{ strategy.job-index }}
                     path: |
                         */build/reports/**
                         otel/**
