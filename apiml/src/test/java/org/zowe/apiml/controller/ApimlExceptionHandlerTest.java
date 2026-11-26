@@ -107,8 +107,8 @@ class ApimlExceptionHandlerTest {
                 exceptionHandler.handleAccessTokenInvalidExpirationException(exchange,
                     new AccessTokenInvalidExpirationException("The expiration time must be greater than zero. Supplied value was -1", -1));
 
-                verify(exceptionHandler).setBodyResponse(eq(exchange), eq(400),
-                    eq("org.zowe.apiml.accessToken.invalidExpiration"), eq(-1));
+                verify(exceptionHandler).setBodyResponse(exchange, 400,
+                    "org.zowe.apiml.accessToken.invalidExpiration", -1);
             }
         }
 
