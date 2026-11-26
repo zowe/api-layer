@@ -60,7 +60,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+            -   uses: zowe-actions/shared-actions/docker-prepare@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -76,7 +76,7 @@ jobs:
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
 
             -   name: Build amd64
-                uses: zowe-actions/shared-actions/docker-build-local@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+                uses: zowe-actions/shared-actions/docker-build-local@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
                 timeout-minutes: 60
@@ -110,7 +110,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+            -   uses: zowe-actions/shared-actions/docker-prepare@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -126,7 +126,7 @@ jobs:
                     redhat-registry-password: ${{ secrets.redhat-registry-password }}
 
             -   name: Build s390x
-                uses: zowe-actions/shared-actions/docker-build-zlinux@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+                uses: zowe-actions/shared-actions/docker-build-zlinux@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 with:
                     zlinux-host: ${{ secrets.zlinux-host }}
                     zlinux-ssh-user: ${{ secrets.zlinux-ssh-user }}
@@ -170,7 +170,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+            -   uses: zowe-actions/shared-actions/docker-prepare@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -180,7 +180,7 @@ jobs:
                     image-name: ${{ matrix.service }}
                     linux-distro: ${{ matrix.os }}
 
-            -   uses: zowe-actions/shared-actions/docker-manifest@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+            -   uses: zowe-actions/shared-actions/docker-manifest@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 with:
                     linux-distro: ${{ matrix.os }}
                     cpu-arch-list: "amd64 s390x"
@@ -215,7 +215,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+            -   uses: zowe-actions/shared-actions/docker-prepare@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -232,14 +232,14 @@ jobs:
 
             -   name: Build amd64
                 if: matrix.arch == 'amd64'
-                uses: zowe-actions/shared-actions/docker-build-local@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+                uses: zowe-actions/shared-actions/docker-build-local@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 with:
                     build-arg-list: ${{ matrix.BUILD_ARG_LIST }}
                 timeout-minutes: 60
 
             -   name: Build s390x
                 if: matrix.arch == 's390x'
-                uses: zowe-actions/shared-actions/docker-build-zlinux@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+                uses: zowe-actions/shared-actions/docker-build-zlinux@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 with:
                     zlinux-host: ${{ secrets.zlinux-host }}
                     zlinux-ssh-user: ${{ secrets.zlinux-ssh-user }}
@@ -281,7 +281,7 @@ jobs:
                 with:
                     versionOverride: ${{ inputs.version }}
 
-            -   uses: zowe-actions/shared-actions/docker-prepare@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+            -   uses: zowe-actions/shared-actions/docker-prepare@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 timeout-minutes: 15
                 with:
                     registry-user: ${{ secrets.registry-user }}
@@ -291,7 +291,7 @@ jobs:
                     image-name: ${{ inputs.service }}
                     linux-distro: ${{ matrix.os }}
 
-            -   uses: zowe-actions/shared-actions/docker-manifest@77d7d9b50e60fedc8132b5e5eb6d611c4e483416 # main
+            -   uses: zowe-actions/shared-actions/docker-manifest@be9a557203e3b69aa263dd985c6149a34b1c773b # main
                 with:
                     linux-distro: ${{ matrix.os }}
                     cpu-arch-list: "amd64 s390x"
