@@ -19,6 +19,7 @@ import org.springframework.mock.http.server.reactive.MockServerHttpRequest;
 import org.springframework.mock.web.server.MockServerWebExchange;
 import org.springframework.web.server.ServerWebExchange;
 import org.zowe.apiml.security.common.auth.saf.PlatformReturned;
+import org.zowe.apiml.security.common.error.AccessTokenInvalidExpirationException;
 import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
 import org.zowe.apiml.security.common.error.ZosAuthenticationException;
 import org.zowe.apiml.zaas.cache.CachingServiceClientException;
@@ -93,6 +94,21 @@ class ApimlExceptionHandlerTest {
 
                 verify(exceptionHandler).setBodyResponse(eq(exchange), eq(503),
                     eq("org.zowe.apiml.zaas.pat.cachingServiceUnavailable"), anyString());
+            }
+        }
+
+        @Nested
+        class WhenAccessTokenInvalidExpirationException {
+
+            @Test
+            void thenAnswerBadRequest() {
+                var exchange = MockServerWebExchange.from(MockServerHttpRequest.delete("https://localhost/revoke").build());
+
+                exceptionHandler.handleAccessTokenInvalidExpirationException(exchange,
+                    new AccessTokenInvalidExpirationException("The expiration time must be greater than zero. Supplied value was -1", -1));
+
+                verify(exceptionHandler).setBodyResponse(eq(exchange), eq(400),
+                    eq("org.zowe.apiml.accessToken.invalidExpiration"), eq(-1));
             }
         }
 

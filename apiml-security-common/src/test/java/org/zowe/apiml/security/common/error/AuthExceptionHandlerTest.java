@@ -244,6 +244,16 @@ class AuthExceptionHandlerTest {
         verify(function).accept(message.mapToView(), HttpStatus.BAD_REQUEST);
     }
 
+    @Test
+    void testAuthenticationFailure_whenExceptionIsAccessTokenInvalidExpirationException() throws ServletException {
+        authExceptionHandler.handleException(
+            httpServletRequest.getRequestURI(), function, addHeader,
+            new AccessTokenInvalidExpirationException("The expiration time must be greater than zero. Supplied value was -1", -1));
+
+        Message message = messageService.createMessage("org.zowe.apiml.accessToken.invalidExpiration", -1);
+
+        verify(function).accept(message.mapToView(), HttpStatus.BAD_REQUEST);
+    }
     @TestConfiguration
     static class ContextConfiguration {
 

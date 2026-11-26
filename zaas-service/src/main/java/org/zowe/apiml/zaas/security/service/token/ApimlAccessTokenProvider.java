@@ -23,6 +23,7 @@ import org.zowe.apiml.cache.StorageException;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
+import org.zowe.apiml.security.common.error.AccessTokenInvalidExpirationException;
 import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
 import org.zowe.apiml.security.common.token.AccessTokenProvider;
 import org.zowe.apiml.security.common.token.QueryResponse;
@@ -462,9 +463,9 @@ public class ApimlAccessTokenProvider implements AccessTokenProvider {
         }
         int expiration = Math.min(expirationTime, MAX_TOKEN_VALIDITY_DAYS);
         if (expiration <= 0) {
-            expiration = MAX_TOKEN_VALIDITY_DAYS;
-        }
-        return authenticationService.createLongLivedJwtToken(username, expiration, scopes);
+            throw new AccessTokenInvalidExpirationException(
+                "The expiration time must be greater than zero. The supplied value was " + expirationTime + ".", expirationTime);
+        }        return authenticationService.createLongLivedJwtToken(username, expiration, scopes);
     }
 
     public boolean isValidForScopes(String jwtToken, String serviceId) {

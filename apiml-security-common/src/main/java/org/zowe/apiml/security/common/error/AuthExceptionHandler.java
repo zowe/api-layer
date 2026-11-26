@@ -90,6 +90,8 @@ public class AuthExceptionHandler extends AbstractExceptionHandler {
             (ex, ctx) -> handleTokenFormatException(ctx.requestUri, ctx.function, ex)),
         entry(AccessTokenInvalidBodyException.class,
             (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.accessToken.invalidFormat")),
+        entry(AccessTokenInvalidExpirationException.class,
+            (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.accessToken.invalidExpiration")),
         entry(AccessTokenMissingBodyException.class,
             (ex, ctx) -> handleBadRequest(ctx.requestUri, ctx.function, ex, "org.zowe.apiml.security.token.accessTokenBodyMissingScopes")),
         entry(AccessTokenTooManyScopesException.class,
