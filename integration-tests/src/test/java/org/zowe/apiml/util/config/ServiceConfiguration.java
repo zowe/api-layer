@@ -10,26 +10,82 @@
 
 package org.zowe.apiml.util.config;
 
-public interface ServiceConfiguration {
+import lombok.*;
+import org.apache.commons.lang3.StringUtils;
 
-    String getScheme();
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-    String getHost();
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public abstract class ServiceConfiguration {
 
-    int getPort();
+    private String scheme;
+    private String url;
+    private String host;
+    // holds comma separated list of gw ports, hence String
+    private String port;
+    private int instances;
 
-    String getServiceId();
+    public abstract String getServiceId();
 
-    default boolean isStaticallyRegistred() {
+    public boolean isStaticallyRegistred() {
         return false;
     }
 
-    default String getServletContext() {
+    public String getServletContext() {
         return "/";
     }
 
-    default boolean isBasicAuthenticationSupported() {
+    public boolean isBasicAuthenticationSupported() {
         return true;
+    }
+
+    /**
+     * Returns the first host in the list
+     */
+    public String getFirstHost() {
+        return getHosts().get(0);
+    }
+
+    /**
+     * Returns the first host in the list
+     */
+    public List<String> getHosts() {
+        if (StringUtils.isBlank(this.host)) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(host.split(","));
+    }
+
+//    public int getPort() {
+//        if (port.split(",").length == 1) {
+//            return Integer.parseInt(port);
+//        }
+//        throw new IllegalArgumentException("Multiple hosts defined, use getPortForHost(String host) instead");
+//    }
+
+    /**
+     * Resolve the port for a specific hostname taken from host's comma-separated list,
+     * pairing it positionally with ports defined.
+     */
+    public int getPortForHost(String hostToMatch) {
+        var hosts = getHosts();
+        var ports = Arrays.asList(this.port.split(","));
+
+        if (hosts.size() != ports.size()) {
+            throw new IllegalArgumentException("Host and port must have same length");
+        }
+
+        for (int i = 0; i < hosts.size(); i++) {
+            if (hosts.get(i).trim().equalsIgnoreCase(hostToMatch.trim())) {
+                return Integer.parseInt(ports.get(i).trim());
+            }
+        }
+
+        throw new IllegalArgumentException("Hostname %s not found in service configuration".formatted(hostToMatch));
     }
 
 }

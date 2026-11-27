@@ -10,20 +10,21 @@
 
 package org.zowe.apiml.util.config;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @NoArgsConstructor
-public class ZosmfServiceConfiguration implements ServiceConfiguration {
+public class ZosmfServiceConfiguration extends ServiceConfiguration {
 
-    private String scheme;
-    private String host;
-    private int port;
     private String serviceId;
     private String contextRoot;
+
+    ZosmfServiceConfiguration(String scheme, String host, String port, String serviceId, String contextRoot) {
+        super(scheme, null, host, port, 1);
+        this.serviceId = serviceId;
+        this.contextRoot = contextRoot;
+    }
 
     @Override
     public boolean isStaticallyRegistred() {

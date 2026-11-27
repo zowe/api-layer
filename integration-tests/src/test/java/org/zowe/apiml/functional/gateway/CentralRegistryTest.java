@@ -151,7 +151,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
     @SneakyThrows
     private ValidatableResponse listEurekaApps() {
 
-        URI eurekaApps = new URL(discoveryConf.getScheme(), discoveryConf.getAdditionalHost(), discoveryConf.getPort(), "/eureka/apps")
+        URI eurekaApps = new URL(discoveryConf.getScheme(), discoveryConf.getAdditionalHost(), discoveryConf.getAdditionalPort(), "/eureka/apps")
             .toURI();
 
         return with().given()
@@ -167,8 +167,8 @@ class CentralRegistryTest implements TestWithStartedInstances {
         try {
             URI containers = new URL(
                 conf.getScheme(),
-                conf.getHost(),
-                conf.getPort(),
+                conf.getFirstHost(),
+                conf.getPortForHost(conf.getFirstHost()),
                 APIML_CONTAINER_PATH
             ).toURI();
 
@@ -228,7 +228,7 @@ class CentralRegistryTest implements TestWithStartedInstances {
 
         String query = String.format("%s?apiId=%s&serviceId=%s", nullToEmpty(apimlId), nullToEmpty(apiId), nullToEmpty(serviceId));
 
-        return new URL(conf.getScheme(), conf.getHost(), conf.getPort(), CENTRAL_REGISTRY_PATH + query)
+        return new URL(conf.getScheme(), conf.getFirstHost(), conf.getPortForHost(conf.getFirstHost()), CENTRAL_REGISTRY_PATH + query)
             .toURI();
     }
 

@@ -29,13 +29,19 @@ import static org.zowe.apiml.util.requests.Endpoints.ROUTED_SERVICE;
 @Slf4j
 public class ConfigReader {
 
-    public static final boolean IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+    public static final boolean IS_MODULITH_ENABLED;
 
     private static final String PASSWORD = "password";
     private static String configurationFile;
 
     static {
         configurationFile = "environment-configuration" + System.getProperty("environment.config", "") + ".yml";
+
+        if (configurationFile.contains("-modulith")) {
+             IS_MODULITH_ENABLED = true;
+        } else {
+            IS_MODULITH_ENABLED = Boolean.getBoolean("environment.modulith");
+        }
     }
 
     private static volatile EnvironmentConfiguration instance;
@@ -63,11 +69,11 @@ public class ConfigReader {
                         log.warn("Can't read service configuration from resource file, using default: http://localhost:10010", e);
                         Credentials credentials = new Credentials("user", "user");
                         GatewayServiceConfiguration gatewayServiceConfiguration
-                            = new GatewayServiceConfiguration("https", "localhost", null, 10010, 10010, 1, "10010", ROUTED_SERVICE, 20, "zosmf", 5);
-                        CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", 10010);
-                        ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", 10023, 1);
-                        DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost","localhost", 10011,10021, 1);
-                        DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", 10012, 1);
+                            = new GatewayServiceConfiguration("https", "localhost", null, "10010", 1, "10010", ROUTED_SERVICE, 20, "zosmf", 5);
+                        CentralGatewayServiceConfiguration centralGatewayServiceConfiguration = new CentralGatewayServiceConfiguration("https", "localhost", "10010");
+                        ZaasConfiguration zaasConfiguration = new ZaasConfiguration("https", "localhost", "10023", 1);
+                        DiscoveryServiceConfiguration discoveryServiceConfiguration = new DiscoveryServiceConfiguration("https", "eureka", "password", "localhost",null, "10011",null, 1);
+                        DiscoverableClientConfiguration discoverableClientConfiguration = new DiscoverableClientConfiguration("https", "ZOWEAPPL", "localhost", "10012", 1);
 
                         TlsConfiguration tlsConfiguration = TlsConfiguration.builder()
                             .keyAlias("localhost")
@@ -83,7 +89,7 @@ public class ConfigReader {
 
                         AuxiliaryUserList auxiliaryUserList = new AuxiliaryUserList("user,password");
 
-                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", 1443, "ibmzosmf", "");
+                        ZosmfServiceConfiguration zosmfServiceConfiguration = new ZosmfServiceConfiguration("https", "zosmf.acme.com", "1443", "ibmzosmf", "");
                         OidcConfiguration oidcConfiguration = new OidcConfiguration("okta","https://okta-dev.com", "","", "user", "user", "alt_user", "alt_user");
                         SafIdtConfiguration safIdtConfiguration = new SafIdtConfiguration(true);
 
@@ -113,8 +119,7 @@ public class ConfigReader {
                     configuration.getGatewayServiceConfiguration().setScheme(System.getProperty("gateway.scheme", configuration.getGatewayServiceConfiguration().getScheme()));
                     configuration.getGatewayServiceConfiguration().setHost(System.getProperty("gateway.host", configuration.getGatewayServiceConfiguration().getHost()));
                     configuration.getGatewayServiceConfiguration().setDvipaHost(System.getProperty("gateway.dvipaHost", configuration.getGatewayServiceConfiguration().getDvipaHost()));
-                    configuration.getGatewayServiceConfiguration().setPort(parseInt(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort()))));
-                    configuration.getGatewayServiceConfiguration().setExternalPort(parseInt(System.getProperty("gateway.externalPort", String.valueOf(configuration.getGatewayServiceConfiguration().getExternalPort()))));
+                    configuration.getGatewayServiceConfiguration().setPort(System.getProperty("gateway.port", String.valueOf(configuration.getGatewayServiceConfiguration().getPort())));
                     configuration.getGatewayServiceConfiguration().setInstances(parseInt(System.getProperty("gateway.instances", String.valueOf(configuration.getGatewayServiceConfiguration().getInstances()))));
                     configuration.getGatewayServiceConfiguration().setServicesEndpoint(System.getProperty("gateway.servicesEndpoint", configuration.getGatewayServiceConfiguration().getServicesEndpoint()));
                     configuration.getGatewayServiceConfiguration().setBucketCapacity(parseInt(System.getProperty("gateway.bucketCapacity", String.valueOf(configuration.getGatewayServiceConfiguration().getBucketCapacity()))));
@@ -127,54 +132,62 @@ public class ConfigReader {
                     Optional.ofNullable(config).ifPresent(c -> {
                             c.setScheme(System.getProperty("centralgateway.scheme", config.getScheme()));
                             c.setHost(System.getProperty("centralgateway.host", config.getHost()));
-                            c.setPort(parseInt(System.getProperty("centralgateway.port", String.valueOf(config.getPort()))));
+                            c.setPort(System.getProperty("centralgateway.port", String.valueOf(config.getPort())));
                         }
                     );
 
                     if (!IS_MODULITH_ENABLED) {
                         configuration.getZaasConfiguration().setScheme(System.getProperty("zaas.scheme", configuration.getZaasConfiguration().getScheme()));
                         configuration.getZaasConfiguration().setHost(System.getProperty("zaas.host", configuration.getZaasConfiguration().getHost()));
-                        configuration.getZaasConfiguration().setPort(parseInt(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort()))));
+                        configuration.getZaasConfiguration().setPort(System.getProperty("zaas.port", String.valueOf(configuration.getZaasConfiguration().getPort())));
                     }
                     configuration.getDiscoveryServiceConfiguration().setScheme(System.getProperty("discovery.scheme", configuration.getDiscoveryServiceConfiguration().getScheme()));
                     configuration.getDiscoveryServiceConfiguration().setUser(System.getProperty("discovery.user", configuration.getDiscoveryServiceConfiguration().getUser()));
                     configuration.getDiscoveryServiceConfiguration().setPassword(System.getProperty("discovery.password", configuration.getDiscoveryServiceConfiguration().getPassword()));
                     configuration.getDiscoveryServiceConfiguration().setHost(System.getProperty("discovery.host", configuration.getDiscoveryServiceConfiguration().getHost()));
                     configuration.getDiscoveryServiceConfiguration().setAdditionalHost(System.getProperty("discovery.additionalHost", configuration.getDiscoveryServiceConfiguration().getAdditionalHost()));
-                    configuration.getDiscoveryServiceConfiguration().setPort(parseInt(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort()))));
-                    configuration.getDiscoveryServiceConfiguration().setAdditionalPort(parseInt(System.getProperty("discovery.additionalPort", String.valueOf(configuration.getDiscoveryServiceConfiguration().getAdditionalPort()))));
+                    configuration.getDiscoveryServiceConfiguration().setPort(System.getProperty("discovery.port", String.valueOf(configuration.getDiscoveryServiceConfiguration().getPort())));
+                    configuration.getDiscoveryServiceConfiguration().setAdditionalPort(System.getProperty("discovery.additionalPort", configuration.getDiscoveryServiceConfiguration().getAdditionalPort() == null ? null : String.valueOf(configuration.getDiscoveryServiceConfiguration().getAdditionalPort())));
                     configuration.getDiscoveryServiceConfiguration().setInstances(parseInt(System.getProperty("discovery.instances", String.valueOf(configuration.getDiscoveryServiceConfiguration().getInstances()))));
 
-                    configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", String.valueOf(configuration.getAuxiliaryUserList().getValue())));
+                    if (configuration.getAuxiliaryUserList() != null) {
+                        configuration.getAuxiliaryUserList().setValue(System.getProperty("auxiliaryUserList.value", String.valueOf(configuration.getAuxiliaryUserList().getValue())));
+                    }
 
                     configuration.getApiCatalogServiceConfiguration().setUrl(System.getProperty("apicatalog.url", configuration.getApiCatalogServiceConfiguration().getUrl()));
                     configuration.getApiCatalogServiceConfiguration().setHost(System.getProperty("apicatalog.host", configuration.getApiCatalogServiceConfiguration().getHost()));
                     configuration.getApiCatalogServiceConfiguration().setInstances(parseInt(System.getProperty("apicatalog.instances", String.valueOf(configuration.getApiCatalogServiceConfiguration().getInstances()))));
                     configuration.getApiCatalogServiceConfiguration().setScheme(System.getProperty("apicatalog.scheme", configuration.getApiCatalogServiceConfiguration().getScheme()));
-                    configuration.getApiCatalogServiceConfiguration().setPort(parseInt(System.getProperty("apicatalog.port", String.valueOf(configuration.getApiCatalogServiceConfiguration().getPort()))));
+                    configuration.getApiCatalogServiceConfiguration().setPort(System.getProperty("apicatalog.port", String.valueOf(configuration.getApiCatalogServiceConfiguration().getPort())));
 
                     configuration.getDiscoverableClientConfiguration().setApplId(System.getProperty("discoverableclient.applId", configuration.getDiscoverableClientConfiguration().getApplId()));
                     configuration.getDiscoverableClientConfiguration().setHost(System.getProperty("discoverableclient.host", configuration.getDiscoverableClientConfiguration().getHost()));
                     configuration.getDiscoverableClientConfiguration().setInstances(parseInt(System.getProperty("discoverableclient.instances", String.valueOf(configuration.getDiscoverableClientConfiguration().getInstances()))));
                     configuration.getDiscoverableClientConfiguration().setScheme(System.getProperty("discoverableclient.scheme", configuration.getDiscoverableClientConfiguration().getScheme()));
-                    configuration.getDiscoverableClientConfiguration().setPort(parseInt(System.getProperty("discoverableclient.port", String.valueOf(configuration.getDiscoverableClientConfiguration().getPort()))));
+                    configuration.getDiscoverableClientConfiguration().setPort(System.getProperty("discoverableclient.port", String.valueOf(configuration.getDiscoverableClientConfiguration().getPort())));
 
-                    configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
-
-                    configuration.getOidcConfiguration().setProviderName(System.getProperty("oidc.providerName", String.valueOf(configuration.getOidcConfiguration().getProviderName())));
-                    configuration.getOidcConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getOidcConfiguration().getUser()));
-                    configuration.getOidcConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getOidcConfiguration().getPassword()));
-                    configuration.getOidcConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getOidcConfiguration().getAlternateUser()));
-                    configuration.getOidcConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getOidcConfiguration().getAlternatePassword()));
-                    configuration.getOidcConfiguration().setHost(System.getProperty("oidc.host", configuration.getOidcConfiguration().getHost()));
-                    configuration.getOidcConfiguration().setClientId(System.getProperty("oidc.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
-                    configuration.getOidcConfiguration().setClientSecret(System.getProperty("oidc.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
-                    var oidcProviderName = configuration.getOidcConfiguration().getProviderName();
-                    if (!("keycloak".equalsIgnoreCase(oidcProviderName) || "okta".equalsIgnoreCase(oidcProviderName) || "auth0".equalsIgnoreCase(oidcProviderName))) {
-                        throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", oidcProviderName));
+                    if (configuration.getCachingServiceConfiguration() != null) {
+                        configuration.getCachingServiceConfiguration().setUrl(System.getProperty("caching.url", configuration.getCachingServiceConfiguration().getUrl()));
                     }
 
-                    configuration.getSafIdtConfiguration().setEnabled(Boolean.parseBoolean(System.getProperty("safidt.enabled", String.valueOf(configuration.getSafIdtConfiguration().isEnabled()))));
+                    if (configuration.getOidcConfiguration() != null) {
+                        configuration.getOidcConfiguration().setProviderName(System.getProperty("oidc.providerName", String.valueOf(configuration.getOidcConfiguration().getProviderName())));
+                        configuration.getOidcConfiguration().setUser(System.getProperty("oidc.test.user", configuration.getOidcConfiguration().getUser()));
+                        configuration.getOidcConfiguration().setPassword(System.getProperty("oidc.test.pass", configuration.getOidcConfiguration().getPassword()));
+                        configuration.getOidcConfiguration().setAlternateUser(System.getProperty("oidc.test.alt_user", configuration.getOidcConfiguration().getAlternateUser()));
+                        configuration.getOidcConfiguration().setAlternatePassword(System.getProperty("oidc.test.alt_pass", configuration.getOidcConfiguration().getAlternatePassword()));
+                        configuration.getOidcConfiguration().setHost(System.getProperty("oidc.host", configuration.getOidcConfiguration().getHost()));
+                        configuration.getOidcConfiguration().setClientId(System.getProperty("oidc.client.id", String.valueOf(configuration.getOidcConfiguration().getClientId())));
+                        configuration.getOidcConfiguration().setClientSecret(System.getProperty("oidc.client.secret", String.valueOf(configuration.getOidcConfiguration().getClientSecret())));
+                        var oidcProviderName = configuration.getOidcConfiguration().getProviderName();
+                        if (!("keycloak".equalsIgnoreCase(oidcProviderName) || "okta".equalsIgnoreCase(oidcProviderName) || "auth0".equalsIgnoreCase(oidcProviderName))) {
+                            throw new IllegalArgumentException(String.format("Unsupported OIDC provider: %s", oidcProviderName));
+                        }
+                    }
+
+                    if (configuration.getSafIdtConfiguration() != null) {
+                        configuration.getSafIdtConfiguration().setEnabled(Boolean.parseBoolean(System.getProperty("safidt.enabled", String.valueOf(configuration.getSafIdtConfiguration().isEnabled()))));
+                    }
 
                     setZosmfConfigurationFromSystemProperties(configuration);
                     setTlsConfigurationFromSystemProperties(configuration);
@@ -198,12 +211,14 @@ public class ConfigReader {
     }
 
     private static void setZosmfConfigurationFromSystemProperties(EnvironmentConfiguration configuration) {
-        ZosmfServiceConfiguration zosmfConfiguration = configuration.getZosmfServiceConfiguration();
-        zosmfConfiguration.setHost(System.getProperty("zosmf.host", zosmfConfiguration.getHost()));
-        String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
-        zosmfConfiguration.setPort(parseInt(port));
-        zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));
-        zosmfConfiguration.setServiceId(System.getProperty("zosmf.serviceId", zosmfConfiguration.getServiceId()));
+        if (configuration.getZosmfServiceConfiguration() != null) {
+            ZosmfServiceConfiguration zosmfConfiguration = configuration.getZosmfServiceConfiguration();
+            zosmfConfiguration.setHost(System.getProperty("zosmf.host", zosmfConfiguration.getHost()));
+            String port = System.getProperty("zosmf.port", String.valueOf(zosmfConfiguration.getPort()));
+            zosmfConfiguration.setPort(port);
+            zosmfConfiguration.setScheme(System.getProperty("zosmf.scheme", zosmfConfiguration.getScheme()));
+            zosmfConfiguration.setServiceId(System.getProperty("zosmf.serviceId", zosmfConfiguration.getServiceId()));
+        }
     }
 
     private static char[] getSystemPropertyCharArray(String name, char[] defaultValue) {

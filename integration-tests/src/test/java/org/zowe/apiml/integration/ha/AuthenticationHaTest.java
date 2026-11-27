@@ -66,19 +66,19 @@ class AuthenticationHaTest {
                 assertIfLogged(jwt, true);
 
                 // Logout on any instance
-                SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayUrl(gatewayHosts[0], ROUTED_LOGOUT), jwt);
+                SecurityUtils.logoutOnGateway(SecurityUtils.getGatewayUrl(gatewayHosts.get(0), ROUTED_LOGOUT), jwt);
 
                 // Verify token is invalid in one or more Gateway and ZAAS instances. Do this twice
                 for (int i = 0; i < 2; i++) {
-                    assertIfGatewayLogged(jwt, false, gatewayHosts[0]);
+                    assertIfGatewayLogged(jwt, false, gatewayHosts.get(0));
                     // On Modulith setup ZAAS_CONF can be null
                     if (zaasHosts != null) {
-                        assertIfZaasLogged(jwt, false, zaasHosts[0]);
+                        assertIfZaasLogged(jwt, false, zaasHosts.get(0));
                     }
 
-                    assertIfGatewayLogged(jwt, false, gatewayHosts[1]);
-                    if (zaasHosts != null && zaasHosts.length > 1) {
-                        assertIfZaasLogged(jwt, false, zaasHosts[1]);
+                    assertIfGatewayLogged(jwt, false, gatewayHosts.get(1));
+                    if (zaasHosts != null && zaasHosts.size() > 1) {
+                        assertIfZaasLogged(jwt, false, zaasHosts.get(1));
                     }
                 }
 
@@ -108,8 +108,8 @@ class AuthenticationHaTest {
         }
     }
 
-    private String[] getHosts(ServiceConfiguration serviceConfiguration) {
-        return serviceConfiguration == null ? null : serviceConfiguration.getHost().split(",");
+    private List<String> getHosts(ServiceConfiguration serviceConfiguration) {
+        return serviceConfiguration == null ? null : serviceConfiguration.getHosts();
     }
 
 }
