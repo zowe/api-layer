@@ -126,7 +126,8 @@ class ApiDocControllerTest {
                         assertTrue(res.getBody().contains("<title>Api Change Log</title>"));
                     })
                     .verifyComplete();
-                assertEquals(0L, elapsed.toSeconds());
+                // CI load can push the diff rendering over one second; only guard against blocking.
+                assertTrue(elapsed.toSeconds() < 1L);
             }
 
         }

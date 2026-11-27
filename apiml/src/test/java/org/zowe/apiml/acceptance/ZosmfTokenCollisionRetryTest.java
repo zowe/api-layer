@@ -52,8 +52,16 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
     private static final String LOGIN_BASIC_AUTH = "Basic dXNlcjpwYXNz";
 
     private static final String USERNAME = "user";
-    private static final String JWT_COLLIDING = JWTTestUtils.createDummyZOSMFToken(USERNAME);
-    private static final String JWT_AFTER_RETRY = JWTTestUtils.createDummyZOSMFToken(USERNAME);
+
+    /**
+     * z/OSMF tokens carry only 1-second (iat) granularity. Create the colliding and the
+     * post-retry tokens in strictly different wall-clock seconds; when all tokens are
+     * created within the same second (class-load time), the gateway cannot tell the
+     * just-logged-out token from the fresh one and the retry keeps colliding - the
+     * test then flakes under CI load.
+     */
+    private String jwtColliding;
+    private String jwtAfterRetry;
 
     @Autowired
     @Qualifier("cacheManager")
@@ -64,8 +72,26 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
      * and after the test.
      */
     @BeforeEach
+    void setUp() throws InterruptedException {
+        var cache = cacheManager.getCache("zosmfAuthenticationEndpoint");
+        if (cache != null) {
+            cache.clear();
+        }
+
+        jwtColliding = JWTTestUtils.createDummyZOSMFToken(USERNAME);
+        long collidingSecond = System.currentTimeMillis() / 1000;
+        long deadline = System.currentTimeMillis() + 3_000;
+        while (System.currentTimeMillis() / 1000 <= collidingSecond) {
+            if (System.currentTimeMillis() > deadline) {
+                break; // never hang the suite; fall back to the old behavior
+            }
+            Thread.sleep(5);
+        }
+        jwtAfterRetry = JWTTestUtils.createDummyZOSMFToken(USERNAME);
+    }
+
     @AfterEach
-    void clearZosmfEndpointExistsCache() {
+    void tearDown() {
         var cache = cacheManager.getCache("zosmfAuthenticationEndpoint");
         if (cache != null) {
             cache.clear();
@@ -74,17 +100,17 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
 
     @Test
     void givenSecondLoginCollidesWithJustLoggedOutToken_whenRetryIsEnabled_thenItRecoversOnRetry() throws JsonProcessingException {
-        assertNotEquals(JWT_COLLIDING, JWT_AFTER_RETRY);
+        assertNotEquals(jwtColliding, jwtAfterRetry);
         var loginCallCount = new AtomicInteger();
-        mockZosmfAuthenticateEndpoint(List.of(JWT_COLLIDING, JWT_COLLIDING, JWT_AFTER_RETRY), loginCallCount);
+        mockZosmfAuthenticateEndpoint(List.of(jwtColliding, jwtColliding, jwtAfterRetry), loginCallCount);
 
         String firstToken = login().statusCode(SC_NO_CONTENT).extract().cookie(AUTH_COOKIE);
-        assertEquals(JWT_COLLIDING, firstToken);
+        assertEquals(jwtColliding, firstToken);
 
         logout(firstToken).statusCode(SC_NO_CONTENT);
 
         String secondToken = login().statusCode(SC_NO_CONTENT).extract().cookie(AUTH_COOKIE);
-        assertEquals(JWT_AFTER_RETRY, secondToken,
+        assertEquals(jwtAfterRetry, secondToken,
             "expected the retry to have landed on the non-colliding token from the next second z/OSMF call");
 
         assertEquals(3, loginCallCount.get(),
