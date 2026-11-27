@@ -1,7 +1,3 @@
-spring:
-    mvc:
-        pathmatch:
-            matchingStrategy: ant-path-matcher # used to resolve spring fox path matching issue
 apiml:
     service:
         serviceIpAddress: 127.0.0.1
