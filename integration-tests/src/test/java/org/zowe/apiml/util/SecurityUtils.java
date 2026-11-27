@@ -427,6 +427,12 @@ public class SecurityUtils {
     }
 
     public static String validOidcAccessToken(boolean userHasMappingDefined) {
+        if (System.getProperty("oidc.client.id", "").isBlank()) {
+            // Fork PRs receive no OIDC provider secrets: any test that needs a
+            // token from the external provider is aborted (skipped) instead of
+            // failing with a cryptic client error.
+            throw new org.opentest4j.TestAbortedException("OIDC provider credentials not available - skipping OIDC-dependent test");
+        }
         if (isKeycloakProvider()) {
             return validKeycloakToken(userHasMappingDefined);
         } else if (isOktaProvider()) {
@@ -611,6 +617,12 @@ public class SecurityUtils {
     }
 
     public static String expiredOidcAccessToken() {
+        if (System.getProperty("oidc.client.id", "").isBlank()) {
+            // Fork PRs receive no OIDC provider secrets: any test that needs a
+            // token from the external provider is aborted (skipped) instead of
+            // failing with a cryptic client error.
+            throw new org.opentest4j.TestAbortedException("OIDC provider credentials not available - skipping OIDC-dependent test");
+        }
         if (isOktaProvider()) {
             return expiredOktaAccessToken();
         } else if (isKeycloakProvider()) {

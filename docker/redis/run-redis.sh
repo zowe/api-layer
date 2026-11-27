@@ -19,6 +19,7 @@ log() {
 createFile() {
     log "Creating $2"
     sed -e "s|{APIML_VERSION}|${APIML_VERSION}|g" \
+        -e "s|{APIML_IMAGE_PREFIX}|${APIML_IMAGE_PREFIX}|g" \
         -e "s|{MOCK_ZOSMF_HOST}|${MOCK_ZOSMF_HOST}|g" \
         -e "s|{SENTINEL}|${SENTINEL}|g" \
         -e "s|{REDIS_MASTER_HOST}|${REDIS_MASTER_HOST}|g" \
@@ -91,13 +92,14 @@ SENTINEL="false"
 TLS="false"
 LINUX="false"
 WHAT_IF="false"
-while getopts slta:W arg
+while getopts slta:i:W arg
 do
     case "${arg}" in
         s) SENTINEL="true";;
         l) LINUX="true";;
         t) TLS="true";;
         a) APIML_VERSION="${OPTARG}";;
+        i) APIML_IMAGE_PREFIX="${OPTARG}";;
         W) WHAT_IF="true"
     esac
 done
@@ -109,6 +111,10 @@ fi
 
 if [ -z "${APIML_VERSION}" ]; then
     APIML_VERSION="latest"
+fi
+
+if [ -z "${APIML_IMAGE_PREFIX}" ]; then
+    APIML_IMAGE_PREFIX="ghcr.io/zowe"
 fi
 
 if [ "${TLS}" == "true" ]; then

@@ -144,6 +144,11 @@ task runLocalIntegrationTests(type: Test) {
             'MultipleRegistrationsTest',
             'InfinispanJGroupStabilityTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
     outputs.upToDateWhen { false }
 }
@@ -167,6 +172,11 @@ task runAllIntegrationTestsNormal(type: Test) {
             'InfinispanJGroupStabilityTest'
         )
 
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 }
 
@@ -225,6 +235,11 @@ task runAllIntegrationTestsForZoweNonHaTestingOnZos(type: Test) {
             'DiscoveryBasicAuthTest',
             'zOSMFEncodingTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 
     debugOptions {
@@ -275,6 +290,11 @@ task runAllIntegrationTestsForZoweHaTestingOnZos(type: Test) {
             'DiscoveryBasicAuthTest',
             'zOSMFEncodingTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 
     debugOptions {
@@ -328,6 +348,11 @@ task runAllIntegrationTestsForZoweModulithNonHaTestingOnZos(type: Test) {
             'DiscoveryBasicAuthTest',
             'zOSMFEncodingTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 
     debugOptions {
@@ -382,6 +407,11 @@ task runAllIntegrationTestsForZoweModulithHaTestingOnZos(type: Test) {
             'DiscoveryBasicAuthTest',
             'zOSMFEncodingTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 
     debugOptions {
@@ -416,6 +446,11 @@ task runAllIntegrationTestsForZoweTesting(type: Test) {
             'NotForMainframeTest',
             'InfinispanJGroupStabilityTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
     outputs.upToDateWhen { false }
 }
@@ -448,6 +483,11 @@ task runCITests(type: Test) {
             'MultipleRegistrationsTest',
             'InfinispanJGroupStabilityTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 }
 
@@ -487,6 +527,11 @@ task runContainerModulithTests(type: Test) {
             'InfinispanJGroupStabilityTest',
             'DiscoveryBasicAuthTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 }
 
@@ -523,6 +568,11 @@ task runContainerTests(type: Test) {
             'InfinispanJGroupStabilityTest',
             'DiscoveryBasicAuthTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 }
 
@@ -575,6 +625,11 @@ task runBaseTests(type: Test) {
             'MultipleRegistrationsTest',
             'InfinispanJGroupStabilityTest'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 }
 
@@ -681,6 +736,11 @@ task runZaasTest(type: Test) {
             'ZaasTest',
             'OidcOauth2Test'
         )
+        if (!System.getProperty('oidc.client.id', '')) {
+            // Fork PRs do not receive OIDC provider secrets - the
+            // OIDC tests cannot reach the external provider there.
+            excludeTags 'OidcOauth2Test'
+        }
     }
 }
 
