@@ -66,7 +66,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
                 .when()
                 .get(getDiscoveryUriWithPath("/application/info"))
                 .then()
-                .statusCode(is(org.apache.http.HttpStatus.SC_OK));
+                .statusCode(is(org.apache.hc.core5.http.HttpStatus.SC_OK));
         }
 
         @Test
@@ -75,7 +75,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
                 .when()
                 .get(getDiscoveryUriWithPath("/application/health"))
                 .then()
-                .statusCode(is(org.apache.http.HttpStatus.SC_OK));
+                .statusCode(is(org.apache.hc.core5.http.HttpStatus.SC_OK));
         }
     }
 
@@ -86,7 +86,7 @@ class HttpSecuredEndpointTest extends DiscoveryFunctionalTest {
             .when()
             .get(getDiscoveryUriWithPath(path))
             .then()
-            .statusCode(is(org.apache.http.HttpStatus.SC_UNAUTHORIZED))
+            .statusCode(is(org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED))
             .header(HttpHeaders.WWW_AUTHENTICATE, containsString(DISCOVERY_REALM));
     }
 

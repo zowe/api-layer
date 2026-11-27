@@ -35,8 +35,8 @@ import java.nio.channels.ClosedChannelException;
 import java.time.Duration;
 
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_OK;
-import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
+import static org.apache.hc.core5.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.zowe.apiml.constants.ApimlConstants.HTTP_CLIENT_USE_CLIENT_CERTIFICATE;

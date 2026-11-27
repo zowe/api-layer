@@ -1,7 +1,11 @@
 dependencies {
     implementation libs.apache.commons.lang3
     implementation libs.apache.commons.text
-    implementation libs.eureka.jersey.client
+    implementation(libs.eureka.jersey.client) {
+        exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+        exclude group: 'org.apache.httpcomponents', module: 'httpcore'
+        exclude group: 'org.apache.httpcomponents', module: 'httpmime'
+    }
     implementation libs.http.client5
     implementation libs.guava
     implementation libs.spring.cloud.commons

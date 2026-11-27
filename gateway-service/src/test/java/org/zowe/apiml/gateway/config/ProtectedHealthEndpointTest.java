@@ -11,7 +11,7 @@
 package org.zowe.apiml.gateway.config;
 
 import io.restassured.RestAssured;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;

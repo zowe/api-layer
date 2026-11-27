@@ -33,7 +33,7 @@ import org.zowe.apiml.zaas.ZaasApplication;
 
 import static io.restassured.RestAssured.config;
 import static io.restassured.RestAssured.given;
-import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
+import static org.apache.hc.core5.http.HttpStatus.SC_UNAUTHORIZED;
 import static org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
