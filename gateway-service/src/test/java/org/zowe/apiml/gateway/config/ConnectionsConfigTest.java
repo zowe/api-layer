@@ -29,9 +29,11 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.http.server.reactive.SslInfo;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
@@ -86,9 +88,21 @@ import static org.mockito.Mockito.when;
 
 class ConnectionsConfigTest {
 
+    /**
+     * Boot 4.2 no longer boots a nested {@code @SpringBootTest} class as the application's
+     * configuration source, so its own {@code @ComponentScan} is ignored. Reference this
+     * static configuration via {@code classes = ...} to keep the scan working.
+     */
+    @Configuration
+    @ComponentScan(
+        basePackages = "org.zowe.apiml.gateway",
+        excludeFilters = @ComponentScan.Filter(type = FilterType.ANNOTATION, classes = TestConfiguration.class)
+    )
+    static class GatewayTestComponentScan {
+    }
+
     @Nested
-    @SpringBootTest
-    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @SpringBootTest(classes = {ConnectionsConfigTest.GatewayTestComponentScan.class})
     @ActiveProfiles("test")
     class WhenCreateEurekaJerseyClientBuilder {
 
@@ -103,8 +117,7 @@ class ConnectionsConfigTest {
     }
 
     @Nested
-    @SpringBootTest
-    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
+    @SpringBootTest(classes = {ConnectionsConfigTest.GatewayTestComponentScan.class})
     @ActiveProfiles("test")
     class WhenInitializeEurekaClient {
 
@@ -432,9 +445,9 @@ class ConnectionsConfigTest {
 
     @Nested
     @SpringBootTest(
+        classes = {ConnectionsConfigTest.GatewayTestComponentScan.class},
         properties = {"apiml.service.corsEnabled=true"}
     )
-    @ComponentScan(basePackages = "org.zowe.apiml.gateway")
     @ActiveProfiles("test")
     class GivenCorsEnabled {
 
