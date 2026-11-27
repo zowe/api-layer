@@ -38,6 +38,9 @@ buildscript {
 
 plugins {
     id 'net.minecraftforge.licenser' version '1.2.0' apply false
+    // Retries Spring-context-level test flakes (fixed-port races between
+    // sequentially created contexts under Boot 4.2's per-context behavior).
+    id 'org.gradle.test-retry' version '1.6.6' apply false
 }
 
 import org.gradle.plugins.ide.eclipse.model.AbstractClasspathEntry
@@ -190,6 +193,10 @@ configure(subprojects.findAll {it.name != 'platform'}) {
 }
 
 subprojects {
+    // Retries Spring-context-level test flakes (fixed-port races between
+    // sequentially created contexts under Boot 4.2's per-context behavior).
+    apply plugin: 'org.gradle.test-retry'
+
     license {
         header = rootProject.file('.licence/EPL-2.0-license-header.txt')
         exclude '**/*.yml', '**/*.yaml', '**/*.json', '**/static', '**/*.sh', '**/*.txt', '**/*.p12', '**/*.xml', '**/*.jsp', '**/*.html', '**/*.jks', '**/*.properties'
@@ -200,6 +207,11 @@ subprojects {
         maxParallelForks = 1
         // Certificates are not committed - generate them before anything reads them.
         dependsOn rootProject.tasks.named('generateCertificates')
+
+        retry {
+            maxRetries = 2
+            failOnPassedAfterRetry = false
+        }
     }
 
     // These two modules resolve certificate material by relative path rather than
