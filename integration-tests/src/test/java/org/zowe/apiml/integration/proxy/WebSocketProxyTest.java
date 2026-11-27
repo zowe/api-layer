@@ -35,6 +35,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -112,6 +113,23 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
     private WebSocketSession appendingWebSocketSession(String url, WebSocketHttpHeaders headers, StringBuilder response, int countToNotify)
         throws Exception {
+        return webSocketSession(url, headers, appendResponseHandler(response, countToNotify));
+    }
+
+    private CloseStatus rejectedWebSocketSession(String url, WebSocketHttpHeaders headers) throws Exception {
+        var closed = new CompletableFuture<CloseStatus>();
+        try (var session = webSocketSession(url, headers, new TextWebSocketHandler() {
+            @Override
+            public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+                closed.complete(status);
+            }
+        })) {
+            return closed.get(WAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    private WebSocketSession webSocketSession(String url, WebSocketHttpHeaders headers, TextWebSocketHandler handler)
+        throws Exception {
         var wsContainer = ContainerProvider.getWebSocketContainer();
         wsContainer.setDefaultMaxTextMessageBufferSize(Integer.MAX_VALUE);
         wsContainer.setDefaultMaxBinaryMessageBufferSize(Integer.MAX_VALUE);
@@ -121,7 +139,7 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
         client.setSslContext(HttpClientUtils.ignoreSslContext());
         URI uri = UriComponentsBuilder.fromUriString(url).build().encode().toUri();
-        return client.execute(appendResponseHandler(response, countToNotify), headers, uri).get(30000, TimeUnit.MILLISECONDS);
+        return client.execute(handler, headers, uri).get(30000, TimeUnit.MILLISECONDS);
     }
 
 
@@ -179,16 +197,10 @@ class WebSocketProxyTest implements TestWithStartedInstances {
                     @Test
                     void whenPathIsNotCorrect() throws Exception {
                         String path = "/discoverableclient/ws/v1/bad";
-                        final StringBuilder response = new StringBuilder();
-                        appendingWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS, response, 1);
+                        var status = rejectedWebSocketSession(discoverableClientGatewayUrl(path), VALID_AUTH_HEADERS);
 
-                        synchronized (response) {
-                            response.wait(WAIT_TIMEOUT_MS);
-                        }
-
-                        assertEquals(0, response.toString().indexOf("CloseStatus[code=1011,"), "" +
-                            "Expected response with `CloseStatus[code=1011,`, but was `" + response + "`"
-                        );
+                        assertEquals(1011, status.getCode());
+                        assertTrue(status.getReason().contains("[404]"), "Expected the backend's 404 in the close reason: " + status);
                     }
 
                     @Test
@@ -240,17 +252,9 @@ class WebSocketProxyTest implements TestWithStartedInstances {
 
                 @Test
                 void returnError() throws Exception {
-                    final StringBuilder response = new StringBuilder();
+                    var status = rejectedWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_UPPERCASE), INVALID_AUTH_HEADERS);
 
-                    WebSocketSession session = appendingWebSocketSession(discoverableClientGatewayUrl(DISCOVERABLE_WS_UPPERCASE), INVALID_AUTH_HEADERS, response, 1);
-
-                    session.sendMessage(new TextMessage("hello world!"));
-                    synchronized (response) {
-                        response.wait(WAIT_TIMEOUT_MS);
-                    }
-
-                    assertEquals("CloseStatus[code=1003, reason=Invalid login credentials]", response.toString());
-                    session.close();
+                    assertEquals(new CloseStatus(1003, "Invalid login credentials"), status);
                 }
 
             }

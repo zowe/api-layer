@@ -199,6 +199,9 @@ allprojects { root ->
         if (sonarResolver == null) {
             return
         }
+        // This project replaces an external dependency through resolution substitution, so
+        // it is not necessarily visible in the declared ProjectDependency graph below.
+        sonarResolver.dependsOn(":tomcat-websocket-patch:compileJava")
         def visited = new LinkedHashSet<String>()
         def queue = new ArrayDeque<String>()
         def startConfigs = ['api', 'implementation', 'testImplementation', 'testFixturesImplementation']
