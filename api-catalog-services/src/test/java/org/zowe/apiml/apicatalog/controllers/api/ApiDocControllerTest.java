@@ -127,7 +127,7 @@ class ApiDocControllerTest {
                     })
                     .verifyComplete();
                 // CI load can push the diff rendering over one second; only guard against blocking.
-                assertTrue(elapsed.toSeconds() < 5L);
+                assertTrue(elapsed.toSeconds() < 1L);
             }
 
         }
