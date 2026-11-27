@@ -10,7 +10,7 @@
 
 package org.zowe.apiml.apicatalog.swagger;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 import io.swagger.v3.oas.models.Paths;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -127,7 +127,7 @@ public class ApiDocRetrievalServiceLocal {
                 .openapiJson(null, SLASH, Locale.getDefault())
                 .map(String::new)
                 .map(content -> ApiDocInfo.builder().local(true).apiInfo(apiInfo).apiDocContent(content).build());
-        } catch (JsonProcessingException jpe) {
+        } catch (JacksonException jpe) {
             log.debug("Cannot process API doc", jpe);
             throw new ApiDocNotFoundException("Cannot obtain API doc for " + serviceId, jpe);
         }
