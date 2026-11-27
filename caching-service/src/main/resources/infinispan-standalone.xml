@@ -1,0 +1,17 @@
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:16.1 https://infinispan.org/schemas/infinispan-config-16.1.xsd"
+    xmlns="urn:infinispan:config:16.1">
+    <cache-container name="default" statistics="true">
+        <serialization marshaller="org.infinispan.jboss.marshalling.commons.GenericJBossMarshaller">
+            <allow-list>
+                <regex>org.zowe.apiml.caching.*</regex>
+                <regex>org.zowe.apiml.security.common.token.*</regex>
+                <regex>com.nimbusds.jwt.*</regex>
+                <regex>com.nimbusds.jose.*</regex>
+                <regex>java.util.*</regex>
+                <regex>java.security.cert.*</regex>
+            </allow-list>
+        </serialization>
+    </cache-container>
+</infinispan>
