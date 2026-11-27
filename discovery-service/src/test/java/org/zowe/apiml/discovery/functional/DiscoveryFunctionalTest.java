@@ -25,7 +25,10 @@ import org.zowe.apiml.util.config.TestConfig;
     classes = DiscoveryServiceApplication.class,
     webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT
 )
-@DirtiesContext
+// Boot 4.2 creates a separate context per @Nested test class; with the fixed
+// DEFINED_PORT below, the previous context must be closed before the next one
+// binds the port again.
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 @Import(TestConfig.class)
 @ActiveProfiles("test")
 public abstract class DiscoveryFunctionalTest {
