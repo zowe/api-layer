@@ -69,29 +69,61 @@ Results
 
 ### Redis
 
-Redis is an optional backend for the standalone Caching Service running off z/OS.
-The service requires `caching.storage.redis.masterNodeUri` when Redis storage is enabled.
-If your deployment previously relied on the bundled Redis settings, provide the master URI before upgrading.
-For password authentication, use `username:password@host:port` or `password@host:port` for the Redis `default` user.
-Supply the URI through external configuration or the `CACHING_STORAGE_REDIS_MASTERNODEURI` environment variable.
+Redis is another valid option for the storage to use. The main goal for Redis is the running of the storage, and the Caching Service off platform. 
 
-```yaml
-caching:
-    storage:
-        mode: redis
-        redis:
-            masterNodeUri: ${REDIS_MASTER_URI}
-```
+For development the repository contains docker compose scripts. There are two setups provided.  
 
-TLS is enabled by default and uses the service's configured key store and trust store.
-For Sentinel deployments, also enable `caching.storage.redis.sentinel.enabled` and supply
-at least one entry in `caching.storage.redis.sentinel.nodes`. For password authentication,
-use `password@host:port` for each node. Set `caching.storage.redis.sentinel.masterInstance`
-if your Sentinel master name differs from `redismaster`.
+1) redis/docker-compose-replica.yml - Starts two containers in master/replica setup.
+2) redis/docker-compose-replica-tls - Starts two containers in master/replica setup with TLS enabled.
+3) redis/docker-compose-sentinel.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails.
+4) redis/docker-compose-sentinel-tls.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails. TLS is enabled.
 
-For local development, [`docker/redis/run-redis.sh`](../docker/redis/README.md) configures
-Redis and the Caching Service for replica or Sentinel setups, with optional TLS.
-It supplies the fixture credentials through Docker Compose environment variables.
+The first setup works well for testing. In order to properly configure the Caching Service following configuration is needed either in application.yml in the Caching Service or passed in via command line parameters.
+Set `caching.storage.redis.masterNodeUri` to the Redis master URI. You can also set it using
+the `CACHING_STORAGE_REDIS_MASTERNODEURI` environment variable. The Docker Compose fixtures
+provide their own connection settings.
+
+    caching:
+        storage:
+            mode: redis
+            redis:
+                masterNodeUri: username:password@localhost:6379
+                
+ In order to enable TLS, the following configuration is required:
+ 
+    caching:
+         storage:
+             mode: redis
+             redis:
+                 masterNodeUri: username:password@localhost:6379
+                 ssl:
+                     enabled: true
+                     keyStore: ${server.ssl.keyStore}
+                     keyStorePassword: ${server.ssl.keyStorePassword}
+                     trustStore: ${server.ssl.trustStore}
+                     trustStorePassword: ${server.ssl.trustStorePassword}
+                 
+ In order to connect to sentinel, the following configuration can be used:
+ Set at least one entry in `caching.storage.redis.sentinel.nodes` when Sentinel is enabled.
+ 
+     caching:
+         storage:
+             mode: redis
+             redis:
+                 masterNodeUri: username:password@localhost:6379
+                 sentinel:
+                     enabled: true
+                     masterInstance: redismaster
+                     nodes:
+                         - password@localhost:26379
+                         - password@localhost:26380
+                         - password@localhost:26381
+                           
+The library used to connect to Redis, Lettuce, uses node registration information to automatically discover instances downstream from
+the master (in master/replica topology) or the sentinels (in sentinel topology). This means the IP address used to connect from the Caching Service
+is the IP address used to register, which with the above docker compose files is the container IP address. This means the Caching Service tries to
+connect using the container IP address, which does not resolve properly. The ports are published, however, so if the container IP addresses are aliased
+to localhost, the Caching Service can connect. Another option, if running on Linux, is to use a host network in the docker compose file.
 
 ### Additional Storage Support
 
