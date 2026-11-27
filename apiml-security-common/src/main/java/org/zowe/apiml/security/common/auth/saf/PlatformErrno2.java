@@ -199,7 +199,7 @@ public enum PlatformErrno2 {
     JRTLSAddressLengthInvalid("JRTLSAddressLengthInvalid", 0x00cb, "An invalid address length has been passed for task level security"),  // NOSONAR
     JRTLSCallerIsIPT("JRTLSCallerIsIPT", 0x00cc, "The calling task is IPT"),  // NOSONAR
     JRTLSNotDoneByOE("JRTLSNotDoneByOE", 0x00cd, "Task level security already exists, but it was not created by a previous call to pthread_security_np"),  // NOSONAR
-    JRNoPtraceTaskSec("JRNoPtraceTaskSec", 0x00ce, "Ptrace is active in the caller’s address space, task level security not allowed concurrently with Ptrace"),  // NOSONAR
+    JRNoPtraceTaskSec("JRNoPtraceTaskSec", 0x00ce, "Ptrace is active in the caller's address space, task level security not allowed concurrently with Ptrace"),  // NOSONAR
     JRSAFResourceUndefined("JRSAFResourceUndefined", 0x00cf, "The resource specified by the caller is not defined to RACF"),  // NOSONAR
     JRSAFParmListErr("JRSAFParmListErr", 0x00d0, "A SAF service was unsuccessful because an error was detected by SAF in the parameter list"),  // NOSONAR
     JRSAFNoUUIDtoUser("JRSAFNoUUIDtoUser", 0x00d1, "No mapping to a RACF userid exists for the DCE UUID specified"),  // NOSONAR
@@ -914,7 +914,7 @@ public enum PlatformErrno2 {
     JRDataNotAvail("JRDataNotAvail", 0x042a, "No data exists to return to the caller"),  // NOSONAR
     JRReqDenied("JRReqDenied", 0x042b, "The oeifconfig request is not accepted"),  // NOSONAR
     JRBadMtuSize("JRBadMtuSize", 0x042c, "The specified MTU size for the interface is incorrect"),  // NOSONAR
-    JRNotOsa("JRNotOsa", 0x042d, "Current® interface is not an OSA adapter"),  // NOSONAR
+    JRNotOsa("JRNotOsa", 0x042d, "Current (R) interface is not an OSA adapter"),  // NOSONAR
     JRBadOsaPort("JRBadOsaPort", 0x042e, "Incorrect OSA port number specified"),  // NOSONAR
     JRJsrCIErr("JRJsrCIErr", 0x042f, "A request to convert JCL to SWA control blocks failed"),  // NOSONAR
     JRJsrRsErr("JRJsrRsErr", 0x0430, "A request to create a JSAB for a Forked space failed"),  // NOSONAR
@@ -956,7 +956,7 @@ public enum PlatformErrno2 {
     JRCertificate("JRCertificate", 0x0454, "The security certificate was either not specified or the length was not valid"),  // NOSONAR
     JRCwdPLusFileName("JRCwdPLusFileName", 0x0455, "The combined length of the CWD specified in the INHE and the filename parameter exceeded 1023 bytes"),  // NOSONAR
     JRFileChangedDuringLoad("JRFileChangedDuringLoad", 0x0456, "The file or its attributes changed while the file was in the process of being loaded"),  // NOSONAR
-    JRSecurityEnv("JRSecurityEnv", 0x0457, "The syscall is prohibited with the caller’s current security environment"),  // NOSONAR
+    JRSecurityEnv("JRSecurityEnv", 0x0457, "The syscall is prohibited with the caller's current security environment"),  // NOSONAR
     JRStorNotAvail("JRStorNotAvail", 0x0458, "An address was specified which is not available"),  // NOSONAR
     JRNotSegment("JRNotSegment", 0x0459, "A location specified or generated is not on a segment boundary"),  // NOSONAR
     JRMmapTypeMismatch("JRMmapTypeMismatch", 0x045a, "A request specified the MAP_MEGA option but was already mapped without the option or did not specify the MAP_MEGA option but was already mapped with that option"),  // NOSONAR
