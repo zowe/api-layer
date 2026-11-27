@@ -28,6 +28,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.zowe.apiml.cache.PATRevocationStore;
 import org.zowe.apiml.message.log.ApimlLogger;
 import org.zowe.apiml.models.AccessTokenContainer;
+import org.zowe.apiml.security.common.error.AccessTokenInvalidExpirationException;
 import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
 import org.zowe.apiml.security.common.token.QueryResponse;
 import org.zowe.apiml.zaas.cache.CachingServiceClient;
@@ -371,15 +372,14 @@ class ApimlAccessTokenProviderTest {
     }
 
     @Test
-    void givenUserAndValidExpirationTest_thenTokenIsCreated() {
+    void givenUserAndScopesButInvalidExpiration_thenExceptionIsThrown() {
         Set<String> scopes = new HashSet<>();
         scopes.add("Service1");
         scopes.add("Service2");
-        when(as.createLongLivedJwtToken("user", 55, scopes)).thenReturn("token");
-        String token = accessTokenProvider.issueToken("user", 55, scopes);
-        assertNotNull(token);
-        assertEquals("token", token);
+        AccessTokenInvalidExpirationException accessTokenInvalidExpirationException = assertThrows(AccessTokenInvalidExpirationException.class, () -> accessTokenProvider.issueToken("user", -2, scopes));
+        assertEquals("The expiration time must be greater than zero. The supplied value was -2.", accessTokenInvalidExpirationException.getMessage());
     }
+
 
     @Test
     void givenScopedToken_whenScopeIsListed_thenReturnValid() {

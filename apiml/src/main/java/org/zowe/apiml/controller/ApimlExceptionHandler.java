@@ -28,6 +28,7 @@ import org.zowe.apiml.passticket.UsernameNotProvidedException;
 import org.zowe.apiml.product.eureka.DomainAllowListMetadataException;
 import org.zowe.apiml.product.logging.annotations.InjectApimlLogger;
 import org.zowe.apiml.security.common.error.AccessTokenInvalidBodyException;
+import org.zowe.apiml.security.common.error.AccessTokenInvalidExpirationException;
 import org.zowe.apiml.security.common.error.AccessTokenMissingBodyException;
 import org.zowe.apiml.security.common.error.AccessTokenTooManyScopesException;
 import org.zowe.apiml.security.common.error.ErrorType;
@@ -54,6 +55,13 @@ public class ApimlExceptionHandler extends GatewayExceptionHandler {
     public ApimlExceptionHandler(ObjectMapper mapper, MessageService messageService,
                                  LocaleContextResolver localeContextResolver) {
         super(mapper, messageService, localeContextResolver);
+    }
+
+    @ExceptionHandler(AccessTokenInvalidExpirationException.class)
+    public Mono<Void> handleAccessTokenInvalidExpirationException(ServerWebExchange exchange, AccessTokenInvalidExpirationException
+        ex) {
+        log.debug("Invalid AccessToken expiration value, status: {}, message: {}", SC_BAD_REQUEST, ex.getMessage());
+        return setBodyResponse(exchange, SC_BAD_REQUEST, "org.zowe.apiml.accessToken.invalidExpiration", ex.getExpirationTime());
     }
 
     @ExceptionHandler(AccessTokenInvalidBodyException.class)
