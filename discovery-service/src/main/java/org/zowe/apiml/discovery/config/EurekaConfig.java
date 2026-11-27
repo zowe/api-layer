@@ -35,6 +35,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.zowe.apiml.discovery.ApimlInstanceRegistry;
 import org.zowe.apiml.discovery.eureka.RefreshablePeerEurekaNodes;
+import org.zowe.apiml.discovery.registration.RegistrantNetworkIdentityVerifier;
 import org.zowe.apiml.product.eureka.web.MetadataFilterService;
 
 import javax.net.ssl.SSLContext;
@@ -86,11 +87,12 @@ public class EurekaConfig {
         EurekaServerHttpClientFactory eurekaServerHttpClientFactory,
         InstanceRegistryProperties instanceRegistryProperties,
         ApplicationContext appCntx,
-        MetadataFilterService metadataFilterService
+        MetadataFilterService metadataFilterService,
+        RegistrantNetworkIdentityVerifier registrantNetworkIdentityVerifier
     ) {
         eurekaClient.getApplications(); // force initialization
 
-        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new Tuple(tuple), metadataFilterService);
+        return new ApimlInstanceRegistry(serverConfig, clientConfig, serverCodecs, eurekaClient, eurekaServerHttpClientFactory, instanceRegistryProperties, appCntx, new Tuple(tuple), metadataFilterService, registrantNetworkIdentityVerifier);
     }
 
     @Bean

@@ -48,6 +48,7 @@
 # - ZWE_configs_apiml_discovery_password - Password for Eureka basic auth (defaults to "password" when verifyCertificates is DISABLED)
 # - ZWE_configs_apiml_security_domains_onlyWarn - Only log a warning when a URL is not in allowed domains (default: false)
 # - ZWE_configs_apiml_security_domains_portValidationDisabled - Do not validate the port against allowed domains (default: false)
+# - ZWE_configs_apiml_security_domains_networkIdentityValidationDisabled - Do not verify that the registered hostname resolves to the address of the registrant (default: false)
 
 # JAR file location
 if [ -n "${LAUNCH_COMPONENT}" ]; then
@@ -115,6 +116,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${DISCOVERY_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.auth.cookieProperties.cookieName=${cookieName:-apimlAuthenticationToken} \
     -Dapiml.security.domains.onlyWarn=${ZWE_configs_apiml_security_domains_onlyWarn:-false} \
     -Dapiml.security.domains.portValidationDisabled=${ZWE_configs_apiml_security_domains_portValidationDisabled:-false} \
+    -Dapiml.security.domains.networkIdentityValidationDisabled=${ZWE_configs_apiml_security_domains_networkIdentityValidationDisabled:-false} \
     -Dapiml.security.ssl.nonStrictVerifySslCertificatesOfServices=${nonStrictVerifySslCertificatesOfServices:-false} \
     -Dapiml.security.ssl.verifySslCertificatesOfServices=${verifySslCertificatesOfServices:-false} \
     -Dapiml.service.hostname=${ZWE_haInstance_hostname:-localhost} \

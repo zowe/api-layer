@@ -102,4 +102,18 @@ messages:
       reason: "The service is onboarded with the httpBasicPassTicket authentication scheme but does not provide an APPLID, which is required to generate PassTickets."
       action: "Configure the 'authentication.applid' parameter of the httpBasicPassTicket authentication scheme in the service metadata."
 
+    - key: org.zowe.apiml.discovery.registration.networkIdentityMismatch
+      number: ZWEAD708
+      type: ERROR
+      text: "Registration of instance '%s' was rejected because the hostname '%s' does not resolve to the address '%s' the registration was sent from"
+      reason: "A service can only register with the hostname of the host it runs on. Otherwise it could impersonate another service."
+      action: "Set the hostname of the service to a name which resolves to the address of the host where the service runs. If the registration passes through a proxy or NAT, set 'apiml.security.domains.networkIdentityValidationDisabled' to true."
+
+    - key: org.zowe.apiml.discovery.registration.replicationNotFromPeer
+      number: ZWEAD709
+      type: ERROR
+      text: "Replicated registration of instance '%s' was rejected because it was sent from '%s', which is not a Discovery Service peer"
+      reason: "Replicated registrations are accepted only from the Discovery Service instances configured as peers."
+      action: "Verify the list of Discovery Service peers. If the replication passes through a proxy or NAT, set 'apiml.security.domains.networkIdentityValidationDisabled' to true."
+
     # Legacy messages

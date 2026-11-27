@@ -56,6 +56,7 @@
 # - ZWE_configs_apiml_security_domains_allowAnyApiDocUrl
 # - ZWE_configs_apiml_security_domains_onlyWarn
 # - ZWE_configs_apiml_security_domains_portValidationDisabled
+# - ZWE_configs_apiml_security_domains_networkIdentityValidationDisabled
 # - ZWE_configs_apiml_security_enableStrictUrlValidation
 # - ZWE_configs_apiml_security_jwtVerificationKeyAliases
 # - ZWE_configs_apiml_security_x509_acceptForwardedCert
@@ -354,6 +355,7 @@ _BPX_JOBNAME=${ZWE_zowe_job_prefix}${APIML_CODE} ${JAVA_BIN_DIR}java \
     -Dapiml.security.domains.allowAnyApiDocUrl=${ZWE_components_api_catalog_apiml_security_domains_allowAnyApiDocUrl:-${ZWE_configs_apiml_security_domains_allowAnyApiDocUrl:-false}} \
     -Dapiml.security.domains.onlyWarn=${ZWE_components_discovery_apiml_security_domains_onlyWarn:-${ZWE_configs_apiml_security_domains_onlyWarn:-false}} \
     -Dapiml.security.domains.portValidationDisabled=${ZWE_components_discovery_apiml_security_domains_portValidationDisabled:-${ZWE_configs_apiml_security_domains_portValidationDisabled:-false}} \
+    -Dapiml.security.domains.networkIdentityValidationDisabled=${ZWE_components_discovery_apiml_security_domains_networkIdentityValidationDisabled:-${ZWE_configs_apiml_security_domains_networkIdentityValidationDisabled:-false}} \
     -Dapiml.security.enableStrictUrlValidation=${ZWE_components_gateway_apiml_security_enableStrictUrlValidation:-${ZWE_configs_apiml_security_enableStrictUrlValidation:-true}} \
     -Dapiml.security.jwtInitializerTimeout=${ZWE_components_gateway_apiml_security_jwtInitializerTimeout:-${ZWE_configs_apiml_security_jwtInitializerTimeout:-5}} \
     -Dapiml.security.jwtVerificationKeyAliases="${ZWE_components_gateway_apiml_security_jwtVerificationKeyAliases:-${ZWE_configs_apiml_security_jwtVerificationKeyAliases:-}}" \
