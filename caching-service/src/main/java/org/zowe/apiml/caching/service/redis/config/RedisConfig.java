@@ -50,6 +50,10 @@ public class RedisConfig {
 
     @PostConstruct
     public void init() {
+        if (masterNodeUri == null || masterNodeUri.isBlank()) {
+            throw new IllegalStateException("caching.storage.redis.masterNodeUri is required when Redis storage is enabled");
+        }
+
         NodeUriCredentials credentials = parseCredentialsFromUri(masterNodeUri);
 
         username = credentials.getUsername();

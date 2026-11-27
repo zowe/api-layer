@@ -13,6 +13,9 @@ package org.zowe.apiml.caching.service.redis.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.zowe.apiml.caching.config.GeneralConfig;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +33,16 @@ class RedisConfigTest {
     void setup() {
         GeneralConfig generalConfig = mock(GeneralConfig.class);
         underTest = new RedisConfig(generalConfig);
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = " ")
+    void givenMissingMasterNodeUri_thenReportRequiredSetting(String uri) {
+        underTest.setMasterNodeUri(uri);
+
+        IllegalStateException exception = assertThrows(IllegalStateException.class, underTest::init);
+        assertTrue(exception.getMessage().contains("caching.storage.redis.masterNodeUri"));
     }
 
     @Nested

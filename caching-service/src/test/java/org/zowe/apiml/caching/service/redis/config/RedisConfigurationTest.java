@@ -16,10 +16,11 @@ import io.lettuce.core.SslOptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -92,10 +93,13 @@ class RedisConfigurationTest {
             when(redisConfig.getSentinel()).thenReturn(sentinelConfig);
         }
 
-        @Test
-        void givenNoNodes_thenThrowIllegalStateException() {
-            when(sentinelConfig.getNodes()).thenReturn(Collections.emptyList());
-            assertThrows(IllegalStateException.class, () -> underTest.createRedisUri());
+        @ParameterizedTest
+        @NullAndEmptySource
+        void givenNoNodes_thenReportRequiredSetting(List<RedisConfig.Sentinel.SentinelNode> nodes) {
+            when(sentinelConfig.getNodes()).thenReturn(nodes);
+
+            IllegalStateException exception = assertThrows(IllegalStateException.class, underTest::createRedisUri);
+            assertThat(exception.getMessage(), containsString("caching.storage.redis.sentinel.nodes"));
         }
 
         @Test

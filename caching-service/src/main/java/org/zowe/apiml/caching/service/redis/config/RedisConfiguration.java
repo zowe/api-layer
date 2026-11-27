@@ -27,6 +27,7 @@ import org.zowe.apiml.message.log.ApimlLogger;
 
 import java.io.File;
 import java.time.Duration;
+import java.util.List;
 
 @Configuration
 @RequiredArgsConstructor
@@ -38,7 +39,7 @@ public class RedisConfiguration {
 
     @Bean
     public Storage redis(MessageService messageService) {
-        log.info("Using redis configuration {}", redisConfig);
+        log.info("Using Redis storage (Sentinel enabled: {}, TLS enabled: {})", redisConfig.usesSentinel(), redisConfig.usesSsl());
 
         RedisURI redisUri = createRedisUri();
         RedisClient redisClient = createRedisClient();
@@ -57,9 +58,13 @@ public class RedisConfiguration {
 
         if (redisConfig.usesSentinel()) {
             RedisConfig.Sentinel sentinelConfig = redisConfig.getSentinel();
+            List<RedisConfig.Sentinel.SentinelNode> nodes = sentinelConfig.getNodes();
+            if (nodes == null || nodes.isEmpty()) {
+                throw new IllegalStateException("caching.storage.redis.sentinel.nodes is required when Redis Sentinel is enabled");
+            }
             uriBuilder.withSentinelMasterId(sentinelConfig.getMasterInstance());
 
-            for (RedisConfig.Sentinel.SentinelNode sentinelNode : sentinelConfig.getNodes()) {
+            for (RedisConfig.Sentinel.SentinelNode sentinelNode : nodes) {
                 uriBuilder.withSentinel(sentinelNode.getHost(), sentinelNode.getPort(), new String(sentinelNode.getPassword())); // NOSONAR
             }
 

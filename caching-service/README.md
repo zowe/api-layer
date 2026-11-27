@@ -79,15 +79,15 @@ For development the repository contains docker compose scripts. There are two se
 4) redis/docker-compose-sentinel-tls.yml - Starts five containers. Master, replica and three sentinels to coordinate in case sentinel fails. TLS is enabled.
 
 The first setup works well for testing. In order to properly configure the Caching Service following configuration is needed either in application.yml in the Caching Service or passed in via command line parameters.
+Set `caching.storage.redis.masterNodeUri` to the Redis master URI. You can also set it using
+the `CACHING_STORAGE_REDIS_MASTERNODEURI` environment variable. The Docker Compose fixtures
+provide their own connection settings.
 
     caching:
         storage:
             mode: redis
             redis:
-                host: localhost
-                port: 6379
-                username: default
-                password: heslo
+                masterNodeUri: username:password@localhost:6379
                 
  In order to enable TLS, the following configuration is required:
  
@@ -95,39 +95,29 @@ The first setup works well for testing. In order to properly configure the Cachi
          storage:
              mode: redis
              redis:
-                 host: localhost
-                 port: 6379
-                 username: default
-                 password: heslo
-                ssl:
-                    enabled: true
-                    keyStore: ${server.ssl.keyStore}
-                    keyStorePassword: ${server.ssl.keyStorePassword}
-                    trustStore: ${server.ssl.trustStore}
-                    trustStorePassword: ${server.ssl.trustStorePassword}
+                 masterNodeUri: username:password@localhost:6379
+                 ssl:
+                     enabled: true
+                     keyStore: ${server.ssl.keyStore}
+                     keyStorePassword: ${server.ssl.keyStorePassword}
+                     trustStore: ${server.ssl.trustStore}
+                     trustStorePassword: ${server.ssl.trustStorePassword}
                  
  In order to connect to sentinel, the following configuration can be used:
+ Set at least one entry in `caching.storage.redis.sentinel.nodes` when Sentinel is enabled.
  
      caching:
          storage:
              mode: redis
              redis:
-                 host: localhost
-                 port: 6379
-                 username: default
-                 password: heslo
+                 masterNodeUri: username:password@localhost:6379
                  sentinel:
-                     master: redismaster
+                     enabled: true
+                     masterInstance: redismaster
                      nodes:
-                         - host: localhost
-                           port: 26379
-                           password: sentinelpassword
-                         - host: localhost
-                           port: 26380
-                           password: sentinelpassword
-                         - host: localhost
-                           port: 26381
-                           password: sentinelpassword
+                         - password@localhost:26379
+                         - password@localhost:26380
+                         - password@localhost:26381
                            
 The library used to connect to Redis, Lettuce, uses node registration information to automatically discover instances downstream from
 the master (in master/replica topology) or the sentinels (in sentinel topology). This means the IP address used to connect from the Caching Service
