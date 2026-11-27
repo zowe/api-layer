@@ -72,16 +72,12 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
      * and after the test.
      */
     @BeforeEach
-    @AfterEach
-    void clearZosmfEndpointExistsCache() {
+    void setUp() throws InterruptedException {
         var cache = cacheManager.getCache("zosmfAuthenticationEndpoint");
         if (cache != null) {
             cache.clear();
         }
-    }
 
-    @BeforeEach
-    void createTestTokens() throws InterruptedException {
         jwtColliding = JWTTestUtils.createDummyZOSMFToken(USERNAME);
         long collidingSecond = System.currentTimeMillis() / 1000;
         long deadline = System.currentTimeMillis() + 3_000;
@@ -92,6 +88,14 @@ class ZosmfTokenCollisionRetryTest extends AcceptanceTestWithMockServices {
             Thread.sleep(5);
         }
         jwtAfterRetry = JWTTestUtils.createDummyZOSMFToken(USERNAME);
+    }
+
+    @AfterEach
+    void tearDown() {
+        var cache = cacheManager.getCache("zosmfAuthenticationEndpoint");
+        if (cache != null) {
+            cache.clear();
+        }
     }
 
     @Test
